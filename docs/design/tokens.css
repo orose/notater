@@ -1,0 +1,513 @@
+/* ==========================================================================
+   Vault-leser – designtokens (generert fra docs/design/designsystem.md)
+   Akser:  data-type="tidsskrift|terminal"  ×  data-palette="papir|cyanotypi|fosfor|signal"
+           ×  data-mode="light|dark"  (settes på <html>; "system" løses i JS)
+   ========================================================================== */
+
+:root {
+  /* --- Spacing (4px-grid, rem) --- */
+  --space-1: 0.25rem;  --space-2: 0.5rem;   --space-3: 0.75rem;  --space-4: 1rem;
+  --space-5: 1.5rem;   --space-6: 2rem;     --space-7: 3rem;     --space-8: 4rem;
+  --space-flow: 1em;                                           /* avstand mellom blokker i brødtekst */
+  --space-section: clamp(2.5rem, 1.9rem + 2.6vw, 4.25rem);     /* før h2 */
+  --gutter: clamp(1rem, 0.6rem + 1.8vw, 2.5rem);               /* sidemarg */
+
+  /* --- Layout --- */
+  --sidebar-w: 16.5rem;
+  --rail-w: 13.5rem;
+  --sidenote-w: 12rem;
+  --topbar-h: 3.25rem;
+
+  /* --- Motion --- */
+  --dur-instant: 80ms;
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 360ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.6, 0, 0.3, 1);
+
+  /* --- Fokus --- */
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --focus-ring: var(--focus-width) solid var(--color-focus);
+
+  /* --- Lag --- */
+  --z-rail: 10; --z-topbar: 20; --z-drawer: 40; --z-popover: 50; --z-modal: 60;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-instant: 0ms; --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; }
+}
+
+/* ==========================================================================
+   Typografisk sett A – «Tidsskrift»
+   Spectral (brødtekst/titler) + Spectral SC (ekte småkapitéler) + IBM Plex Mono (kode)
+   Skala: 17.5→19.5px, ratio 1.2→1.28, flytende mellom 360 og 1440px viewport
+   ========================================================================== */
+[data-type="tidsskrift"] {
+  --font-body: "Spectral", "Iowan Old Style", "Charter", Georgia, serif;
+  --font-display: "Spectral", "Iowan Old Style", "Charter", Georgia, serif;
+  --font-sc: "Spectral SC", "Spectral", "Iowan Old Style", Georgia, serif;   /* bruk med text-transform: lowercase for c2sc-effekt */
+  --font-ui: "Spectral", "Iowan Old Style", Georgia, serif;
+  --font-meta: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --mono-ligatures: none;
+
+  --step-n2: clamp(0.7595rem, 0.7648rem + -0.0232vw, 0.7439rem);
+  --step-n1: clamp(0.9115rem, 0.8979rem + 0.0603vw, 0.9521rem);
+  --step-0: clamp(1.0938rem, 1.0521rem + 0.1852vw, 1.2188rem);
+  --step-1: clamp(1.3125rem, 1.23rem + 0.3667vw, 1.56rem);
+  --step-2: clamp(1.575rem, 1.4344rem + 0.6249vw, 1.9968rem);
+  --step-3: clamp(1.89rem, 1.668rem + 0.9865vw, 2.5559rem);
+  --step-4: clamp(2.268rem, 1.9335rem + 1.4868vw, 3.2716rem);
+  --step-5: clamp(2.7216rem, 2.2329rem + 2.1718vw, 4.1876rem);
+  --step-6: clamp(3.2659rem, 2.5679rem + 3.1025vw, 5.3601rem);
+
+  --leading-body: 1.6;
+  --leading-tight: 1.08;
+  --leading-heading: 1.2;
+  --leading-code: 1.55;
+  --tracking-display: -0.012em;
+  --tracking-sc: 0.06em;
+  --tracking-meta: 0.02em;
+
+  --weight-body: 400;
+  --weight-strong: 600;
+  --weight-display: 300;
+  --weight-h2: 400;
+  --weight-h3: 400;
+  --style-h3: italic;
+
+  --measure: 33em;           /* ≈ 66–72 tegn i Spectral */
+  --code-size: 0.84em;
+  --code-wide: 2.5rem;       /* kodefigurer stikker ut i høyre marg */
+
+  --radius-s: 0;
+  --radius-m: 2px;
+  --radius-l: 3px;
+  --rule-heavy: 1.5px;
+  --link-underline: 1px;
+  --link-underline-offset: 0.2em;
+  --dropcap: 3;              /* initial-letter; 0 = av */
+}
+
+/* ==========================================================================
+   Typografisk sett C – «Terminal-editorial»
+   Schibsted Grotesk Variable (brødtekst/titler) + JetBrains Mono Variable (kode/meta, ligaturer)
+   Skala: 15.5→17px, ratio 1.18→1.25
+   ========================================================================== */
+[data-type="terminal"] {
+  --font-body: "Schibsted Grotesk Variable", "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Schibsted Grotesk Variable", "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-sc: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;   /* «etiketter» = mono versaler */
+  --font-ui: "Schibsted Grotesk Variable", "Helvetica Neue", Arial, sans-serif;
+  --font-meta: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+  --mono-ligatures: "calt" 1, "liga" 1;
+
+  --step-n2: clamp(0.6957rem, 0.701rem + -0.0233vw, 0.68rem);
+  --step-n1: clamp(0.821rem, 0.8113rem + 0.043vw, 0.85rem);
+  --step-0: clamp(0.9688rem, 0.9375rem + 0.1389vw, 1.0625rem);
+  --step-1: clamp(1.1431rem, 1.0815rem + 0.2741vw, 1.3281rem);
+  --step-2: clamp(1.3489rem, 1.2451rem + 0.4611vw, 1.6602rem);
+  --step-3: clamp(1.5917rem, 1.4305rem + 0.7163vw, 2.0752rem);
+  --step-4: clamp(1.8782rem, 1.6396rem + 1.0604vw, 2.594rem);
+  --step-5: clamp(2.2163rem, 1.8742rem + 1.5203vw, 3.2425rem);
+  --step-6: clamp(2.6152rem, 2.1359rem + 2.1303vw, 4.0531rem);
+
+  --leading-body: 1.55;
+  --leading-tight: 1.02;
+  --leading-heading: 1.15;
+  --leading-code: 1.6;
+  --tracking-display: -0.032em;
+  --tracking-sc: 0.08em;
+  --tracking-meta: 0.04em;
+
+  --weight-body: 420;
+  --weight-strong: 640;
+  --weight-display: 800;
+  --weight-h2: 720;
+  --weight-h3: 640;
+  --style-h3: normal;
+
+  --measure: 37em;           /* ≈ 70–75 tegn i Schibsted Grotesk */
+  --code-size: 0.86em;
+  --code-wide: 0rem;
+
+  --radius-s: 2px;
+  --radius-m: 4px;
+  --radius-l: 6px;
+  --rule-heavy: 1px;
+  --link-underline: 1px;
+  --link-underline-offset: 0.18em;
+  --dropcap: 0;
+}
+
+/* ==========================================================================
+   Fargepaletter – 4 paletter × lys/mørk. Alle verdier kontrastverifisert (WCAG AA).
+   Papir + Cyanotypi er anbefalt for Tidsskrift, Fosfor + Signal for Terminal,
+   men alle 16 kombinasjoner er gyldige.
+   ========================================================================== */
+/* Papir */
+[data-palette="papir"][data-mode="light"] {
+  --color-bg: #f4eee2;
+  --color-surface: #faf6ee;
+  --color-sunken: #ebe3d2;
+  --color-text: #211c15;
+  --color-muted: #5e5345;
+  --color-faint: #8d806c;
+  --color-rule: #d9cdb7;
+  --color-rule-strong: #8d806c;
+  --color-accent: #9a2b1a;
+  --color-accent2: #1f4d6b;
+  --color-link: #9a2b1a;
+  --color-link-broken: #8a5a4a;
+  --color-mark: #f2d98a;
+  --color-focus: #1f4d6b;
+  --color-selection: #e9c9a8;
+  --hue-blue: #1f4d78;
+  --hue-teal: #1d5f5a;
+  --hue-green: #3b6322;
+  --hue-amber: #7a5300;
+  --hue-orange: #a3400b;
+  --hue-red: #9e2318;
+  --hue-plum: #6b3a63;
+  --hue-grey: #5e5345;
+  --shiki-foreground: #2a241c;
+  --shiki-background: #ebe3d2;
+  --shiki-token-keyword: #94281a;
+  --shiki-token-string: #3b6322;
+  --shiki-token-comment: #6f6352;
+  --shiki-token-constant: #8a4a00;
+  --shiki-token-function: #1f4d78;
+  --shiki-token-parameter: #5a3a17;
+  --shiki-token-punctuation: #5e5345;
+  --shiki-token-string-expression: #1d5f5a;
+  --shiki-token-link: #1f4d78;
+  --shiki-token-number: #8a4a00;
+  --shiki-token-type: #6b3a63;
+  --shiki-token-property: #1f4d78;
+  --shiki-token-operator: #94281a;
+  --tint: 8%;
+  color-scheme: light;
+}
+[data-palette="papir"][data-mode="dark"] {
+  --color-bg: #1a1712;
+  --color-surface: #221e18;
+  --color-sunken: #14120e;
+  --color-text: #ece4d4;
+  --color-muted: #ad9f89;
+  --color-faint: #7c705f;
+  --color-rule: #3a3329;
+  --color-rule-strong: #7c705f;
+  --color-accent: #f08b6b;
+  --color-accent2: #8fc1e3;
+  --color-link: #f08b6b;
+  --color-link-broken: #c49a8a;
+  --color-mark: #5a4614;
+  --color-focus: #8fc1e3;
+  --color-selection: #5c3a28;
+  --hue-blue: #8fbde8;
+  --hue-teal: #7cc8bd;
+  --hue-green: #a5cf7f;
+  --hue-amber: #e8c060;
+  --hue-orange: #f2a066;
+  --hue-red: #f0857a;
+  --hue-plum: #d8a4cf;
+  --hue-grey: #ad9f89;
+  --shiki-foreground: #e6dccb;
+  --shiki-background: #14120e;
+  --shiki-token-keyword: #f08b6b;
+  --shiki-token-string: #b4d38a;
+  --shiki-token-comment: #968a76;
+  --shiki-token-constant: #e8b45c;
+  --shiki-token-function: #8fbde8;
+  --shiki-token-parameter: #e8cfa8;
+  --shiki-token-punctuation: #ad9f89;
+  --shiki-token-string-expression: #7cc8bd;
+  --shiki-token-link: #8fbde8;
+  --shiki-token-number: #e8b45c;
+  --shiki-token-type: #d8a4cf;
+  --shiki-token-property: #8fbde8;
+  --shiki-token-operator: #f08b6b;
+  --tint: 12%;
+  color-scheme: dark;
+}
+
+/* Cyanotypi */
+[data-palette="cyanotypi"][data-mode="light"] {
+  --color-bg: #eef1f1;
+  --color-surface: #f8fafa;
+  --color-sunken: #e1e8ea;
+  --color-text: #121d27;
+  --color-muted: #4a5a67;
+  --color-faint: #7d8c98;
+  --color-rule: #cbd5db;
+  --color-rule-strong: #7d8c98;
+  --color-accent: #174a8c;
+  --color-accent2: #8a4f00;
+  --color-link: #174a8c;
+  --color-link-broken: #7a5560;
+  --color-mark: #fbe39a;
+  --color-focus: #c2410c;
+  --color-selection: #bcd3ee;
+  --hue-blue: #174a8c;
+  --hue-teal: #0f5f66;
+  --hue-green: #2e6630;
+  --hue-amber: #7a5200;
+  --hue-orange: #a53f0f;
+  --hue-red: #a12530;
+  --hue-plum: #69407a;
+  --hue-grey: #4a5a67;
+  --shiki-foreground: #16222d;
+  --shiki-background: #e1e8ea;
+  --shiki-token-keyword: #174a8c;
+  --shiki-token-string: #2e6630;
+  --shiki-token-comment: #566673;
+  --shiki-token-constant: #9a3d0f;
+  --shiki-token-function: #0f5f66;
+  --shiki-token-parameter: #5a4a12;
+  --shiki-token-punctuation: #4a5a67;
+  --shiki-token-string-expression: #8a4f00;
+  --shiki-token-link: #174a8c;
+  --shiki-token-number: #9a3d0f;
+  --shiki-token-type: #69407a;
+  --shiki-token-property: #0f5f66;
+  --shiki-token-operator: #174a8c;
+  --tint: 8%;
+  color-scheme: light;
+}
+[data-palette="cyanotypi"][data-mode="dark"] {
+  --color-bg: #0d1520;
+  --color-surface: #131d2a;
+  --color-sunken: #09101a;
+  --color-text: #dbe4ec;
+  --color-muted: #97a7b6;
+  --color-faint: #5f7082;
+  --color-rule: #243244;
+  --color-rule-strong: #5f7082;
+  --color-accent: #86b9f5;
+  --color-accent2: #e8b75a;
+  --color-link: #86b9f5;
+  --color-link-broken: #c79aa5;
+  --color-mark: #4a3d12;
+  --color-focus: #e8b75a;
+  --color-selection: #24426a;
+  --hue-blue: #86b9f5;
+  --hue-teal: #6ccfd3;
+  --hue-green: #93d29a;
+  --hue-amber: #e8c060;
+  --hue-orange: #f2a36a;
+  --hue-red: #f28a92;
+  --hue-plum: #cfa6e6;
+  --hue-grey: #97a7b6;
+  --shiki-foreground: #d6e0ea;
+  --shiki-background: #09101a;
+  --shiki-token-keyword: #86b9f5;
+  --shiki-token-string: #93d29a;
+  --shiki-token-comment: #7f90a1;
+  --shiki-token-constant: #f2a36a;
+  --shiki-token-function: #6ccfd3;
+  --shiki-token-parameter: #e8d3a0;
+  --shiki-token-punctuation: #97a7b6;
+  --shiki-token-string-expression: #e8b75a;
+  --shiki-token-link: #86b9f5;
+  --shiki-token-number: #f2a36a;
+  --shiki-token-type: #cfa6e6;
+  --shiki-token-property: #6ccfd3;
+  --shiki-token-operator: #86b9f5;
+  --tint: 12%;
+  color-scheme: dark;
+}
+
+/* Fosfor */
+[data-palette="fosfor"][data-mode="light"] {
+  --color-bg: #f2f3ee;
+  --color-surface: #fafbf7;
+  --color-sunken: #e6e9df;
+  --color-text: #11150e;
+  --color-muted: #4b5544;
+  --color-faint: #7f8a76;
+  --color-rule: #d0d5c6;
+  --color-rule-strong: #7f8a76;
+  --color-accent: #2c6a0f;
+  --color-accent2: #8a5300;
+  --color-link: #2c6a0f;
+  --color-link-broken: #7d5a52;
+  --color-mark: #e3f59a;
+  --color-focus: #2c6a0f;
+  --color-selection: #cfe8b0;
+  --hue-blue: #1d4f86;
+  --hue-teal: #0f605a;
+  --hue-green: #2c6a0f;
+  --hue-amber: #7a5200;
+  --hue-orange: #a3420a;
+  --hue-red: #a3221a;
+  --hue-plum: #6b3f6e;
+  --hue-grey: #4b5544;
+  --shiki-foreground: #14190f;
+  --shiki-background: #e6e9df;
+  --shiki-token-keyword: #2c6a0f;
+  --shiki-token-string: #7a5200;
+  --shiki-token-comment: #566050;
+  --shiki-token-constant: #a3420a;
+  --shiki-token-function: #1d4f86;
+  --shiki-token-parameter: #5c3f6a;
+  --shiki-token-punctuation: #4b5544;
+  --shiki-token-string-expression: #9a3412;
+  --shiki-token-link: #1d4f86;
+  --shiki-token-number: #a3420a;
+  --shiki-token-type: #0f605a;
+  --shiki-token-property: #1d4f86;
+  --shiki-token-operator: #2c6a0f;
+  --tint: 8%;
+  color-scheme: light;
+}
+[data-palette="fosfor"][data-mode="dark"] {
+  --color-bg: #0b0d0a;
+  --color-surface: #121510;
+  --color-sunken: #070806;
+  --color-text: #d8dfcf;
+  --color-muted: #909a86;
+  --color-faint: #5c6555;
+  --color-rule: #232920;
+  --color-rule-strong: #5c6555;
+  --color-accent: #a3e66d;
+  --color-accent2: #ffb454;
+  --color-link: #a3e66d;
+  --color-link-broken: #c9a08f;
+  --color-mark: #3b4a12;
+  --color-focus: #ffb454;
+  --color-selection: #2d4a1a;
+  --hue-blue: #8ab8f0;
+  --hue-teal: #6fd6c8;
+  --hue-green: #a3e66d;
+  --hue-amber: #ffc761;
+  --hue-orange: #ff9e5e;
+  --hue-red: #ff7f73;
+  --hue-plum: #d7a6e8;
+  --hue-grey: #909a86;
+  --shiki-foreground: #d8dfcf;
+  --shiki-background: #070806;
+  --shiki-token-keyword: #a3e66d;
+  --shiki-token-string: #ffc761;
+  --shiki-token-comment: #7d8874;
+  --shiki-token-constant: #ff9e5e;
+  --shiki-token-function: #8ab8f0;
+  --shiki-token-parameter: #e2c9f0;
+  --shiki-token-punctuation: #909a86;
+  --shiki-token-string-expression: #ffb454;
+  --shiki-token-link: #8ab8f0;
+  --shiki-token-number: #ff9e5e;
+  --shiki-token-type: #6fd6c8;
+  --shiki-token-property: #8ab8f0;
+  --shiki-token-operator: #a3e66d;
+  --tint: 12%;
+  color-scheme: dark;
+}
+
+/* Signal */
+[data-palette="signal"][data-mode="light"] {
+  --color-bg: #f6f6f3;
+  --color-surface: #ffffff;
+  --color-sunken: #ececE8;
+  --color-text: #111111;
+  --color-muted: #545450;
+  --color-faint: #8a8a84;
+  --color-rule: #d9d9d3;
+  --color-rule-strong: #8a8a84;
+  --color-accent: #b23209;
+  --color-accent2: #00677d;
+  --color-link: #b8350a;
+  --color-link-broken: #7a5a55;
+  --color-mark: #ffe08a;
+  --color-focus: #00677d;
+  --color-selection: #ffd2bd;
+  --hue-blue: #1f4f8f;
+  --hue-teal: #00677d;
+  --hue-green: #2f6b1f;
+  --hue-amber: #7a5100;
+  --hue-orange: #b8350a;
+  --hue-red: #a8201a;
+  --hue-plum: #6e3c74;
+  --hue-grey: #545450;
+  --shiki-foreground: #151515;
+  --shiki-background: #ececE8;
+  --shiki-token-keyword: #b8350a;
+  --shiki-token-string: #2f6b1f;
+  --shiki-token-comment: #5c5c57;
+  --shiki-token-constant: #1f4f8f;
+  --shiki-token-function: #00677d;
+  --shiki-token-parameter: #6b4a00;
+  --shiki-token-punctuation: #545450;
+  --shiki-token-string-expression: #a8201a;
+  --shiki-token-link: #1f4f8f;
+  --shiki-token-number: #1f4f8f;
+  --shiki-token-type: #6e3c74;
+  --shiki-token-property: #00677d;
+  --shiki-token-operator: #b8350a;
+  --tint: 8%;
+  color-scheme: light;
+}
+[data-palette="signal"][data-mode="dark"] {
+  --color-bg: #111213;
+  --color-surface: #18191b;
+  --color-sunken: #0a0a0b;
+  --color-text: #e9e9e6;
+  --color-muted: #a0a09a;
+  --color-faint: #64645f;
+  --color-rule: #2a2b2e;
+  --color-rule-strong: #6c6c66;
+  --color-accent: #ff7a45;
+  --color-accent2: #5cd0e6;
+  --color-link: #ff8a5a;
+  --color-link-broken: #c9a39b;
+  --color-mark: #5a3a10;
+  --color-focus: #5cd0e6;
+  --color-selection: #5a2a14;
+  --hue-blue: #8cb6f5;
+  --hue-teal: #5cd0e6;
+  --hue-green: #9ad67a;
+  --hue-amber: #ffc861;
+  --hue-orange: #ff8a5a;
+  --hue-red: #ff7b72;
+  --hue-plum: #d9a8f0;
+  --hue-grey: #a0a09a;
+  --shiki-foreground: #e6e6e3;
+  --shiki-background: #0a0a0b;
+  --shiki-token-keyword: #ff8a5a;
+  --shiki-token-string: #9ad67a;
+  --shiki-token-comment: #8a8a84;
+  --shiki-token-constant: #d9a8f0;
+  --shiki-token-function: #5cd0e6;
+  --shiki-token-parameter: #f0d0b8;
+  --shiki-token-punctuation: #a0a09a;
+  --shiki-token-string-expression: #ff7b72;
+  --shiki-token-link: #8cb6f5;
+  --shiki-token-number: #d9a8f0;
+  --shiki-token-type: #ffc861;
+  --shiki-token-property: #5cd0e6;
+  --shiki-token-operator: #ff8a5a;
+  --tint: 12%;
+  color-scheme: dark;
+}
+
+/* --- Avledede farger (felles for alle paletter) --- */
+:root {
+  --color-tag-bg: color-mix(in oklab, var(--color-accent) 12%, var(--color-bg));
+  --color-hover: color-mix(in oklab, var(--color-text) 6%, transparent);
+  --color-overlay: color-mix(in oklab, var(--color-bg) 70%, transparent);
+  --code-bg: var(--shiki-background);
+  --code-fg: var(--shiki-foreground);
+}
+[data-palette] {
+  /* callout-farger: tittel = hue, bakgrunn = tint av hue mot bg */
+  --callout-note: var(--hue-blue);     --callout-info: var(--hue-blue);    --callout-todo: var(--hue-blue);
+  --callout-abstract: var(--hue-teal); --callout-tip: var(--hue-teal);
+  --callout-success: var(--hue-green);
+  --callout-question: var(--hue-amber);
+  --callout-warning: var(--hue-orange);
+  --callout-danger: var(--hue-red);    --callout-bug: var(--hue-red);      --callout-failure: var(--hue-red);
+  --callout-example: var(--hue-plum);
+  --callout-quote: var(--hue-grey);
+}

