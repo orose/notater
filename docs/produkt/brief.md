@@ -65,7 +65,7 @@ Begge kunde-eksemplene skal rendres korrekt. Se `docs/produkt/bases-eksempler.md
 - AK10 Tilbakelenker per notat.
 - AK11 Stabile, bokmerkbare URL-er per notat; frem/tilbake i nettleser fungerer.
 - AK12 Live reload: endringer i vaultet (fra Obsidian) vises uten manuell refresh.
-- AK13 `⌘K` hurtigsøk (tittel, aliaser, innhold). Full tastaturnavigasjon.
+- AK13 `⌘K` hurtigsøk (tittel, aliaser, innhold). Aliaser brukes ikke til lenkeoppløsning (som Obsidian). Full tastaturnavigasjon.
 - AK14 Kodeblokker: highlighting som følger tema, språkmerke, kopier-knapp, filnavn/tittel hvis oppgitt.
 - AK15 Mermaid følger tema, store diagrammer kan forstørres.
 - AK16 Innholdsfortegnelse for lange notater (scroll-spy på desktop).
