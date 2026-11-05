@@ -1,3 +1,4 @@
+import './navigation.css';
 import { useState } from 'react';
 import type { DocPath, VaultId } from '../../../shared/api-types';
 import { useSearch, useTags, useTree } from '../../shared/api';

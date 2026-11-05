@@ -1,0 +1,24 @@
+/* Innholdsfortegnelse med scroll-spy (AK16). */
+.progress { height: 2px; background: var(--color-rule); margin-bottom: var(--space-4); position: relative; overflow: hidden; border-radius: 2px; }
+.progress i { position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); background: var(--color-accent); transition: width var(--dur-fast) linear; }
+.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: t; }
+.toc li { counter-increment: t; }
+.toc a { display: flex; gap: 0.6em; padding: 0.3em 0 0.3em 0.75em; color: var(--color-muted); text-decoration: none; border-left: 1px solid var(--color-rule); transition: color var(--dur-fast), border-color var(--dur-fast); }
+.toc a::before { content: counter(t); font-family: var(--font-meta); font-size: 0.72rem; min-width: 1.2em; padding-top: 0.12em; }
+.toc .sub a { padding-left: 2.6em; font-size: 0.95em; }
+.toc .sub a::before { content: none; }
+.toc .sub .sub a { padding-left: 3.6em; }
+.toc a:hover { color: var(--color-text); }
+.toc a[aria-current="true"] { color: var(--color-text); border-left: 2px solid var(--color-accent); padding-left: calc(0.75em - 1px); }
+.toc .sub a[aria-current="true"] { padding-left: calc(2.6em - 1px); }
+[data-type="tidsskrift"] .toc a { font-size: 0.98rem; }
+[data-type="tidsskrift"] .toc a::before { content: "§" counter(t); font-family: var(--font-sc); font-size: 0.8rem; }
+[data-type="tidsskrift"] .toc .sub a { font-size: 0.93rem; }
+[data-type="tidsskrift"] .toc .sub a::before { content: none; }
+.toc-inline { display: none; margin: 0 0 var(--space-6); border-block: 1px solid var(--color-rule); }
+.toc-inline summary { cursor: pointer; padding: var(--space-3) 0; display: flex; align-items: center; justify-content: space-between; list-style: none; min-height: 2.75rem; }
+.toc-inline summary::-webkit-details-marker { display: none; }
+.toc-inline .chev { transition: transform var(--dur-fast); }
+.toc-inline[open] .chev { transform: rotate(90deg); }
+.toc-inline .toc { padding-bottom: var(--space-3); font-size: 0.92rem; font-family: var(--font-ui); }
+@media (max-width: 1099px) { .toc-inline { display: block; } }

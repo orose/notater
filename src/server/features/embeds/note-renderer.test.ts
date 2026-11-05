@@ -2,7 +2,7 @@ import type { Element, Root } from 'hast';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { CodeHighlighter } from '../code-highlight';
 import { createLinkResolver } from '../links';
-import { byTag, findAll, testHighlighter, textOf } from '../markdown/test-support';
+import { byTag, findAll, testHighlighter, textOf } from '../../test-support/render-fixtures';
 import { splitFrontmatter } from '../markdown-syntax';
 import { describeVaultPath, extractNoteMeta } from '../vault-index';
 import type { IndexedNote, VaultFile } from '../vault-index';

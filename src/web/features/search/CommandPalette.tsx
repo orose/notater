@@ -1,3 +1,4 @@
+import './search.css';
 import { useEffect, useId, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import type { SearchHit, VaultId } from '../../../shared/api-types';
@@ -145,6 +146,10 @@ function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; rea
       if (options.length === 0) return;
       const delta = event.key === 'ArrowDown' ? 1 : -1;
       setSelected((current + delta + options.length) % options.length);
+    } else if (event.key === 'Escape') {
+      // Chrome tømmer ellers bare søkefeltet på første Esc.
+      event.preventDefault();
+      event.currentTarget.closest('dialog')?.close();
     } else if (event.key === 'Enter') {
       event.preventDefault();
       openOption(options[current], event.metaKey || event.ctrlKey);
@@ -158,7 +163,6 @@ function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; rea
   const noteCount = vaults.data?.vaults.find((v) => v.id === vaultId)?.noteCount;
   const waiting = trimmed !== '' && (debounced.trim() !== trimmed || search.isFetching) && options.length === 0;
 
-  let lastGroup: string | null = null;
   return (
     <>
       <div className="palette-input">
@@ -187,12 +191,11 @@ function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; rea
       <ul className="results" id={listId} role="listbox" aria-label="Søkeresultater">
         {options.map((option, i) => {
           const header =
-            option.group !== lastGroup ? (
+            i === 0 || options[i - 1]?.group !== option.group ? (
               <li className="grp label" role="presentation" key={`g-${option.group}`}>
                 {option.group}
               </li>
             ) : null;
-          lastGroup = option.group;
           return [
             header,
             <li

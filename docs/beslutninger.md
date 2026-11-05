@@ -92,3 +92,15 @@ Designet (docs/design/) er **godkjent** som referanse for implementasjon.
 - **PO-21** Ingress hentes fra frontmatter `description`, deretter `summary`; ellers ingen ingress.
 - **PO-22** Skjulte properties i header: `aliases` og `tags` vises i egne dedikerte felt (ikke som property-rader); `cssclasses`, `publish`, `position` skjules alltid. Ekstra skjulte properties kan settes per vault i config (`hiddenProperties`).
 - **PO-23** Lesetid i header: ja.
+
+## PO-avgjørelser etter frontend-rapport (slice 0–2)
+
+Frontendens avvik 1–8 er **godkjent** (temascript som ekstern fil pga. CSP; brutte lenker er ikke-navigerbare knapper med forklaring per QA-fasit; CSS per feature; `recent`-feature; tooling-tsconfig).
+- **PO-24** Nytt endepunkt `GET /api/vaults/:id/tags` → `{ vaultId, tags: [{ tag, count }] }`. Ukjente API-ruter svarer 404, ikke 400.
+- **PO-25** Brutte lenker med aliastreff får `data-vr-suggest` + `data-vr-suggest-title` (PO-7).
+- **PO-26** Tvetydige lenker får `data-vr-ambiguous="<antall kandidater>"` (PO-8).
+- **PO-27** Ugyldig frontmatter: dokumentet får `frontmatterError: string | null`.
+- **PO-28** Backlinks for ikke-eksisterende mål: siden «ikke skrevet ennå» viser «Lenket fra». Server eksponerer dette (f.eks. backlinks-endepunkt som godtar mål uten fil).
+- **PO-29** `hiddenProperties` filtreres på serveren. Klienten får aldri skjulte properties.
+- **PO-30** Fotnoteoverskrift «Fotnoter» settes på serveren.
+- **PO-31** SSE `/api/events` holdes åpen med heartbeat (kommentar-linje hvert 15. s).

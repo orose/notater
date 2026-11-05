@@ -144,6 +144,10 @@ describe('parseObsidianMarkdown – linjeskift, oppgaver, fotnoter', () => {
     expect(toPlainText(tree)).not.toContain('[/]');
   });
 
+  it('wikilinks i fotnotedefinisjoner tolkes', () => {
+    expect(wikiLinks('Tekst.[^n]\n\n[^n]: Se [[Kafka|lenker]].').map((l) => l.target)).toEqual(['Kafka']);
+  });
+
   it('inline-fotnote ^[…] blir fotnote', () => {
     const tree = parseObsidianMarkdown('Tekst.^[Dette er en inline-fotnote.]');
     expect(nodesOfType(tree, 'footnoteReference')).toHaveLength(1);

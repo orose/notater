@@ -1,3 +1,4 @@
+import './bases.css';
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import { Link } from 'react-router';
 import type { BaseResult, BaseView, DocPath, VaultId } from '../../../shared/api-types';

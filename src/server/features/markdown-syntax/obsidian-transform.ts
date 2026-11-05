@@ -40,7 +40,7 @@ const INLINE_RULES: readonly InlineRule[] = [
   { trigger: '^[', pattern: /\^\[([^[\]\n]+)\]/g, create: createInlineFootnote },
 ];
 
-const NO_INLINE_PARENTS = new Set(['link', 'linkReference', 'footnoteDefinition']);
+const NO_INLINE_PARENTS = new Set(['link', 'linkReference']);
 const TRAILING_BLOCK_ID = /(^|\s)\^([A-Za-z0-9-]+)\s*$/;
 const STANDALONE_BLOCK_ID = /^\^([A-Za-z0-9-]+)$/;
 const CUSTOM_TASK = /^\[([^\s\]])\]\s+/;
@@ -64,7 +64,7 @@ function transformParent(parent: Parent, context: TransformContext, inlineAllowe
       child.value = stripSentinels(child.value);
     }
     if (context.hasSentinels && child.type === 'image' && child.alt) child.alt = stripSentinels(child.alt);
-    if ('children' in child) transformParent(child, context, allowInline || child.type === 'footnoteDefinition');
+    if ('children' in child) transformParent(child, context, allowInline);
     children.push(child);
   }
   parent.children = children as RootContent[];

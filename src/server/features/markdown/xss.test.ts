@@ -9,7 +9,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import type { CodeHighlighter } from '../code-highlight';
 import { splitFrontmatter } from '../markdown-syntax';
 import { renderMarkdown } from './render-markdown';
-import { byTag, fakeContext, findAll, testHighlighter, textOf } from './test-support';
+import { byTag, fakeContext, findAll, testHighlighter, textOf } from '../../test-support/render-fixtures';
 
 let highlighter: CodeHighlighter;
 beforeAll(async () => {

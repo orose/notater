@@ -1,3 +1,4 @@
+import './toc.css';
 import type { CSSProperties } from 'react';
 import type { TocEntry } from '../../../shared/api-types';
 import { TocList } from './TocList';

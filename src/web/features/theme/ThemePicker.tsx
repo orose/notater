@@ -1,3 +1,4 @@
+import './theme.css';
 import { useId } from 'react';
 import { Icon } from '../../shared/ui/Icon';
 import { Modal } from '../../shared/ui/Modal';

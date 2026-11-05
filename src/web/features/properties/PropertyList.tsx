@@ -1,3 +1,4 @@
+import './properties.css';
 import type { PropertyEntry, VaultId } from '../../../shared/api-types';
 import { PropertyValue } from './PropertyValue';
 

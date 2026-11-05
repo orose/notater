@@ -1,3 +1,4 @@
+import './unsupported.css';
 import type { ReactNode } from 'react';
 import { Icon } from './Icon';
 

@@ -2,7 +2,7 @@ import type { Element } from 'hast';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { CodeHighlighter } from '../code-highlight';
 import { renderMarkdown } from './render-markdown';
-import { byTag, fakeContext, findAll, testHighlighter, textOf } from './test-support';
+import { byTag, fakeContext, findAll, testHighlighter, textOf } from '../../test-support/render-fixtures';
 
 let highlighter: CodeHighlighter;
 beforeAll(async () => {

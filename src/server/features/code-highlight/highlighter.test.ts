@@ -60,6 +60,10 @@ describe('createCodeHighlighter', () => {
     expect(tags.every((t) => ['pre', 'code', 'span'].includes(t))).toBe(true);
   });
 
+  it('warmUp kompilerer alle språk uten feil', async () => {
+    await expect(highlighter.warmUp()).resolves.toBeUndefined();
+  }, 30_000);
+
   it('bevarer tab og innrykk', () => {
     expect(text(highlighter.highlight('\tfoo\n    bar', ''))).toBe('\tfoo\n    bar');
   });

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigationType } from 'react-router';
 
 // Scroll ved navigasjon: til #anker (med kort markering), gjenoppretting ved frem/tilbake (R10),
@@ -45,7 +45,7 @@ export function useDocumentScroll(ready: boolean, docId: string): { toast: strin
   const location = useLocation();
   const navigationType = useNavigationType();
   const [toast, setToast] = useState<string | null>(null);
-  const [initial, setInitial] = useState(true);
+  const initial = useRef(true);
 
   useEffect(() => {
     const key = location.key;
@@ -73,13 +73,15 @@ export function useDocumentScroll(ready: boolean, docId: string): { toast: strin
     if (hash) {
       const el = document.getElementById(hash);
       if (el) {
-        el.scrollIntoView({ behavior: initial || reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+        el.scrollIntoView({ behavior: initial.current || reducedMotion() ? 'auto' : 'smooth', block: 'start' });
         el.classList.remove('target-flash');
         void el.offsetWidth; // restart animasjonen
         el.classList.add('target-flash');
         timer = setTimeout(() => el.classList.remove('target-flash'), 1300);
       } else if (hash !== 'tilbakelenker') {
-        setToast(`Fant ikke seksjonen «#${hash.replace(/^\^/, '^')}»`);
+        // Svar på en DOM-måling etter rendering (ankeret finnes ikke) – bevisst setState her.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setToast(`Fant ikke seksjonen «#${hash}»`);
         window.scrollTo(0, 0);
       }
     } else if (navigationType === 'POP' && positions.has(location.key)) {
@@ -87,7 +89,7 @@ export function useDocumentScroll(ready: boolean, docId: string): { toast: strin
     } else {
       window.scrollTo(0, 0);
     }
-    setInitial(false);
+    initial.current = false;
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- kjøres per navigasjon/dokument
   }, [ready, docId, location.key]);

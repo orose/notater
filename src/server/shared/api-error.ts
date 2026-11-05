@@ -17,3 +17,16 @@ export function readPathParam(c: Context): string | null {
   if (value === undefined || value.trim() === '' || value.includes('\0')) return null;
   return value;
 }
+
+/**
+ * Henter vault-avhengige data via en port. `null` fra porten = ukjent vault (404); en feil under
+ * indeksering = 500. Returnerer enten dataene eller et ferdig feilsvar.
+ */
+export async function loadVault<T>(c: Context, vaultId: string, lookup: (vaultId: string) => Promise<T | null>): Promise<T | Response> {
+  try {
+    const value = await lookup(vaultId);
+    return value ?? apiError(c, 404, 'VAULT_NOT_FOUND', `Fant ikke vaultet «${vaultId}».`);
+  } catch (error) {
+    return apiError(c, 500, 'INTERNAL', error instanceof Error ? error.message : 'Ukjent feil.');
+  }
+}

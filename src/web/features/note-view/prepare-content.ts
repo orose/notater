@@ -12,7 +12,7 @@ function isBlankText(node: RootContent | ElementContent): boolean {
 }
 
 function classList(node: Element): string[] {
-  const value = node.properties.className;
+  const value: unknown = node.properties.className;
   if (Array.isArray(value)) return value.map(String);
   if (typeof value === 'string') return value.split(/\s+/);
   return [];

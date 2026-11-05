@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test('appen starter og viser forsiden', async ({ page }) => {
+test('appen starter og sender / til standardvaultet', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Vault-leser' })).toBeVisible();
+  await expect(page).toHaveURL(/\/v\/test$/);
+  await expect(page.getByRole('navigation', { name: 'Vault' })).toBeAttached();
 });

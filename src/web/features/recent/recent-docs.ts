@@ -16,7 +16,7 @@ const cache = new Map<string, { raw: string | null; value: RecentDoc[] }>();
 const EMPTY: RecentDoc[] = [];
 
 export function readRecent(vaultId: VaultId): RecentDoc[] {
-  let raw: string | null = null;
+  let raw: string | null;
   try {
     raw = window.localStorage.getItem(key(vaultId));
   } catch {

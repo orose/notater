@@ -7,8 +7,8 @@ import { buildBacklinkIndex, createLinkResolver } from '../links';
 import type { BacklinkIndex, LinkResolver } from '../links';
 import { createSearchIndex } from '../search';
 import type { SearchDocument, SearchIndex } from '../search';
-import { buildSnapshot, updateSnapshot } from '../vault-index';
-import type { MetaExtractor, VaultSnapshot } from '../vault-index';
+import { buildSnapshot, readVaultBytes, updateSnapshot } from '../vault-index';
+import type { MetaExtractor, VaultFile, VaultSnapshot } from '../vault-index';
 import { createLruCache } from './lru-cache';
 import type { LruCache } from './lru-cache';
 
@@ -35,6 +35,8 @@ export interface VaultRuntime {
   subscribe(listener: (event: ChangedEvent) => void): () => void;
   /** Inkrementell oppdatering av vault-relative disk-stier (brukes av filovervåkeren). */
   applyChanges(diskPaths: readonly string[]): Promise<readonly FileChange[]>;
+  /** Leser en indeksert fil (disk-sti = vault-rot + indeksert relativ sti, verifisert innenfor roten). */
+  readFile(file: VaultFile): Promise<Uint8Array>;
   close(): Promise<void>;
 }
 
@@ -100,7 +102,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
     } catch (error) {
       status = 'error';
       errorMessage = `Kunne ikke indeksere vaultet: ${error instanceof Error ? error.message : String(error)}`;
-      throw new Error(errorMessage);
+      throw new Error(errorMessage, { cause: error });
     } finally {
       await extractor.close();
     }
@@ -171,6 +173,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
       updateQueue = result.catch(() => undefined);
       return result;
     },
+    readFile: (file) => readVaultBytes(config.root, file.diskPath),
     async close() {
       await watcher?.close();
       listeners.clear();

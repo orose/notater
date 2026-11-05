@@ -1,3 +1,4 @@
+import './note-view.css';
 import { useEffect, useMemo } from 'react';
 import { useLocation, useParams } from 'react-router';
 import type { BaseDocument, DocPath, NoteDocument, VaultId } from '../../../shared/api-types';

@@ -1,3 +1,4 @@
+import './callout.css';
 import { Children, isValidElement, useState, type ReactNode } from 'react';
 import { Icon } from '../../shared/ui/Icon';
 import { nodeText } from '../../shared/ui/node-text';

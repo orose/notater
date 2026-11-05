@@ -1,3 +1,4 @@
+/* global localStorage, URLSearchParams, location, matchMedia, document */
 /* Vault-leser: setter tema-attributtene på <html> FØR første maling, slik at feil tema aldri blinker.
    Lastes synkront fra <head> i index.html (ekstern fil i stedet for inline-script, så den virker med
    CSP `script-src 'self'` – PO-16). Samme regler som src/web/features/theme/theme-state.ts. */
@@ -18,14 +19,14 @@
       set('mode', s.mode); set('type', s.type); set('palette', s.palette);
       if (typeof s.ornaments === 'boolean') d.ornaments = s.ornaments;
     }
-  } catch (e) { /* privat modus eller ødelagt verdi: bruk standard */ }
+  } catch { /* privat modus eller ødelagt verdi: bruk standard */ }
   try {
     var q = new URLSearchParams(location.search);
     set('mode', q.get('mode')); set('type', q.get('type')); set('palette', q.get('palette'));
     if (q.get('ornaments')) d.ornaments = q.get('ornaments') !== 'off';
-  } catch (e) { /* ignorer */ }
+  } catch { /* ignorer */ }
   var dark = false;
-  try { dark = d.mode === 'dark' || (d.mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches); } catch (e) { /* ignorer */ }
+  try { dark = d.mode === 'dark' || (d.mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches); } catch { /* ignorer */ }
   var r = document.documentElement;
   r.dataset.type = d.type;
   r.dataset.palette = d.palette;

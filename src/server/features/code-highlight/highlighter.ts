@@ -7,6 +7,11 @@ export interface CodeHighlighter {
   /** Returnerer Shikis `pre.shiki > code > span.line > span[style]`. Ukjent språk → ren tekst. */
   highlight(code: string, lang: string): Element;
   isSupported(lang: string): boolean;
+  /**
+   * Kompilerer alle grammatikker på forhånd (Shiki gjør det lat ved første bruk, ~5–50 ms per språk).
+   * Ett språk per event-loop-runde, så forespørsler ikke blokkeres. Holder notatbytte < 200 ms (AK17).
+   */
+  warmUp(): Promise<void>;
 }
 
 /** Fast språksett (ADR-002). Alias (ts, sh, yml …) følger med fra Shiki. */
@@ -56,6 +61,25 @@ export const SUPPORTED_LANGUAGES = [
 
 const THEME_NAME = 'vault-reader';
 
+/** «Polyglott» eksempel som treffer vanlige grammatikkregler (strenger, tall, kommentarer, kall, tagger). */
+const WARM_UP_SAMPLE = [
+  '// kommentar',
+  '/* blokk */ # kommentar',
+  'import x from "y"; package a.b;',
+  'public class A extends B { private int n = 42; String s = "t"; }',
+  'def f(a, b=1): return a + b',
+  'function g(x: number): string { return `v${x}`; }',
+  'SELECT a, COUNT(*) FROM t WHERE b = \'c\' GROUP BY a;',
+  'key: value',
+  '  - item: [1, 2.5, true, null]',
+  '{ "k": "v", "n": 1 }',
+  '<div class="a" id=\'b\'>t &amp; u</div>',
+  'echo "$HOME" | grep -v x && ls -la',
+  '@Annotation fun main(args: Array<String>) { println("hi") }',
+  '+ lagt til',
+  '- fjernet',
+].join('\n');
+
 /**
  * CSS-variabel-tema (ADR-002, A9), utvidet med `number`, `type`, `property` og `operator` slik UX
  * definerer i docs/design/tokens.css. Reglene legges sist så de vinner over grunntemaet.
@@ -88,6 +112,12 @@ export async function createCodeHighlighter(): Promise<CodeHighlighter> {
 
   return {
     isSupported,
+    async warmUp() {
+      for (const lang of SUPPORTED_LANGUAGES) {
+        await new Promise<void>((resolve) => setImmediate(resolve));
+        highlighter.codeToHast(WARM_UP_SAMPLE, { lang, theme: THEME_NAME });
+      }
+    },
     highlight(code, lang) {
       const language = isSupported(lang) ? lang.toLowerCase() : 'text';
       const root = highlighter.codeToHast(code, { lang: language, theme: THEME_NAME });

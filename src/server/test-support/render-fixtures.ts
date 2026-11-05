@@ -1,8 +1,9 @@
+/** Delte testhjelpere for server-tester (kun brukt av *.test.ts). */
 /** Hjelpere for tester av render-pipelinen: falsk RenderContext og HAST-spørringer. */
 import type { Element, ElementContent, Root, RootContent } from 'hast';
-import { createCodeHighlighter } from '../code-highlight';
-import type { CodeHighlighter } from '../code-highlight';
-import type { EmbedRequest, LinkRequest, LinkTarget, RenderContext } from './render-context';
+import { createCodeHighlighter } from '../features/code-highlight';
+import type { CodeHighlighter } from '../features/code-highlight';
+import type { EmbedRequest, LinkRequest, LinkTarget, RenderContext } from '../features/markdown';
 
 let shared: Promise<CodeHighlighter> | null = null;
 export function testHighlighter(): Promise<CodeHighlighter> {

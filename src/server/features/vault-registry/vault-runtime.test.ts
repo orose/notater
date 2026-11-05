@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { ChangedEvent } from '../../../shared/api-types';
-import { testHighlighter } from '../markdown/test-support';
+import { testHighlighter } from '../../test-support/render-fixtures';
 import { createInlineMetaExtractor } from '../vault-index';
 import { createLruCache } from './lru-cache';
 import { createVaultRegistry } from './vault-registry';

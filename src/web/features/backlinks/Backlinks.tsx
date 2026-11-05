@@ -1,3 +1,4 @@
+import './backlinks.css';
 import { useId, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { Backlink, VaultId } from '../../../shared/api-types';

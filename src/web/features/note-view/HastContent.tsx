@@ -30,8 +30,8 @@ interface HastContentProps {
 type Props = Record<string, unknown> & { children?: ReactNode };
 
 function createComponents(vaultId: VaultId, bases: Readonly<Record<string, BaseResult>>): Partial<Components> {
-  const custom: Record<string, (props: Props) => ReactNode> = {
-    a: (props) => <ContentLink vaultId={vaultId} {...props} />,
+  const custom: Record<string, (props: never) => ReactNode> = {
+    a: (props: Props) => <ContentLink vaultId={vaultId} {...props} />,
     h2: ContentH2,
     h3: ContentH3,
     table: ContentTable,
@@ -42,11 +42,11 @@ function createComponents(vaultId: VaultId, bases: Readonly<Record<string, BaseR
     'vr-callout-body': CalloutBody,
     'vr-code': CodeBlock,
     'vr-mermaid': MermaidDiagram,
-    'vr-embed': (props) => <Embed vaultId={vaultId} {...props} />,
+    'vr-embed': (props: Props) => <Embed vaultId={vaultId} {...props} />,
     'vr-unsupported': Unsupported,
     'vr-sidenote': Sidenote,
     'vr-footnotes': Footnotes,
-    'vr-base': (props) => {
+    'vr-base': (props: Props) => {
       const id = String(props['data-base-id'] ?? '');
       const source = props['data-source-path'];
       const view = props['data-view'];

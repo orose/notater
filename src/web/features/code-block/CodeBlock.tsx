@@ -1,3 +1,4 @@
+import './code-block.css';
 import { Children, cloneElement, isValidElement, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Icon } from '../../shared/ui/Icon';
 

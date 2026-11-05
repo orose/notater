@@ -1,3 +1,4 @@
+import './mermaid.css';
 import { useEffect, useState } from 'react';
 import { Icon } from '../../shared/ui/Icon';
 import { UnsupportedCard } from '../../shared/ui/UnsupportedCard';

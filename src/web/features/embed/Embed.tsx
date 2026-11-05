@@ -1,3 +1,4 @@
+import './embed.css';
 import { Children, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { VaultId } from '../../../shared/api-types';

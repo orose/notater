@@ -36,7 +36,6 @@ export function ThemeProvider({ children }: { readonly children: ReactNode }) {
     }
     const onChange = (event: MediaQueryListEvent) => setSystemDark(event.matches);
     mq.addEventListener('change', onChange);
-    setSystemDark(mq.matches);
     return () => mq.removeEventListener('change', onChange);
   }, []);
 

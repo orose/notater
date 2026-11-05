@@ -1,0 +1,21 @@
+/* Embeds (designsystem §7.6). */
+.embed {
+  margin-block: var(--space-6) !important; padding: var(--space-4) var(--space-5) var(--space-5);
+  background: var(--color-surface); border: 1px solid var(--color-rule); border-radius: var(--radius-l); font-size: 0.94em;
+}
+.embed-head { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; padding-bottom: var(--space-3); margin-bottom: var(--space-4); border-bottom: 1px dashed var(--color-rule-strong); }
+.embed-head .open { margin-left: auto; font-family: var(--font-meta); font-size: 0.72rem; color: var(--color-muted) !important; text-decoration: none !important; }
+.embed-head .open:hover { color: var(--color-accent) !important; }
+.embed-body > * + * { margin-top: 0.8em; }
+.embed-body p { margin: 0; }
+.embed-body > :first-child { margin-top: 0 !important; }
+/* Overskrifter inni embeds degraderes og nummereres ikke. */
+.embed-body h1, .embed-body h2, .embed-body h3, .embed-body h4 {
+  counter-increment: none !important; margin: var(--space-4) 0 var(--space-2) !important; padding: 0 !important; border: 0 !important;
+  font-family: var(--font-display); font-size: var(--step-1); font-weight: var(--weight-h3); font-style: var(--style-h3); line-height: 1.2;
+}
+.embed-body h2::before { content: none !important; }
+.embed-empty { color: var(--color-muted); font-style: italic; }
+[data-type="tidsskrift"] .embed { border-radius: 0; background: transparent; border: 0; border-left: 1px solid var(--color-rule-strong); box-shadow: inset 3px 0 0 var(--color-bg), inset 4px 0 0 var(--color-rule-strong); padding-left: var(--space-5); }
+[data-type="tidsskrift"] .embed-head { border-bottom: 0; padding-bottom: 0; }
+.embed-state { margin-block: var(--space-5) !important; }

@@ -5,3 +5,5 @@ export { createVaultRuntime } from './vault-runtime';
 export type { VaultRuntime, VaultRuntimeDeps, VaultState, WatcherHandle } from './vault-runtime';
 export { createLruCache } from './lru-cache';
 export type { LruCache } from './lru-cache';
+export { createVaultsRoutes } from './vaults-routes';
+export type { VaultListSource } from './vaults-routes';
