@@ -82,3 +82,13 @@ Alle QA-forslag i README-QA §17 er **godkjent** slik de står, med disse presis
 - **PO-15** Maks embed-dybde 5. TOC vises fra og med 3 overskrifter.
 - **PO-16** CSP-header: ja.
 - **PO-17** E2E kjører mot en kopi av test-vault i temp-mappe med fixture-mtimes (globalSetup). Testene skriver aldri i repoet.
+
+## PO-avgjørelser etter UX-rapport (bølge 1)
+
+Designet (docs/design/) er **godkjent** som referanse for implementasjon.
+- **PO-18** Tredje typesett «Klartekst» (Atkinson Hyperlegible Next): ja, men lav prioritet (slice 6).
+- **PO-19** Initial og seksjonsnummer: global av/på-bryter i temavelgeren («Ornamentikk»), default på. Ikke per notat i v1.
+- **PO-20** Fotnoter som sidenoter på bred skjerm; faller tilbake til fotnoteliste nederst på smal skjerm/mobil.
+- **PO-21** Ingress hentes fra frontmatter `description`, deretter `summary`; ellers ingen ingress.
+- **PO-22** Skjulte properties i header: `aliases` og `tags` vises i egne dedikerte felt (ikke som property-rader); `cssclasses`, `publish`, `position` skjules alltid. Ekstra skjulte properties kan settes per vault i config (`hiddenProperties`).
+- **PO-23** Lesetid i header: ja.

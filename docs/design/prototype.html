@@ -153,7 +153,7 @@
   --leading-tight: 1.02;
   --leading-heading: 1.15;
   --leading-code: 1.6;
-  --tracking-display: -0.032em;
+  --tracking-display: -0.025em;
   --tracking-sc: 0.08em;
   --tracking-meta: 0.04em;
 
@@ -1013,6 +1013,7 @@ td code { overflow-wrap: normal; } /* renderer setter <wbr> etter punktum i lang
 .base-warn svg { color: var(--hue-amber); }
 
 .kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(13rem, 1fr); gap: var(--space-3); overflow-x: auto; padding-bottom: var(--space-2); scroll-snap-type: x proximity; }
+.kanban { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent); padding-right: 2.5rem; }
 .lane { scroll-snap-align: start; background: var(--color-surface); border-radius: var(--radius-m); padding: var(--space-2); min-height: 8rem; }
 [data-type="tidsskrift"] .lane { background: transparent; border-top: 1px solid var(--color-text); border-radius: 0; padding: var(--space-2) 0 0; }
 .lane-head { display: flex; align-items: baseline; justify-content: space-between; padding: var(--space-1) var(--space-2) var(--space-2); }
@@ -1024,6 +1025,9 @@ td code { overflow-wrap: normal; } /* renderer setter <wbr> etter punktum i lang
   background: var(--color-bg); border: 1px solid var(--color-rule); transition: border-color var(--dur-fast);
 }
 .card + .card { margin-top: var(--space-2); }
+.prose a.card { color: var(--color-text); text-decoration: none; }
+.prose ul.tags, [data-type] .prose ul.tags { list-style: none; padding-left: 0; margin: 0; }
+.prose ul.tags li + li { margin-top: 0; }
 .card:hover { border-color: var(--color-accent); }
 .card .t { display: block; font-weight: var(--weight-strong); line-height: 1.3; margin-bottom: 0.4em; }
 [data-type="tidsskrift"] .card { border-radius: 0; border-width: 0 0 1px; padding-inline: 0; background: transparent; }
@@ -1188,6 +1192,7 @@ dialog::backdrop { background: color-mix(in oklab, var(--color-bg) 55%, transpar
   .sidebar[data-open="true"] { transform: none; box-shadow: 0 0 0 100vmax color-mix(in oklab, var(--color-text) 28%, transparent); }
   .tree a, .tree .dir { padding-block: 0.4em; }
   .main { padding: 0 var(--gutter); }
+  html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
   .page { padding-top: var(--space-6); }
   [data-type="tidsskrift"] .prose h2::before { position: static; display: block; margin-bottom: var(--space-1); }
   [data-type="tidsskrift"] .code { margin-left: calc(-1 * var(--gutter)); margin-right: calc(-1 * var(--gutter)); border-left: 0; border-right: 0; }
@@ -1673,6 +1678,8 @@ SORT due ASC</pre></details>
   </form>
 </dialog>
 
+<div class="sr-only" aria-live="polite" id="live"></div>
+
 <dialog class="zoom-dialog" id="zoomDialog" aria-label="Diagram, forstørret">
   <div class="bar"><span class="label">Diagram</span><button class="icon-btn" data-close aria-label="Lukk"><svg class="i"><use href="#i-close"/></svg></button></div>
   <div id="zoomBody"></div>
@@ -1735,7 +1742,7 @@ SORT due ASC</pre></details>
   document.querySelectorAll('[data-copy]').forEach(function (b) { b.addEventListener('click', function () {
     var txt = b.closest('figure').querySelector('pre').innerText; var lbl = b.querySelector('span');
     (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).catch(function () {}).finally(function () {
-      b.dataset.state = 'copied'; lbl.textContent = 'Kopiert'; setTimeout(function () { b.dataset.state = ''; lbl.textContent = 'Kopier'; }, 1600);
+      b.dataset.state = 'copied'; lbl.textContent = 'Kopiert'; document.getElementById('live').textContent = 'Kopiert til utklippstavlen'; setTimeout(function () { b.dataset.state = ''; lbl.textContent = 'Kopier'; }, 1600);
     });
   }); });
 
