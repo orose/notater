@@ -8,6 +8,7 @@ import { createDocumentsRoutes } from '../features/documents';
 import { createEventsRoutes } from '../features/live-events';
 import type { EventsOptions } from '../features/live-events';
 import { createSearchRoutes } from '../features/search';
+import { createTagsRoutes } from '../features/tags';
 import { createTreeRoutes } from '../features/tree';
 import { findByDocPath } from '../features/vault-index';
 import { createVaultsRoutes } from '../features/vault-registry';
@@ -47,7 +48,17 @@ export function createApp(options: AppOptions): Hono {
       return s && { revision: s.revision, files: s.snapshot.files.values() };
     }),
   );
-  app.route('/', createDocumentsRoutes(state, options.bases ?? createPendingBaseEvaluator()));
+  app.route(
+    '/',
+    createDocumentsRoutes(state, options.bases ?? createPendingBaseEvaluator(), (id) => registry.get(id)?.hiddenProperties ?? []),
+  );
+  app.route(
+    '/',
+    createTagsRoutes(async (id) => {
+      const s = await state(id);
+      return s && { revision: s.revision, notes: s.snapshot.notes.values() };
+    }),
+  );
   app.route('/', createSearchRoutes(async (id) => (await registry.get(id)?.searchIndex()) ?? null));
   app.route(
     '/',
@@ -59,7 +70,7 @@ export function createApp(options: AppOptions): Hono {
     }),
   );
   app.route('/', createEventsRoutes((id) => registry.get(id), options.events));
-  app.all('/api/*', (c) => apiError(c, 404, 'BAD_REQUEST', `Ukjent API-rute: ${c.req.path}`));
+  app.all('/api/*', (c) => apiError(c, 404, 'NOT_FOUND', `Ukjent API-rute: ${c.req.path}`));
 
   app.use('/*', serveStatic({ root: options.webRoot }));
   // SPA-fallback: alle ikke-API-ruter får index.html slik at klient-ruting virker.

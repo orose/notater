@@ -12,9 +12,14 @@ TypeScript-fila; endringer gjøres i begge i samme leveranse.
   ```ts
   interface ApiError { error: { code: ApiErrorCode; message: string } }
   type ApiErrorCode = 'BAD_REQUEST' | 'VAULT_NOT_FOUND' | 'DOCUMENT_NOT_FOUND'
-                    | 'ASSET_NOT_FOUND' | 'FORBIDDEN' | 'INTERNAL';
+                    | 'ASSET_NOT_FOUND' | 'FORBIDDEN' | 'NOT_FOUND' | 'INTERNAL';
   ```
-  400 `BAD_REQUEST`, 403 `FORBIDDEN` (feil Host-header), 404 `*_NOT_FOUND`, 500 `INTERNAL`.
+  400 `BAD_REQUEST` (også tom `path` / NUL-byte), 403 `FORBIDDEN` (feil Host-header), 404 `*_NOT_FOUND`,
+  404 `NOT_FOUND` for ukjent API-rute (PO-24), 405 (kode `BAD_REQUEST`) for alt annet enn GET/HEAD (B1),
+  500 `INTERNAL` (f.eks. vaultet kunne ikke indekseres).
+- Alle svar har `Content-Security-Policy` (PO-16), `X-Content-Type-Options: nosniff` og
+  `Referrer-Policy: no-referrer`. `Host` må være `127.0.0.1` eller `localhost` (porten sjekkes ikke, så
+  Vite-proxyen virker).
 - Stier i query-parametre er **URL-enkodet** (`encodeURIComponent`). Bruk query-parametre – ikke path-
   segmenter – for vault-stier, så skråstreker, `#`, `%` og mellomrom aldri tolkes av ruteren.
 - Begreper:
@@ -51,8 +56,10 @@ interface VaultSummary {
   id: VaultId; name: string;
   status: 'not-indexed' | 'indexing' | 'ready' | 'error';
   noteCount: number | null; revision: Revision | null; errorMessage?: string;
+  indexMs?: number;   // tillegg: ms fra indekseringsstart til klar (AK17)
 }
 ```
+`noteCount` = antall `.md`-filer (inkl. excalidraw).
 Vault-stien på disk eksponeres **ikke**.
 
 ### `GET /api/vaults/:vaultId/tree`
@@ -79,7 +86,10 @@ interface NoteDocument {
   content: HastRoot;                                    // se HAST-kontrakt
   toc: TocEntry[];                                      // { depth, text, id }
   bases: Record<string, BaseResult>;                    // nøkkel = data-base-id i content
-  backlinks: Backlink[];                                // { source, sourceTitle, snippet, count }
+  backlinks: Backlink[];                                // { source, sourceTitle, snippet, count, fromProperty? }
+  frontmatterError?: string | null;                     // tillegg PO-27: null = gyldig/ingen frontmatter
+  warnings?: DocumentWarning[];                         // tillegg: { code: 'invalid-frontmatter', message }
+  wordCount?: number;                                   // tillegg PO-23: ord i brødteksten (lesetid)
 }
 
 interface BaseDocument {
@@ -89,6 +99,29 @@ interface BaseDocument {
 }
 ```
 `unsupported`-filer (canvas o.l.) returneres som `NoteDocument` med `content` = ett `vr-unsupported`-element.
+Bildevedlegg returneres som `NoteDocument` med `content` = ett `img` (via vedleggsruten); andre vedlegg som
+`vr-unsupported` (`data-kind="other"`).
+
+- `properties`: `cssclasses`, `publish` og `position` sendes aldri, heller ikke nøklene i vaultets
+  `hiddenProperties` (konfig, PO-22/PO-29). `tags` og `aliases` sendes fortsatt (klienten viser dem i egne felt).
+  Nestede objekter i frontmatter blir `{ type: 'string', value: <JSON> }`.
+- `backlinks`: distinkte kilder, inkl. embeds, markdown-lenker og lenker i properties (`fromProperty: true`,
+  PO-9). Selvlenker telles ikke. Sortert på kildens tittel.
+- `bases`: inntil slice 3 er hvert resultat `{ views: [], warnings: [{ code: 'not-implemented', … }] }`.
+
+### `GET /api/vaults/:vaultId/backlinks?path=<mål>` (tillegg, PO-28)
+«Lenket fra» – også for mål som ikke finnes («ikke skrevet ennå»-siden). `path` kan være en `DocPath` eller
+rå lenketekst (`data-vr-raw`, alias/anker fjernes). Brutte mål sammenlignes case-insensitivt, NFC, uten `.md`.
+```ts
+interface BacklinksResponse { vaultId; revision; path: string; exists: boolean; backlinks: Backlink[] }
+```
+
+### `GET /api/vaults/:vaultId/tags` (tillegg, PO-24)
+```ts
+interface TagsResponse { vaultId: VaultId; revision?: Revision; tags: { tag: string; count: number }[] }
+```
+Antall notater per tagg, case-insensitivt (visning = første skrivemåte), flest først. Nestede tagger telles
+for seg.
 
 ### `GET /api/vaults/:vaultId/search?q=<tekst>&limit=<n>`
 `limit` standard 20, maks 50. Tom `q` → tom liste. Felter vektes tittel > alias > innhold; prefiks- og
@@ -97,18 +130,22 @@ fuzzy-treff (MiniSearch).
 interface SearchResponse { query: string; revision: Revision; hits: SearchHit[] }
 interface SearchHit {
   path: DocPath; title: string; kind: 'note' | 'base';
-  matchedField: 'title' | 'alias' | 'content';
+  matchedField: 'title' | 'alias' | 'content' | 'tag';  // 'tag' = tillegg (taggsøk)
   alias?: string;                                       // når matchedField = 'alias'
   snippet?: { text: string; highlights: [number, number][] };  // når 'content'
   score: number;
 }
 ```
-Søk på `#tag` (starter med `#`) gir notater med taggen (inkl. nestede).
+Søk på `#tag` (starter med `#`) gir notater med taggen (inkl. nestede), case-insensitivt, med
+`matchedField: 'tag'`, `score: 1`, sortert på tittel. Søket er diakritika-ufølsomt (æ→ae, ø→o/oe, å→a/aa).
+Flere ord kombineres med AND, prefiks- og fuzzy-treff (ord > 4 tegn). Søkeindeksen bygges i bakgrunnen
+etter at vaultet er klart; første søk venter på den.
 
 ### `GET /api/vaults/:vaultId/assets?path=<DocPath>`
 Rå fil med riktig `Content-Type`. Kun indekserte filer med hvitelistet type (png, jpg/jpeg, gif, webp,
 avif, svg, bmp, ico). Headere: `Cache-Control: no-cache`, `ETag` (mtime+size), `X-Content-Type-Options: nosniff`,
-streng `Content-Security-Policy: sandbox …` (se ADR-005). 404 `ASSET_NOT_FOUND` ellers.
+streng `Content-Security-Policy: sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'`
+(se ADR-005). `If-None-Match` gir 304. 404 `ASSET_NOT_FOUND` ellers.
 
 ### `GET /api/events?vault=<VaultId>` – Server-Sent Events
 `Content-Type: text/event-stream`. Én tilkobling per åpen fane/vault.
@@ -118,7 +155,7 @@ streng `Content-Security-Policy: sandbox …` (se ADR-005). 404 `ASSET_NOT_FOUND
 | `ready` | `ReadyEvent { vaultId, revision }` | Rett etter tilkobling (etter at indeksen er klar). |
 | `changed` | `ChangedEvent { vaultId, revision, changes: { type: 'added'\|'changed'\|'removed', path: DocPath }[] }` | Etter hver debouncet endringsbunt. |
 
-I tillegg `: ping` (kommentar) hvert 25. s. Klienten: ved `changed` → `invalidateQueries(['vault', vaultId])`.
+I tillegg `: ping` (kommentar) hvert **15.** s (PO-31). `changes[].path` er `DocPath`. Klienten: ved `changed` → `invalidateQueries(['vault', vaultId])`.
 Ved `ready` med `revision` ≠ sist kjente → samme invalidering.
 
 ## Delte verdityper
@@ -189,6 +226,32 @@ GFM, `input[type=checkbox][disabled]` i oppgavelister, `mark` for `==markering==
 
 Eksterne lenker får i tillegg `rel="noopener noreferrer"` (klienten setter `target="_blank"`).
 
+Tillegg (bakoverkompatible, kan ignoreres av klienten):
+
+| Attributt | Når | Verdi |
+|---|---|---|
+| `data-vr-suggest`, `data-vr-suggest-title` | `unresolved` der et alias matcher (PO-7/PO-25) | `DocPath` og tittel – «Mente du *X*?» |
+| `data-vr-ambiguous` | `internal`, flere filer matchet (PO-8/PO-26) | antall kandidater, f.eks. `"2"` |
+| `data-vr-alternatives` | sammen med `data-vr-ambiguous` | JSON-liste med de andre kandidatenes `DocPath` |
+| `data-vr-anchor-missing` | `internal`, ankeret finnes ikke i målet | `"true"` (lenken går til toppen, README-QA regel 7) |
+| `data-vr-external-image` | `external` laget av et eksternt bilde (B10/PO-13) | `"true"` – vis som lenke med bildeikon |
+
+- Visningstekst uten alias: `mål › anker` (f.eks. `Kafka-grunnleggende › Partisjoner`, `[[#X]]` → `X`).
+- `data-vr-raw` er innholdet mellom klammene (`Finnes ikke|brutt`), for markdown-lenker `href`.
+- `a` uten gyldig `href` i rå HTML (f.eks. `javascript:`) blir `span`. Fotnotelenker
+  (`data-footnote-ref`/`-backref`) beholdes som de er.
+- `href` for blokkankre beholder `^` (`/v/test/x#^offset-def`); overskriftsankre er URL-enkodet.
+
+### Overskrifter, fotnoter, oppgaver
+
+- `h1`–`h6` har `id` (github-slugger, unike i dokumentet). Innebygd innhold (`vr-embed`) har ingen
+  overskrift- eller blokk-id-er (unngår duplikater).
+- Fotnoter (GFM og inline `^[…]`) blir `section.footnotes[data-footnotes]` med `h2#user-content-footnote-label`
+  = «Fotnoter» (PO-30); id-er/href-er har prefikset `user-content-`.
+- Oppgavelister: `li.task-list-item > input[type=checkbox][disabled]`. Egendefinert status (`[/]`, `[-]` …)
+  gir `checked` og `li[data-task="/"]`.
+- Enkelt linjeskift i tekst blir `br` (PO-14).
+
 ### Blokk-id
 
 Elementet som slutter med `^abc123` får `id="^abc123"` (markøren fjernes fra teksten).
@@ -200,8 +263,11 @@ Elementet som slutter med `^abc123` får `id="^abc123"` (markøren fjernes fra t
 | `data-callout-type` | normalisert type, små bokstaver: `note`, `tip`, `warning`, `info`, `danger`, `quote`, `example`, `question`, `success`, `failure`, `bug`, `abstract`, `todo` – eller ukjent (vises som `note`) |
 | `data-fold` | `none` \| `open` (`+`) \| `closed` (`-`) |
 
-Barn: første barn er `vr-callout-title` (inline-innhold; standardtittel = typen med stor forbokstav hvis
-ingen tittel er skrevet), deretter `vr-callout-body` med innholdet. Nøstede callouts er tillatt.
+Barn: første barn er `vr-callout-title` (inline-innhold), deretter `vr-callout-body` med innholdet
+(tom når calloutet bare har tittel). Nøstede callouts er tillatt. Aliaser normaliseres (`summary`→`abstract`
+osv., QA-CAL-01); ukjent type sendes uendret i små bokstaver. Standardtittel når ingen er skrevet er norsk
+(PO-14): Merk, Sammendrag, Info, Gjøremål, Tips, Fullført, Spørsmål, Advarsel, Feilet, Fare, Feil, Eksempel,
+Sitat; ukjent type → typen med stor forbokstav.
 
 ### `vr-code`
 
@@ -211,7 +277,10 @@ ingen tittel er skrevet), deretter `vr-callout-body` med innholdet. Nøstede cal
 | `data-title` | filnavn/tittel fra meta, valgfri |
 | `data-code` | rå kildetekst (til kopier-knappen) |
 
-Barn: Shikis `pre.shiki > code > span.line > span[style="color:var(--shiki-token-…)"]`.
+Barn: Shikis `pre.shiki > code > span.line > span[style="color:var(--shiki-token-…)"]` (`className` er en
+liste). Tittel leses fra `title="…"`, `title:…` eller et bart filnavn i meta. Ukjent språk → ren tekst.
+` ```dataview `/` ```dataviewjs ` blir `vr-unsupported[data-kind=dataview]`, ` ```tasks ` blir
+`vr-unsupported[data-kind=other][data-name=tasks]`.
 
 ### `vr-mermaid`
 
@@ -229,7 +298,11 @@ Barn: Shikis `pre.shiki > code > span.line > span[style="color:var(--shiki-token
 
 Barn ved `ok`: målets innhold (ferdig rendret HAST, samme kontrakt rekursivt). Ellers ingen barn.
 Bilde-embeds blir **ikke** `vr-embed`, men `img` med `src="/api/vaults/<id>/assets?path=…"`,
-`alt` og evt. `width`/`height` fra `![[bilde.png|300]]` / `|300x200`.
+`alt` (standard: filnavnet) og evt. `width`/`height` fra `![[bilde.png|300]]` / `|300x200` /
+`|alt|300`. Markdown-bilder `![alt](sti)` går samme vei (sti relativ til notatet, så vault-rot).
+Manglende bilde → `vr-embed[data-status=missing]` med `data-raw`. Eksterne bilder lastes aldri: de blir
+`a[data-vr-link=external][data-vr-external-image=true]`.
+Syklus: samme fil + samme anker allerede i stakken. Maks dybde **5** (PO-15). `![[x#Finnes ikke]]` → `missing`.
 Embed av en `.base`-fil blir `vr-base`.
 
 ### `vr-base`
@@ -244,6 +317,8 @@ Embed av en `.base`-fil blir `vr-base`.
 
 `data-kind` = `latex` \| `canvas` \| `excalidraw` \| `dataview` \| `other`; `data-source` = kildeteksten
 (avkortet til 2000 tegn). Vises som et diskret «ikke støttet»-kort.
+Tillegg: `data-inline="true"` for inline-LaTeX `$…$` (vises rått, PO-13); `data-name` = kodeblokkspråket for
+plugin-blokker; `data-target` = `DocPath` når kortet gjelder en fil (`![[Tegning.canvas]]`).
 
 ### Brutte lenker og embeds
 

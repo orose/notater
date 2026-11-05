@@ -104,3 +104,41 @@ Frontendens avvik 1–8 er **godkjent** (temascript som ekstern fil pga. CSP; br
 - **PO-29** `hiddenProperties` filtreres på serveren. Klienten får aldri skjulte properties.
 - **PO-30** Fotnoteoverskrift «Fotnoter» settes på serveren.
 - **PO-31** SSE `/api/events` holdes åpen med heartbeat (kommentar-linje hvert 15. s).
+
+## Backend (slice 0–2, 2026-11-05, backend-utvikler)
+
+| # | Beslutning / antakelse | Begrunnelse | Status |
+|---|---|---|---|
+| BE1 | Ny feature `markdown-syntax` (laveste lag) eier Obsidian-markdown → mdast. Både indeks og rendering bruker den. | ADR-004 krever samme parser for metadata og rendering; uten eget lag ville `vault-index` måttet avhenge av `markdown`. | Vedtatt |
+| BE2 | Indeksen parser med GFM **uten autolink-literal**; rendering bruker full GFM. | Autolink-literal kostet ~1/3 av parsetiden og påvirker kun eksterne URL-er (aldri vault-lenker). Test sikrer like wikilinks/tagger/blokk-id-er. | Vedtatt |
+| BE3 | Metadata-uttrekk i `worker_threads`-pool (alle kjerner, maks 8) ved første indeksering; inline ved inkrementelle endringer. | ADR-004-fallback: én tråd brukte 5,8 s på 2000 notater. | Vedtatt |
+| BE4 | Alle Obsidian-transformasjoner i mdast gjøres i **ett** rekursivt pass (ikke `findAndReplace`/`visit` per regel). | Målt ~1 s spart per 2000 notater. | Vedtatt |
+| BE5 | Pålitelige noder (wikilinks, tagger, kode, mermaid, base, ikke-støttet) går gjennom sanitizeren som tomme plassholdere `data-vr-ref="<nonce>-<n>"`, og bygges etter sanering fra en sidetabell. Nonce er tilfeldig per rendering. | Sanitizer-skjemaet kan holdes stramt (ingen `vr-*` eller `data-vr-link` tillatt før sanering); forfalskede plassholdere/`vr-*` i rå HTML fjernes. | Vedtatt |
+| BE6 | `%%kommentarer%%` fjernes i en kode-bevisst forbehandling; escapede `\[`, `\=`, `\#`, `\!` får en usynlig vaktpost slik at de ikke blir lenke/markering/tagg. Uavsluttet `%%` skjuler resten av fila. | micromark mister informasjon om escapes; Obsidian skjuler resten ved uavsluttet kommentar. | Antakelse (uavsluttet) |
+| BE7 | Lenkeoppløsning: wikilinks = eksakt fra rot → `./`/`../` relativt → sti-suffiks/filnavn; markdown-lenker = relativt til kilden → rot → suffiks. Flere treff: samme mappe → færrest mapper → alfabetisk (PO-8). Notatnavn matches før fullt filnavn, så `[[versjon 2.0.1 notater]]` og `[[Faktura.md]]` begge virker. | README-QA §4 regel 1–6, QA-IMG-08. | Vedtatt |
+| BE8 | Syklusvern: nøkkel = `fil#ankerId`. `![[#Annen seksjon]]` og `![[#Seksjon]]` i samme notat er lov så lenge samme seksjon ikke allerede rendres. | Naturlig regel; se åpent spørsmål BE-Q1. | Antakelse |
+| BE9 | Innebygd innhold (embeds) får ingen overskrift-/blokk-id-er. | Unngår duplikate id-er og feil scroll-spy. | Vedtatt |
+| BE10 | Søkeindeksen (MiniSearch) bygges i bakgrunnen etter at vaultet er «klart»; første søk venter. | Holder AK17 (indeks klar < 3 s); søk trengs ikke i første sidevisning. | Vedtatt |
+| BE11 | Shiki-grammatikker varmes opp i bakgrunnen etter indeksering (ett språk per event-loop-runde). | Første rendering av et kodetungt notat tok 300–370 ms pga. lat grammatikk-kompilering; nå ~150 ms. | Vedtatt |
+| BE12 | `@hono/node-server` startes med `overrideGlobalObjects: false`. | Ellers erstattes global `Response`, og Shikis WASM-lasting krasjer («reading 'body'»). | Vedtatt |
+| BE13 | Host-guard sjekker kun vertsnavn (`127.0.0.1`/`localhost`), ikke port. Manglende `Host` slippes gjennom. | Vite-proxyen sender `Host: 127.0.0.1:5173`; DNS-rebinding har alltid et fremmed vertsnavn. | Vedtatt |
+| BE14 | Frontmatter-datoer uten tidssone tolkes som UTC (`2026-11-05` → `2026-11-05T00:00:00.000Z`, `hasTime=false`). | Samme dag uansett serverens tidssone. | Antakelse |
+| BE15 | Excalidraw-notater (`*.excalidraw.md`) indekseres (lenker/tagger) men rendres som `vr-unsupported`, og er ikke med i søk. | QA-IDX-11, R5. | Antakelse |
+
+### Åpne spørsmål fra backend
+
+| # | Spørsmål | Forslag |
+|---|---|---|
+| BE-Q1 | QA-EMB-06 sier `![[#Seksjon]]` i `Selv-embed.md` skal gi syklus-kort, men embeden står **før** «## Seksjon», ikke inni den. Med regelen i BE8 rendres seksjonen (som selv embedder «Annen seksjon»). Skal *alle* selv-embeds av egne seksjoner stoppes? Da stoppes også `![[#Annen seksjon]]`, som fasiten sier er lov. | Behold BE8; QA justerer fasit/notat. |
+| BE-Q2 | QA-SOK-06: `HEMMELIG-KOMMENTAR` skal gi «ingen treff», men `README-QA.md` inneholder selv ordet (i inline-kode), så det treffes korrekt. | QA endrer fasit til «ingen treff utenom README-QA». |
+| BE-Q3 | `![[Oppgaver.base#Ukjent view]]`: `data-view` sendes uendret; avklaring av «første view + advarsel» (E2) skjer i slice 3. | – |
+
+## PO-avgjørelser etter backend-rapport og PO-akseptansetest (slice 0–2)
+
+- **PO-32 (BE-Q1)** Backends regel for selv-embed (samme fil + samme seksjon = syklus) godtas. QA justerer fasit QA-EMB-06.
+- **PO-33 (BE-Q2)** QA justerer fasit QA-SOK-06 (README-QA selv inneholder ordet).
+- **PO-34 (BE-Q3)** `![[X.base#Ukjent]]` → advarselskort «Viewet «Ukjent» finnes ikke» med liste over tilgjengelige views.
+- **PO-35 Dobbel tittel** Hvis notatets første innholdsblokk er en H1, brukes den som visningstittel og fjernes fra brødteksten. Ellers er tittelen filnavnet. Initialen (ornamentikk) gjelder første avsnitt etter dette.
+- **PO-36 Snarveier** Vis `⌘K` på macOS og `Ctrl K` ellers.
+- **PO-37 README** Mangler (AK18). Skal dekke: krav (Node ≥ 22.22, `.nvmrc`), `npm install && npm start`, peke på eget vault (config/CLI/env), flere vaults, snarveier, feilsøking.
+- **PO-38** Ubrukte pakker (`remark-frontmatter`, `mdast-util-find-and-replace`) fjernes.

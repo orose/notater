@@ -14,7 +14,7 @@ const bases = createPendingBaseEvaluator();
 
 beforeAll(async () => {
   const vault = createVaultRuntime(
-    { id: 'test', name: 'Testvault', root: join(process.cwd(), 'test-vault'), ignore: [] },
+    { id: 'test', name: 'Testvault', root: join(process.cwd(), 'test-vault'), ignore: [], hiddenProperties: [] },
     { highlighter: testHighlighter, createInitialExtractor: createInlineMetaExtractor, incrementalExtractor: createInlineMetaExtractor(), watch: null },
   );
   state = await vault.ready();
@@ -59,6 +59,8 @@ describe('getDocument – notat', () => {
     const doc = note('edge/Ugyldig frontmatter');
     expect(doc.properties).toEqual([]);
     expect(doc.tags).toEqual([]);
+    expect(doc.frontmatterError).toMatch(/kunne ikke leses/);
+    expect(note('Velkommen').frontmatterError).toBeNull();
     expect(doc.warnings).toEqual([{ code: 'invalid-frontmatter', message: expect.stringContaining('kunne ikke leses') }]);
   });
 
@@ -74,6 +76,14 @@ describe('getDocument – notat', () => {
         { type: 'link', target: null, display: 'Finnes ikke' },
       ],
     });
+  });
+
+  it('cssclasses skjules alltid, konfigurerte nøkler skjules (PO-22); ordtelling (PO-23)', () => {
+    expect(note('edge/Frontmatter-typer').properties.map((p) => p.key)).not.toContain('cssclasses');
+    const doc = getDocument(state, 'edge/Frontmatter-typer', bases, { hiddenProperties: ['URL'] }) as NoteDocument;
+    expect(doc.properties.map((p) => p.key)).not.toContain('url');
+    expect(note('edge/Tomt notat').wordCount).toBe(0);
+    expect(note('Velkommen').wordCount).toBeGreaterThan(10);
   });
 
   it('README-QA har 0 utgående lenker', () => {
@@ -96,7 +106,7 @@ describe('getDocument – lenker i Lenketest (README-QA §4)', () => {
     expect(byText('Avtale').properties.dataVrTarget).toBe('domene/avtale');
     expect(byText('Faktura.md').properties.dataVrTarget).toBe('domene/Faktura');
     expect(byText('Årsrapport (NFD)').properties.dataVrTarget).toBe('edge/Årsrapport (NFD)');
-    expect(byText('Bestilling').properties).toMatchObject({ dataVrLink: 'unresolved', dataVrSuggestion: 'domene/Ordre' });
+    expect(byText('Bestilling').properties).toMatchObject({ dataVrLink: 'unresolved', dataVrSuggest: 'domene/Ordre' });
     expect(byText('Slettet notat').properties.dataVrLink).toBe('unresolved');
     expect(byText('README').properties.dataVrLink).toBe('unresolved');
     expect(byText('Tegning.canvas').properties.dataVrTarget).toBe('Tegning.canvas');
@@ -104,7 +114,7 @@ describe('getDocument – lenker i Lenketest (README-QA §4)', () => {
   });
 
   it('tvetydig Kunde → domene/Kunde, merket (PO-8)', () => {
-    expect(byText('Kunde').properties).toMatchObject({ dataVrTarget: 'domene/Kunde', dataVrAmbiguous: 'true' });
+    expect(byText('Kunde').properties).toMatchObject({ dataVrTarget: 'domene/Kunde', dataVrAmbiguous: '2' });
   });
 
   it('ankre: overskrift, blokk, manglende anker (punkt 3, 6, 31)', () => {
@@ -149,6 +159,17 @@ describe('getDocument – tilbakelenker (README-QA §4 tabell)', () => {
   it('base har tilbakelenker (6)', () => {
     const doc = getDocument(state, 'Oppgaver.base', bases) as BaseDocument;
     expect(doc.backlinks).toHaveLength(6);
+  });
+});
+
+describe('getBacklinks (PO-28)', () => {
+  it('mål som ikke finnes: «Lenket fra»', async () => {
+    const { getBacklinks } = await import('./document-service');
+    const result = getBacklinks(state, 'Finnes ikke|brutt med alias');
+    expect(result).toMatchObject({ exists: false, path: 'Finnes ikke|brutt med alias' });
+    expect(result.backlinks.map((b) => b.source)).toContain('lenker/Lenketest');
+    expect(getBacklinks(state, 'domene/avtale')).toMatchObject({ exists: true });
+    expect(getBacklinks(state, 'domene/avtale').backlinks).toHaveLength(3);
   });
 });
 

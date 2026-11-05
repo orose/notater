@@ -2,6 +2,7 @@ import type { Root } from 'hast';
 import type {
   Backlink,
   BaseDocument,
+  BacklinksResponse,
   BaseResult,
   DocPath,
   DocumentResponse,
@@ -11,17 +12,29 @@ import type {
 import { isImageExtension } from '../assets';
 import type { BaseEvaluator } from '../bases';
 import type { RenderedNote } from '../embeds';
+import { unresolvedTargetKey } from '../links';
+import type { BacklinkEntry } from '../links';
+import { parseWikiLinkInner } from '../markdown-syntax';
 import { h } from '../markdown';
 import { toPropertyEntries } from '../properties';
 import { findByDocPath } from '../vault-index';
 import type { VaultFile } from '../vault-index';
 import type { VaultState } from '../vault-registry';
 
+/** PO-22: skjules alltid i egenskapspanelet. */
+export const ALWAYS_HIDDEN_PROPERTIES: readonly string[] = ['cssclasses', 'publish', 'position'];
+
+export interface DocumentOptions {
+  /** Ekstra skjulte property-nøkler fra vault-konfig (`hiddenProperties`). */
+  readonly hiddenProperties?: readonly string[];
+}
+
 /**
  * Bygger `DocumentResponse` for én sti (api.md). Oppslag kun via indeksen (ADR-005): ukjent sti → `null`.
  * Rendret notat caches per revisjon (A20).
  */
-export function getDocument(state: VaultState, docPath: DocPath, bases: BaseEvaluator): DocumentResponse | null {
+export function getDocument(state: VaultState, docPath: DocPath, bases: BaseEvaluator, options: DocumentOptions = {}): DocumentResponse | null {
+  const hidden = new Set([...ALWAYS_HIDDEN_PROPERTIES, ...(options.hiddenProperties ?? [])].map((k) => k.toLowerCase()));
   const file = findByDocPath(state.snapshot, docPath);
   if (!file) return null;
   const common = {
@@ -52,10 +65,14 @@ export function getDocument(state: VaultState, docPath: DocPath, bases: BaseEval
       ...common,
       aliases: note.meta.aliases,
       tags: note.meta.tags,
-      properties: toPropertyEntries(note.meta.frontmatter, (target) => state.links.resolve(target, file.filePath, 'wiki')?.file.docPath ?? null),
+      properties: toPropertyEntries(note.meta.frontmatter, (target) => state.links.resolve(target, file.filePath, 'wiki')?.file.docPath ?? null).filter(
+        (entry) => !hidden.has(entry.key.toLowerCase()),
+      ),
+      wordCount: countWords(note.meta.text),
       content: rendered.content,
       toc: rendered.toc,
       bases: Object.fromEntries(Object.entries(rendered.bases).map(([id, request]) => [id, bases.evaluate(request, vault)])),
+      frontmatterError: note.meta.frontmatterError,
       ...(warnings.length > 0 ? { warnings } : {}),
     } satisfies NoteDocument;
   }
@@ -90,11 +107,32 @@ function staticContent(state: VaultState, file: VaultFile): Root {
 }
 
 function toBacklinks(state: VaultState, file: VaultFile): Backlink[] {
-  return state.backlinks.get(file.filePath).map((entry) => ({
+  return toBacklinkDtos(state.backlinks.get(file.filePath));
+}
+
+function toBacklinkDtos(entries: readonly BacklinkEntry[]): Backlink[] {
+  return entries.map((entry) => ({
     source: entry.source.docPath,
     sourceTitle: entry.source.title,
     snippet: entry.snippet,
     count: entry.count,
     ...(entry.fromProperty ? { fromProperty: true } : {}),
   }));
+}
+
+/** Antall ord i brødteksten (for lesetid, PO-23). */
+export function countWords(text: string): number {
+  return text.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+}
+
+/**
+ * «Lenket fra» for et mål (PO-28). Finnes målet som dokument, gis dokumentets tilbakelenker; ellers
+ * kildene som har en brutt lenke dit. `target` kan være en DocPath eller rå lenketekst (`x#y|z`).
+ */
+export function getBacklinks(state: VaultState, target: string): BacklinksResponse {
+  const file = findByDocPath(state.snapshot, target);
+  const common = { vaultId: state.vaultId, revision: state.revision, path: target };
+  if (file) return { ...common, exists: true, backlinks: toBacklinks(state, file) };
+  const linkTarget = parseWikiLinkInner(target).target;
+  return { ...common, exists: false, backlinks: toBacklinkDtos(state.backlinks.getUnresolved(unresolvedTargetKey(linkTarget))) };
 }

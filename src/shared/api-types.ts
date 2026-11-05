@@ -39,6 +39,8 @@ export type ApiErrorCode =
   | 'DOCUMENT_NOT_FOUND'
   | 'ASSET_NOT_FOUND'
   | 'FORBIDDEN'
+  /** Tillegg (PO-24): ukjent API-rute (404). */
+  | 'NOT_FOUND'
   | 'INTERNAL';
 
 /** Alle feilsvar (4xx/5xx) har denne formen. */
@@ -194,6 +196,14 @@ export interface NoteDocument extends DocumentBase {
   readonly bases: Readonly<Record<string, BaseResult>>;
   /** Tillegg (bakoverkompatibelt): utelatt når det ikke er noe å advare om. */
   readonly warnings?: readonly DocumentWarning[];
+  /**
+   * Tillegg (PO-27, bakoverkompatibelt): norsk feilmelding når frontmatter er ugyldig YAML
+   * (da er `properties` og frontmatter-tagger tomme), ellers `null`. Alltid satt av serveren for
+   * markdown-notater; valgfri i typen for eldre klienter/fixtures.
+   */
+  readonly frontmatterError?: string | null;
+  /** Tillegg (bakoverkompatibelt): antall ord i brødteksten, for lesetid (PO-23). */
+  readonly wordCount?: number;
 }
 
 export interface BaseDocument extends DocumentBase {
@@ -277,6 +287,39 @@ export interface BaseResult {
   readonly views: readonly BaseView[];
   /** Advarsler på base-nivå (globale filtre, formler, parse-feil). */
   readonly warnings: readonly BaseWarning[];
+}
+
+// ---------------------------------------------------------------------------
+// GET /api/vaults/:vaultId/tags  (tillegg, PO-24)
+// ---------------------------------------------------------------------------
+
+export interface TagCount {
+  /** Uten «#», skrivemåten som først ble sett (tagger er case-insensitive, PO-10). */
+  readonly tag: string;
+  /** Antall notater med taggen. */
+  readonly count: number;
+}
+
+export interface TagsResponse {
+  readonly vaultId: VaultId;
+  /** Tillegg i forhold til frontendens forslag; kan ignoreres. */
+  readonly revision?: Revision;
+  /** Sortert: flest notater først, så alfabetisk (nb). */
+  readonly tags: readonly TagCount[];
+}
+
+// ---------------------------------------------------------------------------
+// GET /api/vaults/:vaultId/backlinks?path=<mål>  (tillegg, PO-28)
+// ---------------------------------------------------------------------------
+
+export interface BacklinksResponse {
+  readonly vaultId: VaultId;
+  readonly revision: Revision;
+  /** Målet slik det ble spurt etter (lenketekst uten alias/anker, eller DocPath). */
+  readonly path: string;
+  /** true hvis målet finnes som fil (da er `backlinks` lik dokumentets). */
+  readonly exists: boolean;
+  readonly backlinks: readonly Backlink[];
 }
 
 // ---------------------------------------------------------------------------

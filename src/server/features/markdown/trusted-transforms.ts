@@ -99,8 +99,8 @@ export function buildLink(target: LinkTarget, ctx: RenderContext, children: Elem
   if (target.status === 'unresolved') {
     const props: Properties = { dataVrLink: 'unresolved', dataVrRaw: raw };
     if (target.suggestion) {
-      props.dataVrSuggestion = target.suggestion.docPath;
-      props.dataVrSuggestionTitle = target.suggestion.title;
+      props.dataVrSuggest = target.suggestion.docPath;
+      props.dataVrSuggestTitle = target.suggestion.title;
     }
     return h('a', props, children);
   }
@@ -112,7 +112,8 @@ export function buildLink(target: LinkTarget, ctx: RenderContext, children: Elem
   if (target.anchorId) props.dataVrAnchor = target.anchorId;
   if (target.anchorMissing) props.dataVrAnchorMissing = 'true';
   if (target.alternatives.length > 0) {
-    props.dataVrAmbiguous = 'true';
+    // PO-26: antall kandidater (inkl. valgt mål).
+    props.dataVrAmbiguous = String(target.alternatives.length + 1);
     props.dataVrAlternatives = JSON.stringify(target.alternatives);
   }
   return h('a', props, children);

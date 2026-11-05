@@ -42,11 +42,11 @@ describe('wikilinks', () => {
 
   it('aliasforslag «Mente du X?» (PO-7)', () => {
     const a = first('[[Bestilling]]', 'a');
-    expect(a.properties).toMatchObject({ dataVrLink: 'unresolved', dataVrSuggestion: 'domene/Ordre', dataVrSuggestionTitle: 'Ordre' });
+    expect(a.properties).toMatchObject({ dataVrLink: 'unresolved', dataVrSuggest: 'domene/Ordre', dataVrSuggestTitle: 'Ordre' });
   });
 
   it('tvetydig lenke og manglende anker merkes', () => {
-    expect(first('[[Kunde]]', 'a').properties).toMatchObject({ dataVrAmbiguous: 'true', dataVrAlternatives: '["arkiv/2023/Kunde"]' });
+    expect(first('[[Kunde]]', 'a').properties).toMatchObject({ dataVrAmbiguous: '2', dataVrAlternatives: '["arkiv/2023/Kunde"]' });
     expect(first('[[Kafka#Mangler]]', 'a').properties).toMatchObject({ dataVrAnchorMissing: 'true' });
   });
 

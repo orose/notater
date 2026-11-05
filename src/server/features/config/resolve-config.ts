@@ -9,6 +9,8 @@ export interface VaultConfig {
   readonly root: string;
   /** Vault-relative mappeprefikser som ikke indekseres. */
   readonly ignore: readonly string[];
+  /** PO-22: property-nøkler som ikke sendes i dokument-API-et (i tillegg til de som alltid skjules). */
+  readonly hiddenProperties: readonly string[];
 }
 
 export interface AppConfig {
@@ -66,7 +68,7 @@ export function resolveConfig(sources: ConfigSources): AppConfig {
 
   if (cliVault) {
     const root = expand(cliVault, sources.cwd);
-    vaults = [...vaults.filter((v) => v.id !== CLI_VAULT_ID), { id: CLI_VAULT_ID, name: basename(root), root, ignore: [] }];
+    vaults = [...vaults.filter((v) => v.id !== CLI_VAULT_ID), { id: CLI_VAULT_ID, name: basename(root), root, ignore: [], hiddenProperties: [] }];
     defaultVaultId = CLI_VAULT_ID;
   }
   if (defaultVaultId !== undefined && !vaults.some((v) => v.id === defaultVaultId)) {
@@ -143,7 +145,7 @@ function parseVaults(raw: unknown, file: string, expand: (path: string) => strin
   return raw.map((entry, index) => {
     const where = `vaults[${index}] i ${file}`;
     if (!entry || typeof entry !== 'object') throw new ConfigError(`${where} må være et objekt.`);
-    const { id, name, path, ignore } = entry as Record<string, unknown>;
+    const { id, name, path, ignore, hiddenProperties } = entry as Record<string, unknown>;
     if (typeof id !== 'string' || !VAULT_ID.test(id)) {
       throw new ConfigError(`${where}: «id» må bestå av små bokstaver, tall og bindestrek (fikk ${JSON.stringify(id)}).`);
     }
@@ -154,8 +156,17 @@ function parseVaults(raw: unknown, file: string, expand: (path: string) => strin
     if (ignore !== undefined && (!Array.isArray(ignore) || ignore.some((i) => typeof i !== 'string'))) {
       throw new ConfigError(`${where}: «ignore» må være en liste med mappeprefikser.`);
     }
+    if (hiddenProperties !== undefined && (!Array.isArray(hiddenProperties) || hiddenProperties.some((i) => typeof i !== 'string'))) {
+      throw new ConfigError(`${where}: «hiddenProperties» må være en liste med property-navn.`);
+    }
     const root = expand(path);
-    return { id, name: (name as string | undefined) ?? id, root: isAbsolute(root) ? root : resolve(root), ignore: (ignore as string[] | undefined) ?? [] };
+    return {
+      id,
+      name: (name as string | undefined) ?? id,
+      root: isAbsolute(root) ? root : resolve(root),
+      ignore: (ignore as string[] | undefined) ?? [],
+      hiddenProperties: (hiddenProperties as string[] | undefined) ?? [],
+    };
   });
 }
 

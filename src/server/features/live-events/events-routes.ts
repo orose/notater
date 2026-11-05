@@ -11,13 +11,13 @@ export interface EventVault {
 export type EventSource = (vaultId: string) => EventVault | null;
 
 export interface EventsOptions {
-  /** ADR-004: `: ping` hvert 25. sekund. */
+  /** PO-31: `: ping` hvert 15. sekund. */
   readonly pingIntervalMs?: number;
 }
 
 /** `GET /api/events?vault=<id>` – SSE med `ready` og `changed`. */
 export function createEventsRoutes(source: EventSource, options: EventsOptions = {}): Hono {
-  const pingMs = options.pingIntervalMs ?? 25_000;
+  const pingMs = options.pingIntervalMs ?? 15_000;
   return new Hono().get('/api/events', async (c) => {
     const vaultId = c.req.query('vault') ?? '';
     const vault = source(vaultId);

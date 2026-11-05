@@ -2,9 +2,11 @@ import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type {
   ApiError,
+  BacklinksResponse,
   DocumentResponse,
   HealthResponse,
   SearchResponse,
+  TagsResponse,
   TreeResponse,
   VaultsResponse,
 } from '../../shared/api-types';
@@ -22,7 +24,7 @@ const get = (path: string, headers: Record<string, string> = HOST) => app.reques
 
 beforeAll(async () => {
   registry = createVaultRegistry(
-    { defaultVaultId: 'test', vaults: [{ id: 'test', name: 'Testvault', root: join(process.cwd(), 'test-vault'), ignore: [] }] },
+    { defaultVaultId: 'test', vaults: [{ id: 'test', name: 'Testvault', root: join(process.cwd(), 'test-vault'), ignore: [], hiddenProperties: [] }] },
     { highlighter: testHighlighter, createInitialExtractor: createInlineMetaExtractor, incrementalExtractor: createInlineMetaExtractor(), watch: null },
   );
   app = createApp({ webRoot: './dist/web', version: '0.0.0-test', registry });
@@ -65,6 +67,7 @@ describe('sikkerhet (AK20, ADR-005)', () => {
     const response = await get('/api/finnes-ikke');
     expect(response.status).toBe(404);
     expect(response.headers.get('Content-Type')).toContain('application/json');
+    expect(((await response.json()) as ApiError).error.code).toBe('NOT_FOUND');
   });
 });
 
@@ -108,6 +111,24 @@ describe('GET /document', () => {
     const response = await get('/api/vaults/test/document?path=Finnes%20ikke');
     expect(response.status).toBe(404);
     expect(((await response.json()) as ApiError).error.code).toBe('DOCUMENT_NOT_FOUND');
+  });
+});
+
+describe('GET /tags og /backlinks (PO-24, PO-28)', () => {
+  it('taggoversikt', async () => {
+    const body = (await (await get('/api/vaults/test/tags')).json()) as TagsResponse;
+    expect(body.vaultId).toBe('test');
+    const task = body.tags.find((t) => t.tag.toLowerCase() === 'task');
+    expect(task?.count).toBeGreaterThan(1);
+    const keys = body.tags.map((t) => t.tag.toLowerCase());
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('«Lenket fra» for mål som ikke finnes', async () => {
+    const body = (await (await get('/api/vaults/test/backlinks?path=Finnes%20ikke')).json()) as BacklinksResponse;
+    expect(body.exists).toBe(false);
+    expect(body.backlinks.length).toBeGreaterThan(0);
+    expect((await get('/api/vaults/test/backlinks')).status).toBe(400);
   });
 });
 

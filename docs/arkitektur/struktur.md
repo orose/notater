@@ -38,9 +38,17 @@ bibliotek), er `src/server/features/bases` allerede isolert nok til å flyttes u
     ├── server/
     │   ├── main.ts              oppstart: konfig → registry → app → listen(127.0.0.1)
     │   ├── app/
-    │   │   └── create-app.ts    komposisjonsrot: monterer feature-ruter, host-guard, statiske filer
+    │   │   ├── create-app.ts    komposisjonsrot: kobler feature-portene mot vault-registeret
+    │   │   └── security.ts      host-guard, kun-GET, CSP og andre sikkerhetsheadere
+    │   ├── shared/api-error.ts  felles ApiError-svar og ?path=-validering (brukes av alle rute-features)
+    │   ├── test-support/        delte testhjelpere (falsk RenderContext, HAST-spørringer) – kun for *.test.ts
     │   └── features/
     │       ├── config/          resolveConfig (fil/env/CLI), validering, AppConfig-typen
+    │       ├── markdown-syntax/ Obsidian-markdown → mdast (preprocess, wikilinks, tagger, blokk-id-er,
+    │       │                    LaTeX, frontmatter, seksjoner). Laveste lag; delt av indeks og rendering
+    │       ├── properties/      frontmatter → VaultValue (dokument-API, senere Bases)
+    │       ├── tree/            buildTree + GET /tree
+    │       ├── tags/            taggoversikt + GET /tags (PO-24)
     │       ├── vault-registry/  vaultId → VaultIndex (lat opprettelse, livssyklus, watcher per vault)
     │       ├── vault-index/     skanning, VaultFile, extractNoteMeta, inkrementelle oppdateringer
     │       ├── links/           resolveLink, ankeroppslag, backlink-graf
@@ -99,3 +107,15 @@ bibliotek), er `src/server/features/bases` allerede isolert nok til å flyttes u
 8. **Importer** uten filendelse, relative stier. Ingen `export default`, ingen `import * as` (ESLint feiler).
    Unntak: tredjepartsbiblioteker som kun har default export (f.eks. `import mermaid from 'mermaid'`) er OK
    å *importere*; regelen gjelder våre egne eksporter.
+
+## Tillegg fra backend (slice 0–2)
+
+- **Avhengighetsretning (server), faktisk:**
+  `config`, `markdown-syntax` ← `vault-index` ← `links` ← `markdown` ← `embeds` ← `search`/`properties` ←
+  `vault-registry` ← `documents`/`tree`/`tags`/`assets`/`live-events` (ruter) ← `app`.
+  `code-highlight`, `assets` (MIME-hviteliste) og `bases` (port) er blad-features.
+- **Rute-features definerer egne, smale porter** (`TreeSource`, `SearchSource`, `AssetSource`, `EventSource` …)
+  i stedet for å importere vault-registeret. `app/create-app.ts` kobler portene. Det hindrer sykler
+  (registeret bruker f.eks. `search` og `live-events`), og rutene kan testes med falske kilder.
+- **Metadata-uttrekk i worker-tråder** (`vault-index/meta-worker.ts`), jf. ADR-004. Workerne laster
+  TypeScript via tsx-loaderen (absolutt sti), så de virker både under `tsx`, `npm start` og Vitest.

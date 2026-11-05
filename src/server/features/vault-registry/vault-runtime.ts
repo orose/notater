@@ -26,6 +26,8 @@ export interface VaultState {
 export interface VaultRuntime {
   readonly id: string;
   readonly name: string;
+  /** Ekstra skjulte property-nøkler fra konfig (PO-22). */
+  readonly hiddenProperties: readonly string[];
   summary(): VaultSummary;
   /** Starter indeksering ved første kall (lat, A12) og venter til indeksen er klar. */
   ready(): Promise<VaultState>;
@@ -123,6 +125,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
   const runtime: VaultRuntime = {
     id: config.id,
     name: config.name,
+    hiddenProperties: config.hiddenProperties,
     summary: () => ({
       id: config.id,
       name: config.name,

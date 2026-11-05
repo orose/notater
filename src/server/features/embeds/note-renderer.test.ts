@@ -129,9 +129,9 @@ describe('createNoteRenderer – lenker', () => {
     const { renderer, file } = buildVault();
     const links = findAll(renderer.renderNote(file('Lenker.md')).content, byTag('a'));
     expect(links[0]!.properties).toMatchObject({ dataVrLink: 'internal', dataVrTarget: 'Kafka', dataVrAnchor: 'offset', href: '/v/test/Kafka#offset' });
-    expect(links[1]!.properties).toMatchObject({ dataVrLink: 'unresolved', dataVrSuggestion: 'Kafka' });
+    expect(links[1]!.properties).toMatchObject({ dataVrLink: 'unresolved', dataVrSuggest: 'Kafka' });
     expect(links[2]!.properties).toMatchObject({ dataVrLink: 'unresolved' });
-    expect(links[2]!.properties.dataVrSuggestion).toBeUndefined();
+    expect(links[2]!.properties.dataVrSuggest).toBeUndefined();
     expect(links[3]!.properties).toMatchObject({ dataVrTarget: 'Lenker', dataVrAnchor: 'annen', href: '/v/test/Lenker#annen' });
   });
 

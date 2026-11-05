@@ -30,7 +30,7 @@ afterEach(async () => {
 
 describe('createVaultRuntime', () => {
   it('indekserer lat og rapporterer status', async () => {
-    const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [] }, deps);
+    const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] }, deps);
     expect(vault.summary()).toMatchObject({ id: 'v', name: 'V', status: 'not-indexed', noteCount: null, revision: null });
     const state = await vault.ready();
     expect(state.revision).toBe(1);
@@ -40,13 +40,13 @@ describe('createVaultRuntime', () => {
   }, 30_000);
 
   it('feil ved ukjent rot gir status error med norsk melding', async () => {
-    const vault = createVaultRuntime({ id: 'x', name: 'X', root: join(root, 'finnes-ikke'), ignore: [] }, deps);
+    const vault = createVaultRuntime({ id: 'x', name: 'X', root: join(root, 'finnes-ikke'), ignore: [], hiddenProperties: [] }, deps);
     await expect(vault.ready()).rejects.toThrow(/Kunne ikke indeksere/);
     expect(vault.summary()).toMatchObject({ status: 'error', errorMessage: expect.stringMatching(/Kunne ikke indeksere/) });
   });
 
   it('inkrementell endring: ny revisjon, ny render-cache, hendelse og oppdatert søk og backlinks', async () => {
-    const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [] }, deps);
+    const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] }, deps);
     const first = await vault.ready();
     first.renderCache.set('A.md', { content: { type: 'root', children: [] }, toc: [], bases: {} });
     await vault.searchIndex();
@@ -68,7 +68,7 @@ describe('createVaultRuntime', () => {
   }, 30_000);
 
   it('ingen endring gir ingen ny revisjon', async () => {
-    const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [] }, deps);
+    const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] }, deps);
     await vault.ready();
     expect(await vault.applyChanges(['A.md'])).toEqual([]);
     expect((await vault.ready()).revision).toBe(1);
@@ -77,7 +77,7 @@ describe('createVaultRuntime', () => {
 
 describe('createVaultRegistry', () => {
   it('slår opp vaults på id', () => {
-    const registry = createVaultRegistry({ defaultVaultId: 'v', vaults: [{ id: 'v', name: 'V', root, ignore: [] }] }, deps);
+    const registry = createVaultRegistry({ defaultVaultId: 'v', vaults: [{ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] }] }, deps);
     expect(registry.get('v')?.name).toBe('V');
     expect(registry.get('nei')).toBeNull();
     expect(registry.list()).toHaveLength(1);

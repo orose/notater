@@ -7,7 +7,7 @@ const BASE_FILE = JSON.stringify({
   port: 4400,
   defaultVault: 'jobb',
   vaults: [
-    { id: 'jobb', name: 'Jobbnotater', path: '~/Documents/Jobb', ignore: ['Maler/'] },
+    { id: 'jobb', name: 'Jobbnotater', path: '~/Documents/Jobb', ignore: ['Maler/'], hiddenProperties: ['intern'] },
     { id: 'privat', path: './privat' },
   ],
 });
@@ -37,8 +37,8 @@ describe('resolveConfig – fil', () => {
       defaultVaultId: 'jobb',
       configFile: '/repo/vault-reader.config.json',
       vaults: [
-        { id: 'jobb', name: 'Jobbnotater', root: '/Users/kunde/Documents/Jobb', ignore: ['Maler/'] },
-        { id: 'privat', name: 'privat', root: '/repo/privat', ignore: [] },
+        { id: 'jobb', name: 'Jobbnotater', root: '/Users/kunde/Documents/Jobb', ignore: ['Maler/'], hiddenProperties: ['intern'] },
+        { id: 'privat', name: 'privat', root: '/repo/privat', ignore: [], hiddenProperties: [] },
       ],
     });
   });
@@ -70,12 +70,12 @@ describe('resolveConfig – overstyring (CLI > env > fil > standard)', () => {
     const config = resolveConfig(sources({ argv: ['--vault', '~/Notater'] }));
     expect(config.defaultVaultId).toBe('cli');
     expect(config.vaults.map((v) => v.id)).toEqual(['jobb', 'privat', 'cli']);
-    expect(config.vaults[2]).toEqual({ id: 'cli', name: 'Notater', root: '/Users/kunde/Notater', ignore: [] });
+    expect(config.vaults[2]).toEqual({ id: 'cli', name: 'Notater', root: '/Users/kunde/Notater', ignore: [], hiddenProperties: [] });
   });
 
   it('--vault uten konfigfil fungerer; relativ sti løses mot cwd', () => {
     const config = resolveConfig(sources({ files: {}, env: { VAULT_READER_VAULT: './mitt-vault' } }));
-    expect(config.vaults).toEqual([{ id: 'cli', name: 'mitt-vault', root: '/repo/mitt-vault', ignore: [] }]);
+    expect(config.vaults).toEqual([{ id: 'cli', name: 'mitt-vault', root: '/repo/mitt-vault', ignore: [], hiddenProperties: [] }]);
   });
 
   it('--vault-id velger standard-vault', () => {
@@ -101,5 +101,6 @@ describe('resolveConfig – validering (norske feilmeldinger)', () => {
   it('ukjent defaultVault', () => fails(withFile({ defaultVault: 'nei', vaults: [{ id: 'a', path: 'x' }] }), /defaultVault/));
   it('ugyldig port', () => fails({ argv: ['--port', '99999'] }, /port/i));
   it('ukjent --vault-id', () => fails({ argv: ['--vault-id', 'nei'] }, /nei/));
+  it('ugyldig hiddenProperties', () => fails(withFile({ vaults: [{ id: 'a', path: 'x', hiddenProperties: 'nei' }] }), /hiddenProperties/));
   it('ukjent flagg', () => fails({ argv: ['--host', '0.0.0.0'] }, /Ukjent/));
 });

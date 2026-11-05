@@ -57,6 +57,12 @@ describe('buildBacklinkIndex', () => {
     expect(props!.snippet).toBe('lenke: [[Kunde]]');
   });
 
+  it('brutte mål: «Lenket fra» case-insensitivt (PO-28)', () => {
+    expect(index.getUnresolved('finnes IKKE').map((b) => b.source.filePath)).toEqual(['lenker/Lenketest.md']);
+    expect(index.getUnresolved('Finnes ikke.md')).toHaveLength(1);
+    expect(index.getUnresolved('Kunde')).toEqual([]);
+  });
+
   it('tom liste for filer uten tilbakelenker', () => {
     expect(index.get('kode.md')).toEqual([]);
   });
