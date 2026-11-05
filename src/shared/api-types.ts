@@ -87,6 +87,11 @@ export interface VaultSummary {
   /** null før indeksering er ferdig. */
   readonly noteCount: number | null;
   readonly revision: Revision | null;
+  /**
+   * Tillegg (bakoverkompatibelt): tid i ms fra indekseringsstart til indeks klar (AK17).
+   * Satt når status er `ready`.
+   */
+  readonly indexMs?: number;
   /** Kun satt ved status `error`. */
   readonly errorMessage?: string;
 }
@@ -143,6 +148,19 @@ export interface Backlink {
   readonly snippet: string;
   /** Antall lenker fra kilden til dette dokumentet. */
   readonly count: number;
+  /**
+   * Tillegg (bakoverkompatibelt): true når minst én av lenkene står i en frontmatter-property
+   * (PO-9, vises som «fra egenskap»). Utelatt = kun lenker i brødtekst.
+   */
+  readonly fromProperty?: boolean;
+}
+
+/** Tillegg (bakoverkompatibelt): diskret advarsel om dokumentet, f.eks. ugyldig frontmatter. */
+export interface DocumentWarning {
+  /** `invalid-frontmatter` (QA-IDX-07). */
+  readonly code: string;
+  /** Norsk melding, f.eks. «Egenskapene kunne ikke leses …». */
+  readonly message: string;
 }
 
 export interface PropertyEntry {
@@ -174,6 +192,8 @@ export interface NoteDocument extends DocumentBase {
   readonly toc: readonly TocEntry[];
   /** Resultat for hvert `vr-base`-element i `content`, nøkkel = `data-base-id`. */
   readonly bases: Readonly<Record<string, BaseResult>>;
+  /** Tillegg (bakoverkompatibelt): utelatt når det ikke er noe å advare om. */
+  readonly warnings?: readonly DocumentWarning[];
 }
 
 export interface BaseDocument extends DocumentBase {
@@ -273,8 +293,11 @@ export interface SearchHit {
   readonly path: DocPath;
   readonly title: string;
   readonly kind: 'note' | 'base';
-  /** Hvilket felt som ga best treff. */
-  readonly matchedField: 'title' | 'alias' | 'content';
+  /**
+   * Hvilket felt som ga best treff. `tag` (tillegg, bakoverkompatibelt) = treff fra taggsøk
+   * (`q` starter med `#`); da er verken `alias` eller `snippet` satt.
+   */
+  readonly matchedField: 'title' | 'alias' | 'content' | 'tag';
   /** Satt når `matchedField === 'alias'`. */
   readonly alias?: string;
   /** Satt når `matchedField === 'content'`. */

@@ -1,0 +1,110 @@
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { SearchResponse } from '../../../shared/api-types';
+import { mockApi } from '../../test-support/mock-api';
+import { renderWithProviders } from '../../test-support/render-with-providers';
+import { pushRecent } from '../recent';
+import { SearchProvider } from './SearchProvider';
+import { useOpenSearch } from './use-open-search';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+const response: SearchResponse = {
+  query: 'idempot',
+  revision: 1,
+  hits: [
+    { path: 'domene/kafka/Idempotent produsent', title: 'Idempotent produsent', kind: 'note', matchedField: 'title', score: 9 },
+    { path: 'domene/Ordre', title: 'Ordre', kind: 'note', matchedField: 'alias', alias: 'Idempotens', score: 5 },
+    {
+      path: 'arkitektur/ADR-014',
+      title: 'ADR-014',
+      kind: 'note',
+      matchedField: 'content',
+      snippet: { text: '…vi velger idempotent produsent…', highlights: [[11, 21]] },
+      score: 2,
+    },
+  ],
+};
+
+function Opener({ query }: { readonly query?: string }) {
+  const open = useOpenSearch();
+  return (
+    <button type="button" onClick={() => open(query)}>
+      Søk
+    </button>
+  );
+}
+
+function setup(query?: string) {
+  mockApi({
+    '/api/vaults/test/search': response,
+    '/api/vaults': { vaults: [{ id: 'test', name: 'Test', status: 'ready', noteCount: 80, revision: 1 }], defaultVaultId: 'test' },
+  });
+  return renderWithProviders(
+    <SearchProvider vaultId="test">
+      <Opener query={query} />
+    </SearchProvider>,
+    { route: '/v/test/Velkommen' },
+  );
+}
+
+describe('CommandPalette', () => {
+  it('⌘K åpner, viser grupperte treff og Enter åpner valgt notat', async () => {
+    setup();
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    const dialog = screen.getByRole('dialog', { name: 'Hurtigsøk' });
+    const input = within(dialog).getByRole('combobox');
+    fireEvent.change(input, { target: { value: 'idempot' } });
+    await waitFor(() => expect(within(dialog).getAllByRole('option')).toHaveLength(3));
+    expect(within(dialog).getByText('Notater')).toBeInTheDocument();
+    expect(within(dialog).getByText('Innhold')).toBeInTheDocument();
+    expect(within(dialog).getByText('alias: Idempotens')).toBeInTheDocument();
+    expect(dialog.querySelector('.res .x mark')).toHaveTextContent('idempotent');
+
+    const options = within(dialog).getAllByRole('option');
+    expect(options[0]).toHaveAttribute('aria-selected', 'true');
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    expect(options[1]).toHaveAttribute('aria-selected', 'true');
+    expect(input).toHaveAttribute('aria-activedescendant', options[1]?.id);
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByTestId('location')).toHaveTextContent('/v/test/domene/Ordre');
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('åpnes med forhåndsutfylt spørring (tagg-klikk)', async () => {
+    setup('#kafka');
+    fireEvent.click(screen.getByRole('button', { name: 'Søk' }));
+    expect(screen.getByRole('combobox')).toHaveValue('#kafka');
+  });
+
+  it('viser «Nylig åpnet» før man skriver', () => {
+    pushRecent('test', { path: 'domene/Kunde', title: 'Kunde' });
+    setup();
+    fireEvent.keyDown(document, { key: 'k', ctrlKey: true });
+    const dialog = screen.getByRole('dialog', { name: 'Hurtigsøk' });
+    expect(within(dialog).getByText('Nylig åpnet')).toBeInTheDocument();
+    expect(within(dialog).getByRole('option', { name: /Kunde/ })).toBeInTheDocument();
+  });
+
+  it('viser tom tilstand ved ingen treff', async () => {
+    mockApi({ '/api/vaults/test/search': { query: 'zookeper', revision: 1, hits: [] }, '/api/vaults': { vaults: [], defaultVaultId: 'test' } });
+    renderWithProviders(
+      <SearchProvider vaultId="test">
+        <Opener />
+      </SearchProvider>,
+    );
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'zookeper' } });
+    expect(await screen.findByText('Ingen treff for «zookeper»')).toBeInTheDocument();
+  });
+
+  it('Esc (native close) lukker', async () => {
+    setup();
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    const dialog = screen.getByRole('dialog', { name: 'Hurtigsøk' }) as HTMLDialogElement;
+    act(() => dialog.close());
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});

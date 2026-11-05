@@ -4,6 +4,7 @@
  */
 export type { Highlight, ObsidianTag, UnsupportedKind, UnsupportedNode, WikiLink } from './obsidian-nodes';
 export { parseObsidianMarkdown } from './parse-markdown';
+export type { ParseOptions } from './parse-markdown';
 export { toInlineText, toPlainText } from './plain-text';
 export { collectHeadings, extractBlock, extractHeadingSection } from './sections';
 export type { HeadingInfo } from './sections';
@@ -11,3 +12,4 @@ export { parseFrontmatter, splitFrontmatter } from './frontmatter';
 export type { FrontmatterData, FrontmatterResult, FrontmatterSplit } from './frontmatter';
 export { lastAnchorSegment, parseImageAlias, parseWikiLinkInner } from './wikilink-syntax';
 export type { ImageAlias, WikiLinkParts } from './wikilink-syntax';
+export { isExternalUrl, parseMarkdownUrl } from './markdown-url';

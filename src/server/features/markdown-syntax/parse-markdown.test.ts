@@ -150,3 +150,18 @@ describe('parseObsidianMarkdown – linjeskift, oppgaver, fotnoter', () => {
     expect(nodesOfType(tree, 'footnoteDefinition')).toHaveLength(1);
   });
 });
+
+describe('parseObsidianMarkdown – indeksprofil', () => {
+  it('gir samme wikilinks, tagger og blokk-id-er som full profil', () => {
+    const src = '| a |\n|---|\n| [[A\\|b]] #t |\n\nSe https://x.no/#ikke og [[B#^c]] ^blokk\n\n- [ ] oppgave [[C]]';
+    const pick = (tree: Root) => {
+      const out: string[] = [];
+      visit(tree, (n) => {
+        if (n.type === 'wikiLink' || n.type === 'obsidianTag') out.push(`${n.type}:${n.value}`);
+        if (n.data?.vrBlockId) out.push(`id:${n.data.vrBlockId}`);
+      });
+      return out;
+    };
+    expect(pick(parseObsidianMarkdown(src, { profile: 'index' }))).toEqual(pick(parseObsidianMarkdown(src)));
+  });
+});

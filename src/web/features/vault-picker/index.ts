@@ -1,0 +1,1 @@
+export { VaultPicker } from './VaultPicker';
