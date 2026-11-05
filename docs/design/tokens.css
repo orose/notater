@@ -53,7 +53,7 @@
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --mono-ligatures: none;
 
-  --step-n2: clamp(0.7595rem, 0.7648rem + -0.0232vw, 0.7439rem);
+  --step-n2: clamp(0.7439rem, 0.7648rem - 0.0232vw, 0.7595rem);
   --step-n1: clamp(0.9115rem, 0.8979rem + 0.0603vw, 0.9521rem);
   --step-0: clamp(1.0938rem, 1.0521rem + 0.1852vw, 1.2188rem);
   --step-1: clamp(1.3125rem, 1.23rem + 0.3667vw, 1.56rem);
@@ -105,7 +105,7 @@
   --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
   --mono-ligatures: "calt" 1, "liga" 1;
 
-  --step-n2: clamp(0.6957rem, 0.701rem + -0.0233vw, 0.68rem);
+  --step-n2: clamp(0.68rem, 0.701rem - 0.0233vw, 0.6957rem);
   --step-n1: clamp(0.821rem, 0.8113rem + 0.043vw, 0.85rem);
   --step-0: clamp(0.9688rem, 0.9375rem + 0.1389vw, 1.0625rem);
   --step-1: clamp(1.1431rem, 1.0815rem + 0.2741vw, 1.3281rem);
@@ -410,7 +410,7 @@
 [data-palette="signal"][data-mode="light"] {
   --color-bg: #f6f6f3;
   --color-surface: #ffffff;
-  --color-sunken: #ececE8;
+  --color-sunken: #ecece8;
   --color-text: #111111;
   --color-muted: #545450;
   --color-faint: #8a8a84;
@@ -432,7 +432,7 @@
   --hue-plum: #6e3c74;
   --hue-grey: #545450;
   --shiki-foreground: #151515;
-  --shiki-background: #ececE8;
+  --shiki-background: #ecece8;
   --shiki-token-keyword: #b8350a;
   --shiki-token-string: #2f6b1f;
   --shiki-token-comment: #5c5c57;

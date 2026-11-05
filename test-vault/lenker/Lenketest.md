@@ -20,17 +20,19 @@ Alle lenkevarianter på ett sted. Fasit per lenke står i `README-QA.md` (seksjo
 
 ## Via aliaser i frontmatter
 
-11. [[Bestilling]] → `domene/Ordre.md`
-12. [[EDA]] → `teknisk/Arkitektur/Hendelsesdrevet arkitektur.md`
-13. [[Loom|virtuelle tråder]] → `teknisk/Java/Java 21 – virtuelle tråder.md`
-14. [[Domenekart]] → `domene/_MOC.md`
+Obsidian løser **ikke** lenker via aliaser (aliaser brukes til autofullføring og søk). Forventet utfall: se `README-QA.md` (punkt 11–14 og 18, PO-spørsmål L5).
+
+11. [[Bestilling]] – alias for `domene/Ordre.md`
+12. [[EDA]] – alias for `teknisk/Arkitektur/Hendelsesdrevet arkitektur.md`
+13. [[Loom|virtuelle tråder]] – alias for `teknisk/Java/Java 21 – virtuelle tråder.md`
+14. [[Domenekart]] – alias for `domene/_MOC.md`
 
 ## Store/små bokstaver
 
 15. [[kafka-grunnleggende]] → `Kafka-grunnleggende`
 16. [[ORDRE]] → `Ordre`
 17. [[Avtale]] → `domene/avtale.md`
-18. [[bestilling]] → alias, case-avvik → `Ordre`
+18. [[bestilling]] – alias med case-avvik
 
 ## Spesielle filnavn
 

@@ -67,3 +67,18 @@ Format: dato · hvem · beslutning/antakelse · begrunnelse · status. Status: *
 - **PO-4 AK17:** Måles fra serverstart til indeks klar (eksklusiv `vite build`). `npm start` skal gjenbruke eksisterende build hvis kilden er uendret.
 - **PO-5 Node:** README krever Node 22.22+ (eller 24 LTS), med `.nvmrc`. `npm start` sjekker versjon og gir forståelig feilmelding.
 - **PO-6 npm audit (minimatch via ESLint):** Akseptert, kun dev-avhengighet.
+
+## PO-avgjørelser etter QA-rapport (bølge 1)
+
+Alle QA-forslag i README-QA §17 er **godkjent** slik de står, med disse presiseringene:
+- **PO-7** `[[Alias]]` er brutt lenke (PO-1), men brutt-lenke-visningen viser hint «Mente du *X*?» når et alias matcher.
+- **PO-8** Tvetydig lenke: samme mappe først, deretter korteste sti; diskret tvetydighetsindikator.
+- **PO-9** Lenker i properties teller som backlinks.
+- **PO-10** Tagger er case-insensitive (`#Task` == `task`). Property-*verdier* er case-sensitive (`Todo` ≠ `todo`).
+- **PO-11** Kanban uten `sort` → sorter på `file.name`. Tomme `groupOrder`-kolonner vises.
+- **PO-12** `![[X.base#View]]` viser kun navngitt view.
+- **PO-13** Inline LaTeX vises rått. Eksterne bilder lastes ikke (B10) – vises som lenke med ikon.
+- **PO-14** Enkelt linjeskift → `<br>` (Obsidian-default). Callout-titler på norsk når tittel ikke er oppgitt.
+- **PO-15** Maks embed-dybde 5. TOC vises fra og med 3 overskrifter.
+- **PO-16** CSP-header: ja.
+- **PO-17** E2E kjører mot en kopi av test-vault i temp-mappe med fixture-mtimes (globalSetup). Testene skriver aldri i repoet.

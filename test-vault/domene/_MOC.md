@@ -12,7 +12,7 @@ Inngangsporten til domenemodellen for nettbutikken. Notatene her beskriver *begr
 ## Kjernebegreper
 
 - [[Kunde]] – hvem som handler
-- [[Ordre]] – hva som er bestilt (også kjent som [[Bestilling]])
+- [[Ordre]] – hva som er bestilt (også kjent som [[Ordre|Bestilling]] – slik Obsidian skriver alias-lenker)
 - [[Betaling]] og [[Faktura]]
 - [[Lager]] og [[Produktkatalog]]
 - [[avtale|Avtale]] – rammeavtaler for bedriftskunder

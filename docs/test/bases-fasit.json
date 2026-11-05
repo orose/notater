@@ -1,0 +1,448 @@
+{
+  "beskrivelse": "Maskinlesbar fasit for basene i test-vault/. Se docs/test/bases-fasit.md for regler og forutsetninger. Stier er relative til vault-roten, Unicode NFC.",
+  "forutsetninger": {
+    "tekstsortering": "Intl.Collator('nb',{sensitivity:'base',numeric:true})",
+    "manglendeVerdierSist": true,
+    "hasTagCaseInsensitiv": true,
+    "inFolderRekursiv": true,
+    "strengsammenligningCaseSensitiv": true,
+    "kanbanKortSortering": "file.name ASC",
+    "mtimeFixture": "docs/test/fixture-mtimes.json"
+  },
+  "Domene.base": {
+    "views": [
+      {
+        "name": "Domene",
+        "type": "table",
+        "kolonner": [
+          "file.name"
+        ],
+        "rader": [
+          "domene/delt/Adresse.md",
+          "domene/avtale.md",
+          "domene/Betaling.md",
+          "domene/Faktura.md",
+          "domene/Hendelseskatalog.md",
+          "domene/Kunde.md",
+          "domene/Lager.md",
+          "domene/Ordre.md",
+          "domene/Produktkatalog.md",
+          "domene/Ærendelogg.md",
+          "domene/Øyeblikksbilde.md",
+          "domene/Åpningstider.md"
+        ]
+      }
+    ],
+    "skalIkkeVises": [
+      "domene/_MOC.md",
+      "domene/ordre-opprettet.md",
+      "domene/betaling-mottatt.md",
+      "domene/delt/kunde-endret.md",
+      "domene/domenemodell.svg",
+      "domene-arkiv/Gammel kunde.md",
+      "arkiv/2023/Kunde.md"
+    ]
+  },
+  "Oppgaver.base": {
+    "globaltUtvalg": [
+      {
+        "sti": "oppgaver/Avklar (GDPR) sletting av kundedata.md",
+        "file.name": "Avklar (GDPR) sletting av kundedata",
+        "file.tags": [
+          "task",
+          "team"
+        ],
+        "status": "todo",
+        "priority": 1,
+        "due": "2026-11-18",
+        "formula.team": "Testgjengen"
+      },
+      {
+        "sti": "oppgaver/Bytt til records i DTO-er.md",
+        "file.name": "Bytt til records i DTO-er",
+        "file.tags": [
+          "Task"
+        ],
+        "status": "todo",
+        "priority": 3,
+        "due": "2026-11-25",
+        "formula.team": "Mine oppgaver"
+      },
+      {
+        "sti": "oppgaver/Dokumenter retry-strategi.md",
+        "file.name": "Dokumenter retry-strategi",
+        "file.tags": [
+          "task"
+        ],
+        "status": "done",
+        "priority": 3,
+        "due": "2026-10-01",
+        "formula.team": "Mine oppgaver"
+      },
+      {
+        "sti": "oppgaver/Evaluer Testcontainers.md",
+        "file.name": "Evaluer Testcontainers",
+        "file.tags": [
+          "task",
+          "team"
+        ],
+        "status": "blocked",
+        "priority": 2,
+        "due": "2026-12-01",
+        "formula.team": "Testgjengen"
+      },
+      {
+        "sti": "oppgaver/Fiks flaky test i BetalingServiceTest.md",
+        "file.name": "Fiks flaky test i BetalingServiceTest",
+        "file.tags": [
+          "task",
+          "team"
+        ],
+        "status": "done",
+        "priority": 1,
+        "due": "2026-10-15",
+        "formula.team": "Testgjengen"
+      },
+      {
+        "sti": "oppgaver/Gjennomgå ADR-er.md",
+        "file.name": "Gjennomgå ADR-er",
+        "file.tags": [
+          "task",
+          "team"
+        ],
+        "status": "done",
+        "priority": 2,
+        "due": "2026-09-30",
+        "formula.team": "Testgjengen"
+      },
+      {
+        "sti": "oppgaver/Lag dashboard i Grafana.md",
+        "file.name": "Lag dashboard i Grafana",
+        "file.tags": [
+          "task"
+        ],
+        "status": "Todo",
+        "priority": 2,
+        "due": "2026-11-10",
+        "formula.team": "Mine oppgaver"
+      },
+      {
+        "sti": "oppgaver/Migrer til Java 21.md",
+        "file.name": "Migrer til Java 21",
+        "file.tags": [
+          "task/backend"
+        ],
+        "status": "doing",
+        "priority": 1,
+        "due": "2026-11-08",
+        "formula.team": "Mine oppgaver"
+      },
+      {
+        "sti": "oppgaver/Oppdater README.md",
+        "file.name": "Oppdater README",
+        "file.tags": [
+          "task"
+        ],
+        "status": "done",
+        "priority": 3,
+        "due": "2026-10-20",
+        "formula.team": "Mine oppgaver"
+      },
+      {
+        "sti": "oppgaver/Oppgrader Spring Boot til 3.3.md",
+        "file.name": "Oppgrader Spring Boot til 3.3",
+        "file.tags": [
+          "task"
+        ],
+        "status": "todo",
+        "priority": 1,
+        "due": "2026-11-20",
+        "formula.team": "Mine oppgaver"
+      },
+      {
+        "sti": "prosjekter/2026/q4/backend/sprint-12/Optimaliser SQL-spørring.md",
+        "file.name": "Optimaliser SQL-spørring",
+        "file.tags": [
+          "task",
+          "team"
+        ],
+        "status": "doing",
+        "priority": 2,
+        "due": "2026-11-09",
+        "formula.team": "Testgjengen"
+      },
+      {
+        "sti": "oppgaver/Refaktorer logging.md",
+        "file.name": "Refaktorer logging",
+        "file.tags": [
+          "task"
+        ],
+        "status": "todo",
+        "priority": 10,
+        "due": "2026-12-15",
+        "formula.team": "Mine oppgaver"
+      },
+      {
+        "sti": "oppgaver/Rydd Kafka-konsumentgrupper.md",
+        "file.name": "Rydd Kafka-konsumentgrupper",
+        "file.tags": [
+          "team",
+          "task/backend"
+        ],
+        "status": "todo",
+        "priority": 2,
+        "due": "2026-11-15",
+        "formula.team": "Testgjengen"
+      },
+      {
+        "sti": "oppgaver/Sett opp Flyway-migreringer.md",
+        "file.name": "Sett opp Flyway-migreringer",
+        "file.tags": [
+          "task"
+        ],
+        "status": null,
+        "priority": 3,
+        "due": null,
+        "formula.team": "Mine oppgaver"
+      },
+      {
+        "sti": "oppgaver/Skriv integrasjonstest for ordre-API.md",
+        "file.name": "Skriv integrasjonstest for ordre-API",
+        "file.tags": [
+          "task",
+          "team"
+        ],
+        "status": "doing",
+        "priority": 2,
+        "due": "2026-11-12",
+        "formula.team": "Testgjengen"
+      },
+      {
+        "sti": "templates/sprint/Sprint-oppgave-mal.md",
+        "file.name": "Sprint-oppgave-mal",
+        "file.tags": [
+          "task"
+        ],
+        "status": "todo",
+        "priority": null,
+        "due": null,
+        "formula.team": "Mine oppgaver"
+      },
+      {
+        "sti": "oppgaver/Undersøk minnelekkasje.md",
+        "file.name": "Undersøk minnelekkasje",
+        "file.tags": [
+          "task"
+        ],
+        "status": "todo",
+        "priority": null,
+        "due": "2026-11-10",
+        "formula.team": "Mine oppgaver"
+      }
+    ],
+    "skalIkkeVises": [
+      "templates/Oppgave-mal.md",
+      "teknisk/Bash-tips.md",
+      ".trash/Slettet notat.md",
+      ".obsidian/plugins/dataview/README.md",
+      "teknisk/Arkitektur/ADR-001 Bruk Kafka.md",
+      "edge/Ugyldig frontmatter.md"
+    ],
+    "views": [
+      {
+        "name": "Huskeliste",
+        "type": "table",
+        "kolonner": [
+          "file.name",
+          "status",
+          "due"
+        ],
+        "kolonnebredder": {
+          "file.name": 553,
+          "status": 101
+        },
+        "grupper": [
+          {
+            "verdi": "Mine oppgaver",
+            "rader": [
+              "oppgaver/Migrer til Java 21.md",
+              "oppgaver/Oppgrader Spring Boot til 3.3.md",
+              "oppgaver/Lag dashboard i Grafana.md",
+              "oppgaver/Bytt til records i DTO-er.md",
+              "oppgaver/Sett opp Flyway-migreringer.md",
+              "oppgaver/Refaktorer logging.md",
+              "oppgaver/Undersøk minnelekkasje.md",
+              "templates/sprint/Sprint-oppgave-mal.md"
+            ]
+          },
+          {
+            "verdi": "Testgjengen",
+            "rader": [
+              "oppgaver/Avklar (GDPR) sletting av kundedata.md",
+              "prosjekter/2026/q4/backend/sprint-12/Optimaliser SQL-spørring.md",
+              "oppgaver/Skriv integrasjonstest for ordre-API.md",
+              "oppgaver/Rydd Kafka-konsumentgrupper.md",
+              "oppgaver/Evaluer Testcontainers.md"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Kanban",
+        "type": "kanban",
+        "kortfelter": [
+          "file.name",
+          "file.tags"
+        ],
+        "kolonner": [
+          {
+            "verdi": "todo",
+            "kort": [
+              "oppgaver/Avklar (GDPR) sletting av kundedata.md",
+              "oppgaver/Bytt til records i DTO-er.md",
+              "oppgaver/Oppgrader Spring Boot til 3.3.md",
+              "oppgaver/Refaktorer logging.md",
+              "oppgaver/Rydd Kafka-konsumentgrupper.md",
+              "templates/sprint/Sprint-oppgave-mal.md",
+              "oppgaver/Undersøk minnelekkasje.md"
+            ]
+          },
+          {
+            "verdi": "doing",
+            "kort": [
+              "oppgaver/Migrer til Java 21.md",
+              "prosjekter/2026/q4/backend/sprint-12/Optimaliser SQL-spørring.md",
+              "oppgaver/Skriv integrasjonstest for ordre-API.md"
+            ]
+          },
+          {
+            "verdi": "done",
+            "kort": [
+              "oppgaver/Dokumenter retry-strategi.md",
+              "oppgaver/Fiks flaky test i BetalingServiceTest.md",
+              "oppgaver/Gjennomgå ADR-er.md",
+              "oppgaver/Oppdater README.md"
+            ]
+          },
+          {
+            "verdi": "blocked",
+            "kort": [
+              "oppgaver/Evaluer Testcontainers.md"
+            ]
+          },
+          {
+            "verdi": "Todo",
+            "kort": [
+              "oppgaver/Lag dashboard i Grafana.md"
+            ]
+          },
+          {
+            "verdi": null,
+            "etikett": "(ingen)",
+            "kort": [
+              "oppgaver/Sett opp Flyway-migreringer.md"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Arkiv",
+        "type": "table",
+        "kolonner": [
+          "file.name",
+          "status",
+          "file.mtime"
+        ],
+        "rader": [
+          "oppgaver/Oppdater README.md",
+          "oppgaver/Fiks flaky test i BetalingServiceTest.md",
+          "oppgaver/Gjennomgå ADR-er.md",
+          "oppgaver/Dokumenter retry-strategi.md"
+        ]
+      }
+    ]
+  },
+  "Sprintoversikt.md": {
+    "blokker": [
+      {
+        "views": [
+          {
+            "name": "Kritisk",
+            "type": "table",
+            "kolonner": [
+              "file.name",
+              "status",
+              "due"
+            ],
+            "rader": [
+              "oppgaver/Oppgrader Spring Boot til 3.3.md",
+              "oppgaver/Avklar (GDPR) sletting av kundedata.md",
+              "oppgaver/Migrer til Java 21.md",
+              "oppgaver/Fiks flaky test i BetalingServiceTest.md"
+            ]
+          }
+        ]
+      },
+      {
+        "views": [
+          {
+            "name": "Team",
+            "type": "kanban",
+            "kortfelter": [
+              "file.name",
+              "due"
+            ],
+            "kolonner": [
+              {
+                "verdi": "todo",
+                "kort": [
+                  "oppgaver/Avklar (GDPR) sletting av kundedata.md",
+                  "oppgaver/Rydd Kafka-konsumentgrupper.md"
+                ]
+              },
+              {
+                "verdi": "doing",
+                "kort": [
+                  "prosjekter/2026/q4/backend/sprint-12/Optimaliser SQL-spørring.md",
+                  "oppgaver/Skriv integrasjonstest for ordre-API.md"
+                ]
+              },
+              {
+                "verdi": "blocked",
+                "kort": [
+                  "oppgaver/Evaluer Testcontainers.md"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "advarsler": [
+          "ukjent funksjon: file.finnesIkke",
+          "ukjent nøkkel: ukjentNøkkel",
+          "ukjent view-type: gallery"
+        ],
+        "views": [
+          {
+            "name": "Med feil",
+            "type": "table",
+            "kolonner": [
+              "file.name"
+            ],
+            "antallRader": 18,
+            "forutsetning": "B8: ukjent ledd ignoreres"
+          },
+          {
+            "name": "Ukjent view-type",
+            "type": "gallery",
+            "stottet": false
+          }
+        ]
+      },
+      {
+        "feil": "ugyldig YAML"
+      }
+    ]
+  }
+}

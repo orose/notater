@@ -7,7 +7,7 @@ tags: [start]
 Dette er et **syntetisk** Obsidian-vault for å teste vault-leseren. Innholdet er realistisk norsk teknisk dokumentasjon for en fiktiv nettbutikk (Java, Spring, Kafka, Postgres), men hvert notat har en *testhensikt*. Fasiten står i `README-QA.md` og `docs/test/bases-fasit.md`.
 
 > [!tip] Hvor starter jeg?
-> - Domenet: [[Domenekart]]
+> - Domenet: [[_MOC|Domenekart]]
 > - Oppgaver: [[Oppgaver.base]] og [[Sprintoversikt]]
 > - Teknisk: [[Kafka-grunnleggende]], [[Hendelsesdrevet arkitektur]], [[Spring Boot – konfigurasjon]]
 

@@ -87,7 +87,7 @@
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --mono-ligatures: none;
 
-  --step-n2: clamp(0.7595rem, 0.7648rem + -0.0232vw, 0.7439rem);
+  --step-n2: clamp(0.7439rem, 0.7648rem - 0.0232vw, 0.7595rem);
   --step-n1: clamp(0.9115rem, 0.8979rem + 0.0603vw, 0.9521rem);
   --step-0: clamp(1.0938rem, 1.0521rem + 0.1852vw, 1.2188rem);
   --step-1: clamp(1.3125rem, 1.23rem + 0.3667vw, 1.56rem);
@@ -139,7 +139,7 @@
   --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
   --mono-ligatures: "calt" 1, "liga" 1;
 
-  --step-n2: clamp(0.6957rem, 0.701rem + -0.0233vw, 0.68rem);
+  --step-n2: clamp(0.68rem, 0.701rem - 0.0233vw, 0.6957rem);
   --step-n1: clamp(0.821rem, 0.8113rem + 0.043vw, 0.85rem);
   --step-0: clamp(0.9688rem, 0.9375rem + 0.1389vw, 1.0625rem);
   --step-1: clamp(1.1431rem, 1.0815rem + 0.2741vw, 1.3281rem);
@@ -444,7 +444,7 @@
 [data-palette="signal"][data-mode="light"] {
   --color-bg: #f6f6f3;
   --color-surface: #ffffff;
-  --color-sunken: #ececE8;
+  --color-sunken: #ecece8;
   --color-text: #111111;
   --color-muted: #545450;
   --color-faint: #8a8a84;
@@ -466,7 +466,7 @@
   --hue-plum: #6e3c74;
   --hue-grey: #545450;
   --shiki-foreground: #151515;
-  --shiki-background: #ececE8;
+  --shiki-background: #ecece8;
   --shiki-token-keyword: #b8350a;
   --shiki-token-string: #2f6b1f;
   --shiki-token-comment: #5c5c57;
@@ -702,7 +702,9 @@ h1.title {
 /* ---------- Brødtekst ---------- */
 .prose { counter-reset: sec fig; hanging-punctuation: first allow-end last; }
 .prose > * + * { margin-top: var(--space-flow); }
-.prose p { margin: 0; text-wrap: pretty; hyphens: auto; -webkit-hyphens: auto; }
+.prose p, .callout-body, .embed-body { text-wrap: pretty; hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 8 4 3; -webkit-hyphenate-limit-before: 4; -webkit-hyphenate-limit-after: 3; }
+.prose p { margin: 0; }
+.prose a, .prose code, .prose .callout-sub { hyphens: manual; -webkit-hyphens: manual; }
 .prose strong { font-weight: var(--weight-strong); }
 .prose h2 {
   counter-increment: sec; position: relative;
@@ -716,8 +718,8 @@ h1.title {
 }
 .prose h2 + *, .prose h3 + * { margin-top: 0; }
 [data-type="tidsskrift"] .prose h2::before {
-  content: "§\2009" counter(sec); position: absolute; right: calc(100% + 1.1rem); top: 0.55em;
-  font-family: var(--font-sc); font-size: 1rem; letter-spacing: 0.04em; color: var(--color-accent); white-space: nowrap;
+  content: "§\2009" counter(sec); position: absolute; right: calc(100% + 1.1rem); top: 0.5em;
+  font-family: var(--font-body); font-style: italic; font-size: 1.05rem; color: var(--color-accent); white-space: nowrap;
 }
 [data-type="terminal"] .prose h2 { padding-top: var(--space-4); border-top: 1px solid var(--color-rule); }
 [data-type="terminal"] .prose h2::before {
@@ -847,7 +849,7 @@ figure { margin: 0; }
 [data-type="terminal"] .code pre code { counter-reset: ln; }
 [data-type="terminal"] .code pre .line::before {
   counter-increment: ln; content: counter(ln); display: inline-block; width: 2ch; margin-right: 1.4ch; text-align: right;
-  color: var(--color-faint); user-select: none;
+  color: var(--color-muted); user-select: none;
 }
 @media (max-width: 1099px) { [data-type="tidsskrift"] .code { margin-right: 0; } }
 
@@ -869,7 +871,9 @@ figure { margin: 0; }
 .callout-body { padding: 0 var(--space-4) var(--space-4) calc(var(--space-4) + 1.1em + 0.55em); }
 .callout-body > * + * { margin-top: 0.7em; }
 .callout-body p { margin: 0; }
-[data-type="tidsskrift"] .callout { border-radius: 0; border-left-width: 2px; }
+[data-type="tidsskrift"] .callout { border-radius: 0; border-left-width: 2px; background: transparent; }
+[data-type="tidsskrift"] .callout > summary, [data-type="tidsskrift"] .callout > .callout-title { padding-top: var(--space-1); padding-bottom: var(--space-2); }
+[data-type="tidsskrift"] .callout-body { padding-bottom: var(--space-2); }
 [data-type="tidsskrift"] .callout .callout-name { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: 0.05em; font-weight: 500; font-size: 1.02em; }
 [data-type="tidsskrift"] .callout .callout-name + .callout-sub { font-style: italic; font-weight: 400; color: var(--color-text); }
 [data-type="terminal"] .callout { border: 1px solid color-mix(in oklab, var(--c) 35%, var(--color-rule)); border-left: 3px solid var(--c); }
@@ -901,8 +905,8 @@ th:last-child, td:last-child { padding-right: 0; }
 thead th { font-weight: 500; border-bottom: 1px solid var(--color-text); }
 tbody tr + tr td { border-top: 1px solid var(--color-rule); }
 table { border-top: var(--rule-heavy) solid var(--color-text); border-bottom: var(--rule-heavy) solid var(--color-text); }
-td.num, th.num { text-align: right; }
-td code { white-space: nowrap; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+td code { overflow-wrap: normal; } /* renderer setter <wbr> etter punktum i lange kodespenn i tabeller */
 [data-type="tidsskrift"] thead th { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: 0.05em; font-size: 1.05em; }
 [data-type="terminal"] table { border: 1px solid var(--color-rule); font-size: 0.84em; }
 [data-type="terminal"] thead th { font-family: var(--font-mono); text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.08em; color: var(--color-muted); background: var(--color-surface); border-bottom: 1px solid var(--color-rule-strong); }
@@ -930,7 +934,7 @@ td code { white-space: nowrap; }
 /* ---------- Diagram (Mermaid) ---------- */
 .diagram { margin-block: var(--space-6) !important; position: relative; }
 .diagram-frame { border: 1px solid var(--color-rule); border-radius: var(--radius-l); padding: var(--space-5) var(--space-4); background: var(--color-surface); overflow-x: auto; }
-.diagram svg { display: block; width: 100%; height: auto; min-width: 520px; font-family: var(--font-ui); }
+.diagram-frame svg { display: block; width: 100%; height: auto; min-width: 520px; font-family: var(--font-ui); }
 .diagram figcaption { display: flex; align-items: baseline; gap: var(--space-3); margin-top: var(--space-2); font-size: var(--step-n1); color: var(--color-muted); }
 .diagram figcaption .zoom { margin-left: auto; }
 [data-type="tidsskrift"] .diagram { counter-increment: fig; }
@@ -1003,6 +1007,8 @@ td code { white-space: nowrap; }
 .status[data-s="doing"]::before { background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
 .status[data-s="done"] { color: var(--hue-green); }
 .status[data-s="done"]::before { background: currentColor; }
+.base-warn { padding: 0 var(--space-4) var(--space-3); }
+[data-type="tidsskrift"] .base-warn { padding-inline: 0; }
 .base-warn { display: flex; gap: 0.5em; align-items: baseline; margin: var(--space-3) 0 0; font-family: var(--font-meta); font-size: 0.72rem; color: var(--color-muted); }
 .base-warn svg { color: var(--hue-amber); }
 
@@ -1034,7 +1040,8 @@ td code { white-space: nowrap; }
 .backlinks-head h2 { margin: 0; font-family: var(--font-display); font-size: var(--step-2); font-weight: var(--weight-h2); line-height: 1.2; }
 [data-type="tidsskrift"] .backlinks-head h2 { font-style: italic; font-weight: 300; }
 .backlinks ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); }
-.backlinks li { display: grid; grid-template-columns: 1fr; gap: 0.2rem; }
+.backlinks li { display: grid; grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 0.2rem; }
+.bl-ctx code { font-family: var(--font-mono); font-size: 0.85em; }
 .bl-title { font-weight: var(--weight-strong); color: var(--color-text); text-decoration: none; font-size: 1em; }
 .bl-title:hover { color: var(--color-accent); }
 .bl-path { font-family: var(--font-meta); font-size: 0.72rem; color: var(--color-muted); }
@@ -1088,6 +1095,7 @@ dialog::backdrop { background: color-mix(in oklab, var(--color-bg) 55%, transpar
 .palette-input svg { color: var(--color-muted); width: 1.25em; height: 1.25em; }
 .palette-input input { flex: 1; min-width: 0; font: inherit; font-size: var(--step-1); color: var(--color-text); background: transparent; border: 0; outline: 0; }
 [data-type="tidsskrift"] .palette-input input { font-style: italic; }
+.palette-input input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
 .palette-input input::placeholder { color: var(--color-muted); }
 .results { max-height: min(55vh, 28rem); overflow-y: auto; padding: var(--space-2); margin: 0; list-style: none; }
 .results .grp { padding: var(--space-3) var(--space-3) var(--space-1); }
@@ -1177,7 +1185,8 @@ dialog::backdrop { background: color-mix(in oklab, var(--color-bg) 55%, transpar
     box-shadow: none;
   }
   [data-type="terminal"] .sidebar { background: var(--color-surface); }
-  .sidebar[data-open="true"] { transform: none; box-shadow: 0 0 0 100vmax color-mix(in oklab, var(--color-bg) 55%, transparent); }
+  .sidebar[data-open="true"] { transform: none; box-shadow: 0 0 0 100vmax color-mix(in oklab, var(--color-text) 28%, transparent); }
+  .tree a, .tree .dir { padding-block: 0.4em; }
   .main { padding: 0 var(--gutter); }
   .page { padding-top: var(--space-6); }
   [data-type="tidsskrift"] .prose h2::before { position: static; display: block; margin-bottom: var(--space-1); }
@@ -1344,8 +1353,8 @@ dialog::backdrop { background: color-mix(in oklab, var(--color-bg) 55%, transpar
 <rect class="mm-label-bg" x="172" y="81" width="66" height="14"/><text class="mm-label" x="205" y="91" text-anchor="middle">1 send</text>
 <rect class="mm-label-bg" x="166" y="102" width="78" height="14"/><text class="mm-label" x="205" y="112" text-anchor="middle" style="fill:var(--hue-red)">2 ack tapt</text>
 <rect class="mm-label-bg" x="172" y="123" width="66" height="14"/><text class="mm-label" x="205" y="133" text-anchor="middle">3 retry</text>
-<text class="mm-label" x="470" y="64" text-anchor="middle">skriv</text>
-<text class="mm-label" x="470" y="174" text-anchor="middle" style="fill:var(--hue-red)">skriv igjen</text>
+<text class="mm-label" x="450" y="60" text-anchor="end">skriv</text>
+<text class="mm-label" x="452" y="186" text-anchor="end" style="fill:var(--hue-red)">skriv igjen</text>
 </svg>
             </div>
             <figcaption><span>Retry uten idempotens gir to kopier i partisjonen.</span><button class="icon-btn zoom" data-zoom><svg class="i"><use href="#i-expand"/></svg>Forstørr</button></figcaption>
@@ -1372,22 +1381,23 @@ dialog::backdrop { background: color-mix(in oklab, var(--color-bg) 55%, transpar
             <figcaption class="code-head"><span class="file">OrdreProdusent.java</span><span class="lang">java</span><button class="copy" data-copy><svg class="i"><use href="#i-copy"/></svg><span>Kopier</span></button></figcaption>
             <pre class="shiki vault-leser" style="background-color:var(--shiki-background);color:var(--shiki-foreground)" tabindex="0"><code><span class="line"><span style="color:var(--shiki-token-keyword)">public</span><span style="color:var(--shiki-token-keyword)"> final</span><span style="color:var(--shiki-token-keyword)"> class</span><span style="color:var(--shiki-token-type)"> OrdreProdusent</span><span style="color:var(--shiki-token-keyword)"> implements</span><span style="color:var(--shiki-token-type)"> AutoCloseable</span><span style="color:var(--shiki-token-punctuation)"> {</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:var(--shiki-token-keyword)">    private</span><span style="color:var(--shiki-token-keyword)"> static</span><span style="color:var(--shiki-token-keyword)"> final</span><span style="color:var(--shiki-token-type)"> Logger</span><span style="color:var(--shiki-foreground)"> logg </span><span style="color:var(--shiki-token-operator)">=</span><span style="color:var(--shiki-foreground)"> LoggerFactory</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">getLogger</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">OrdreProdusent</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-foreground)">class</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
+<span class="line"><span style="color:var(--shiki-token-keyword)">    private</span><span style="color:var(--shiki-token-keyword)"> static</span><span style="color:var(--shiki-token-keyword)"> final</span><span style="color:var(--shiki-token-type)"> Logger</span><span style="color:var(--shiki-foreground)"> logg </span><span style="color:var(--shiki-token-operator)">=</span><span style="color:var(--shiki-token-function)"> getLogger</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-token-string)">"ordre"</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
 <span class="line"><span style="color:var(--shiki-token-keyword)">    private</span><span style="color:var(--shiki-token-keyword)"> final</span><span style="color:var(--shiki-token-type)"> KafkaProducer</span><span style="color:var(--shiki-token-punctuation)">&#x3C;</span><span style="color:var(--shiki-token-type)">String</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-type)"> String</span><span style="color:var(--shiki-token-punctuation)">></span><span style="color:var(--shiki-foreground)"> producer</span><span style="color:var(--shiki-token-punctuation)">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:var(--shiki-token-keyword)">    public</span><span style="color:var(--shiki-token-function)"> OrdreProdusent</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-token-type)">String</span><span style="color:var(--shiki-token-parameter)"> bootstrap</span><span style="color:var(--shiki-token-punctuation)">)</span><span style="color:var(--shiki-token-punctuation)"> {</span></span>
 <span class="line"><span style="color:var(--shiki-token-keyword)">        var</span><span style="color:var(--shiki-foreground)"> props </span><span style="color:var(--shiki-token-operator)">=</span><span style="color:var(--shiki-token-keyword)"> new</span><span style="color:var(--shiki-token-function)"> Properties</span><span style="color:var(--shiki-token-punctuation)">();</span></span>
-<span class="line"><span style="color:var(--shiki-foreground)">        props</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">put</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">ProducerConfig</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-foreground)">BOOTSTRAP_SERVERS_CONFIG</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-foreground)"> bootstrap</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
-<span class="line"><span style="color:var(--shiki-foreground)">        props</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">put</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">ProducerConfig</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-foreground)">ENABLE_IDEMPOTENCE_CONFIG</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-constant)"> true</span><span style="color:var(--shiki-token-punctuation)">);</span><span style="color:var(--shiki-token-comment);font-style:italic">   // eksplisitt</span></span>
-<span class="line"><span style="color:var(--shiki-foreground)">        props</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">put</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">ProducerConfig</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-foreground)">ACKS_CONFIG</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-string)"> "all"</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
-<span class="line"><span style="color:var(--shiki-foreground)">        props</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">put</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">ProducerConfig</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-foreground)">MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-number)"> 5</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
-<span class="line"><span style="color:var(--shiki-token-keyword)">        this</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-foreground)">producer </span><span style="color:var(--shiki-token-operator)">=</span><span style="color:var(--shiki-token-keyword)"> new</span><span style="color:var(--shiki-token-type)"> KafkaProducer</span><span style="color:var(--shiki-token-punctuation)">&#x3C;>(</span><span style="color:var(--shiki-foreground)">props</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-keyword)"> new</span><span style="color:var(--shiki-token-function)"> StringSerializer</span><span style="color:var(--shiki-token-punctuation)">(),</span><span style="color:var(--shiki-token-keyword)"> new</span><span style="color:var(--shiki-token-function)"> StringSerializer</span><span style="color:var(--shiki-token-punctuation)">());</span></span>
+<span class="line"><span style="color:var(--shiki-foreground)">        props</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">put</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">BOOTSTRAP_SERVERS_CONFIG</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-foreground)"> bootstrap</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
+<span class="line"><span style="color:var(--shiki-foreground)">        props</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">put</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">ENABLE_IDEMPOTENCE_CONFIG</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-constant)"> true</span><span style="color:var(--shiki-token-punctuation)">);</span><span style="color:var(--shiki-token-comment);font-style:italic">  // eksplisitt!</span></span>
+<span class="line"><span style="color:var(--shiki-foreground)">        props</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">put</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">ACKS_CONFIG</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-string)"> "all"</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
+<span class="line"><span style="color:var(--shiki-foreground)">        props</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">put</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-number)"> 5</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
+<span class="line"><span style="color:var(--shiki-token-keyword)">        var</span><span style="color:var(--shiki-foreground)"> ser </span><span style="color:var(--shiki-token-operator)">=</span><span style="color:var(--shiki-token-keyword)"> new</span><span style="color:var(--shiki-token-function)"> StringSerializer</span><span style="color:var(--shiki-token-punctuation)">();</span></span>
+<span class="line"><span style="color:var(--shiki-token-keyword)">        this</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-foreground)">producer </span><span style="color:var(--shiki-token-operator)">=</span><span style="color:var(--shiki-token-keyword)"> new</span><span style="color:var(--shiki-token-type)"> KafkaProducer</span><span style="color:var(--shiki-token-punctuation)">&#x3C;>(</span><span style="color:var(--shiki-foreground)">props</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-foreground)"> ser</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-foreground)"> ser</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
 <span class="line"><span style="color:var(--shiki-token-punctuation)">    }</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:var(--shiki-token-keyword)">    public</span><span style="color:var(--shiki-token-keyword)"> void</span><span style="color:var(--shiki-token-function)"> publiser</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-token-type)">Ordre</span><span style="color:var(--shiki-token-parameter)"> ordre</span><span style="color:var(--shiki-token-punctuation)">)</span><span style="color:var(--shiki-token-punctuation)"> {</span></span>
-<span class="line"><span style="color:var(--shiki-token-keyword)">        var</span><span style="color:var(--shiki-foreground)"> record </span><span style="color:var(--shiki-token-operator)">=</span><span style="color:var(--shiki-token-keyword)"> new</span><span style="color:var(--shiki-token-type)"> ProducerRecord</span><span style="color:var(--shiki-token-punctuation)">&#x3C;>(</span><span style="color:var(--shiki-token-string)">"ordre.v1"</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-foreground)"> ordre</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">id</span><span style="color:var(--shiki-token-punctuation)">(),</span><span style="color:var(--shiki-foreground)"> Json</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">skriv</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">ordre</span><span style="color:var(--shiki-token-punctuation)">));</span></span>
-<span class="line"><span style="color:var(--shiki-foreground)">        producer</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">send</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">record</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-punctuation)"> (</span><span style="color:var(--shiki-foreground)">meta</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-foreground)"> ex</span><span style="color:var(--shiki-token-punctuation)">)</span><span style="color:var(--shiki-token-keyword)"> -></span><span style="color:var(--shiki-token-punctuation)"> {</span></span>
-<span class="line"><span style="color:var(--shiki-token-keyword)">            if</span><span style="color:var(--shiki-token-punctuation)"> (</span><span style="color:var(--shiki-foreground)">ex </span><span style="color:var(--shiki-token-operator)">!=</span><span style="color:var(--shiki-token-constant)"> null</span><span style="color:var(--shiki-token-punctuation)">)</span><span style="color:var(--shiki-foreground)"> logg</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">error</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-token-string)">"Sending feilet for {}"</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-foreground)"> ordre</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">id</span><span style="color:var(--shiki-token-punctuation)">(),</span><span style="color:var(--shiki-foreground)"> ex</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
+<span class="line"><span style="color:var(--shiki-token-keyword)">        var</span><span style="color:var(--shiki-foreground)"> rec </span><span style="color:var(--shiki-token-operator)">=</span><span style="color:var(--shiki-token-keyword)"> new</span><span style="color:var(--shiki-token-type)"> ProducerRecord</span><span style="color:var(--shiki-token-punctuation)">&#x3C;>(</span><span style="color:var(--shiki-token-string)">"ordre.v1"</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-foreground)"> ordre</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">id</span><span style="color:var(--shiki-token-punctuation)">(),</span><span style="color:var(--shiki-token-function)"> tilJson</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">ordre</span><span style="color:var(--shiki-token-punctuation)">));</span></span>
+<span class="line"><span style="color:var(--shiki-foreground)">        producer</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">send</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-foreground)">rec</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-punctuation)"> (</span><span style="color:var(--shiki-foreground)">meta</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-foreground)"> ex</span><span style="color:var(--shiki-token-punctuation)">)</span><span style="color:var(--shiki-token-keyword)"> -></span><span style="color:var(--shiki-token-punctuation)"> {</span></span>
+<span class="line"><span style="color:var(--shiki-token-keyword)">            if</span><span style="color:var(--shiki-token-punctuation)"> (</span><span style="color:var(--shiki-foreground)">ex </span><span style="color:var(--shiki-token-operator)">!=</span><span style="color:var(--shiki-token-constant)"> null</span><span style="color:var(--shiki-token-punctuation)">)</span><span style="color:var(--shiki-foreground)"> logg</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">error</span><span style="color:var(--shiki-token-punctuation)">(</span><span style="color:var(--shiki-token-string)">"Feilet: {}"</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-foreground)"> ordre</span><span style="color:var(--shiki-token-punctuation)">.</span><span style="color:var(--shiki-token-function)">id</span><span style="color:var(--shiki-token-punctuation)">(),</span><span style="color:var(--shiki-foreground)"> ex</span><span style="color:var(--shiki-token-punctuation)">);</span></span>
 <span class="line"><span style="color:var(--shiki-token-punctuation)">        });</span></span>
 <span class="line"><span style="color:var(--shiki-token-punctuation)">    }</span></span>
 <span class="line"></span>
@@ -1400,10 +1410,10 @@ dialog::backdrop { background: color-mix(in oklab, var(--color-bg) 55%, transpar
             <table>
               <thead><tr><th>Innstilling</th><th>Krav</th><th>Standard ≥ 3.0</th><th>Merknad</th></tr></thead>
               <tbody>
-                <tr><td><code>enable.idempotence</code></td><td>true</td><td>true</td><td>PID og sekvensnumre</td></tr>
+                <tr><td><code>enable.<wbr>idempotence</code></td><td>true</td><td>true</td><td>PID og sekvensnumre</td></tr>
                 <tr><td><code>acks</code></td><td>all</td><td>all</td><td>Alle ISR må bekrefte</td></tr>
-                <tr><td><code>max.in.flight.requests.per.connection</code></td><td>≤ 5</td><td class="num">5</td><td>Brokeren husker fem batcher</td></tr>
-                <tr><td><code>retries</code></td><td>&gt; 0</td><td class="num">2 147 483 647</td><td>Begrens med <code>delivery.timeout.ms</code></td></tr>
+                <tr><td><code>max.in.flight.<wbr>requests.per.<wbr>connection</code></td><td>≤ 5</td><td class="num">5</td><td>Brokeren husker fem batcher</td></tr>
+                <tr><td><code>retries</code></td><td>&gt; 0</td><td class="num">2 147 483 647</td><td>Begrens med <code>delivery.<wbr>timeout.ms</code></td></tr>
               </tbody>
             </table>
           </div>
@@ -1414,16 +1424,16 @@ dialog::backdrop { background: color-mix(in oklab, var(--color-bg) 55%, transpar
           <figure class="code" data-lang="json">
             <figcaption class="code-head"><span class="file">ordre.v1 · eksempel</span><span class="lang">json</span><button class="copy" data-copy><svg class="i"><use href="#i-copy"/></svg><span>Kopier</span></button></figcaption>
             <pre class="shiki vault-leser" style="background-color:var(--shiki-background);color:var(--shiki-foreground)" tabindex="0"><code><span class="line"><span style="color:var(--shiki-token-punctuation)">{</span></span>
-<span class="line"><span style="color:var(--shiki-token-punctuation)">  "</span><span style="color:var(--shiki-token-property)">ordreId</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "ORD-2026-00417"</span><span style="color:var(--shiki-token-punctuation)">,</span></span>
-<span class="line"><span style="color:var(--shiki-token-punctuation)">  "</span><span style="color:var(--shiki-token-property)">type</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "OrdreOpprettet"</span><span style="color:var(--shiki-token-punctuation)">,</span></span>
-<span class="line"><span style="color:var(--shiki-token-punctuation)">  "</span><span style="color:var(--shiki-token-property)">tidspunkt</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "2026-11-03T13:58:12.481Z"</span><span style="color:var(--shiki-token-punctuation)">,</span></span>
-<span class="line"><span style="color:var(--shiki-token-punctuation)">  "</span><span style="color:var(--shiki-token-property)">kunde</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-punctuation)"> {</span><span style="color:var(--shiki-token-punctuation)"> "</span><span style="color:var(--shiki-token-property)">id</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-number)"> 81234</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-punctuation)"> "</span><span style="color:var(--shiki-token-property)">segment</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "bedrift"</span><span style="color:var(--shiki-token-punctuation)"> },</span></span>
-<span class="line"><span style="color:var(--shiki-token-punctuation)">  "</span><span style="color:var(--shiki-token-property)">linjer</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-punctuation)"> [</span></span>
-<span class="line"><span style="color:var(--shiki-token-punctuation)">    {</span><span style="color:var(--shiki-token-punctuation)"> "</span><span style="color:var(--shiki-token-property)">sku</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "KAF-PRO-01"</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-punctuation)"> "</span><span style="color:var(--shiki-token-property)">antall</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-number)"> 2</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-punctuation)"> "</span><span style="color:var(--shiki-token-property)">pris</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-number)"> 1490.00</span><span style="color:var(--shiki-token-punctuation)"> },</span></span>
-<span class="line"><span style="color:var(--shiki-token-punctuation)">    {</span><span style="color:var(--shiki-token-punctuation)"> "</span><span style="color:var(--shiki-token-property)">sku</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "KAF-SUP-12"</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-punctuation)"> "</span><span style="color:var(--shiki-token-property)">antall</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-number)"> 1</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-punctuation)"> "</span><span style="color:var(--shiki-token-property)">pris</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-number)"> 990.00</span><span style="color:var(--shiki-token-punctuation)"> }</span></span>
+<span class="line"><span style="color:var(--shiki-token-property)">  "ordreId"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "ORD-2026-00417"</span><span style="color:var(--shiki-token-punctuation)">,</span></span>
+<span class="line"><span style="color:var(--shiki-token-property)">  "type"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "OrdreOpprettet"</span><span style="color:var(--shiki-token-punctuation)">,</span></span>
+<span class="line"><span style="color:var(--shiki-token-property)">  "tidspunkt"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "2026-11-03T13:58:12.481Z"</span><span style="color:var(--shiki-token-punctuation)">,</span></span>
+<span class="line"><span style="color:var(--shiki-token-property)">  "kunde"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-punctuation)"> {</span><span style="color:var(--shiki-token-property)"> "id"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-number)"> 81234</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-property)"> "segment"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "bedrift"</span><span style="color:var(--shiki-token-punctuation)"> },</span></span>
+<span class="line"><span style="color:var(--shiki-token-property)">  "linjer"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-punctuation)"> [</span></span>
+<span class="line"><span style="color:var(--shiki-token-punctuation)">    {</span><span style="color:var(--shiki-token-property)"> "sku"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "KAF-PRO-01"</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-property)"> "antall"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-number)"> 2</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-property)"> "pris"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-number)"> 1490.00</span><span style="color:var(--shiki-token-punctuation)"> },</span></span>
+<span class="line"><span style="color:var(--shiki-token-punctuation)">    {</span><span style="color:var(--shiki-token-property)"> "sku"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-string)"> "KAF-SUP-12"</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-property)"> "antall"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-number)"> 1</span><span style="color:var(--shiki-token-punctuation)">,</span><span style="color:var(--shiki-token-property)"> "pris"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-number)"> 990.00</span><span style="color:var(--shiki-token-punctuation)"> }</span></span>
 <span class="line"><span style="color:var(--shiki-token-punctuation)">  ],</span></span>
-<span class="line"><span style="color:var(--shiki-token-punctuation)">  "</span><span style="color:var(--shiki-token-property)">betalt</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-constant)"> true</span><span style="color:var(--shiki-token-punctuation)">,</span></span>
-<span class="line"><span style="color:var(--shiki-token-punctuation)">  "</span><span style="color:var(--shiki-token-property)">kampanje</span><span style="color:var(--shiki-token-punctuation)">"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-constant)"> null</span></span>
+<span class="line"><span style="color:var(--shiki-token-property)">  "betalt"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-constant)"> true</span><span style="color:var(--shiki-token-punctuation)">,</span></span>
+<span class="line"><span style="color:var(--shiki-token-property)">  "kampanje"</span><span style="color:var(--shiki-token-punctuation)">:</span><span style="color:var(--shiki-token-constant)"> null</span></span>
 <span class="line"><span style="color:var(--shiki-token-punctuation)">}</span></span></code></pre>
           </figure>
 
@@ -1511,7 +1521,7 @@ dialog::backdrop { background: color-mix(in oklab, var(--color-bg) 55%, transpar
                 </table>
               </div>
             </div>
-            <p class="base-warn" style="padding:0 var(--space-4) var(--space-3)"><svg class="i"><use href="#i-warning"/></svg>1 ukjent nøkkel ignorert: <code>cardSize</code></p>
+            <p class="base-warn"><svg class="i"><use href="#i-warning"/></svg>1 ukjent nøkkel ignorert: <code>cardSize</code></p>
           </section>
 
           <div class="unsupported" role="note">
