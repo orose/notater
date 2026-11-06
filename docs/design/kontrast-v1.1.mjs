@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global process, console */
 /**
  * Kontrastkontroll for v1.1-tokens (designsystem §11.9).
  *
