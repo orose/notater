@@ -1,5 +1,5 @@
 import './note-view.css';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useLocation, useParams } from 'react-router';
 import type { BaseDocument, DocPath, NoteDocument, VaultId } from '../../../shared/api-types';
 import { assetUrl, baseName, docPathFromPathname, folderOf, isImagePath, isNotFound, useDocument, useVaults } from '../../shared/api';
@@ -12,6 +12,7 @@ import { splitLeadingTitle } from './leading-title';
 import { MissingNotePage } from './MissingNotePage';
 import { NoteHeader } from './NoteHeader';
 import { readingMinutes } from './prepare-content';
+import { useRailDimming } from './rail-overlap';
 import { useDocumentScroll } from './use-document-scroll';
 
 function useVaultName(vaultId: VaultId): string {
@@ -114,6 +115,8 @@ interface NotePageProps {
 function NotePage({ doc, display, busy }: NotePageProps) {
   const minutes = useMemo(() => readingMinutes(doc.content), [doc.content]);
   const outgoing = useMemo(() => collectOutgoingLinks(doc.content, doc.path), [doc.content, doc.path]);
+  const railRef = useRef<HTMLElement>(null);
+  useRailDimming(railRef, display.content);
   return (
     <>
       <main className="page" id="innhold" tabIndex={-1} aria-busy={busy || undefined}>
@@ -131,7 +134,7 @@ function NotePage({ doc, display, busy }: NotePageProps) {
           <Backlinks vaultId={doc.vaultId} title={doc.title} path={doc.path} backlinks={doc.backlinks} />
         </div>
       </main>
-      <aside className="rail" aria-label="På denne siden">
+      <aside className="rail" aria-label="På denne siden" ref={railRef}>
         <Toc entries={display.toc} />
         <OutgoingLinks vaultId={doc.vaultId} links={outgoing} />
         <RailBacklinks backlinks={doc.backlinks} />

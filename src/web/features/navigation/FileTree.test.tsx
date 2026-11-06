@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
@@ -7,9 +8,11 @@ import { countNotes } from './tree-utils';
 
 function renderTree(currentPath = 'domene/delt/Adresse') {
   return render(
-    <MemoryRouter>
+    <QueryClientProvider client={new QueryClient()}>
+<MemoryRouter>
       <FileTree vaultId="test" root={treeFixture.root} currentPath={currentPath} />
-    </MemoryRouter>,
+    </MemoryRouter>
+</QueryClientProvider>,
   );
 }
 

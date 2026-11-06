@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { DocPath, FileChange, FilePath } from '../../../shared/api-types';
 import { splitFrontmatter } from '../markdown-syntax';
 import type { MetaExtractor } from './meta-extractor';
@@ -13,6 +14,10 @@ export interface VaultFile extends VaultPathInfo {
   readonly size: number;
   readonly mtimeMs: number;
   readonly ctimeMs: number;
+  /** Inode fra disk (0/utelatt hvis ukjent). Brukes til å kjenne igjen omdøpinger (PO-49). */
+  readonly ino?: number;
+  /** SHA-1 av innholdet for tekstfiler (.md/.base) – kjenner igjen «slett + ny fil med samme innhold». */
+  readonly contentHash?: string;
 }
 
 export interface IndexedNote {
@@ -46,6 +51,11 @@ export async function buildSnapshot(
   }
   const textFiles = [...files.values()].filter((f) => f.ext === 'md' || f.kind === 'base');
   const texts = await mapWithConcurrency(textFiles, READ_CONCURRENCY, (f) => readVaultText(root, f.diskPath));
+  textFiles.forEach((file, i) => {
+    const withHash = { ...file, contentHash: hashText(texts[i]!) };
+    files.set(file.filePath, withHash);
+    textFiles[i] = withHash;
+  });
 
   const notes = new Map<FilePath, IndexedNote>();
   const baseSources = new Map<FilePath, string>();
@@ -86,7 +96,11 @@ export async function updateSnapshot(
   const baseSources = new Map(snapshot.baseSources);
   const changes: FileChange[] = [];
 
+  const removedFiles: VaultFile[] = [];
+  const addedFiles: VaultFile[] = [];
   const remove = (filePath: FilePath, docPath: DocPath): void => {
+    const old = files.get(filePath);
+    if (old) removedFiles.push(old);
     files.delete(filePath);
     notes.delete(filePath);
     baseSources.delete(filePath);
@@ -106,11 +120,13 @@ export async function updateSnapshot(
       }
       continue;
     }
-    const file = toVaultFile(scanned);
+    let file = toVaultFile(scanned);
     if (existing && existing.mtimeMs === file.mtimeMs && existing.size === file.size) continue;
     files.set(file.filePath, file);
     if (file.ext === 'md' || file.kind === 'base') {
       const text = await readVaultText(root, file.diskPath);
+      file = { ...file, contentHash: hashText(text) };
+      files.set(file.filePath, file);
       if (file.kind === 'base') baseSources.set(file.filePath, text);
       else {
         const [meta] = await extractor.extractMany([text]);
@@ -118,8 +134,11 @@ export async function updateSnapshot(
       }
     }
     changes.push({ type: existing ? 'changed' : 'added', path: file.docPath });
+    if (!existing) addedFiles.push(file);
   }
 
+  // PO-49: `removed` + `added` beholdes (bakoverkompatibelt); en omdøping får i tillegg `renamed`.
+  changes.push(...detectRenames(removedFiles, addedFiles));
   if (changes.length === 0) return { snapshot, changes };
   return { snapshot: { files, notes, baseSources }, changes };
 }
@@ -128,6 +147,29 @@ export async function updateSnapshot(
 export function findByDocPath(snapshot: VaultSnapshot, docPath: DocPath): VaultFile | null {
   const key = docPath.normalize('NFC');
   return snapshot.files.get(key) ?? snapshot.files.get(`${key}.md`) ?? null;
+}
+
+function hashText(text: string): string {
+  return createHash('sha1').update(text).digest('hex');
+}
+
+/**
+ * Par av slettet + ny fil i samme batch som er samme fil: samme inode (fs-omdøping/flytting) eller samme
+ * innhold (f.eks. kopi + sletting fra synkverktøy). Hver fil inngår i høyst ett par.
+ */
+export function detectRenames(removed: readonly VaultFile[], added: readonly VaultFile[]): FileChange[] {
+  const renames: FileChange[] = [];
+  const free = [...added];
+  const take = (match: (a: VaultFile) => boolean): VaultFile | null => {
+    const index = free.findIndex(match);
+    return index === -1 ? null : free.splice(index, 1)[0]!;
+  };
+  for (const old of removed) {
+    const sameInode = old.ino ? take((a) => a.ino === old.ino && a.size === old.size) : null;
+    const target = sameInode ?? (old.contentHash ? take((a) => a.contentHash === old.contentHash) : null);
+    if (target) renames.push({ type: 'renamed', path: target.docPath, from: old.docPath, to: target.docPath });
+  }
+  return renames;
 }
 
 function toVaultFile(scanned: ScannedFile): VaultFile {

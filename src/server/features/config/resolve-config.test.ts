@@ -34,6 +34,7 @@ describe('resolveConfig – fil', () => {
     const config = resolveConfig(sources());
     expect(config).toEqual({
       port: 4400,
+      lan: false,
       defaultVaultId: 'jobb',
       configFile: '/repo/vault-reader.config.json',
       vaults: [
@@ -78,6 +79,15 @@ describe('resolveConfig – overstyring (CLI > env > fil > standard)', () => {
     expect(config.vaults).toEqual([{ id: 'cli', name: 'mitt-vault', root: '/repo/mitt-vault', ignore: [], hiddenProperties: [] }]);
   });
 
+  it('lan (PO-3): standard av; fil < env < --lan', () => {
+    expect(resolveConfig(sources()).lan).toBe(false);
+    const withLan = { files: { '/repo/vault-reader.config.json': JSON.stringify({ ...JSON.parse(BASE_FILE), lan: true }) } };
+    expect(resolveConfig(sources(withLan)).lan).toBe(true);
+    expect(resolveConfig(sources({ ...withLan, env: { VAULT_READER_LAN: '0' } })).lan).toBe(false);
+    expect(resolveConfig(sources({ env: { VAULT_READER_LAN: 'true' } })).lan).toBe(true);
+    expect(resolveConfig(sources({ env: { VAULT_READER_LAN: '0' }, argv: ['--lan'] })).lan).toBe(true);
+  });
+
   it('--vault-id velger standard-vault', () => {
     expect(resolveConfig(sources({ argv: ['--vault-id', 'privat'] })).defaultVaultId).toBe('privat');
     expect(resolveConfig(sources({ env: { VAULT_READER_VAULT_ID: 'privat' } })).defaultVaultId).toBe('privat');
@@ -103,4 +113,6 @@ describe('resolveConfig – validering (norske feilmeldinger)', () => {
   it('ukjent --vault-id', () => fails({ argv: ['--vault-id', 'nei'] }, /nei/));
   it('ugyldig hiddenProperties', () => fails(withFile({ vaults: [{ id: 'a', path: 'x', hiddenProperties: 'nei' }] }), /hiddenProperties/));
   it('ukjent flagg', () => fails({ argv: ['--host', '0.0.0.0'] }, /Ukjent/));
+  it('ugyldig lan i fil', () => fails(withFile({ lan: 'ja', vaults: [{ id: 'a', path: 'x' }] }), /lan/));
+  it('ugyldig VAULT_READER_LAN', () => fails({ env: { VAULT_READER_LAN: 'kanskje' } }, /VAULT_READER_LAN/));
 });

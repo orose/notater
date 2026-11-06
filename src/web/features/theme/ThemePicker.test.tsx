@@ -30,6 +30,14 @@ describe('ThemePicker', () => {
     expect(within(dialog).getByText(/bytter lys\/mørk/)).toHaveTextContent('Ctrl . bytter lys/mørk');
   });
 
+  it('tre typesett, inkludert Klartekst (PO-18)', () => {
+    const { dialog } = renderPicker();
+    const group = within(dialog).getByRole('group', { name: 'Typografi' });
+    expect(within(group).getAllByRole('radio').map((r) => r.getAttribute('value'))).toEqual(['tidsskrift', 'terminal', 'klartekst']);
+    fireEvent.click(within(group).getByRole('radio', { name: /Klartekst/ }));
+    expect(root.dataset.type).toBe('klartekst');
+  });
+
   it('endringer gjelder umiddelbart og lagres', () => {
     const { dialog } = renderPicker();
     fireEvent.click(within(dialog).getByRole('radio', { name: 'Mørk' }));

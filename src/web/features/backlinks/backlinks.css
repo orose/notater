@@ -27,6 +27,12 @@
 
 /* PO-44: kompakt hopp-lenke i margen. */
 .rail-jump { font-family: var(--font-sc); font-size: var(--step-n1); letter-spacing: var(--tracking-sc); text-transform: lowercase; color: var(--color-muted); text-decoration: none; }
+[data-type="klartekst"] .rail-jump { text-transform: uppercase; font-size: 0.75rem; font-weight: 700; }
 [data-type="terminal"] .rail-jump { font-family: var(--font-meta); text-transform: uppercase; font-size: 0.72rem; }
 .rail-jump:hover { color: var(--color-accent); }
 .bl-prop { font-style: italic; }
+
+/* PO-48: margen tones ut mens en bred base-blokk ligger over den; tastaturfokus henter den fram igjen. */
+.rail { transition: opacity var(--dur-fast) var(--ease-out); }
+.rail[data-dimmed] { opacity: 0; pointer-events: none; }
+.rail[data-dimmed]:focus-within { opacity: 1; pointer-events: auto; }

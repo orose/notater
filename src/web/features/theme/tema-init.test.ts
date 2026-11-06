@@ -30,6 +30,7 @@ describe('tema-init.js', () => {
 
   it('URL-parametre overstyrer (for skjermbilder og deling)', () => {
     expect(runScript('?type=terminal&palette=fosfor&mode=dark')).toMatchObject({ type: 'terminal', palette: 'fosfor', mode: 'dark' });
+    expect(runScript('?type=klartekst')).toMatchObject({ type: 'klartekst' }); // PO-18
   });
 
   it('krasjer ikke på ugyldige verdier eller ødelagt lagring', () => {

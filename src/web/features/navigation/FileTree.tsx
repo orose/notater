@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 import type { DocPath, TreeFile, TreeFolder, VaultId } from '../../../shared/api-types';
 import { docUrl } from '../../shared/api';
 import { Icon } from '../../shared/ui/Icon';
 import { ancestorFolders, countNotes } from './tree-utils';
+import { PrefetchLink } from '../../shared/ui/PrefetchLink';
 
 interface FileTreeProps {
   readonly vaultId: VaultId;
@@ -106,7 +106,9 @@ export function FileLink({
 }) {
   const dim = file.kind === 'unsupported' || file.kind === 'asset';
   return (
-    <Link
+    <PrefetchLink
+      vaultId={vaultId}
+      docPath={file.kind === 'asset' ? undefined : file.path}
       to={docUrl(vaultId, file.path)}
       className={dim ? `file dim kind-${file.kind}` : `file kind-${file.kind}`}
       aria-current={current ? 'page' : undefined}
@@ -116,6 +118,6 @@ export function FileLink({
       {file.kind === 'base' ? <Icon name="base" className="file-icon" /> : null}
       <span className="file-name">{file.name}</span>
       {detail ? <span className="count">{detail}</span> : null}
-    </Link>
+    </PrefetchLink>
   );
 }

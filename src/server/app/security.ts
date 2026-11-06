@@ -24,11 +24,17 @@ export function hostnameOf(hostHeader: string): string {
   return trimmed.replace(/:\d+$/, '');
 }
 
-/** 403 når `Host` ikke er 127.0.0.1/localhost. Manglende Host (ikke-nettleser) slippes gjennom. */
-export function hostGuard(): MiddlewareHandler {
+/** Standard (AK20): bare 127.0.0.1 og localhost. */
+export const isLocalHostname = (hostname: string): boolean => ALLOWED_HOSTNAMES.has(hostname);
+
+/**
+ * 403 når `Host` ikke er et tillatt vertsnavn (standard: 127.0.0.1/localhost; i LAN-modus også maskinens
+ * egne IPv4-adresser og `<hostname>.local`, PO-3). Manglende Host (ikke-nettleser) slippes gjennom.
+ */
+export function hostGuard(isAllowed: (hostname: string) => boolean = isLocalHostname): MiddlewareHandler {
   return async (c, next) => {
     const host = c.req.header('host');
-    if (host !== undefined && !ALLOWED_HOSTNAMES.has(hostnameOf(host))) {
+    if (host !== undefined && !isAllowed(hostnameOf(host))) {
       return apiError(c, 403, 'FORBIDDEN', 'Ukjent vertsnavn. Bruk http://127.0.0.1 eller http://localhost.');
     }
     await next();

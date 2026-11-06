@@ -209,3 +209,24 @@ describe('aktivitetssporing (BUG-008)', () => {
     expect(state.renderCache.has('domene/Ordre.md')).toBe(true);
   });
 });
+
+describe('LAN-modus (PO-3): vertssjekken beskytter fortsatt', () => {
+  it('egne adresser og <hostname>.local slipper inn, fremmede navn får 403', async () => {
+    const lanApp = createApp({
+      webRoot: './dist/web',
+      version: '0',
+      registry,
+      isAllowedHost: (h) => ['127.0.0.1', 'localhost', '192.168.1.23', 'mac.local'].includes(h),
+    });
+    const status = async (host: string) => (await lanApp.request('/api/health', { headers: { host } })).status;
+    expect(await status('192.168.1.23:4317')).toBe(200);
+    expect(await status('mac.local:4317')).toBe(200);
+    expect(await status('localhost:4317')).toBe(200);
+    expect(await status('evil.example:4317')).toBe(403);
+    expect(await status('192.168.1.24:4317')).toBe(403);
+  });
+
+  it('uten LAN-modus er bare 127.0.0.1/localhost tillatt (som før)', async () => {
+    expect((await get('/api/health', { host: '192.168.1.23:4317' })).status).toBe(403);
+  });
+});

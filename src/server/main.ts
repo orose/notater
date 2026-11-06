@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { homedir, hostname, networkInterfaces } from 'node:os';
 import { serve } from '@hono/node-server';
 import { createApp } from './app/create-app';
+import { createLanHostCheck, lanUrls, lanWarning } from './app/lan';
 import { describeListenError } from './app/listen-error';
 import { createCodeHighlighter } from './features/code-highlight';
 import type { CodeHighlighter } from './features/code-highlight';
@@ -11,7 +12,8 @@ import { createInlineMetaExtractor, createWorkerMetaExtractor } from './features
 import { createVaultRegistry } from './features/vault-registry';
 import { createActivityTracker } from './shared/activity';
 
-const HOST = '127.0.0.1'; // AK20: aldri konfigurerbar.
+/** AK20: kun 127.0.0.1 – med mindre brukeren eksplisitt slår på LAN-modus (PO-3). */
+const LOCAL_HOST = '127.0.0.1';
 /** Bakgrunnsarbeid venter til det har vært stille så lenge etter siste API-forespørsel (BUG-008). */
 const QUIET_MS = 150;
 
@@ -51,11 +53,20 @@ const registry = createVaultRegistry(config, {
   log: (message) => console.log(message),
 });
 
-const app = createApp({ webRoot: './dist/web', version: process.env.npm_package_version ?? '0.0.0', registry, activity });
+const HOST = config.lan ? '0.0.0.0' : LOCAL_HOST;
+const app = createApp({
+  webRoot: './dist/web',
+  version: process.env.npm_package_version ?? '0.0.0',
+  registry,
+  activity,
+  // LAN-modus: vern mot DNS-rebinding beholdes, men maskinens egne adresser og <hostname>.local godtas.
+  ...(config.lan ? { isAllowedHost: createLanHostCheck(() => networkInterfaces(), () => hostname()) } : {}),
+});
 
 // overrideGlobalObjects: false – ellers erstattes global `Response`, som Shikis WASM-lasting trenger.
 const server = serve({ fetch: app.fetch, hostname: HOST, port: config.port, overrideGlobalObjects: false }, (info) => {
-  console.log(`Vault-leser kjører på http://${HOST}:${info.port}`);
+  console.log(`Vault-leser kjører på http://${LOCAL_HOST}:${info.port}`);
+  if (config.lan) console.warn(lanWarning(lanUrls(networkInterfaces(), hostname(), info.port)));
 });
 
 // Opptatt port o.l.: kort norsk melding og exit 1 i stedet for en ubehandlet stakk.

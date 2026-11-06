@@ -1,7 +1,7 @@
-import { Link } from 'react-router';
 import type { VaultId } from '../../../shared/api-types';
 import { docUrl } from '../../shared/api';
 import type { OutgoingLink } from './outgoing-links';
+import { PrefetchLink } from '../../shared/ui/PrefetchLink';
 
 export function OutgoingLinks({ vaultId, links }: { readonly vaultId: VaultId; readonly links: readonly OutgoingLink[] }) {
   if (links.length === 0) return null;
@@ -12,7 +12,9 @@ export function OutgoingLinks({ vaultId, links }: { readonly vaultId: VaultId; r
         {links.map((link) =>
           link.target ? (
             <li key={link.target}>
-              <Link to={docUrl(vaultId, link.target)}>{link.title}</Link>
+              <PrefetchLink vaultId={vaultId} docPath={link.target} to={docUrl(vaultId, link.target)}>
+                {link.title}
+              </PrefetchLink>
               <small>
                 {link.count === 1 ? '1 gang' : `${link.count} ganger`}
                 {link.embed ? ' · embed' : ''}

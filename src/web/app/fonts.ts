@@ -12,3 +12,8 @@ import '@fontsource/ibm-plex-mono/latin-500.css';
 import '@fontsource-variable/schibsted-grotesk/wght.css';
 import '@fontsource-variable/jetbrains-mono/wght.css';
 import '@fontsource-variable/jetbrains-mono/wght-italic.css';
+// PO-18 «Klartekst»
+import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
+import '@fontsource-variable/atkinson-hyperlegible-next/wght-italic.css';
+import '@fontsource-variable/atkinson-hyperlegible-mono/wght.css';
+import '@fontsource-variable/atkinson-hyperlegible-mono/wght-italic.css';

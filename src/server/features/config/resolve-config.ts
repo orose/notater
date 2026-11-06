@@ -15,6 +15,11 @@ export interface VaultConfig {
 
 export interface AppConfig {
   readonly port: number;
+  /**
+   * PO-3: bind 0.0.0.0 slik at leseren nås fra andre enheter på hjemmenettet (f.eks. mobilen).
+   * Standard `false` (kun 127.0.0.1, AK20). Kilder: `--lan` > `VAULT_READER_LAN` > `"lan"` i konfigfila.
+   */
+  readonly lan: boolean;
   readonly defaultVaultId: string;
   readonly vaults: readonly VaultConfig[];
   /** Konfigfila som ble brukt, `null` hvis kun CLI/env. */
@@ -84,16 +89,34 @@ export function resolveConfig(sources: ConfigSources): AppConfig {
   }
 
   const port = parsePort(args.port ?? sources.env.VAULT_READER_PORT ?? file?.port ?? DEFAULT_PORT);
-  return { port, defaultVaultId: defaultVaultId!, vaults, configFile };
+  const lan = args.lan === true || (args.lan === undefined && (parseLanEnv(sources.env.VAULT_READER_LAN) ?? file?.lan ?? false));
+  return { port, lan, defaultVaultId: defaultVaultId!, vaults, configFile };
 }
 
 interface RawConfigFile {
   readonly port?: unknown;
+  readonly lan?: boolean;
   readonly defaultVault?: string;
   readonly vaults?: unknown;
 }
 
-function parseCliArgs(argv: readonly string[]): Record<'config' | 'vault' | 'vault-id' | 'port', string | undefined> {
+interface CliArgs {
+  readonly config?: string;
+  readonly vault?: string;
+  readonly 'vault-id'?: string;
+  readonly port?: string;
+  readonly lan?: boolean;
+}
+
+function parseLanEnv(value: string | undefined): boolean | undefined {
+  if (value === undefined || value.trim() === '') return undefined;
+  const v = value.trim().toLowerCase();
+  if (['1', 'true', 'ja', 'yes', 'on'].includes(v)) return true;
+  if (['0', 'false', 'nei', 'no', 'off'].includes(v)) return false;
+  throw new ConfigError(`Ugyldig VAULT_READER_LAN «${value}». Bruk 1/true eller 0/false.`);
+}
+
+function parseCliArgs(argv: readonly string[]): CliArgs {
   try {
     const { values } = parseArgs({
       args: [...argv],
@@ -104,13 +127,14 @@ function parseCliArgs(argv: readonly string[]): Record<'config' | 'vault' | 'vau
         vault: { type: 'string' },
         'vault-id': { type: 'string' },
         port: { type: 'string' },
+        lan: { type: 'boolean' },
       },
     });
-    return values as Record<'config' | 'vault' | 'vault-id' | 'port', string | undefined>;
+    return values as CliArgs;
   } catch (error) {
     throw new ConfigError(
       `Ukjent eller ugyldig kommandolinjeflagg (${error instanceof Error ? error.message : String(error)}). ` +
-        'Gyldige flagg: --config <fil>, --vault <sti>, --vault-id <id>, --port <n>.',
+        'Gyldige flagg: --config <fil>, --vault <sti>, --vault-id <id>, --port <n>, --lan.',
     );
   }
 }
@@ -133,7 +157,8 @@ function readConfigFile(path: string, sources: ConfigSources): RawConfigFile {
   if (raw.defaultVault !== undefined && typeof raw.defaultVault !== 'string') {
     throw new ConfigError(`defaultVault i ${path} må være en tekst (vault-id).`);
   }
-  return { port: raw.port, defaultVault: raw.defaultVault as string | undefined, vaults: raw.vaults };
+  if (raw.lan !== undefined && typeof raw.lan !== 'boolean') throw new ConfigError(`«lan» i ${path} må være true eller false.`);
+  return { port: raw.port, lan: raw.lan as boolean | undefined, defaultVault: raw.defaultVault as string | undefined, vaults: raw.vaults };
 }
 
 function parseVaults(raw: unknown, file: string, expand: (path: string) => string, allowEmpty: boolean): VaultConfig[] {

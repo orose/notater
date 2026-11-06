@@ -1,6 +1,6 @@
 /* ==========================================================================
    Vault-leser – designtokens (generert fra docs/design/designsystem.md)
-   Akser:  data-type="tidsskrift|terminal"  ×  data-palette="papir|cyanotypi|fosfor|signal"
+   Akser:  data-type="tidsskrift|terminal|klartekst"  ×  data-palette="papir|cyanotypi|fosfor|signal"
            ×  data-mode="light|dark"  (settes på <html>; "system" løses i JS)
    ========================================================================== */
 
@@ -140,6 +140,59 @@
   --rule-heavy: 1px;
   --link-underline: 1px;
   --link-underline-offset: 0.18em;
+  --dropcap: 0;
+}
+
+/* ==========================================================================
+   Typografisk sett K – «Klartekst» (PO-18)
+   Atkinson Hyperlegible Next Variable (brødtekst/titler/etiketter) + Atkinson Hyperlegible Mono Variable
+   Lesbarhet først: tydelige tegnformer (Il1 0O), romslig linjeavstand, ingen ornamentikk-varianter.
+   Skala: 16.5→18.5px, ratio 1.2→1.25
+   ========================================================================== */
+[data-type="klartekst"] {
+  --font-body: "Atkinson Hyperlegible Next Variable", "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", Verdana, sans-serif;
+  --font-display: "Atkinson Hyperlegible Next Variable", "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", Verdana, sans-serif;
+  --font-sc: "Atkinson Hyperlegible Next Variable", "Atkinson Hyperlegible Next", Verdana, sans-serif;   /* etiketter = versaler med sperring */
+  --font-ui: "Atkinson Hyperlegible Next Variable", "Atkinson Hyperlegible Next", Verdana, sans-serif;
+  --font-meta: "Atkinson Hyperlegible Mono Variable", "Atkinson Hyperlegible Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono: "Atkinson Hyperlegible Mono Variable", "Atkinson Hyperlegible Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --mono-ligatures: none;
+
+  --step-n2: clamp(0.7161rem, 0.7082rem + 0.0353vw, 0.7400rem);
+  --step-n1: clamp(0.8594rem, 0.8375rem + 0.0972vw, 0.9250rem);
+  --step-0: clamp(1.0312rem, 0.9896rem + 0.1852vw, 1.1562rem);
+  --step-1: clamp(1.2375rem, 1.1682rem + 0.3079vw, 1.4453rem);
+  --step-2: clamp(1.4850rem, 1.3778rem + 0.4765vw, 1.8066rem);
+  --step-3: clamp(1.7820rem, 1.6232rem + 0.7056vw, 2.2583rem);
+  --step-4: clamp(2.1384rem, 1.9102rem + 1.0140vw, 2.8229rem);
+  --step-5: clamp(2.5661rem, 2.2452rem + 1.4259vw, 3.5286rem);
+  --step-6: clamp(3.0793rem, 2.6355rem + 1.9725vw, 4.4107rem);
+
+  --leading-body: 1.65;
+  --leading-tight: 1.1;
+  --leading-heading: 1.22;
+  --leading-code: 1.6;
+  --tracking-display: -0.01em;
+  --tracking-sc: 0.07em;
+  --tracking-meta: 0.01em;
+
+  --weight-body: 400;
+  --weight-strong: 700;
+  --weight-display: 700;
+  --weight-h2: 700;
+  --weight-h3: 600;
+  --style-h3: normal;
+
+  --measure: 34em;           /* bredere glyfer: ≈ 62–66 tegn */
+  --code-size: 0.88em;
+  --code-wide: 0rem;
+
+  --radius-s: 3px;
+  --radius-m: 5px;
+  --radius-l: 8px;
+  --rule-heavy: 2px;
+  --link-underline: 1.5px;
+  --link-underline-offset: 0.22em;
   --dropcap: 0;
 }
 

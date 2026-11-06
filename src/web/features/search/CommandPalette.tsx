@@ -2,7 +2,7 @@ import './search.css';
 import { useEffect, useId, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import type { SearchHit, VaultId } from '../../../shared/api-types';
-import { docUrl, folderOf, useSearch, useVaults } from '../../shared/api';
+import { PREFETCH_DELAY_MS, docUrl, folderOf, usePrefetch, useSearch, useVaults } from '../../shared/api';
 import { Icon } from '../../shared/ui/Icon';
 import { Modal } from '../../shared/ui/Modal';
 import { useRecentDocs } from '../recent';
@@ -160,6 +160,15 @@ function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; rea
   useEffect(() => {
     document.getElementById(options[current]?.id ?? '')?.scrollIntoView({ block: 'nearest' });
   }, [current, options]);
+
+  // PO-51: valgt treff hentes i forkant, så Enter åpner det uten venting.
+  const prefetch = usePrefetch();
+  const selectedPath = options[current]?.path;
+  useEffect(() => {
+    if (!selectedPath) return undefined;
+    const timer = setTimeout(() => prefetch(vaultId, selectedPath), PREFETCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [prefetch, selectedPath, vaultId]);
 
   const noteCount = vaults.data?.vaults.find((v) => v.id === vaultId)?.noteCount;
   const waiting = trimmed !== '' && (debounced.trim() !== trimmed || search.isFetching) && options.length === 0;

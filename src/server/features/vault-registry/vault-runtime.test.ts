@@ -68,6 +68,23 @@ describe('createVaultRuntime', () => {
     expect(index.search('unikord', 10)[0]!.path).toBe('C');
   }, 30_000);
 
+  it('omdøping gir SSE-hendelse med removed, added og renamed (PO-49)', async () => {
+    const { rename } = await import('node:fs/promises');
+    const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] }, deps);
+    await vault.ready();
+    const events: ChangedEvent[] = [];
+    vault.subscribe((e) => events.push(e));
+    await rename(join(root, 'B.md'), join(root, 'B2.md'));
+    await vault.applyChanges(['B.md', 'B2.md']);
+    expect(events[0]!.changes).toEqual([
+      { type: 'removed', path: 'B' },
+      { type: 'added', path: 'B2' },
+      { type: 'renamed', path: 'B2', from: 'B', to: 'B2' },
+    ]);
+    const { index } = await vault.searchIndex();
+    expect(index.search('B2', 10).map((h) => h.path)).toContain('B2');
+  });
+
   it('ingen endring gir ingen ny revisjon', async () => {
     const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] }, deps);
     await vault.ready();

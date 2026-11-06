@@ -67,6 +67,7 @@ Rekkefølge: **kommandolinje > miljøvariabel > konfigfil > standard.** Flagg se
 | `--config <fil>` | `VAULT_READER_CONFIG` | Bruk en annen konfigfil. |
 | `--vault-id <id>` | `VAULT_READER_VAULT_ID` | Velg hvilket vault som åpnes på `/`. |
 | `--port <n>` | `VAULT_READER_PORT` | Annen port. |
+| `--lan` | `VAULT_READER_LAN=1` | Gjør leseren tilgjengelig på hjemmenettet (se «Lese på mobilen»). |
 
 ```sh
 npm start -- --config ~/vaults.json --vault-id privat
@@ -98,6 +99,32 @@ På macOS brukes `⌘`, ellers `Ctrl`. Begge virker overalt.
 - **Ornamentikk:** initial og seksjonsnummer (§) av/på.
 
 Valget lagres i nettleseren. Du kan også lenke til et tema: `?type=terminal&palette=fosfor&mode=dark`.
+
+## Lese på mobilen
+
+Som standard svarer leseren bare på maskinen den kjører på (`127.0.0.1`). For å lese på mobilen over
+hjemmenettet starter du den i **LAN-modus**:
+
+```sh
+npm start -- --lan
+```
+
+Eller sett `"lan": true` i konfigfila, eller `VAULT_READER_LAN=1`. Leseren skriver da ut en advarsel og
+adressene du kan åpne på mobilen (samme Wi-Fi), for eksempel:
+
+```
+Åpne på mobilen (samme Wi-Fi):
+  http://192.168.1.23:4317
+  http://kundes-macbook.local:4317
+```
+
+- **Bare på nettverk du stoler på.** I LAN-modus kan alle på samme nettverk lese vaultet, uten passord.
+  Ikke bruk det på kafé, hotell eller gjestenett. Leseren er fortsatt skrivebeskyttet.
+- Adressen må være en av dem leseren skrev ut (maskinens egne IP-adresser eller `<maskinnavn>.local`).
+  Andre vertsnavn avvises, som vern mot såkalt DNS-rebinding.
+- macOS kan spørre om Node får ta imot innkommende tilkoblinger – svar **Tillat**.
+- Får maskinen ny IP-adresse, virker den nye adressen etter noen sekunder uten omstart.
+- Slå av ved å starte på nytt uten `--lan`.
 
 ## Feilsøking
 

@@ -65,6 +65,19 @@ describe('CommandPalette', () => {
     vi.restoreAllMocks();
   });
 
+  it('valgt treff hentes i forkant (PO-51)', async () => {
+    const api = (() => {
+      setup();
+      return (fetch as unknown as { mock: { calls: unknown[][] } }).mock;
+    })();
+    fireEvent.keyDown(document, { key: 'k', ctrlKey: true });
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'idempot' } });
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(3));
+    await waitFor(() =>
+      expect(api.calls.map((c) => String(c[0]))).toContain('/api/vaults/test/document?path=domene%2Fkafka%2FIdempotent%20produsent'),
+    );
+  });
+
   it('⌘K åpner, viser grupperte treff og Enter åpner valgt notat', async () => {
     setup();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });

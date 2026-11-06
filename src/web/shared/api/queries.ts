@@ -29,13 +29,20 @@ export function useTree(vaultId: VaultId) {
   });
 }
 
+/** Felles for useDocument og prefetch (PO-51): samme nøkkel, samme henting. */
+export function documentQueryOptions(vaultId: VaultId, docPath: DocPath) {
+  return {
+    queryKey: queryKeys.document(vaultId, docPath),
+    queryFn: ({ signal }: { signal: AbortSignal }) =>
+      apiGet<DocumentResponse>(`/api/vaults/${v(vaultId)}/document?path=${encodeURIComponent(docPath)}`, signal),
+    staleTime: Infinity, // invalideres av live reload (SSE)
+  };
+}
+
 export function useDocument(vaultId: VaultId, docPath: DocPath, enabled = true) {
   return useQuery({
-    queryKey: queryKeys.document(vaultId, docPath),
-    queryFn: ({ signal }) =>
-      apiGet<DocumentResponse>(`/api/vaults/${v(vaultId)}/document?path=${encodeURIComponent(docPath)}`, signal),
+    ...documentQueryOptions(vaultId, docPath),
     enabled: enabled && docPath.length > 0,
-    staleTime: Infinity,
     // Vis forrige notat til det nye er klart (designsystem §9: ingen skeleton).
     placeholderData: keepPreviousData,
     retry: (count, error) => !(error instanceof ApiRequestError && error.status < 500) && count < 2,

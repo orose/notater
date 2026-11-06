@@ -364,8 +364,18 @@ export interface SearchResponse {
 // ---------------------------------------------------------------------------
 
 export interface FileChange {
-  readonly type: 'added' | 'changed' | 'removed';
+  /**
+   * `renamed` er et tillegg (PO-49, bakoverkompatibelt): ved omdøping/flytting sendes fortsatt
+   * `removed` (gammel sti) og `added` (ny sti), og i tillegg én `renamed` med `from`/`to`.
+   * Eldre klienter kan ignorere den.
+   */
+  readonly type: 'added' | 'changed' | 'removed' | 'renamed';
+  /** For `renamed`: den nye stien (= `to`). */
   readonly path: DocPath;
+  /** Kun `renamed`: gammel sti. */
+  readonly from?: DocPath;
+  /** Kun `renamed`: ny sti. */
+  readonly to?: DocPath;
 }
 
 /** SSE `event: ready` – sendes én gang rett etter tilkobling. */

@@ -27,6 +27,8 @@ export interface AppOptions {
   readonly events?: EventsOptions;
   /** Sporer pågående forespørsler, slik at bakgrunnsarbeid venter på ledig tid (BUG-008). */
   readonly activity?: ActivityTracker;
+  /** Tillatte vertsnavn i `Host` (A16). Standard: 127.0.0.1/localhost. LAN-modus (PO-3) utvider listen. */
+  readonly isAllowedHost?: (hostname: string) => boolean;
 }
 
 /**
@@ -39,7 +41,7 @@ export function createApp(options: AppOptions): Hono {
   const app = new Hono();
 
   app.use('*', securityHeaders());
-  app.use('*', hostGuard());
+  app.use('*', hostGuard(options.isAllowedHost));
   app.use('*', readOnlyGuard());
   const { activity } = options;
   if (activity) {

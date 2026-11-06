@@ -3,3 +3,4 @@ export { assetUrl, baseName, docPathFromPathname, docUrl, folderOf, isImagePath 
 export { queryKeys } from './query-keys';
 export { useBacklinks, useDocument, useSearch, useTags, useTree, useVaults } from './queries';
 export type { TagCount, TagsResponse } from './queries';
+export { PREFETCH_DELAY_MS, usePrefetch, usePrefetchIntent } from './prefetch';

@@ -36,6 +36,8 @@ kbd {
   text-transform: lowercase; font-weight: 500; color: var(--color-muted); line-height: 1.3;
 }
 [data-type="terminal"] .label { text-transform: uppercase; font-size: 0.72rem; font-weight: 500; }
+/* PO-18 Klartekst: etiketter er sperrede versaler i samme font (ingen småkapitéler). */
+[data-type="klartekst"] .label { text-transform: uppercase; font-size: 0.75rem; font-weight: 700; }
 
 .skip-link {
   position: absolute; left: var(--space-3); top: -10rem; z-index: var(--z-modal);

@@ -190,3 +190,11 @@ Frontendens avvik 1–8 er **godkjent** (temascript som ekstern fil pga. CSP; br
 
 - **PO-50** Første dokument etter oppstart kan vente ~0,5 s én gang (Shiki). Godtatt – indekseringskravet prioriteres.
 - **PO-51** AK17 notatbytte anses oppfylt på serversiden (p95 138–154 ms i nettleser under last). Frontend legger til prefetch ved hover/fokus for margin.
+
+## Backend slice 6 (2026-11-06, backend-utvikler)
+
+| # | Beslutning | Begrunnelse | Status |
+|---|---|---|---|
+| BE32 | PO-49: ved omdøping/flytting sendes fortsatt `removed` + `added`, og **i tillegg** `{ type: 'renamed', path, from, to }`. Par gjenkjennes på samme inode (+ størrelse) eller lik SHA-1 av innholdet (tekstfiler), innenfor samme debounce-bunt; hver fil i høyst ett par. | Bakoverkompatibelt: eldre klienter (og frontendens `detectMoves`) virker uendret. Inode dekker vanlig `rename`/flytting også for bilder; innholds-hash dekker kopi + sletting. | Vedtatt |
+| BE33 | PO-3: `--lan` / `VAULT_READER_LAN` / `"lan": true` binder `0.0.0.0` og skriver advarsel + LAN-adresser. Vertssjekken (A16) godtar da i tillegg maskinens egne IPv4-adresser og `<maskinnavn>.local`; listen leses på nytt (høyst hvert 5. s) ved ukjent navn, så ny DHCP-adresse virker uten omstart. Uten flagget er alt som før (A17 gjelder fortsatt for standardoppsettet). | Mobil på hjemmenettet uten å åpne for DNS-rebinding. IPv6-adresser støttes ikke i v1. | Vedtatt |
+| BE34 | Opprydding: ingen ubrukte server-avhengigheter (depcheck). Ingen TODO/FIXME i `src/server`/`src/shared`. Alle API-ruter i koden står i api.md. | PO slice 6. | Vedtatt |

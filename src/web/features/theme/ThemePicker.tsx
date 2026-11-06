@@ -15,6 +15,7 @@ const MODE_LABELS: ReadonlyArray<readonly [ThemeModePreference, string]> = [
 const TYPE_OPTIONS: ReadonlyArray<{ readonly id: ThemeType; readonly name: string; readonly desc: string }> = [
   { id: 'tidsskrift', name: 'Tidsskrift', desc: 'Seriff, marginalia, figurer' },
   { id: 'terminal', name: 'Terminal', desc: 'Grotesk + mono, tett' },
+  { id: 'klartekst', name: 'Klartekst', desc: 'Lettlest, romslig' },
 ];
 
 interface ThemePickerProps {
@@ -69,7 +70,7 @@ function ThemePickerBody({ headingId }: { readonly headingId: string }) {
 
         <fieldset>
           <legend className="label">Typografi</legend>
-          <div className="opts">
+          <div className="opts opts-3">
             {TYPE_OPTIONS.map((option) => (
               <label key={option.id} className="opt">
                 <input
@@ -84,10 +85,12 @@ function ThemePickerBody({ headingId }: { readonly headingId: string }) {
                     <>
                       Aa<i>g</i>
                     </>
-                  ) : (
+                  ) : option.id === 'terminal' ? (
                     <>
                       Aa<span className="specimen-mono">-&gt;</span>
                     </>
+                  ) : (
+                    'Il1'
                   )}
                 </span>
                 <span className="name">{option.name}</span>

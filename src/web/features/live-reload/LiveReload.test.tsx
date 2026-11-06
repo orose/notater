@@ -111,6 +111,18 @@ describe('detectMoves (BUG-006)', () => {
     ).toEqual({ 'domene/Lager': 'domene/Lagerstyring' });
   });
 
+  it('bruker eksplisitt «renamed» fra serveren når den finnes (PO-49)', () => {
+    expect(
+      detectMoves([
+        { type: 'removed', path: 'a/X' },
+        { type: 'removed', path: 'a/Y' },
+        { type: 'added', path: 'b/Ny' },
+        { type: 'added', path: 'b/Annen' },
+        { type: 'renamed', path: 'b/Ny', from: 'a/X', to: 'b/Ny' },
+      ]),
+    ).toEqual({ 'a/X': 'b/Ny' });
+  });
+
   it('bare sletting gir ingen flytting', () => {
     expect(detectMoves([{ type: 'removed', path: 'domene/Lager' }])).toEqual({});
   });

@@ -1,8 +1,8 @@
 import './backlinks.css';
 import { useId, type ReactNode } from 'react';
-import { Link } from 'react-router';
 import type { Backlink, DocPath, VaultId } from '../../../shared/api-types';
 import { baseName, docUrl, folderOf } from '../../shared/api';
+import { PrefetchLink } from '../../shared/ui/PrefetchLink';
 
 interface BacklinksProps {
   readonly vaultId: VaultId;
@@ -44,9 +44,9 @@ export function Backlinks({ vaultId, title, path, backlinks, heading = 'Tilbakel
         <ol>
           {backlinks.map((b) => (
             <li key={b.source}>
-              <Link className="bl-title" to={docUrl(vaultId, b.source)}>
+              <PrefetchLink className="bl-title" vaultId={vaultId} docPath={b.source} to={docUrl(vaultId, b.source)}>
                 {b.sourceTitle}
-              </Link>
+              </PrefetchLink>
               <span className="bl-path">
                 {folderOf(b.source) || '/'}
                 {b.fromProperty ? <span className="bl-prop"> · fra egenskap</span> : null}

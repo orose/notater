@@ -312,6 +312,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
           const docs = new Map(searchDocuments(snapshot).map((d) => [d.path, d]));
           searchPromise = searchPromise.then((index) => {
             for (const change of changes) {
+              if (change.type === 'renamed') continue; // dekket av removed + added
               index.remove(change.path);
               const doc = docs.get(change.path);
               if (doc && change.type !== 'removed') index.add(doc);

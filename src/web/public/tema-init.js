@@ -6,7 +6,7 @@
   var KEY = 'vault-leser.tema';
   var ALLOWED = {
     mode: ['system', 'light', 'dark'],
-    type: ['tidsskrift', 'terminal'],
+    type: ['tidsskrift', 'terminal', 'klartekst'],
     palette: ['papir', 'cyanotypi', 'fosfor', 'signal'],
   };
   var d = { mode: 'system', type: 'tidsskrift', palette: 'papir', ornaments: true };

@@ -2,7 +2,7 @@
 
 export type ThemeModePreference = 'system' | 'light' | 'dark';
 export type ResolvedMode = 'light' | 'dark';
-export type ThemeType = 'tidsskrift' | 'terminal';
+export type ThemeType = 'tidsskrift' | 'terminal' | 'klartekst';
 export type ThemePalette = 'papir' | 'cyanotypi' | 'fosfor' | 'signal';
 
 export interface ThemePreferences {
@@ -24,7 +24,7 @@ export const DEFAULT_PREFERENCES: ThemePreferences = {
 };
 
 export const MODES: readonly ThemeModePreference[] = ['light', 'dark', 'system'];
-export const TYPES: readonly ThemeType[] = ['tidsskrift', 'terminal'];
+export const TYPES: readonly ThemeType[] = ['tidsskrift', 'terminal', 'klartekst'];
 export const PALETTES: readonly ThemePalette[] = ['papir', 'cyanotypi', 'fosfor', 'signal'];
 
 interface Swatch {

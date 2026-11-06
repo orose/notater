@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, symlink, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rename, rm, symlink, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -92,6 +92,36 @@ describe('updateSnapshot (inkrementell)', () => {
     expect(result.snapshot.baseSources.has('Oppgaver.base')).toBe(false);
     // Gammelt snapshot er urørt (immutabelt).
     expect(snap.files.has('Ny.md')).toBe(false);
+  });
+
+  it('omdøping (fs.rename) i samme batch gir i tillegg en renamed-endring (PO-49)', async () => {
+    const extractor = createInlineMetaExtractor();
+    const snap = await buildSnapshot(root, [], extractor);
+    await mkdir(join(root, 'kunder'), { recursive: true });
+    await rename(join(root, 'domene/Kunde.md'), join(root, 'kunder/Kunde ny.md'));
+    await rename(join(root, 'attachments/logo.svg'), join(root, 'attachments/logo2.svg'));
+    const result = await updateSnapshot(snap, root, [], ['domene/Kunde.md', 'kunder/Kunde ny.md', 'attachments/logo.svg', 'attachments/logo2.svg'], extractor);
+    expect(result.changes).toEqual([
+      { type: 'removed', path: 'domene/Kunde' },
+      { type: 'added', path: 'kunder/Kunde ny' },
+      { type: 'removed', path: 'attachments/logo.svg' },
+      { type: 'added', path: 'attachments/logo2.svg' },
+      { type: 'renamed', path: 'kunder/Kunde ny', from: 'domene/Kunde', to: 'kunder/Kunde ny' },
+      { type: 'renamed', path: 'attachments/logo2.svg', from: 'attachments/logo.svg', to: 'attachments/logo2.svg' },
+    ]);
+  });
+
+  it('kopi + sletting med identisk innhold (ny inode) regnes også som omdøping; ulikt innhold gjør ikke', async () => {
+    const extractor = createInlineMetaExtractor();
+    const snap = await buildSnapshot(root, [], extractor);
+    await put('Kunde kopi.md', '# Kunde');
+    await unlink(join(root, 'domene/Kunde.md'));
+    await put('Annet.md', '# Noe helt annet');
+    await unlink(join(root, 'Velkommen.md'));
+    const result = await updateSnapshot(snap, root, [], ['domene/Kunde.md', 'Kunde kopi.md', 'Velkommen.md', 'Annet.md'], extractor);
+    expect(result.changes.filter((c) => c.type === 'renamed')).toEqual([
+      { type: 'renamed', path: 'Kunde kopi', from: 'domene/Kunde', to: 'Kunde kopi' },
+    ]);
   });
 
   it('slettet mappe fjerner alle filer under den', async () => {

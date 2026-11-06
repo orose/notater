@@ -8,6 +8,8 @@ export interface ScannedFile {
   readonly size: number;
   readonly mtimeMs: number;
   readonly ctimeMs: number;
+  /** Inode (0 hvis ukjent). Uendret ved omdøping/flytting på samme filsystem (PO-49). */
+  readonly ino: number;
 }
 
 /**
@@ -50,7 +52,7 @@ export async function statVaultFile(root: string, diskPath: string): Promise<Sca
   try {
     const info = await stat(resolveInsideVault(root, diskPath));
     if (!info.isFile()) return null;
-    return { diskPath, size: info.size, mtimeMs: info.mtimeMs, ctimeMs: info.birthtimeMs || info.ctimeMs };
+    return { diskPath, size: info.size, mtimeMs: info.mtimeMs, ctimeMs: info.birthtimeMs || info.ctimeMs, ino: info.ino };
   } catch {
     return null;
   }

@@ -19,7 +19,8 @@ TypeScript-fila; endringer gjøres i begge i samme leveranse.
   500 `INTERNAL` (f.eks. vaultet kunne ikke indekseres).
 - Alle svar har `Content-Security-Policy` (PO-16), `X-Content-Type-Options: nosniff` og
   `Referrer-Policy: no-referrer`. `Host` må være `127.0.0.1` eller `localhost` (porten sjekkes ikke, så
-  Vite-proxyen virker).
+  Vite-proxyen virker), ellers 403 `FORBIDDEN`. I LAN-modus (`--lan`, PO-3) binder serveren `0.0.0.0`, og
+  `Host` kan i tillegg være en av maskinens egne IPv4-adresser eller `<maskinnavn>.local`.
 - Stier i query-parametre er **URL-enkodet** (`encodeURIComponent`). Bruk query-parametre – ikke path-
   segmenter – for vault-stier, så skråstreker, `#`, `%` og mellomrom aldri tolkes av ruteren.
 - Begreper:
@@ -156,9 +157,15 @@ streng `Content-Security-Policy: sandbox; default-src 'none'; img-src 'self'; st
 | `event:` | `data:` (JSON) | Når |
 |---|---|---|
 | `ready` | `ReadyEvent { vaultId, revision }` | Rett etter tilkobling (etter at indeksen er klar). |
-| `changed` | `ChangedEvent { vaultId, revision, changes: { type: 'added'\|'changed'\|'removed', path: DocPath }[] }` | Etter hver debouncet endringsbunt. |
+| `changed` | `ChangedEvent { vaultId, revision, changes: { type: 'added'\|'changed'\|'removed'\|'renamed', path: DocPath, from?: DocPath, to?: DocPath }[] }` | Etter hver debouncet endringsbunt. |
 
-I tillegg `: ping` (kommentar) hvert **15.** s (PO-31). `changes[].path` er `DocPath`. Klienten: ved `changed` → `invalidateQueries(['vault', vaultId])`.
+I tillegg `: ping` (kommentar) hvert **15.** s (PO-31). `changes[].path` er `DocPath`.
+
+**Omdøping/flytting (PO-49, tillegg):** når en fil forsvinner og en ny dukker opp i samme debounce-vindu
+(150 ms) og de er samme fil – samme inode (vanlig `rename`/flytting) eller identisk innhold (SHA-1, f.eks. kopi +
+sletting fra et synkverktøy) – sendes som før `removed` (gammel sti) og `added` (ny sti), og **i tillegg**
+`{ type: 'renamed', path: <ny>, from: <gammel>, to: <ny> }`. Eldre klienter kan ignorere `renamed`. Hver fil
+inngår i høyst ett par. Eksempel: `[{removed, "domene/Kunde"}, {added, "kunder/Kunde"}, {renamed, path:"kunder/Kunde", from:"domene/Kunde", to:"kunder/Kunde"}]`. Klienten: ved `changed` → `invalidateQueries(['vault', vaultId])`.
 Ved `ready` med `revision` ≠ sist kjente → samme invalidering.
 
 ## Delte verdityper

@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import type { VaultId } from '../../../shared/api-types';
 import { useOpenSearch } from '../search';
 import { BrokenLink } from './BrokenLink';
+import { PrefetchLink } from '../../shared/ui/PrefetchLink';
 
 type ContentLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   readonly vaultId: VaultId;
@@ -96,8 +97,10 @@ export function ContentLink(props: ContentLinkProps) {
         : undefined;
     const state: LinkNavigationState | undefined = missing ? { anchorMissing: true, ...(anchor ? { anchor } : {}) } : undefined;
     return (
-      <Link
+      <PrefetchLink
         {...rest}
+        vaultId={vaultId}
+        docPath={target}
         to={href}
         state={state}
         title={title}
@@ -106,7 +109,7 @@ export function ContentLink(props: ContentLinkProps) {
         data-anchor={anchor}
       >
         {children}
-      </Link>
+      </PrefetchLink>
     );
   }
 

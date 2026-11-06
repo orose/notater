@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
@@ -16,9 +17,11 @@ const backlinks: Backlink[] = [
 describe('Backlinks', () => {
   it('lister kilder med tittel, mappe og utdrag med uthevet treff (AK10)', () => {
     render(
-      <MemoryRouter>
+      <QueryClientProvider client={new QueryClient()}>
+<MemoryRouter>
         <Backlinks vaultId="test" title="Idempotent produsent" backlinks={backlinks} />
-      </MemoryRouter>,
+      </MemoryRouter>
+</QueryClientProvider>,
     );
     const section = screen.getByRole('region', { name: 'Tilbakelenker' });
     expect(within(section).getByText('2 notater')).toBeInTheDocument();
@@ -29,18 +32,22 @@ describe('Backlinks', () => {
 
   it('tom tilstand', () => {
     render(
-      <MemoryRouter>
+      <QueryClientProvider client={new QueryClient()}>
+<MemoryRouter>
         <Backlinks vaultId="test" title="X" backlinks={[]} />
-      </MemoryRouter>,
+      </MemoryRouter>
+</QueryClientProvider>,
     );
     expect(screen.getByText('Ingen notater lenker hit ennå.')).toBeInTheDocument();
   });
 
   it('margen viser bare en kompakt lenke ned til seksjonen (PO-44)', () => {
     render(
-      <MemoryRouter initialEntries={['/v/test/x']}>
+      <QueryClientProvider client={new QueryClient()}>
+<MemoryRouter initialEntries={['/v/test/x']}>
         <RailBacklinks backlinks={backlinks} />
-      </MemoryRouter>,
+      </MemoryRouter>
+</QueryClientProvider>,
     );
     expect(screen.getByRole('link', { name: 'Tilbakelenker (2) ↓' })).toHaveAttribute('href', '/v/test/x#tilbakelenker');
     expect(screen.queryByRole('link', { name: 'Velkommen' })).toBeNull();
@@ -48,27 +55,31 @@ describe('Backlinks', () => {
 
   it('uthever hele lenketeksten, også filendelsen (PO-45)', () => {
     render(
-      <MemoryRouter>
+      <QueryClientProvider client={new QueryClient()}>
+<MemoryRouter>
         <Backlinks
           vaultId="test"
           title="Oppgaver"
           path="Oppgaver.base"
           backlinks={[{ source: 'Velkommen', sourceTitle: 'Velkommen', snippet: 'Oppgaver: Oppgaver.base og Sprintoversikt', count: 1 }]}
         />
-      </MemoryRouter>,
+      </MemoryRouter>
+</QueryClientProvider>,
     );
     expect([...document.querySelectorAll('.bl-ctx mark')].map((m) => m.textContent)).toEqual(['Oppgaver', 'Oppgaver.base']);
   });
 
   it('lenker fra egenskaper merkes «fra egenskap» (PO-9, BUG-002)', () => {
     render(
-      <MemoryRouter>
+      <QueryClientProvider client={new QueryClient()}>
+<MemoryRouter>
         <Backlinks
           vaultId="test"
           title="Ordre"
           backlinks={[{ source: 'edge/Frontmatter-typer', sourceTitle: 'Frontmatter-typer', snippet: '', count: 1, fromProperty: true }]}
         />
-      </MemoryRouter>,
+      </MemoryRouter>
+</QueryClientProvider>,
     );
     expect(screen.getByRole('listitem')).toHaveTextContent(/fra egenskap/);
   });
@@ -98,9 +109,11 @@ describe('collectOutgoingLinks', () => {
 
   it('OutgoingLinks viser antall og «finnes ikke»', () => {
     render(
-      <MemoryRouter>
+      <QueryClientProvider client={new QueryClient()}>
+<MemoryRouter>
         <OutgoingLinks vaultId="test" links={collectOutgoingLinks(content, 'x')} />
-      </MemoryRouter>,
+      </MemoryRouter>
+</QueryClientProvider>,
     );
     expect(screen.getByText('2 ganger')).toBeInTheDocument();
     expect(screen.getByText('finnes ikke')).toBeInTheDocument();
