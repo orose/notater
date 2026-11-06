@@ -273,7 +273,7 @@ export async function lastRegister(): Promise<{ readonly fil: string; readonly e
     if (!existsSync(fil)) continue;
     const modul = (await import(pathToFileURL(fil).href)) as Record<string, unknown>;
     for (const [eksport, verdi] of Object.entries(modul)) {
-      const kandidat = typeof verdi === 'function' && verdi.length === 0 && /register|commands|kommando/i.test(eksport) ? safeCall(verdi) : verdi;
+      const kandidat = typeof verdi === 'function' && verdi.length === 0 && /register|commands|kommando/i.test(eksport) ? safeCall(verdi as () => unknown) : verdi;
       try {
         return { fil: rel, eksport, kommandoer: normaliserRegister(kandidat) };
       } catch {
@@ -285,7 +285,7 @@ export async function lastRegister(): Promise<{ readonly fil: string; readonly e
   return null;
 }
 
-function safeCall(fn: (...args: unknown[]) => unknown): unknown {
+function safeCall(fn: () => unknown): unknown {
   try {
     return fn();
   } catch {

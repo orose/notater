@@ -191,6 +191,10 @@ export interface NoteDocument extends DocumentBase {
   readonly properties: readonly PropertyEntry[];
   /** Sanitert HAST. Se «HAST-kontrakt» i api.md for egendefinerte elementer. */
   readonly content: HastRoot;
+  /**
+   * Kun vertsnotatets overskrifter, aldri overskrifter fra `vr-embed` (de har ingen id). Klienten fletter
+   * inn innebygde overskrifter selv i diskré modus (ADR-009, «Garantier for innebygd innhold» i api.md).
+   */
   readonly toc: readonly TocEntry[];
   /** Resultat for hvert `vr-base`-element i `content`, nøkkel = `data-base-id`. */
   readonly bases: Readonly<Record<string, BaseResult>>;

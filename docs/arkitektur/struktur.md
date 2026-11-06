@@ -119,3 +119,23 @@ bibliotek), er `src/server/features/bases` allerede isolert nok til å flyttes u
   (registeret bruker f.eks. `search` og `live-events`), og rutene kan testes med falske kilder.
 - **Metadata-uttrekk i worker-tråder** (`vault-index/meta-worker.ts`), jf. ADR-004. Workerne laster
   TypeScript via tsx-loaderen (absolutt sti), så de virker både under `tsx`, `npm start` og Vitest.
+
+## Tillegg v1.1 (arkitekt, ADR-007–009)
+
+Nye web-features:
+
+```
+src/web/features/
+├── keyboard/        ren TS: modi, tastenotasjon, KeyboardEvent → akkord (norsk layout), policy (P4/P5/P7),
+│                    motorens typer, DOM-vakter. Ingen React.
+├── commands/
+│   ├── model/       ren TS: katalogen (id, navn, aliaser, gruppe, bindinger), registeret, ?-/README-generering,
+│   │                palett-typer. Leses også av `npm run docs:shortcuts` (Node) – ingen .tsx/DOM/andre features.
+│   └── *.tsx        (1.1-a) CommandProvider (handlere, porter, window-lytter), which-key, ?-oversikt
+├── view-settings/   (1.1-b/d) lesebredde, diskré per notat, zen – samme mønster som theme
+└── outline/         (1.1-c/d) disposisjon fra HAST: diskré omskriving, TOC, §-nummer, seksjoner, folding
+```
+
+Avhengighetsretning: `app` → `commands` → `keyboard`; `commands` (React-delen) → `search`, `theme`,
+`view-settings`, `outline`; `note-view` → `outline`, `view-settings`. `keyboard`, `commands/model` og
+`outline` importerer ikke `note-view`.

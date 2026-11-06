@@ -373,6 +373,20 @@ Manglende bilde → `vr-embed[data-status=missing]` med `data-raw`. Eksterne bil
 Syklus: samme fil + samme anker allerede i stakken. Maks dybde **5** (PO-15). `![[x#Finnes ikke]]` → `missing`.
 Embed av en `.base`-fil blir `vr-base`.
 
+**Garantier for innebygd innhold (tillegg v1.1, normativt).** Klienten bygger diskré embedding, TOC,
+§-nummer og folding på disse egenskapene ([ADR-009](ADR-009-disposisjon-diskre-embedding-og-folding.md)).
+De gjelder allerede i v1; endringer krever ny ADR. Serveren kjenner ikke diskré-valget og sender det samme
+uansett.
+
+1. **Type** avgjøres av `data-anchor`: mangler = notatembed, starter med `^` = blokkembed, ellers seksjonsembed.
+2. **Notatembed:** `data-title` = målets tittel (filnavn uten endelse), uten `›`.
+3. **Seksjonsembed:** første barn som ikke er blank tekst, er overskriften seksjonen starter med
+   (seksjonen = den overskriften + alt til neste overskrift på samme eller høyere nivå).
+4. **Overskrifter** i innebygd innhold beholder kildens nivå (`h1`–`h6`), uten `id` (BE9).
+   Ingen `id` i `content` starter med `~` (klienten bruker `~e<n>-<i>` til innebygde overskrifter).
+5. `toc` inneholder bare vertsnotatets overskrifter, aldri innebygde.
+6. `data-status` ≠ `ok` har ingen barn. `vr-base` og bilder er aldri `vr-embed[data-status=ok]`.
+
 ### `vr-base`
 
 | Attributt | Verdi |

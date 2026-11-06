@@ -85,6 +85,14 @@ export const overskrift = (page: Page, tekst: string): Locator =>
 // Tastatur
 // ---------------------------------------------------------------------------------------------
 
+/** Visningsnormalisering for tastekombinasjoner (se fasit.tastaturkart): «Space w» = «␣ w» = «Mellomrom+w». */
+export function normaliserVisning(s: string): string {
+  return s
+    .replace(/Mellomrom|Space|␣/gi, '␣')
+    .replace(/Control|⌃/g, 'Ctrl')
+    .replace(/[\s+]/g, '');
+}
+
 /** Trykker en sekvens tast for tast: `trykkSekvens(page, ['Space', 'w'])`, `['z', 'a']`, `['g', 'g']`. */
 export async function trykkSekvens(page: Page, taster: readonly string[], pauseMs = 40): Promise<void> {
   for (const tast of taster) {

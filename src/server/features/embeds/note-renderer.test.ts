@@ -27,6 +27,7 @@ const SOURCES: Record<string, string> = {
   'Dyp 6.md': '![[Dyp 7]]',
   'Dyp 7.md': 'Bunn',
   'Bilder.md': '![[logo.svg|Logo|120]]\n\n![Rel](attachments/logo.svg)\n\n![[mangler.png]]\n\n![[Oppgaver.base#Kanban]]\n\n![[Tegning.canvas]]\n\n```base\nviews: []\n```',
+  'Garanti.md': '## Vert\n\n![[Kafka]]\n\n![[Kafka#Partisjoner]]\n\n![[Kafka#^offset-def]]',
   'Lenker.md': '[[Kafka#Offset]] [[Apache Kafka]] [[Finnes ikke]] [[#Annen]]\n\n## Annen',
 };
 const OTHER = ['attachments/logo.svg', 'Oppgaver.base', 'Tegning.canvas'];
@@ -138,5 +139,37 @@ describe('createNoteRenderer – lenker', () => {
   it('blokkanker beholder ^ i href', () => {
     const { renderer } = buildVault();
     expect(renderer.documentUrl('a b/Kafka', '^offset-def')).toBe('/v/test/a%20b/Kafka#^offset-def');
+  });
+});
+
+describe('createNoteRenderer – garantier for innebygd innhold (api.md, ADR-009)', () => {
+  const isHeading = (el: Element) => /^h[1-6]$/.test(el.tagName);
+  const firstElement = (el: Element) => el.children.find((c): c is Element => c.type === 'element');
+
+  it('notat-, seksjons- og blokkembed kan skilles og har kildens overskriftsnivåer uten id', () => {
+    const { renderer, file } = buildVault();
+    const result = renderer.renderNote(file('Garanti.md'));
+    const [note, section, block] = embeds(result.content);
+    expect(note!.properties.dataAnchor).toBeUndefined();
+    expect(note!.properties.dataTitle).toBe('Kafka');
+    expect(findAll(note!, isHeading).map((h) => [h.tagName, h.properties.id])).toEqual([
+      ['h1', undefined],
+      ['h2', undefined],
+      ['h3', undefined],
+      ['h2', undefined],
+    ]);
+    expect(section!.properties.dataAnchor).toBe('partisjoner');
+    expect(firstElement(section!)?.tagName).toBe('h2');
+    expect(textOf(firstElement(section!)!)).toBe('Partisjoner');
+    expect(String(block!.properties.dataAnchor)).toMatch(/^\^/);
+    expect(findAll(block!, isHeading)).toEqual([]);
+  });
+
+  it('toc har bare vertens overskrifter, og ingen id starter med ~', () => {
+    const { renderer, file } = buildVault();
+    const result = renderer.renderNote(file('Garanti.md'));
+    expect(result.toc.map((t) => t.text)).toEqual(['Vert']);
+    const ids = findAll(result.content, (el) => typeof el.properties.id === 'string').map((el) => String(el.properties.id));
+    expect(ids.some((id) => id.startsWith('~'))).toBe(false);
   });
 });
