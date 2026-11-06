@@ -110,7 +110,11 @@ export function buildLink(target: LinkTarget, ctx: RenderContext, children: Elem
     dataVrTarget: target.docPath,
   };
   if (target.anchorId) props.dataVrAnchor = target.anchorId;
-  if (target.anchorMissing) props.dataVrAnchorMissing = 'true';
+  if (target.anchorMissing) {
+    props.dataVrAnchorMissing = 'true';
+    // href går til toppen av målet (README-QA regel 7), men klienten får vite hvilket anker som manglet.
+    if (target.missingAnchor) props.dataVrAnchor = target.missingAnchor;
+  }
   if (target.alternatives.length > 0) {
     // PO-26: antall kandidater (inkl. valgt mål).
     props.dataVrAmbiguous = String(target.alternatives.length + 1);

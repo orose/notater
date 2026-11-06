@@ -82,7 +82,8 @@ const WARM_UP_SAMPLE = [
 
 /**
  * CSS-variabel-tema (ADR-002, A9), utvidet med `number`, `type`, `property` og `operator` slik UX
- * definerer i docs/design/tokens.css. Reglene legges sist så de vinner over grunntemaet.
+ * definerer i docs/design/tokens.css. Diff-scopene mappes til `string` (+), `keyword` (−) og
+ * `constant` (endret). Reglene legges sist så de vinner over grunntemaet.
  */
 export function createVaultReaderTheme(): ThemeRegistration {
   const base = createCssVariablesTheme({ name: THEME_NAME, variablePrefix: '--shiki-', fontStyle: true });
@@ -101,6 +102,11 @@ export function createVaultReaderTheme(): ThemeRegistration {
         settings: token('property'),
       },
       { scope: ['keyword.operator'], settings: token('operator') },
+      // Grunntemaet bruker --shiki-token-inserted/-deleted/-changed, som tokens.css ikke definerer.
+      // Vi mapper diff-scopene til eksisterende variabler, så klienten ikke trenger reservevariabler.
+      { scope: ['markup.inserted', 'meta.diff.header.to-file', 'punctuation.definition.inserted'], settings: token('string') },
+      { scope: ['markup.deleted', 'meta.diff.header.from-file', 'punctuation.definition.deleted'], settings: token('keyword') },
+      { scope: ['markup.changed', 'punctuation.definition.changed'], settings: token('constant') },
     ],
   };
 }

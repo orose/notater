@@ -278,7 +278,7 @@ GFM, `input[type=checkbox][disabled]` i oppgavelister, `mark` for `==markering==
 | `data-vr-link` | `internal` \| `unresolved` \| `external` \| `tag` | |
 | `href` | `internal`: `/v/<vaultId>/<DocPath>[#anker]`. `unresolved`: utelatt. `external`: original-URL (kun http/https/mailto). `tag`: utelatt | Klienten bruker router-navigasjon for `internal`. |
 | `data-vr-target` | `DocPath` | `internal` |
-| `data-vr-anchor` | `overskrift-id` eller `^blokkid` | `internal`, valgfri |
+| `data-vr-anchor` | `overskrift-id` eller `^blokkid`; ved `data-vr-anchor-missing` det skrevne ankeret | `internal`, valgfri |
 | `data-vr-raw` | lenketeksten slik den står (`domene/Kunde#Mål`) | `unresolved` (for tooltip) |
 | `data-vr-tag` | `task/x` (uten `#`) | `tag` – klienten åpner ⌘K med `#task/x` |
 
@@ -291,7 +291,7 @@ Tillegg (bakoverkompatible, kan ignoreres av klienten):
 | `data-vr-suggest`, `data-vr-suggest-title` | `unresolved` der et alias matcher (PO-7/PO-25) | `DocPath` og tittel – «Mente du *X*?» |
 | `data-vr-ambiguous` | `internal`, flere filer matchet (PO-8/PO-26) | antall kandidater, f.eks. `"2"` |
 | `data-vr-alternatives` | sammen med `data-vr-ambiguous` | JSON-liste med de andre kandidatenes `DocPath` |
-| `data-vr-anchor-missing` | `internal`, ankeret finnes ikke i målet | `"true"` (lenken går til toppen, README-QA regel 7) |
+| `data-vr-anchor-missing` | `internal`, ankeret finnes ikke i målet | `"true"` (lenken går til toppen, README-QA regel 7). Da settes også `data-vr-anchor` til ankeret slik det ble skrevet (siste ledd uten `#`, f.eks. `Overskrift som ikke finnes` eller `^borte`), mens `href` er uten anker. |
 | `data-vr-external-image` | `external` laget av et eksternt bilde (B10/PO-13) | `"true"` – vis som lenke med bildeikon |
 
 - Visningstekst uten alias: `mål › anker` (f.eks. `Kafka-grunnleggende › Partisjoner`, `[[#X]]` → `X`).

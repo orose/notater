@@ -38,8 +38,9 @@ export function fakeContext(highlighter: CodeHighlighter): FakeContext {
         status: 'internal',
         docPath,
         title: docPath.split('/').pop()!,
-        anchorId: request.anchor ? request.anchor.toLowerCase().replace(/\s+/g, '-') : null,
+        anchorId: request.anchor && request.anchor !== 'Mangler' ? request.anchor.toLowerCase().replace(/\s+/g, '-') : null,
         anchorMissing: request.anchor === 'Mangler',
+        ...(request.anchor === 'Mangler' ? { missingAnchor: 'Mangler' } : {}),
         alternatives: request.path === 'Kunde' ? ['arkiv/2023/Kunde'] : [],
       };
     },

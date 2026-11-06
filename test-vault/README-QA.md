@@ -161,7 +161,7 @@ Selvlenker (`[[#…]]`, `![[Selv-embed]]`) teller ikke som tilbakelenke. Lenker 
 | QA-EMB-07 | Kjede `Kjede 1 → Kjede 2 → Kjede 3#Innhold` | Tre nivåer rendres; «Ikke med»-seksjonen vises ikke. Maks embed-dybde er 5 (PO-15), deretter «for mange nivåer»-kort (`data-status="depth-limit"`). |
 | QA-EMB-08 | `![[Finnes ikke]]`, `![[…#Seksjon som ikke finnes]]` | Diskret kort «Fant ikke …» (samme visuelle språk som brutte lenker). |
 | QA-EMB-09 | `![[Oppgaver.base]]` | Basen rendres inline med alle tre views som faner (slice 3/4). |
-| QA-EMB-10 | `![[Oppgaver.base#Kanban]]` | Bare Kanban-viewet (PO-12). `![[Oppgaver.base#Ukjent]]` → advarselskort «Viewet «Ukjent» finnes ikke» med liste over tilgjengelige views (PO-34; erstatter E2 «første view + advarsel»). Ikke i testvaultet ennå (legges i `lenker/Embed-test.md` sammen med slice 3). |
+| QA-EMB-10 | `![[Oppgaver.base#Kanban]]` | Bare Kanban-viewet (PO-12). `![[Oppgaver.base#Ukjent]]` → advarselskort «Viewet «Ukjent» finnes ikke» med liste over tilgjengelige views (PO-34; erstatter E2 «første view + advarsel»). Står i `lenker/Embed-test.md` (PO-42). |
 | QA-EMB-11 | `![[Tomt notat]]` | Tomt innrammet kort / «Tomt notat», ingen krasj. |
 | QA-EMB-12 | `![[Tegning.canvas]]` | «ikke støttet»-kort (Canvas). |
 | QA-EMB-13 | `![[Domene.base]]` i `domene/_MOC.md` og `Velkommen.md` | Samme 12 rader som i `docs/test/bases-fasit.md`. |
@@ -382,6 +382,7 @@ Alle forslag i tabellen er **godkjent** av PO slik de står (PO-7 til PO-17), me
 | 2026-11-05 | QA-EMB-06 omskrevet: syklus = samme fil + samme seksjon. `![[#Seksjon]]` før seksjonen er lov. Ny seksjon «Tredje seksjon» i `lenker/Selv-embed.md` dekker ekte seksjons-selvembed. | PO-32 (BE-Q1) |
 | 2026-11-05 | QA-SOK-06: «ingen treff utenom README-QA». QA-SOK-07 presisert. | PO-33 (BE-Q2) |
 | 2026-11-05 | QA-EMB-10 / E2: ukjent view → advarselskort med liste over views. | PO-34 |
+| 2026-11-06 | `![[Oppgaver.base#Ukjent]]` lagt inn i `lenker/Embed-test.md` (ingen endring i tilbakelenke-antall: Embed-test lenket allerede til `Oppgaver.base`). | PO-42 |
 | 2026-11-05 | QA-MD-10: første H1 blir visningstittel og fjernes fra brødteksten. | PO-35 |
 | 2026-11-05 | QA-SOK-09: snarvei vises som `⌘K` (macOS) / `Ctrl K` (ellers). | PO-36 |
 | 2026-11-05 | Alias-hint (PO-7/PO-25), tvetydighetsindikator (PO-8/PO-26), property-backlinks (PO-9), tagger case-insensitive (PO-10), norske callout-titler og `<br>` (PO-14), embed-dybde 5 og TOC ≥ 3 (PO-15), CSP (PO-16), ingress/skjulte properties/lesetid (PO-21–23, PO-29), tags-endepunkt og 404 for ukjent API-rute (PO-24), `frontmatterError` (PO-27, ny QA-FM-04), «Lenket fra» på manglende notat (PO-28), «Fotnoter»/sidenoter (PO-20, PO-30). Alle **(PO?)**-merker fjernet. | PO-1–PO-31 |

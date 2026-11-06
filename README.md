@@ -103,8 +103,9 @@ Valget lagres i nettleseren. Du kan også lenke til et tema: `?type=terminal&pal
 **`Vault-leseren krever Node.js 22.22 eller nyere`** – oppgrader Node (`nvm install && nvm use`, eller
 last ned fra [nodejs.org](https://nodejs.org)), og kjør `npm install` på nytt.
 
-**`EADDRINUSE: address already in use 127.0.0.1:4317`** – porten er opptatt, ofte av en leser som allerede
-kjører. Stopp den, eller velg en annen port: `npm start -- --port 4400`.
+**`Porten 4317 på 127.0.0.1 er allerede i bruk`** – en annen prosess, ofte en leser som allerede kjører,
+bruker porten. Leseren avslutter da med denne meldingen. Stopp den andre prosessen, eller velg en annen port:
+`npm start -- --port 4400` (eller `"port"` i konfigfila / `VAULT_READER_PORT`).
 
 **`Konfigurasjonsfeil: …`** – meldingen sier hvilket felt som er feil. Vanligst er ugyldig JSON eller en
 `id` med store bokstaver/mellomrom.

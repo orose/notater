@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { serve } from '@hono/node-server';
 import { createApp } from './app/create-app';
+import { describeListenError } from './app/listen-error';
 import { createCodeHighlighter } from './features/code-highlight';
 import type { CodeHighlighter } from './features/code-highlight';
 import { ConfigError, resolveConfig } from './features/config';
@@ -49,6 +50,14 @@ const app = createApp({ webRoot: './dist/web', version: process.env.npm_package_
 // overrideGlobalObjects: false – ellers erstattes global `Response`, som Shikis WASM-lasting trenger.
 const server = serve({ fetch: app.fetch, hostname: HOST, port: config.port, overrideGlobalObjects: false }, (info) => {
   console.log(`Vault-leser kjører på http://${HOST}:${info.port}`);
+});
+
+// Opptatt port o.l.: kort norsk melding og exit 1 i stedet for en ubehandlet stakk.
+server.on('error', (error: unknown) => {
+  const message = describeListenError(error, HOST, config.port);
+  if (message === null) throw error;
+  console.error(message);
+  process.exit(1);
 });
 
 // Standard-vaultet indekseres ved oppstart (AK17 måles fra start til «indeks klar»); øvrige lat.

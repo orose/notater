@@ -12,7 +12,8 @@ const vault = process.env.PERF_VAULT;
 const RUNS = Number(process.env.PERF_RUNS ?? 5);
 const port = E2E_PORT + 9;
 
-test.describe.configure({ mode: 'serial' });
+// Ikke serial: notatbytte-testen kjører selv om indekseringskravet feiler.
+test.describe.configure({ mode: 'default' });
 test.skip(!vault, 'Sett PERF_VAULT til et generert 2000-vault');
 
 let dir: string;
@@ -35,6 +36,8 @@ const p95 = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.min(xs.length -
 test('AK17: indeksering av 2000 notater < 3 s (median av kalde starter)', async () => {
   test.setTimeout(300_000);
   const config = writeConfig(dir, vault!, port);
+  const { loadavg } = await import('node:os');
+  test.info().annotations.push({ type: 'last', description: `loadavg før måling: ${loadavg().map((l) => l.toFixed(2)).join(' ')}` });
   const ready: number[] = [];
   const indexMs: number[] = [];
   for (let i = 0; i < RUNS; i++) {
@@ -54,7 +57,7 @@ test('AK17: indeksering av 2000 notater < 3 s (median av kalde starter)', async 
 
 test('AK17: notatbytte < 200 ms (p95 over 20 klikk på interne lenker)', async ({ page }) => {
   test.setTimeout(180_000);
-  expect(server, 'serveren fra forrige test').not.toBeNull();
+  server ??= await startServer(dir, writeConfig(dir, vault!, port), port, 120_000);
   const base = `http://127.0.0.1:${port}`;
   const tree = (await (await page.request.get(`${base}/api/vaults/test/tree`)).json()) as { root: unknown };
   expect(tree).toBeTruthy();
@@ -81,20 +84,27 @@ test('AK17: notatbytte < 200 ms (p95 over 20 klikk på interne lenker)', async (
       continue;
     }
     const from = new URL(page.url()).pathname;
-    const oldTitle = await page.getByRole('heading', { level: 1 }).first().innerText();
     await link.scrollIntoViewIfNeeded();
-    const t0 = await page.evaluate(() => performance.now());
-    await link.click();
-    // Synlig: URL endret, ny H1 og artikkelinnhold rendret.
-    await page.waitForFunction(
-      ([oldPath]) => location.pathname !== oldPath && !!document.querySelector('main article') && !document.querySelector('main [aria-busy="true"]'),
-      [from],
+    // Måles i nettleseren: fra klikk (capture) til ny H1 og artikkel er i DOM og malt (MutationObserver + rAF).
+    const measuring = page.evaluate(
+      () =>
+        new Promise<number>((resolve) => {
+          const oldTitle = document.querySelector('main h1')?.textContent ?? '';
+          let t0 = 0;
+          addEventListener('click', () => (t0 = performance.now()), { capture: true, once: true });
+          const check = () => {
+            const h = document.querySelector('main h1');
+            if (t0 && h && h.textContent !== oldTitle && document.querySelector('main article')) {
+              obs.disconnect();
+              requestAnimationFrame(() => resolve(performance.now() - t0));
+            }
+          };
+          const obs = new MutationObserver(check);
+          obs.observe(document.body, { subtree: true, childList: true, characterData: true });
+        }),
     );
-    await page.waitForFunction(([title]) => {
-      const h = document.querySelector('main h1');
-      return !!h && h.textContent !== title;
-    }, [oldTitle]).catch(() => undefined);
-    const ms = (await page.evaluate(() => performance.now())) - t0;
+    await link.click();
+    const ms = await measuring;
     timings.push({ ms: Math.round(ms), from: decodeURIComponent(from), to: decodeURIComponent(new URL(page.url()).pathname) });
   }
   const values = timings.map((t) => t.ms);

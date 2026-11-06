@@ -197,7 +197,7 @@ Feilkort i blokken («Kunne ikke lese base-definisjonen» + linjenummer hvis mul
 | `domene/_MOC.md`, `Velkommen.md`: `![[Domene.base]]` | Samme 12 rader som §1. |
 | `lenker/Embed-test.md`: `![[Oppgaver.base]]` | Alle tre views som faner, første fane «Huskeliste» aktiv. |
 | `lenker/Embed-test.md`: `![[Oppgaver.base#Kanban]]` | Bare Kanban (PO-12). |
-| Embed med ukjent viewnavn, f.eks. `![[Oppgaver.base#Ukjent]]` (ikke i testvaultet ennå – backends test i `document-service.test.ts` sjekker eksakt liste over base-embeds i `Embed-test`; legges til i samme endring som slice 3-testene) | Advarselskort «Viewet «Ukjent» finnes ikke» med liste over tilgjengelige views: Huskeliste, Kanban, Arkiv (PO-34). Ingen fallback til første view. |
+| `lenker/Embed-test.md`: `![[Oppgaver.base#Ukjent]]` (PO-42) | Advarselskort «Viewet «Ukjent» finnes ikke» med liste over tilgjengelige views: Huskeliste, Kanban, Arkiv (PO-34). Ingen fallback til første view. |
 
 ## 5. Feilsøkingsnøkkel – symptom → sannsynlig feil
 

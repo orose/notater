@@ -47,7 +47,7 @@ describe('wikilinks', () => {
 
   it('tvetydig lenke og manglende anker merkes', () => {
     expect(first('[[Kunde]]', 'a').properties).toMatchObject({ dataVrAmbiguous: '2', dataVrAlternatives: '["arkiv/2023/Kunde"]' });
-    expect(first('[[Kafka#Mangler]]', 'a').properties).toMatchObject({ dataVrAnchorMissing: 'true' });
+    expect(first('[[Kafka#Mangler]]', 'a').properties).toMatchObject({ dataVrAnchorMissing: 'true', dataVrAnchor: 'Mangler', href: '/v/test/Kafka' });
   });
 
   it('embeds delegeres til konteksten', () => {

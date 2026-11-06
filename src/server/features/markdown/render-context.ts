@@ -24,6 +24,8 @@ export type LinkTarget =
       readonly anchorId: string | null;
       /** Ankeret var oppgitt, men finnes ikke i målet. */
       readonly anchorMissing: boolean;
+      /** Det oppgitte ankeret (siste ledd, uten `#`) når `anchorMissing` er sann; sendes som `data-vr-anchor`. */
+      readonly missingAnchor?: string;
       /** Andre kandidater ved tvetydig lenke (PO-8). */
       readonly alternatives: readonly DocPath[];
     }

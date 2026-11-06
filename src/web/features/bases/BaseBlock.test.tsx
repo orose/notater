@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import type { BaseResult } from '../../../shared/api-types';
 import { BaseBlock } from './BaseBlock';
+import { scrollEdges } from './BaseKanban';
 
 const result: BaseResult = {
   warnings: [{ code: 'unknown-key', message: '1 ukjent nøkkel ignorert: cardSize', source: 'cardSize' }],
@@ -139,5 +140,68 @@ describe('BaseBlock', () => {
     );
     expect(screen.getByRole('region', { name: 'Base i notatet' })).toBeInTheDocument();
     expect(screen.getByText('Basen kunne ikke vises.')).toBeInTheDocument();
+  });
+
+  it('ukjent view gir advarselskort med tilgjengelige views, ingen fallback (PO-34/PO-46)', () => {
+    render(
+      <MemoryRouter>
+        <BaseBlock
+          vaultId="test"
+          sourcePath="Oppgaver.base"
+          viewName="Ukjent"
+          result={{
+            views: [],
+            warnings: [
+              {
+                code: 'unknown-view',
+                message: 'Viewet «Ukjent» finnes ikke. Tilgjengelige views: «Huskeliste», «Kanban», «Arkiv».',
+                source: 'Ukjent',
+                availableViews: ['Huskeliste', 'Kanban', 'Arkiv'],
+              },
+            ],
+          }}
+        />
+      </MemoryRouter>,
+    );
+    const card = screen.getByRole('note');
+    expect(within(card).getByText('Viewet «Ukjent» finnes ikke')).toBeInTheDocument();
+    expect(within(card).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Huskeliste', 'Kanban', 'Arkiv']);
+    expect(within(card).getByRole('link', { name: 'Kanban' })).toHaveAttribute('href', '/v/test/Oppgaver.base');
+    expect(screen.queryByText(/Tilgjengelige views: «Huskeliste»/)).toBeNull();
+    expect(screen.queryByText('Basen kunne ikke vises.')).toBeNull();
+  });
+
+  it('ugyldig YAML vises inne i kortet med detaljer (PO-46)', () => {
+    render(
+      <MemoryRouter>
+        <BaseBlock
+          vaultId="test"
+          result={{
+            views: [],
+            warnings: [{ code: 'invalid-yaml', message: 'Kunne ikke lese base-definisjonen (linje 4): ugyldig YAML.', source: 'Flow sequence … line 4' }],
+          }}
+        />
+      </MemoryRouter>,
+    );
+    const card = screen.getByRole('note');
+    expect(within(card).getByText('Kunne ikke lese base-definisjonen (linje 4): ugyldig YAML.')).toBeInTheDocument();
+    expect(within(card).getByText('Flow sequence … line 4')).toBeInTheDocument();
+    expect(document.querySelectorAll('.base-warn')).toHaveLength(0);
+  });
+
+  it('kanban fordeler kolonnene på bredden (PO-43)', () => {
+    renderBase({ viewName: 'Kanban' });
+    expect((document.querySelector('.kanban') as HTMLElement).style.getPropertyValue('--lanes')).toBe('2');
+  });
+});
+
+describe('scrollEdges (PO-43 fade-hint)', () => {
+  it('ingen overflyt → ingen hint', () => {
+    expect(scrollEdges(0, 600, 600)).toBe('none');
+  });
+  it('mer til høyre, til venstre eller begge veier', () => {
+    expect(scrollEdges(0, 600, 900)).toBe('end');
+    expect(scrollEdges(300, 600, 900)).toBe('start');
+    expect(scrollEdges(150, 600, 900)).toBe('both');
   });
 });

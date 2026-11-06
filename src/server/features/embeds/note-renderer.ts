@@ -12,7 +12,7 @@ import { resolveAnchor } from '../links';
 import type { LinkResolver } from '../links';
 import { h, renderMarkdown } from '../markdown';
 import type { EmbedRequest, LinkRequest, LinkTarget, RenderContext, SectionSelector } from '../markdown';
-import { parseImageAlias } from '../markdown-syntax';
+import { lastAnchorSegment, parseImageAlias } from '../markdown-syntax';
 import type { IndexedNote, VaultFile } from '../vault-index';
 
 /** PO-15: maks embed-dybde. */
@@ -82,6 +82,7 @@ export function createNoteRenderer(deps: NoteRendererDeps): NoteRenderer {
           title: resolved.file.title,
           anchorId: anchor.id,
           anchorMissing: anchor.missing,
+          ...(anchor.missing && request.anchor ? { missingAnchor: lastAnchorSegment(request.anchor).trim() } : {}),
           alternatives: resolved.alternatives.map((f) => f.docPath),
         };
       };

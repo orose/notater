@@ -123,6 +123,8 @@ describe('getDocument – lenker i Lenketest (README-QA §4)', () => {
     expect(byText('Kafka-grunnleggende › Overskrift som ikke finnes').properties).toMatchObject({
       dataVrLink: 'internal',
       dataVrAnchorMissing: 'true',
+      dataVrAnchor: 'Overskrift som ikke finnes',
+      href: '/v/test/teknisk/Kafka/Kafka-grunnleggende',
     });
   });
 
@@ -194,9 +196,11 @@ describe('getDocument – embeds i Embed-test (README-QA §5)', () => {
   it('base-embeds evalueres; #View gir bare det viewet (PO-12), canvas er ikke støttet', () => {
     const doc = note('lenker/Embed-test');
     const baseEls = findAll(doc.content, byTag('vr-base'));
-    expect(baseEls.map((b) => b.properties.dataView ?? null)).toEqual([null, 'Kanban']);
+    expect(baseEls.map((b) => b.properties.dataView ?? null)).toEqual([null, 'Kanban', 'Ukjent']);
     const results = baseEls.map((b) => doc.bases[String(b.properties.dataBaseId)]!);
-    expect(results.map((r) => r.views.map((v) => v.name))).toEqual([['Huskeliste', 'Kanban', 'Arkiv'], ['Kanban']]);
+    expect(results.map((r) => r.views.map((v) => v.name))).toEqual([['Huskeliste', 'Kanban', 'Arkiv'], ['Kanban'], []]);
+    // PO-34/PO-42: ukjent view → advarsel med liste over tilgjengelige views, ingen fallback.
+    expect(results[2]!.warnings).toEqual([expect.objectContaining({ code: 'unknown-view', message: expect.stringContaining('«Huskeliste», «Kanban», «Arkiv»') })]);
     expect(findAll(doc.content, byTag('vr-unsupported'))[0]!.properties.dataKind).toBe('canvas');
   });
 });

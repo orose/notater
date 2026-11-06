@@ -41,6 +41,10 @@ Forventet: seksjonen «Partisjoner» **inkludert** underseksjonen «Antall parti
 
 ![[Oppgaver.base#Kanban]]
 
+Ukjent view gir advarselskort med liste over tilgjengelige views (PO-34):
+
+![[Oppgaver.base#Ukjent]]
+
 ## Tomt notat
 
 ![[Tomt notat]]
