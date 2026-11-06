@@ -279,3 +279,5 @@ Designet (prototype-v1.1.html, designsystem §11) er **godkjent** som referanse.
 | BE37 | `\|300x200` og `<img width height>` skaleres til å passe inni boksen med bevart sideforhold; `\|300` / bare `height` regner ut den andre siden. Ukjent størrelse gir bare det som ble bedt om. `![alt\|300](sti)` støttes (bare med `\|`, så alt-tekst som «2024» ikke blir en bredde). | PO-71: bevar sideforholdet, ingen forvrengning selv uten `height: auto`. | Vedtatt |
 - **PO-75** Navngivning for bredde følger ADR-008 (`data-width="full"`, nøkkel `vault-leser.visning`). Designsystemet oppdateres ved neste UX-runde.
 - **PO-76** Testene i `ak12-live-reload` skal tåle gjentatt kjøring (egen vault-kopi per test eller tilbakestilling) – QA-oppgave.
+- **PO-77** QA-hjelperen `overskrift()` (eksakt tekstslutt) – godkjent. Ankerlenke `#` kun på h2/h3 som i v1 – godkjent.
+- **PO-78 (bug)** Omdøping kan splittes over to SSE-batcher (removed i én, added i neste) → ingen `renamed`. Backend skal holde tilbake `removed` i et kort vindu (f.eks. 300 ms) for å pare med en påfølgende `added`.
