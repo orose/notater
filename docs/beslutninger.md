@@ -157,3 +157,14 @@ Frontendens avvik 1–8 er **godkjent** (temascript som ekstern fil pga. CSP; br
 | BE23 | Resultater caches per snapshot (WeakMap); uttrykk med `now()`/`today()` caches ikke. Postkilden (én `VaultRecord` per fil, lat konvertering) bygges én gang per snapshot. | Live reload uten eksplisitt invalidering; < 50 ms kaldt. | Vedtatt |
 | BE24 | `this` = vertsnotatet for ` ```base `-blokker og `.base`-fila selv for fil-baser (også ved embed, siden `BaseRequest` ikke bærer verten). | Enkelt; utvides hvis kunden bruker `this` i embeddede baser. | Antakelse |
 | BE25 | PO-38 utført: `remark-frontmatter` og `mdast-util-find-and-replace` avinstallert. | Ubrukte. | Vedtatt |
+
+## PO-avgjørelser etter Bases-leveranse (slice 3–4)
+
+- **PO-39 (BE19)** Ja: tabeller uten `sort` sorteres på `file.name`.
+- **PO-40 (BE20)** JS-lik `&&`/`||` og dato-mot-datostreng-sammenligning godtas.
+- **PO-41 (BE24)** `this` → `.base`-fila ved embed godtas for v1 (kunden bruker ikke `this` i sine baser).
+- **PO-42** QA legger `![[Oppgaver.base#Ukjent]]` inn i `lenker/Embed-test.md` og oppdaterer forventningen i `document-service.test.ts`.
+- **PO-43 Bred layout for Bases** `.base`-sider og base-blokker bryter ut av lesekolonnen og bruker lesekolonne + høyre marg (høyre marg brukes ikke på `.base`-sider). Kanban-kolonner: min 220 px, fordeles på tilgjengelig bredde; først når de ikke får plass, intern horisontal scroll med synlig hint (fade i kant). Mål: Oppgaver-kanban (6 kolonner) skal vise alle kolonnene uten scroll ved 1440 px.
+- **PO-44 Ingen duplikat-tilbakelenker** Tilbakelenker med kontekst nederst i notatet er primærvisningen. Høyre marg viser i stedet en kompakt lenke «Tilbakelenker (n) ↓» som hopper ned.
+- **PO-45** Uthevingen i tilbakelenke-kontekst skal dekke hele lenketeksten (`Oppgaver.base`, ikke bare `Oppgaver`).
+- **PO-46** Frontend-forslag 1–3 fra backend godkjent: `unknown-view` → «Viewet «X» finnes ikke» + `availableViews`; `invalid-yaml` inne i kortet; e2e setter `timezoneId: 'Europe/Oslo'`.
