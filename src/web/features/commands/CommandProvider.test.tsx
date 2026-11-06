@@ -168,7 +168,7 @@ describe('CommandProvider: tastatur → kommandoer', () => {
 });
 
 describe('?-oversikten', () => {
-  it('? åpner «Hurtigtaster» med gruppene i rekkefølge og én rad per kommando med taster', () => {
+  it('? åpner «Hurtigtaster» med gruppene i rekkefølge, par slått sammen', () => {
     setup();
     key('?', { shiftKey: true });
     const dialog = screen.getByRole('dialog', { name: 'Hurtigtaster' });
@@ -187,6 +187,15 @@ describe('?-oversikten', () => {
         .getAllByTestId('hurtigtast-binding')
         .map((b) => [...b.querySelectorAll('kbd')].map((k) => k.textContent)),
     ).toEqual([['Space', 'm'], ['Ctrl .']]);
+    // PO-69: par-rad med begge kommandoene.
+    const scroll = rows.find((r) => r.dataset.commandIds === 'scroll.down scroll.up') as HTMLElement;
+    expect(within(scroll).getByTestId('hurtigtast-navn')).toHaveTextContent('Rull ned / opp');
+    expect([...scroll.querySelectorAll<HTMLElement>('[data-command-id]')].map((c) => [c.dataset.commandId, c.textContent])).toEqual([
+      ['scroll.down', 'j'],
+      ['scroll.up', 'k'],
+    ]);
+    // Enkel rad: id-en står på raden, ikke inne i den.
+    expect((toggle as HTMLElement).querySelectorAll('[data-command-id]')).toHaveLength(0);
     expect(dialog).not.toHaveTextContent('⌘');
   });
 

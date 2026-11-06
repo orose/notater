@@ -91,17 +91,12 @@ Tabellen genereres fra kommandoregisteret med `npm run docs:shortcuts`. Ikke red
 <!-- hurtigtaster:start -->
 | Gruppe | Taster | Kommando |
 |---|---|---|
-| Navigasjon | `j` | Rull ned |
-|  | `k` | Rull opp |
-|  | `Ctrl d` | Halv side ned |
-|  | `Ctrl u` | Halv side opp |
-|  | `gg` | Til toppen |
-|  | `G` | Til bunnen |
-|  | `H` | Tilbake |
-|  | `L` | Frem |
+| Navigasjon | `j`, `k` | Rull ned / opp |
+|  | `Ctrl d`, `Ctrl u` | Halv side ned / opp |
+|  | `gg`, `G` | Til toppen / bunnen |
+|  | `H`, `L` | Tilbake / frem i historikken |
 | Lesing | `za` | Fold/utfold seksjonen |
-|  | `zM` | Fold alle |
-|  | `zR` | Utfold alle |
+|  | `zM`, `zR` | Fold alle / utfold alle |
 | Visning | `Space w` | Bytt lesebredde |
 |  | `Space d` | Diskré embedding – dette notatet |
 |  | `Space z` | Zen-modus |

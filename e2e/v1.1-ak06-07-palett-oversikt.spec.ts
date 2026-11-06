@@ -20,26 +20,49 @@ import {
   åpneUtseende,
 } from './support/v11';
 
-interface Rad {
-  readonly id: string | null;
-  readonly navn: string;
+/** Én kommando i `?`-kortet: id, tastealternativene (én streng per `hurtigtast-binding`) og radens etikett. */
+interface KortKommando {
+  readonly id: string;
   readonly taster: string[];
+  /** Etiketten på raden kommandoen står i; i en par-rad felles («Rull ned / opp», PO-69). */
+  readonly radnavn: string;
+  /** Antall kommandoer i raden (1 = enkel rad, 2 = par-rad). */
+  readonly iRaden: number;
 }
 
-/** Radene i hurtigtastoversikten: `data-testid="hurtigtast-rad"`, `data-command-id`, navn, én `<kbd>` per tast/alternativ. */
-async function raderIOversikt(page: Page): Promise<Rad[]> {
-  return hurtigtastoversikt(page)
-    .getByTestId('hurtigtast-rad')
-    .evaluateAll((rader) =>
-      rader.map((rad) => {
-        // Alternativer (f.eks. «Space m» og «⌘.») står i hvert sitt element med data-testid="hurtigtast-binding".
-        const bindinger = [...rad.querySelectorAll('[data-testid="hurtigtast-binding"]')];
-        const kilder = bindinger.length > 0 ? bindinger : [rad];
-        const taster = kilder.map((b) => [...b.querySelectorAll('kbd')].map((k) => (k.textContent ?? '').trim()).join(' '));
-        const navnEl = rad.querySelector('[data-testid="hurtigtast-navn"]');
-        return { id: rad.getAttribute('data-command-id'), navn: (navnEl?.textContent ?? '').trim(), taster };
-      }),
-    );
+interface Kort {
+  readonly rader: { readonly navn: string; readonly ider: string[] }[];
+  readonly kommandoer: KortKommando[];
+  readonly tips: string[];
+}
+
+/**
+ * Leser `?`-kortet (testplanen §6, PO-69). Radene har `data-testid="hurtigtast-rad"`; en rad kan være en
+ * par-rad med flere kommandoer. Hver kommando har `data-command-id` på raden selv (enkel rad) eller på et
+ * element inne i raden (par-rad). Hvert tastealternativ står i `data-testid="hurtigtast-binding"` med én
+ * `<kbd>` per akkord. Tasthint-rader (komponentenes egne taster) har `data-testid="hurtigtast-tips"`.
+ */
+async function lesKort(page: Page): Promise<Kort> {
+  return hurtigtastoversikt(page).evaluate((dialog) => {
+    const kbdTekst = (el: Element) => [...el.querySelectorAll('kbd')].map((k) => (k.textContent ?? '').trim()).join(' ');
+    const rader: { navn: string; ider: string[] }[] = [];
+    const kommandoer: { id: string; taster: string[]; radnavn: string; iRaden: number }[] = [];
+    for (const rad of dialog.querySelectorAll('[data-testid="hurtigtast-rad"]')) {
+      const navnEl = rad.querySelector('[data-testid="hurtigtast-navn"]') ?? rad.querySelector('dd');
+      const radnavn = (navnEl?.textContent ?? '').replace(/\s+/g, ' ').trim();
+      const indre = [...rad.querySelectorAll('[data-command-id]')];
+      const eiere = indre.length > 0 ? indre : rad.hasAttribute('data-command-id') ? [rad] : [];
+      const ider = eiere.map((e) => e.getAttribute('data-command-id') ?? '');
+      rader.push({ navn: radnavn, ider });
+      for (const eier of eiere) {
+        const bindinger = eier.matches('[data-testid="hurtigtast-binding"]') ? [eier] : [...eier.querySelectorAll('[data-testid="hurtigtast-binding"]')];
+        const taster = (bindinger.length > 0 ? bindinger : [eier]).map(kbdTekst).filter((t) => t !== '');
+        kommandoer.push({ id: eier.getAttribute('data-command-id') ?? '', taster, radnavn, iRaden: eiere.length });
+      }
+    }
+    const tips = [...dialog.querySelectorAll('[data-testid="hurtigtast-tips"]')].map((t) => (t.textContent ?? '').replace(/\s+/g, ' ').trim());
+    return { rader, kommandoer, tips };
+  });
 }
 
 async function åpneOversikt(page: Page): Promise<Locator> {
@@ -142,21 +165,31 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     await expect(valg).toContainText(/ikke tilgjengelig|bare|kun/i);
   });
 
-  test('TC-06-09 alle kommandoer i oversikten finnes i paletten med samme hurtigtast', async ({ page }) => {
+  test('TC-06-09 alle kommandoer i oversikten finnes i paletten med sin primære hurtigtast (PO-69)', async ({ page }) => {
+    const register = (await lastRegister()).kommandoer;
+    const navn = new Map(register.map((k) => [k.id, k.name]));
+    // Primær hurtigtast = første normal-binding i registeret (Leader → Space, Mod → Ctrl utenfor macOS).
+    const primær = new Map(
+      register.map((k) => [k.id, normaliserVisning((k.bindings.find((b) => b.mode === 'normal')?.raw ?? '').replace(/Leader/g, 'Space').replace(/Mod\+/g, 'Ctrl+')).toLowerCase()]),
+    );
     await openNote(page, 'lesekomfort/Kvartalsrapport');
     await åpneOversikt(page);
-    const rader = await raderIOversikt(page);
-    expect(rader.length).toBeGreaterThan(10);
+    const { kommandoer } = await lesKort(page);
+    expect(kommandoer.length).toBeGreaterThan(10);
     await page.keyboard.press('Escape');
-    for (const rad of rader) {
+    // Kommandoer som ikke vises i paletten (inPalette: false – Esc og «:»)
+    const ikkeIPaletten = new Set(['system.escape', 'palette.commands']);
+    for (const k of kommandoer.filter((x) => !ikkeIPaletten.has(x.id))) {
+      const kommandonavn = navn.get(k.id) ?? '';
+      expect(kommandonavn, `${k.id} finnes i registeret`).not.toBe('');
       await fokusPåInnhold(page);
       await page.keyboard.press(':');
-      await palettInput(page).pressSequentially(rad.navn);
-      const valg = palett(page).getByRole('option').filter({ hasText: rad.navn }).first();
-      await expect(valg, rad.navn).toBeVisible();
-      if (rad.id) await expect(valg).toHaveAttribute('data-command-id', rad.id);
+      await palettInput(page).pressSequentially(kommandonavn);
+      const valg = palett(page).locator(`[role="option"][data-command-id="${k.id}"]`);
+      await expect(valg, k.id).toBeVisible();
       const vist = normaliserVisning((await valg.locator('kbd').allInnerTexts()).join(' '));
-      expect(vist, `${rad.navn}: palett viser samme (første) hurtigtast som oversikten`).toBe(normaliserVisning(rad.taster[0] ?? ''));
+      expect(k.taster.map(normaliserVisning), `${k.id}: palettens tast står også i kortet`).toContain(vist);
+      expect(vist.toLowerCase(), `${k.id}: paletten viser kun primær hurtigtast (PO-69)`).toBe(primær.get(k.id));
       await page.keyboard.press('Escape');
     }
   });
@@ -198,7 +231,7 @@ test.describe('AK-1.1-07 hurtigtastoversikt', () => {
   test('TC-07-02 alle bindinger fra tastaturkartet i spesifikasjonen er med', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await åpneOversikt(page);
-    const vist = new Set((await raderIOversikt(page)).flatMap((r) => r.taster.map(normaliserVisning)));
+    const vist = new Set((await lesKort(page)).kommandoer.flatMap((k) => k.taster.map(normaliserVisning)));
     const mangler = fasit.tastaturkart.bindinger.map(normaliserVisning).filter((b) => !vist.has(b));
     expect(mangler).toEqual([]);
   });
@@ -234,26 +267,39 @@ test.describe('AK-1.1-07 hurtigtastoversikt', () => {
     await expect(hurtigtastoversikt(page)).toContainText(/Ctrl\s*K/);
   });
 
-  test('TC-07-07 innholdet er identisk med registeret', async ({ page }) => {
+  test('TC-07-07 innholdet er identisk med registeret (kommandoer, taster, tips)', async ({ page }) => {
     const register = await lastRegister();
     await openNote(page, 'Velkommen');
     await åpneOversikt(page);
-    const rader = await raderIOversikt(page);
+    const kort = await lesKort(page);
     const medTaster = register.kommandoer.filter((k) => k.bindings.some((b) => b.mode === 'normal'));
-    expect(rader.map((r) => r.id).sort()).toEqual(medTaster.map((k) => k.id).sort());
-    for (const k of medTaster) expect(rader.find((r) => r.id === k.id)?.navn, k.id).toBe(k.name);
+    // Hver kommando med taster står nøyaktig én gang (par-rader teller begge), ingen ukjente id-er.
+    expect(kort.kommandoer.map((k) => k.id).sort()).toEqual(medTaster.map((k) => k.id).sort());
+    for (const k of medTaster) {
+      const vist = kort.kommandoer.find((x) => x.id === k.id);
+      expect(vist?.taster.length, `${k.id}: alle tastealternativer vises`).toBe(k.bindings.filter((b) => b.mode === 'normal').length);
+      // Enkel rad: etiketten er kommandonavnet. Par-rad: felles etikett (PO-69), ikke tom.
+      if (vist?.iRaden === 1) expect(vist.radnavn, k.id).toBe(k.name);
+      else expect(vist?.radnavn, k.id).not.toBe('');
+    }
+    expect(kort.rader.every((r) => r.ider.length >= 1 && r.ider.length <= 2), 'rader har 1 eller 2 kommandoer').toBe(true);
+    expect(kort.tips.length, 'tasthint (KEY_HINTS) som egne rader').toBe(register.tips.length);
   });
 
   test('TC-07-08 README-tabellen er generert og i sync med oversikten', async ({ page }) => {
     const readme = readFileSync(join(REPO, 'README.md'), 'utf8');
     const m = /<!-- hurtigtaster:start -->([\s\S]*?)<!-- hurtigtaster:end -->/.exec(readme);
     expect(m, 'README har markørene <!-- hurtigtaster:start/end --> (npm run docs:shortcuts)').not.toBeNull();
-    const tabell = m?.[1] ?? '';
+    const avsnitt = m?.[1] ?? '';
+    const tabellrader = avsnitt.split('\n').filter((l) => /^\|.*\|\s*$/.test(l) && !/^\|\s*-/.test(l)).slice(1);
     await openNote(page, 'Velkommen');
     await åpneOversikt(page);
-    const rader = await raderIOversikt(page);
-    const tabellrader = tabell.split('\n').filter((l) => /^\|.*\|\s*$/.test(l) && !/^\|\s*-/.test(l));
-    expect(tabellrader.length - 1, 'én rad per kommando (+ overskriftsrad)').toBe(rader.length);
-    for (const rad of rader) expect(tabell, rad.navn).toContain(rad.navn);
+    const kort = await lesKort(page);
+    // README kan ha én rad per kommando eller følge par-radene i kortet (PO-69).
+    expect([kort.kommandoer.length, kort.rader.length], 'antall tabellrader').toContain(tabellrader.length);
+    const tabell = normaliserVisning(tabellrader.join('\n').replace(/`/g, ''));
+    for (const rad of kort.rader) expect(avsnitt, `etikett: ${rad.navn}`).toContain(rad.navn);
+    for (const k of kort.kommandoer) for (const t of k.taster) expect(tabell, `${k.id}: ${t}`).toContain(normaliserVisning(t));
+    expect(avsnitt.split('\n').filter((l) => /^\s*-\s/.test(l)).length, 'tasthint som punktliste').toBe(kort.tips.length);
   });
 });

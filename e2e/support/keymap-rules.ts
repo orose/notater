@@ -251,13 +251,14 @@ export function normaliserRegister(register: unknown): NormalisertKommando[] {
   });
 }
 
-/** Registeret (ADR-007): katalogen + `catalogBindings()` i src/web/features/commands (ren TS). */
+/** Registeret (ADR-007): katalogen + `catalogBindings()` fra den rene TS-flaten `commands/model` (PO-72). */
 export const REGISTER_FIL = 'src/web/features/commands/model/index.ts'; // ren TS (index.ts drar inn React og CSS)
 
 interface KatalogModul {
   readonly catalogBindings: () => ReadonlyArray<{ readonly commandId: string; readonly mode: string; readonly keys: string }>;
   readonly COMMAND_CATALOG: Readonly<Record<string, { readonly name: string; readonly group: string }>>;
   readonly GROUP_LABELS: Readonly<Record<string, string>>;
+  readonly KEY_HINTS: ReadonlyArray<{ readonly id: string }>;
 }
 
 /**
@@ -265,7 +266,7 @@ interface KatalogModul {
  * inn web-koden; modulen er ren TS og lastes av Playwrights TS-laster i Node.
  * Bindingene parses med QAs egen parser (uavhengig av `parseKeySequence`), så policyen sjekkes to ganger.
  */
-export async function lastRegister(): Promise<{ readonly fil: string; readonly kommandoer: NormalisertKommando[] }> {
+export async function lastRegister(): Promise<{ readonly fil: string; readonly kommandoer: NormalisertKommando[]; readonly tips: readonly string[] }> {
   const fil = join(REPO, REGISTER_FIL);
   if (!existsSync(fil)) throw new Error(`Fant ikke registeret: ${REGISTER_FIL}`);
   const modul = (await import(pathToFileURL(fil).href)) as KatalogModul;
@@ -278,5 +279,5 @@ export async function lastRegister(): Promise<{ readonly fil: string; readonly k
       .filter((r) => r.commandId === id)
       .map<Binding>((r) => ({ commandId: id, commandName: spec.name, mode: r.mode, raw: r.keys, steps: parseBinding(r.keys) })),
   }));
-  return { fil: REGISTER_FIL, kommandoer };
+  return { fil: REGISTER_FIL, kommandoer, tips: modul.KEY_HINTS.map((h) => h.id) };
 }

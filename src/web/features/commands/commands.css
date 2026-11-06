@@ -96,3 +96,4 @@
 .command-toast .toast { z-index: calc(var(--z-hint) + 10); }
 
 @media print { .whichkey, .showcmd, .command-toast { display: none !important; } }
+.rc-cmd { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.15em; }

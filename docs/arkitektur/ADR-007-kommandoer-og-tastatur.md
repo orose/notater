@@ -93,6 +93,7 @@ interface CommandHandler {
 - **Rulling** bruker `window.scrollBy`/`scrollTo` med `behavior: 'smooth'` bare når
   `prefers-reduced-motion` ikke er satt. `j/k` = 3 × brødtekstens linjehøyde (`getComputedStyle` på
   `.prose`), `Ctrl d/u` = halv `innerHeight`. `Space` ruller ikke lenger (den er leader).
+  **Unntak (PO-70):** `gg`/`G` hopper alltid uten animasjon, som i vim; bare `j/k` og `Ctrl d/u` ruller mykt.
 
 ### 3. DOM-adapter: P7, Esc-rekkefølge og norsk tastatur
 

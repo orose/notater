@@ -267,3 +267,5 @@ Designet (prototype-v1.1.html, designsystem §11) er **godkjent** som referanse.
 - **PO-70** `gg`/`G` hopper uten animasjon (som vim). ADR-007 oppdateres.
 - **PO-71** Lokale bilder skal ha reservert høyde (ingen layout-hopp): serveren setter `width`/`height` på `<img>` for lokale vedlegg (lest fra filheader, uten ny avhengighet). Testen TC-F7-12 venter i tillegg på at bilder er lastet.
 - **PO-72** QA-filen `e2e/support/keymap-rules.ts` peker på `commands/model/index.ts` – godkjent.
+- **PO-73** Kunden godkjenner «§ → ⌄»: fold-pil erstatter §-tegnet ved hover, nummeret står fast.
+- **PO-74 (kundefunn)** I prototype-v1.1 henger det igjen en loddrett strek på hver side av lesespalten etter veksling mellom optimal og full bredde. Strekene skal ikke være der. Rettes i prototypen og må ikke forekomme i implementasjonen (e2e-sjekk).

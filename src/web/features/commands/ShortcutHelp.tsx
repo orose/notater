@@ -12,7 +12,9 @@ interface ShortcutHelpProps {
 
 /**
  * `?`-oversikten, «oppslagskortet» (F6, designsystem §11.8): alle hurtigtaster gruppert, generert fra
- * registeret (AK-1.1-07). Lukkes med Esc (native) og `?` (dialogens egen tast; motoren er inaktiv bak modal).
+ * registeret (AK-1.1-07). Par slås sammen til én rad (PO-69). Kontrakt (testplanen §6): enkel rad har
+ * `data-command-id` på raden; i en par-rad har hver kommando sitt eget element med `data-command-id` inne i
+ * raden. Hvert tastealternativ står i `data-testid="hurtigtast-binding"` med én `<kbd>` per akkord. Lukkes med Esc (native) og `?` (dialogens egen tast; motoren er inaktiv bak modal).
  */
 export function ShortcutHelp({ open, onClose, platform }: ShortcutHelpProps) {
   const headingId = useId();
@@ -43,6 +45,14 @@ function Chords({ chords }: { readonly chords: readonly string[] }) {
         </kbd>
       ))}
     </>
+  );
+}
+
+function Separator() {
+  return (
+    <span className="sep" aria-label="eller">
+      {' / '}
+    </span>
   );
 }
 
@@ -78,27 +88,43 @@ function ShortcutHelpBody({ headingId, platform }: { readonly headingId: string;
                   key={row.id}
                   className={row.kind === 'hint' ? 'rc-row hint' : 'rc-row'}
                   data-testid={row.kind === 'hint' ? 'hurtigtast-tips' : 'hurtigtast-rad'}
-                  data-command-id={row.kind === 'command' ? row.id : undefined}
+                  data-command-id={row.commands.length === 1 ? row.commands[0]?.id : undefined}
+                  data-command-ids={row.kind === 'command' ? row.commands.map((c) => c.id).join(' ') : undefined}
                   data-hint-id={row.kind === 'hint' ? row.id : undefined}
                 >
                   <dt>
-                    {row.chords.map((chords, i) => (
-                      <Fragment key={i}>
-                        {i > 0 ? (
-                          <span className="sep" aria-label="eller">
-                            {' / '}
-                          </span>
-                        ) : null}
-                        <span className="keys-inline" data-testid={row.kind === 'command' ? 'hurtigtast-binding' : undefined}>
-                          <Chords chords={chords} />
-                        </span>
-                      </Fragment>
-                    ))}
+                    {row.kind === 'command'
+                      ? row.commands.map((command, i) => (
+                          <Fragment key={command.id}>
+                            {i > 0 ? <Separator /> : null}
+                            <span
+                              className="rc-cmd"
+                              data-command-id={row.commands.length > 1 ? command.id : undefined}
+                              title={row.commands.length > 1 ? command.name : undefined}
+                            >
+                              {command.bindings.map((binding, j) => (
+                                <Fragment key={j}>
+                                  {j > 0 ? <Separator /> : null}
+                                  <span className="keys-inline" data-testid="hurtigtast-binding">
+                                    <Chords chords={binding.chords} />
+                                  </span>
+                                </Fragment>
+                              ))}
+                            </span>
+                          </Fragment>
+                        ))
+                      : row.bindings.map((binding, i) => (
+                          <Fragment key={i}>
+                            {i > 0 ? <Separator /> : null}
+                            <span className="keys-inline">
+                              <Chords chords={binding.chords} />
+                            </span>
+                          </Fragment>
+                        ))}
                   </dt>
                   <dd>
-                    <span data-testid={row.kind === 'command' ? 'hurtigtast-navn' : undefined} title={row.description || undefined}>
-                      {row.label}
-                    </span>
+                    <span data-testid={row.kind === 'command' ? 'hurtigtast-navn' : undefined}>{row.label}</span>
+                    {row.description ? <span className="d">{row.description}</span> : null}
                   </dd>
                 </div>
               ))}

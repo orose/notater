@@ -39,27 +39,52 @@ describe('kommandokatalogen v1.1', () => {
   it('AK-1.1-07: ?-oversikten har alle bundne kommandoer i fast gruppeorden', () => {
     const groups = shortcutGroups('docs');
     expect(groups.map((g) => g.label)).toEqual(['Navigasjon', 'Lesing', 'Visning', 'Søk og kommandoer']);
-    const ids = groups.flatMap((g) => g.rows.map((r) => r.id));
-    for (const b of catalogBindings()) expect(ids).toContain(b.commandId);
-    expect(groups.flatMap((g) => g.rows).find((r) => r.id === 'palette.search')?.keys).toEqual(['⌘K / Ctrl K', '/']);
+    const ids = groups.flatMap((g) => g.rows.flatMap((r) => r.commands.map((c) => c.id)));
+    expect([...ids].sort()).toEqual([...new Set(catalogBindings().map((b) => b.commandId))].sort());
+    const search = groups.flatMap((g) => g.rows).find((r) => r.id === 'palette.search');
+    expect(search?.bindings.map((b) => b.keys)).toEqual(['⌘K / Ctrl K', '/']);
+  });
+
+  it('PO-69: par slås sammen til én rad med begge kommandoene', () => {
+    const rows = shortcutGroups('other').flatMap((g) => g.rows);
+    const scroll = rows.find((r) => r.id === 'scroll.down');
+    expect(scroll?.label).toBe('Rull ned / opp');
+    expect(scroll?.description).toBe('ca. tre linjer');
+    expect(scroll?.commands.map((c) => [c.id, c.name, c.bindings.map((b) => b.chords)])).toEqual([
+      ['scroll.down', 'Rull ned', [['j']]],
+      ['scroll.up', 'Rull opp', [['k']]],
+    ]);
+    expect(rows.find((r) => r.id === 'scroll.up')).toBeUndefined();
+    expect(rows.find((r) => r.id === 'outline.foldAll')?.label).toBe('Fold alle / utfold alle');
+    // Partneren står i samme gruppe som den første i paret.
+    for (const [id, spec] of Object.entries(COMMAND_CATALOG) as [string, { pair?: string; group: string }][]) {
+      if (spec.pair) expect(COMMAND_CATALOG[spec.pair as keyof typeof COMMAND_CATALOG]?.group, id).toBe(spec.group);
+    }
   });
 
   it('?-oversikten gir én etikett per akkord, plattformriktig (PO-36)', () => {
     const rows = shortcutGroups('other').flatMap((g) => g.rows);
-    expect(rows.find((r) => r.id === 'view.toggleWidth')?.chords).toEqual([['Space', 'w']]);
-    expect(rows.find((r) => r.id === 'theme.toggleMode')?.chords).toEqual([['Space', 'm'], ['Ctrl .']]);
-    expect(rows.find((r) => r.id === 'palette.search')?.chords).toEqual([['Ctrl K'], ['/']]);
-    expect(shortcutGroups('apple').flatMap((g) => g.rows).find((r) => r.id === 'palette.search')?.chords).toEqual([['⌘K'], ['/']]);
+    const chords = (id: string) => rows.find((r) => r.id === id)?.bindings.map((b) => b.chords);
+    expect(chords('view.toggleWidth')).toEqual([['Space', 'w']]);
+    expect(chords('theme.toggleMode')).toEqual([['Space', 'm'], ['Ctrl .']]);
+    expect(chords('palette.search')).toEqual([['Ctrl K'], ['/']]);
+    expect(
+      shortcutGroups('apple')
+        .flatMap((g) => g.rows)
+        .find((r) => r.id === 'palette.search')
+        ?.bindings.map((b) => b.chords),
+    ).toEqual([['⌘K'], ['/']]);
   });
 
-  it('README: én tabell med én rad per kommando med taster, tastehint som liste', () => {
-    const md = renderShortcutsMarkdown(shortcutGroups('docs'));
+  it('README: samme rader som ?-kortet (par slått sammen), tastehint som liste', () => {
+    const groups = shortcutGroups('docs');
+    const md = renderShortcutsMarkdown(groups);
     const tableRows = md.split('\n').filter((l) => l.startsWith('|') && !l.startsWith('|---'));
-    const commands = new Set(catalogBindings().map((b) => b.commandId));
-    expect(tableRows.length - 1).toBe(commands.size);
-    expect(md).toContain('| Navigasjon | `j` | Rull ned |');
+    const cardRows = groups.flatMap((g) => g.rows).filter((r) => r.kind === 'command');
+    expect(tableRows.length - 1).toBe(cardRows.length);
+    expect(md).toContain('| Navigasjon | `j`, `k` | Rull ned / opp |');
     expect(md).toContain('| Søk og kommandoer | `⌘K` / `Ctrl K`, `/` | Søk i notater |');
-    expect(md).toContain('|  | `k` | Rull opp |');
+    expect(md).toContain('|  | `gg`, `G` | Til toppen / bunnen |');
     expect(md).toContain('- `Tab`: Første trykk gir «Hopp til innhold».');
   });
 });

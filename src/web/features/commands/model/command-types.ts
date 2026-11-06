@@ -63,6 +63,15 @@ export interface CommandSpecBody {
   readonly args?: readonly ArgumentSpec[];
   /** Bindinger per modus (P3). Tom = kun palett/mus. */
   readonly bindings: Readonly<Partial<Record<KeyMode, readonly BindingSpec[]>>>;
+  /**
+   * `?`-kortet og README slår denne kommandoen sammen med `pair` til én rad («`j` / `k` Rull ned / opp»,
+   * PO-69). Settes på den første i paret; partneren står rett etter i samme gruppe.
+   */
+  readonly pair?: string;
+  /** Radnavnet for paret («Rull ned / opp»). */
+  readonly pairName?: string;
+  /** Kort undertekst i `?`-kortet («ca. tre linjer»). */
+  readonly short?: string;
   /** Kort etikett i which-key (`bredde`). Standard: første alias. */
   readonly hint?: string;
   /** `false` = vises ikke i paletten. Standard: vises (i v1.1 vises alle, AK-1.1-06). */

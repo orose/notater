@@ -15,6 +15,9 @@ export const COMMAND_CATALOG = {
     aliases: ['ned'],
     group: 'navigasjon',
     description: 'Ruller ca. tre linjer ned.',
+    pair: 'scroll.up',
+    pairName: 'Rull ned / opp',
+    short: 'ca. tre linjer',
     bindings: { normal: [{ keys: 'j', repeat: true }] },
   },
   'scroll.up': {
@@ -29,6 +32,8 @@ export const COMMAND_CATALOG = {
     aliases: ['halv ned'],
     group: 'navigasjon',
     description: 'Ruller en halv skjermhøyde ned.',
+    pair: 'scroll.halfPageUp',
+    pairName: 'Halv side ned / opp',
     bindings: { normal: [{ keys: 'Ctrl+d', repeat: true }] },
   },
   'scroll.halfPageUp': {
@@ -43,6 +48,8 @@ export const COMMAND_CATALOG = {
     aliases: ['topp'],
     group: 'navigasjon',
     description: 'Hopper til toppen av siden.',
+    pair: 'scroll.bottom',
+    pairName: 'Til toppen / bunnen',
     bindings: { normal: [{ keys: 'g g' }] },
   },
   'scroll.bottom': {
@@ -57,6 +64,8 @@ export const COMMAND_CATALOG = {
     aliases: ['tilbake'],
     group: 'navigasjon',
     description: 'Går tilbake i nettleserhistorikken.',
+    pair: 'history.forward',
+    pairName: 'Tilbake / frem i historikken',
     bindings: { normal: [{ keys: 'H' }] },
   },
   'history.forward': {
@@ -72,6 +81,7 @@ export const COMMAND_CATALOG = {
     aliases: ['fold'],
     group: 'lesing',
     description: 'Folder seksjonen ved leseposisjonen (eller den fokuserte overskriften) sammen eller ut.',
+    short: 'ved leseposisjonen, eller fokusert overskrift',
     bindings: { normal: [{ keys: 'z a' }] },
   },
   'outline.foldAll': {
@@ -79,6 +89,8 @@ export const COMMAND_CATALOG = {
     aliases: ['fold alle'],
     group: 'lesing',
     description: 'Folder alle seksjoner sammen.',
+    pair: 'outline.unfoldAll',
+    pairName: 'Fold alle / utfold alle',
     bindings: { normal: [{ keys: 'z M' }] },
   },
   'outline.unfoldAll': {
@@ -95,6 +107,7 @@ export const COMMAND_CATALOG = {
     aliases: ['bredde'],
     group: 'visning',
     description: 'Veksler mellom leseoptimalisert og full bredde. Huskes.',
+    short: 'leseoptimalisert ↔ full',
     bindings: { normal: [{ keys: 'Leader w' }] },
     hint: 'bredde',
   },
@@ -103,6 +116,7 @@ export const COMMAND_CATALOG = {
     aliases: ['diskret', 'diskré'],
     group: 'visning',
     description: 'Lar innebygde notater gli inn i teksten (kun dette notatet). Huskes.',
+    short: 'bare dette notatet',
     bindings: { normal: [{ keys: 'Leader d' }] },
     hint: 'diskré',
   },
@@ -111,6 +125,7 @@ export const COMMAND_CATALOG = {
     aliases: ['zen'],
     group: 'visning',
     description: 'Skjuler panelene og øvrig krom. Esc avslutter.',
+    short: 'skjul paneler og krom',
     bindings: { normal: [{ keys: 'Leader z' }] },
     hint: 'zen',
   },
@@ -174,6 +189,7 @@ export const COMMAND_CATALOG = {
     aliases: ['kommandoer'],
     group: 'sok',
     description: 'Åpner paletten i kommandomodus (:).',
+    short: 'kommandolinjen',
     bindings: { normal: [{ keys: ':' }] },
   },
   'help.shortcuts': {
@@ -188,6 +204,7 @@ export const COMMAND_CATALOG = {
     aliases: ['lukk'],
     group: 'sok',
     description: 'Lukker palett, dialog og oversikt, avbryter en påbegynt tastesekvens og går ut av zen.',
+    short: 'avbryter også en påbegynt sekvens, og går ut av zen',
     bindings: { normal: [{ keys: 'Escape' }] },
   },
 } as const satisfies Readonly<Record<string, CommandSpecBody>>;

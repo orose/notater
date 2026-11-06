@@ -136,6 +136,22 @@ export async function fokusPåInnhold(page: Page): Promise<void> {
 // Måling
 // ---------------------------------------------------------------------------------------------
 
+/**
+ * Venter til alle bilder i artikkelen er ferdig lastet (`img.complete`), så sidehøyden er stabil før
+ * målinger av rulling (TC-F7-*). Bildet nederst i Kvartalsrapport lastes ellers sent og flytter bunnen.
+ * PO-71: serveren setter i tillegg width/height på lokale bilder.
+ */
+export async function ventPåBilder(page: Page): Promise<void> {
+  // `loading="lazy"` laster aldri utenfor visningen; testen tvinger lasting (endrer ikke layouten når
+  // width/height er satt, PO-71) slik at sidehøyden er endelig før vi måler.
+  await page.evaluate(() => document.querySelectorAll('main img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager')));
+  await expect
+    .poll(() => page.evaluate(() => [...document.querySelectorAll('main img')].every((img) => (img as HTMLImageElement).complete)), {
+      message: 'alle bilder i main er lastet',
+    })
+    .toBe(true);
+}
+
 export const scrollY = (page: Page): Promise<number> => page.evaluate(() => Math.round(window.scrollY));
 
 export const harHorisontalScroll = (page: Page): Promise<boolean> =>

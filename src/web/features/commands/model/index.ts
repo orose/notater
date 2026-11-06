@@ -16,7 +16,15 @@ export {
 } from './command-types';
 export type { CommandContext, CommandPorts, CommandRoute, RouteKind, ViewSnapshot } from './command-context';
 export { catalogBindings, createCommandRegistry, type Command, type CommandHandlers, type CommandRegistry } from './registry';
-export { README_MARKERS, renderShortcutsMarkdown, shortcutGroups, type ShortcutGroup, type ShortcutRow } from './shortcut-docs';
+export {
+  README_MARKERS,
+  renderShortcutsMarkdown,
+  shortcutGroups,
+  type ShortcutBinding,
+  type ShortcutCommand,
+  type ShortcutGroup,
+  type ShortcutRow,
+} from './shortcut-docs';
 export { fuzzyMatch, normalizeForSearch, type FuzzyMatch } from './fuzzy';
 export { commandPaletteOptions, paletteArgumentHeading, shortcutChords } from './palette-options';
 export {

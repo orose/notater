@@ -15,11 +15,18 @@ import {
   trykkNorsk,
   trykkSekvens,
   utseende,
+  ventPåBilder,
   åpneUtseende,
 } from './support/v11';
 
 const LANG = fasit.langBrodtekst.sti;
 const DYP = fasit.dypStruktur.sti;
+
+/** Kvartalsrapport med stabil høyde: bildet nederst må være lastet før vi måler rulling (PO-71). */
+async function åpneRapport(page: Page): Promise<void> {
+  await openNote(page, fasit.rapport.sti);
+  await ventPåBilder(page);
+}
 
 test.skip(({ isMobile }) => isMobile, 'Tastaturtester kjøres på desktop (1440 px)');
 
@@ -133,7 +140,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
   });
 
   test('TC-F7-02 Ctrl d / Ctrl u ruller en halv side', async ({ page }) => {
-    await openNote(page, fasit.rapport.sti);
+    await åpneRapport(page);
     await fokusPåInnhold(page);
     const høyde = await page.evaluate(() => window.innerHeight);
     await page.keyboard.press('Control+d');
@@ -144,7 +151,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
   });
 
   test('TC-F7-03 G til bunnen, gg til toppen', async ({ page }) => {
-    await openNote(page, fasit.rapport.sti);
+    await åpneRapport(page);
     await fokusPåInnhold(page);
     await page.keyboard.press('Shift+G');
     await expect
@@ -202,7 +209,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
   });
 
   test('TC-F7-08 Esc avbryter en påbegynt sekvens (g Esc g går ikke til toppen)', async ({ page }) => {
-    await openNote(page, fasit.rapport.sti);
+    await åpneRapport(page);
     await fokusPåInnhold(page);
     await page.keyboard.press('Shift+G');
     await expect.poll(() => scrollY(page)).toBeGreaterThan(200);
@@ -213,7 +220,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
   });
 
   test('TC-F7-09 sekvens får tidsavbrudd etter ~1 s (g … 1,5 s … g går ikke til toppen)', async ({ page }) => {
-    await openNote(page, fasit.rapport.sti);
+    await åpneRapport(page);
     await fokusPåInnhold(page);
     await page.keyboard.press('Shift+G');
     await expect.poll(() => scrollY(page)).toBeGreaterThan(200);
@@ -242,14 +249,15 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     await expect(page.getByRole('heading', { level: 1 }).first()).toHaveText(fasit.langBrodtekst.tittel);
   });
 
-  test('TC-F7-12 rulling respekterer prefers-reduced-motion (G hopper umiddelbart)', async ({ page }) => {
+  test('TC-F7-12 rulling respekterer prefers-reduced-motion (Ctrl d hopper umiddelbart)', async ({ page }) => {
+    // gg/G hopper alltid uten animasjon (PO-70), så redusert bevegelse testes med Ctrl d (ellers myk rulling).
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await openNote(page, fasit.rapport.sti);
+    await åpneRapport(page);
     await fokusPåInnhold(page);
-    await page.keyboard.press('Shift+G');
+    const høyde = await page.evaluate(() => window.innerHeight);
+    await page.keyboard.press('Control+d');
     const y = await page.evaluate(() => new Promise<number>((r) => requestAnimationFrame(() => r(window.scrollY))));
-    const maks = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
-    expect(y).toBeGreaterThan(maks - 4);
+    expect(y).toBeGreaterThan(høyde * 0.4);
   });
 
   test('TC-F7-13 ⌘./Ctrl+. og Space m bytter lys/mørk', async ({ page }) => {
