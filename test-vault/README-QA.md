@@ -7,7 +7,7 @@ Eier: QA. Dette er **fasiten** utviklerne tester mot. Hvert kanttilfelle har en 
 
 Endrer du et notat i `test-vault/`, oppdater fasiten her og i `docs/test/bases-fasit.md` i samme endring.
 
-Alle tidligere **(PO?)**-punkter er avgjort (PO-1 til PO-38 i `docs/beslutninger.md`). Der en PO-avgjørelse har endret fasiten, står PO-nummeret i raden. Endringslogg for fasiten står nederst (§18).
+Alle tidligere **(PO?)**-punkter er avgjort (PO-1 til PO-38 i `docs/beslutninger.md`). Der en PO-avgjørelse har endret fasiten, står PO-nummeret i raden. Endringslogg for fasiten står i §18. Fasit for v1.1 (lesekomfort og tastatur) står i §19.
 
 ---
 
@@ -15,7 +15,7 @@ Alle tidligere **(PO?)**-punkter er avgjort (PO-1 til PO-38 i `docs/beslutninger
 
 | ID | Hva | Forventet |
 |----|-----|-----------|
-| QA-IDX-01 | Antall notater | **80** `.md`-filer indekseres (79 testnotater + denne fila). |
+| QA-IDX-01 | Antall notater | **91** `.md`-filer indekseres (90 testnotater + denne fila). 11 av dem ligger i `lesekomfort/` (v1.1, §19). |
 | QA-IDX-02 | Andre filer | 9 ikke-md-filer er synlige for lenker, embeds og Bases: `Domene.base`, `Oppgaver.base`, `Tegning.canvas`, `attachments/arkitektur.png`, `attachments/bred.png`, `attachments/diagram med mellomrom.png`, `attachments/logo.svg`, `attachments/ondsinnet.svg`, `domene/domenemodell.svg`. |
 | QA-IDX-03 | `.obsidian/` | Ignoreres helt. `.obsidian/plugins/dataview/README.md` (som inneholder `#task`) skal **ikke** finnes i fil-tre, søk, lenkeoppløsning eller baser. |
 | QA-IDX-04 | `.trash/` | Ignoreres helt. `.trash/Slettet notat.md` (tagget `task`) skal ikke vises noe sted. Lenken `[[Slettet notat]]` er brutt. Generelt: alle mapper/filer som starter med `.` ignoreres. |
@@ -386,4 +386,60 @@ Alle forslag i tabellen er **godkjent** av PO slik de står (PO-7 til PO-17), me
 | 2026-11-05 | QA-MD-10: første H1 blir visningstittel og fjernes fra brødteksten. | PO-35 |
 | 2026-11-05 | QA-SOK-09: snarvei vises som `⌘K` (macOS) / `Ctrl K` (ellers). | PO-36 |
 | 2026-11-05 | Alias-hint (PO-7/PO-25), tvetydighetsindikator (PO-8/PO-26), property-backlinks (PO-9), tagger case-insensitive (PO-10), norske callout-titler og `<br>` (PO-14), embed-dybde 5 og TOC ≥ 3 (PO-15), CSP (PO-16), ingress/skjulte properties/lesetid (PO-21–23, PO-29), tags-endepunkt og 404 for ukjent API-rute (PO-24), `frontmatterError` (PO-27, ny QA-FM-04), «Lenket fra» på manglende notat (PO-28), «Fotnoter»/sidenoter (PO-20, PO-30). Alle **(PO?)**-merker fjernet. | PO-1–PO-31 |
+| 2026-11-06 | Ny mappe `lesekomfort/` (11 notater) og §19 for v1.1: diskré embedding, folding, bredde, zen. QA-IDX-01: 80 → 91. Ingen tagger, ingen lenker til notater med fasit for tilbakelenker, ingen påvirkning på baser eller søkefasit. | v1.1, PO-53/54 |
 
+## 19. v1.1 – lesekomfort og tastatur
+
+Testplan: `docs/test/testplan-v1.1.md`. Maskinlesbar fasit: `docs/test/v1.1-fasit.json` (testene leser den). Nivåregler: ADR-009 beslutning 3. Notatene i `lesekomfort/` har ingen tagger og lenker bare til hverandre, til `arkitektur.png` og til `Domene.base` (ingen av dem har tilbakelenke-fasit i §4).
+
+| Notat | Formål |
+|-------|--------|
+| `lesekomfort/Kvartalsrapport.md` | Rapportnotat, nesten bare embeds: notat-, seksjons- og blokkembeds under H1, H2, H3, H5 og H6, nestet embed (`Leveranser` → `Plan`), manglende embed, syklus (`Sirkel A` ↔ `Sirkel B`), dybdegrense (`Trapp`, 7 trinn), bilde og base. Frontmatter har `diskret-embedding: true`, `lesebredde: full`, `zen: true` og `cssclasses` – **data, ikke visning** (P1). |
+| `lesekomfort/kilder/*.md` | Kildene: `Sammendrag` (uten H1), `Driftsstatus` (med H1 = tittel, blokk `^oppetid`), `Leveranser`, `Plan`, `Risiko`, `Sirkel A`, `Sirkel B`, `Trapp`. |
+| `lesekomfort/Dyp struktur.md` | Overskrifter H1–H6 (H1 i brødteksten: «Andre del»), en H2 som hopper rett til H4, blokk `^dyp-blokk` på nivå 6, interne lenker før første overskrift, et unikt søkeord i «Seksjon C». Hver seksjon har en markør («Markør A-2.» …). |
+| `lesekomfort/Lang brødtekst.md` | Lange avsnitt for bredde og zen, ett veldig langt ord, properties (`lesebredde: full`, `zen: true` – P1) og lenker til de to andre. |
+
+### 19.1 Rammevisning (standard, uendret fra v1)
+
+| ID | Forventet |
+|----|-----------|
+| QA-V11-01 | `Kvartalsrapport` åpnes med **15** rammer («Innebygd fra»): 8 på toppnivå + `Plan` (nestet) + `Sirkel B` (nestet) + `Trapp` trinn 1–5. Frontmatter endrer ingenting (P1). |
+| QA-V11-02 | Innholdsfortegnelse: `Nøkkeltall`, `Detaljer`, `Bilde og base`. §-nummer: §1 `Nøkkeltall`, §2 `Bilde og base`. Overskrifter i rammer foldes og nummereres ikke (PO-54). |
+| QA-V11-03 | Feilkort: «Fant ikke «Finnes ikke i rapporten»», «Innbygging stoppet: syklus» (inne i `Sirkel B`), «Innbygging stoppet: for mange nivåer» (i stedet for `Trapp` trinn 6). «Bunnen av trappen.» vises aldri. |
+
+### 19.2 Diskré embedding på `Kvartalsrapport`
+
+Regel: tittelnivå `T = min(6, forrige + 1)`, der `forrige` er effektivt nivå på nærmeste foregående overskrift i verten; uten foregående overskrift `forrige = 1` (notatets tittel). Innebygde overskrifter flyttes med samme forskyvning og flates ut ved H6. Notat som begynner med H1: H1-teksten er tittelen, og vises **én** gang.
+
+| ID | Overskrifter i rekkefølge (effektivt nivå) |
+|----|------------------------------------------|
+| QA-V11-10 | H2 Sammendrag · H3 Funn · H3 Konklusjon · **H1 Del I – Drift** · H2 Driftsstatus · H3 Hendelser · H4 Nattlige jobber · H3 Kapasitet · H4 Lagring · H3 Videre arbeid · **H2 Nøkkeltall** · H3 Kapasitet · H4 Lagring · (blokk `^oppetid`: ingen overskrift) · **H3 Detaljer** · H4 Leveranser · H5 Levert · H5 Planlagt · H6 Plan · H6 Steg · **H5 Fotnoter til detaljene** · H6 Konklusjon · **H6 Ytterste nivå** · H6 Risiko · H6 Tiltak · **H1 Del II – Feiltilstander** · (feilkort) · H2 Sirkel A · H3 Sirkel B · (syklus-kort) · H2 Trinn 1 · H3 Trinn 2 · H4 Trinn 3 · H5 Trinn 4 · H6 Trinn 5 · (dybde-kort) · **H2 Bilde og base**. Fet = vertsnotatets egne. |
+| QA-V11-11 | Innholdsfortegnelse (nivå 2–4, 20 punkter): Sammendrag, Funn, Konklusjon, Driftsstatus, Hendelser, Nattlige jobber, Kapasitet, Lagring, Videre arbeid, Nøkkeltall, Kapasitet, Lagring, Detaljer, Leveranser, Sirkel A, Sirkel B, Trinn 1, Trinn 2, Trinn 3, Bilde og base. |
+| QA-V11-12 | §-nummer (H2, sammenhengende, `data-vr-sec`): §1 Sammendrag, §2 Driftsstatus, §3 Nøkkeltall, §4 Sirkel A, §5 Trinn 1, §6 Bilde og base. Uendret når seksjoner foldes. |
+| QA-V11-13 | Ingen ramme, etikett eller «Åpne notat»; kildelenke «Kilde: ‹tittel›» ved hover/fokus (seksjonsembed: «Kilde: Driftsstatus › Kapasitet»). Nestet `Plan` er også diskré. Feilkortene i QA-V11-03 er fortsatt synlige. Bildet og basen (12 rader) er uendret. |
+| QA-V11-14 | Valget gjelder bare `Kvartalsrapport` og huskes etter reload. `lenker/Embed-test.md` og `lesekomfort/kilder/Driftsstatus.md` er upåvirket. |
+| QA-V11-15 | Åpne punkter (testplanen Q-01/Q-02): nivå for embed uten foregående overskrift (her H2) og for nestet embed i et notat uten egne overskrifter (`Sirkel B` her H3, fordi `Sirkel A`s tittel er nærmeste foregående overskrift). |
+
+### 19.3 Folding på `Dyp struktur`
+
+| ID | Overskrift (nivå) | Skjuler | Forblir synlig |
+|----|-------------------|---------|----------------|
+| QA-V11-20 | Seksjon A (H2) | A-2, A-3, A-4, A-5, A-6, bunnavsnittet, A2-3 | B-2 |
+| QA-V11-21 | Seksjon A.1 (H3) | A-3 … A-6, bunnavsnittet | A2-3 |
+| QA-V11-22 | Seksjon A.1.1 (H4) | A-4, A-5, A-6, bunnavsnittet | A2-3 |
+| QA-V11-23 | Seksjon A.1.1.1 (H5) | A-5, A-6, bunnavsnittet | A2-3 |
+| QA-V11-24 | Nivå 6 – bunnen (H6) | A-6, bunnavsnittet | A2-3 |
+| QA-V11-25 | Seksjon A.2 (H3) | A2-3 | B-2 |
+| QA-V11-26 | Seksjon B (H2) | B-2, B-4 (H4-seksjonen under) | H1-2 |
+| QA-V11-27 | Seksjon B hopper over H3 (H4) | B-4 | H1-2 |
+| QA-V11-28 | Andre del (H1) | H1-2, Seksjon C og C-2 | – |
+| QA-V11-29 | Seksjon C (H2) | C-2 | H1-2 |
+| QA-V11-30 | Dyplenke «til blokken» etter «fold alle»: A, A.1, A.1.1, A.1.1.1 og Nivå 6 foldes ut; A.2, B og Andre del forblir foldet. Innholdet før første overskrift (lenkene) kan ikke foldes. TOC: A, A.1, A.1.1, A.2, B, B hopper over H3, C. |
+
+### 19.4 Bredde og zen på `Lang brødtekst`
+
+| ID | Forventet |
+|----|-----------|
+| QA-V11-40 | Åpnes leseoptimalisert og uten zen, selv om frontmatter sier `lesebredde: full` og `zen: true` (P1). Egenskapene vises som data. |
+| QA-V11-41 | Full bredde ved 1440 px: avsnittene er minst 100 px bredere enn leseoptimalisert; panelene beholdes. 360 px: ingen horisontal sidescroll i noen tilstand (også med det lange ordet). |
+| QA-V11-42 | Zen: tittel og egenskaper beholdes, paneler og krom skjules; lenken til `Dyp struktur` beholder zen. |

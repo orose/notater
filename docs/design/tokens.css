@@ -584,7 +584,7 @@
   --fold-size: 0.62em;          /* chevron relativt til overskriftens font-size; min. trykkflate 24 px (44 px på touch) */
 
   /* --- Diskré embedding (F2) --- */
-  --embed-bracket: -0.9rem;     /* hover-klammens x-posisjon (venstre for tekstkanten) */
+  --embed-bracket: -1rem;       /* hover-klammens x-posisjon: til HØYRE for spalten, mot kildelenken i margen */
 
   /* --- Overlegg (F5–F7) --- */
   --refcard-w: 54rem;

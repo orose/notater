@@ -142,10 +142,10 @@ describe('updateSnapshot (inkrementell)', () => {
 });
 
 describe('buildSnapshot mot test-vault (QA-IDX-01/02)', () => {
-  it('80 notater og 9 andre filer', async () => {
+  it('91 notater og 9 andre filer', async () => {
     const snap = await buildSnapshot(join(process.cwd(), 'test-vault'), [], createInlineMetaExtractor());
     const files = [...snap.files.values()];
-    expect(files.filter((f) => f.ext === 'md')).toHaveLength(80);
+    expect(files.filter((f) => f.ext === 'md')).toHaveLength(91);
     expect(files.filter((f) => f.ext !== 'md')).toHaveLength(9);
   });
 });

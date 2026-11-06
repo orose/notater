@@ -45,6 +45,7 @@ const TASTENAVN: Record<string, string> = {
   mellomrom: 'Space',
   '␣': 'Space',
   ' ': 'Space',
+  leader: 'Space',
   esc: 'Escape',
   escape: 'Escape',
   enter: 'Enter',
@@ -250,45 +251,32 @@ export function normaliserRegister(register: unknown): NormalisertKommando[] {
   });
 }
 
-/**
- * Kandidater for registermodulen. Arkitekten lager registeret i src/web/features/ – når fila finnes,
- * legg den eksakte stien først her (og fjern `test.fixme` i v1.1-ak08-register.spec.ts).
- */
-export const REGISTER_KANDIDATER: readonly string[] = [
-  'src/web/features/commands/index.ts',
-  'src/web/features/commands/registry.ts',
-  'src/web/features/command-registry/index.ts',
-  'src/web/features/keyboard/index.ts',
-  'src/web/features/keyboard/registry.ts',
-  'src/web/features/kommandoer/index.ts',
-];
+/** Registeret (ADR-007): katalogen + `catalogBindings()` i src/web/features/commands (ren TS). */
+export const REGISTER_FIL = 'src/web/features/commands/index.ts';
 
-/**
- * Laster registeret dynamisk (stien er en variabel, så `tsc` for e2e drar ikke inn web-koden).
- * Returnerer den første eksporten som ser ut som et register, eller `null` hvis ingen kandidat finnes.
- */
-export async function lastRegister(): Promise<{ readonly fil: string; readonly eksport: string; readonly kommandoer: NormalisertKommando[] } | null> {
-  for (const rel of REGISTER_KANDIDATER) {
-    const fil = join(REPO, rel);
-    if (!existsSync(fil)) continue;
-    const modul = (await import(pathToFileURL(fil).href)) as Record<string, unknown>;
-    for (const [eksport, verdi] of Object.entries(modul)) {
-      const kandidat = typeof verdi === 'function' && verdi.length === 0 && /register|commands|kommando/i.test(eksport) ? safeCall(verdi as () => unknown) : verdi;
-      try {
-        return { fil: rel, eksport, kommandoer: normaliserRegister(kandidat) };
-      } catch {
-        // ikke denne eksporten
-      }
-    }
-    throw new Error(`${rel} finnes, men ingen eksport ser ut som et kommandoregister. Tilpass normaliserRegister().`);
-  }
-  return null;
+interface KatalogModul {
+  readonly catalogBindings: () => ReadonlyArray<{ readonly commandId: string; readonly mode: string; readonly keys: string }>;
+  readonly COMMAND_CATALOG: Readonly<Record<string, { readonly name: string; readonly group: string }>>;
+  readonly GROUP_LABELS: Readonly<Record<string, string>>;
 }
 
-function safeCall(fn: () => unknown): unknown {
-  try {
-    return fn();
-  } catch {
-    return null;
-  }
+/**
+ * Laster registeret via `catalogBindings()` (ADR-007 §3). Stien er en variabel, så `tsc` for e2e drar ikke
+ * inn web-koden; modulen er ren TS og lastes av Playwrights TS-laster i Node.
+ * Bindingene parses med QAs egen parser (uavhengig av `parseKeySequence`), så policyen sjekkes to ganger.
+ */
+export async function lastRegister(): Promise<{ readonly fil: string; readonly kommandoer: NormalisertKommando[] }> {
+  const fil = join(REPO, REGISTER_FIL);
+  if (!existsSync(fil)) throw new Error(`Fant ikke registeret: ${REGISTER_FIL}`);
+  const modul = (await import(pathToFileURL(fil).href)) as KatalogModul;
+  const rader = modul.catalogBindings();
+  const kommandoer = Object.entries(modul.COMMAND_CATALOG).map(([id, spec]) => ({
+    id,
+    name: spec.name,
+    group: modul.GROUP_LABELS[spec.group] ?? spec.group,
+    bindings: rader
+      .filter((r) => r.commandId === id)
+      .map<Binding>((r) => ({ commandId: id, commandName: spec.name, mode: r.mode, raw: r.keys, steps: parseBinding(r.keys) })),
+  }));
+  return { fil: REGISTER_FIL, kommandoer };
 }

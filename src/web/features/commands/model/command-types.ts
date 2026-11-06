@@ -37,6 +37,10 @@ export interface ArgumentValue {
   readonly label: string;
   /** Ekstra søkeord (`fosfor`, `phosphor`). */
   readonly aliases?: readonly string[];
+  /** Kort forklaring i underlisten (f.eks. «Seriff, marginalia, figurer»). */
+  readonly description?: string;
+  /** Gjeldende verdi (markeres i underlisten). */
+  readonly current?: boolean;
 }
 
 /** Statisk del av en kommando: alt som trengs for palett, `?`-oversikt, README og tastaturkart. */
@@ -54,7 +58,7 @@ export interface CommandSpecBody {
   readonly bindings: Readonly<Partial<Record<KeyMode, readonly BindingSpec[]>>>;
   /** Kort etikett i which-key (`bredde`). Standard: første alias. */
   readonly hint?: string;
-  /** `false` = vises ikke i paletten (f.eks. `system.escape`). Standard: vises. */
+  /** `false` = vises ikke i paletten. Standard: vises (i v1.1 vises alle, AK-1.1-06). */
   readonly inPalette?: boolean;
 }
 

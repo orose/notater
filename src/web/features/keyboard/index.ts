@@ -25,6 +25,7 @@ export {
   type PolicyViolation,
 } from './key-policy';
 export {
+  createKeyEngine,
   SEQUENCE_TIMEOUT_MS,
   WHICH_KEY_DELAY_MS,
   type EngineBinding,

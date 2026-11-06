@@ -234,11 +234,10 @@ test.describe('AK-1.1-07 hurtigtastoversikt', () => {
 
   test.fixme('TC-07-07 innholdet er identisk med registeret', async ({ page }) => {
     const register = await lastRegister();
-    expect(register, 'registeret finnes (src/web/features/…)').not.toBeNull();
     await openNote(page, 'Velkommen');
     await åpneOversikt(page);
     const rader = await raderIOversikt(page);
-    const medTaster = (register?.kommandoer ?? []).filter((k) => k.bindings.some((b) => b.mode === 'normal'));
+    const medTaster = register.kommandoer.filter((k) => k.bindings.some((b) => b.mode === 'normal'));
     expect(rader.map((r) => r.id).sort()).toEqual(medTaster.map((k) => k.id).sort());
     for (const k of medTaster) expect(rader.find((r) => r.id === k.id)?.navn, k.id).toBe(k.name);
   });

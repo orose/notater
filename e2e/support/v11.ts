@@ -148,16 +148,32 @@ export async function brødtekstBredde(page: Page): Promise<number> {
   return box.width;
 }
 
-/** Effektiv opasitet (produktet opp gjennom treet) – Playwright regner opacity 0 som «synlig». */
+/**
+ * Effektiv synlighet for seende brukere (0–1): produktet av opasitet opp gjennom treet, og 0 for
+ * display/visibility, «visuelt skjult» (sr-only: ≤ 1 px, clip/clip-path) – Playwright regner både
+ * opacity 0 og sr-only som «synlig».
+ */
 export async function effektivOpasitet(loc: Locator): Promise<number> {
   return loc.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.width <= 1 || r.height <= 1) return 0;
     let o = 1;
     for (let n: Element | null = el; n; n = n.parentElement) {
       const s = getComputedStyle(n);
       if (s.visibility === 'hidden' || s.display === 'none') return 0;
+      if (/rect\(0/.test(s.clip) || /inset\(50%/.test(s.clipPath)) return 0;
       o *= Number(s.opacity);
     }
     return o;
+  });
+}
+
+/** F3: foldet overskrift har en synlig indikator – et element i overskriften eller ::after/::before med innhold. */
+export function harFoldIndikator(heading: Locator): Promise<boolean> {
+  return heading.evaluate((h) => {
+    const pseudo = ['::after', '::before'].some((p) => !['none', 'normal', '""'].includes(getComputedStyle(h, p).content));
+    const el = h.querySelector('[data-testid="fold-indikator"], .fold-indicator');
+    return pseudo || (el !== null && (el as HTMLElement).offsetWidth > 0);
   });
 }
 
@@ -193,24 +209,22 @@ export async function tocTekster(page: Page): Promise<string[]> {
 }
 
 /**
- * §-nummerering: H2-ene i artikkelen som får «§» via ::before, i rekkefølge, og at ingen forfar mellom
- * H2 og artikkelen nullstiller telleren (ellers starter nummereringen på nytt inne i en embed).
+ * §-nummerering (ADR-009 beslutning 4): H2-er i artikkelen med `data-vr-sec`, i rekkefølge, som [nummer, tekst],
+ * og om nummeret faktisk vises (::before med «§» i Tidsskrift).
  */
-export function paragrafOverskrifter(page: Page): Promise<{ tekster: string[]; nullstillinger: string[] }> {
+export function paragrafOverskrifter(page: Page): Promise<{ nummer: number[]; tekster: string[]; vist: boolean[] }> {
   return artikkel(page).evaluate((root) => {
-    const tekster: string[] = [];
-    const nullstillinger: string[] = [];
-    for (const h of root.querySelectorAll('h2')) {
-      const innhold = getComputedStyle(h, '::before').content;
-      if (!innhold.includes('§')) continue;
+    const hs = [...root.querySelectorAll('h2[data-vr-sec]')];
+    const tekst = (h: Element) => {
       const kopi = h.cloneNode(true) as HTMLElement;
       kopi.querySelectorAll('button, .heading-anchor, [aria-hidden="true"]').forEach((n) => n.remove());
-      tekster.push((kopi.textContent ?? '').trim());
-      for (let n = h.parentElement; n && n !== root; n = n.parentElement) {
-        if (/\bsec\b/.test(getComputedStyle(n).counterReset)) nullstillinger.push(`${n.tagName}.${n.className} nullstiller sec før «${kopi.textContent}»`);
-      }
-    }
-    return { tekster, nullstillinger };
+      return (kopi.textContent ?? '').replace(/\s+/g, ' ').trim();
+    };
+    return {
+      nummer: hs.map((h) => Number(h.getAttribute('data-vr-sec'))),
+      tekster: hs.map(tekst),
+      vist: hs.map((h) => getComputedStyle(h, '::before').content.includes('§')),
+    };
   });
 }
 

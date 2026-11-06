@@ -101,7 +101,7 @@ test.describe('AK-1.1-09 inaktive i tekstfelt og bak modal dialog (P7)', () => {
     await expect(page.getByRole('navigation', { name: 'Vault', exact: true })).toBeVisible();
   });
 
-  test.fixme('TC-09-06 Space på fokusert knapp/lenke beholder sin vanlige funksjon (ikke leader)', async ({ page }) => {
+  test.fixme('TC-09-06 Space på fokusert knapp beholder sin vanlige funksjon (ikke leader)', async ({ page }) => {
     await openNote(page, DYP);
     const knapp = page.getByRole('button', { name: /^Fold (sammen|ut) «?Seksjon A»?$/ });
     await knapp.focus();

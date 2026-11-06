@@ -131,6 +131,12 @@ mock-tester (`e2e/ui.spec.ts`) kjører i `mock-desktop`/`mock-mobil`. Kjente bug
 | B10 | Ingen nettverk ut | – | Global request-vakt i `e2e/support/guards.ts` (alle QA-tester) | QA-SEC-05, QA-IMG-13 | Bestått |
 | PO-51 | Prefetch ved hover/fokus | `prefetch`-enhetstester (web) | `v1-slice6` › hover henter dokumentet før klikk, klikk gir ingen ny henting; fokus prefetcher | – | Bestått |
 
+### 3.1 v1.1
+
+Testplan, sporbarhet AK-1.1-01..12 → TC-…, kanttilfeller og selektorkontrakt: `docs/test/testplan-v1.1.md`.
+Fasit: `README-QA.md` §19 og `docs/test/v1.1-fasit.json`. Tester: `e2e/v1.1-*.spec.ts` (TDD, `test.fixme`
+fjernes av frontend når en funksjon leveres). AK-1.1-08 kjøres allerede mot registeret (`catalogBindings()`).
+
 ## 4. Definition of Done per slice
 
 Felles for alle slices (fra brief): tester grønne · QA har verifisert mot AK · README oppdatert · kunden kan teste med én kommando. I tillegg:

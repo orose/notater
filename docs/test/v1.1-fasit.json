@@ -113,7 +113,7 @@
   },
   "tastaturkart": {
     "$kommentar": "Spesifikasjonens tastaturkart (normal-modus). Visning normaliseres (mellomrom og + fjernes, Space/Mellomrom/␣ → ␣, Ctrl/Control/⌃ → Ctrl).",
-    "bindinger": ["j", "k", "Ctrl d", "Ctrl u", "g g", "G", "H", "L", "z a", "z M", "z R", "Space w", "Space d", "Space z", "Space m", "Space t", ":", "?", "/"],
+    "bindinger": ["j", "k", "Ctrl+d", "Ctrl+u", "g g", "G", "H", "L", "z a", "z M", "z R", "Space w", "Space d", "Space z", "Space m", "Space t", ":", "?", "/"],
     "grupper": ["Navigasjon", "Lesing", "Visning", "Søk og kommandoer"],
     "leaderHint": ["w", "d", "z", "m", "t"]
   }

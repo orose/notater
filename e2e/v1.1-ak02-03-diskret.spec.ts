@@ -123,9 +123,18 @@ test.describe('AK-1.1-03 visning i diskré modus', () => {
 
   test.fixme('TC-03-05 §-nummerering løper sammenhengende gjennom innebygde H2-er (Tidsskrift, standard)', async ({ page }) => {
     await expect(page.locator('html')).toHaveAttribute('data-type', 'tidsskrift');
-    const { tekster, nullstillinger } = await paragrafOverskrifter(page);
-    expect(nullstillinger).toEqual([]);
+    const { nummer, tekster, vist } = await paragrafOverskrifter(page);
     expect(tekster).toEqual([...D.paragrafer]);
+    expect(nummer).toEqual(D.paragrafer.map((_, i) => i + 1));
+    expect(vist.every(Boolean), '§ vises i Tidsskrift').toBe(true);
+  });
+
+  test.fixme('TC-03-15 §-nummer endres ikke når en seksjon foldes (ADR-009 beslutning 4)', async ({ page }) => {
+    // Del I inneholder de nummererte H2-ene Driftsstatus og Nøkkeltall; de skal beholde numrene (skjult).
+    await foldKnapp(page, 'Del I – Drift').click();
+    const { nummer, tekster } = await paragrafOverskrifter(page);
+    expect(tekster).toEqual([...D.paragrafer]);
+    expect(nummer).toEqual(D.paragrafer.map((_, i) => i + 1));
   });
 
   test.fixme('TC-03-06 kildelenke vises ved hover på den innebygde seksjonen', async ({ page, isMobile }) => {

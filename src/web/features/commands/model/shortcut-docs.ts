@@ -8,8 +8,12 @@ import { COMMAND_GROUPS, GROUP_LABELS, type CommandGroup, type CommandSpecBody }
 export interface ShortcutRow {
   /** Kommando- eller hint-id (stabil, brukes som React-nøkkel og i tester). */
   readonly id: string;
+  /** `command` = kommando i registeret; `hint` = tast en komponent håndterer selv (KEY_HINTS). */
+  readonly kind: 'command' | 'hint';
   /** Ferdig formaterte tastevarianter, f.eks. `['⌘K', '/']`. */
   readonly keys: readonly string[];
+  /** Samme varianter, én etikett per akkord (`[['Space', 'w']]`), til én `<kbd>` per tast. */
+  readonly chords: ReadonlyArray<readonly string[]>;
   readonly label: string;
 }
 
@@ -17,6 +21,11 @@ export interface ShortcutGroup {
   readonly group: CommandGroup;
   readonly label: string;
   readonly rows: readonly ShortcutRow[];
+}
+
+function variant(keys: string, platform: LabelPlatform): { keys: string; chords: string[] } {
+  const sequence = parseKeySequence(keys);
+  return { keys: formatKeySequence(sequence, platform), chords: sequence.map((chord) => formatKeySequence([chord], platform)) };
 }
 
 /** Alle normal-modus-bindinger + tastehint, gruppert i fast rekkefølge. Kommandoer uten taster utelates. */
@@ -27,23 +36,45 @@ export function shortcutGroups(platform: LabelPlatform): ShortcutGroup[] {
     for (const [id, raw] of Object.entries(COMMAND_CATALOG)) {
       const spec: CommandSpecBody = raw;
       if (spec.group !== group) continue;
-      const keys = bindings.filter((b) => b.commandId === id).map((b) => formatKeySequence(parseKeySequence(b.keys), platform));
-      if (keys.length > 0) rows.push({ id, keys, label: spec.name });
+      const variants = bindings.filter((b) => b.commandId === id).map((b) => variant(b.keys, platform));
+      if (variants.length > 0) rows.push({ id, kind: 'command', keys: variants.map((v) => v.keys), chords: variants.map((v) => v.chords), label: spec.name });
     }
     for (const hint of KEY_HINTS) {
       if (hint.group !== group) continue;
-      rows.push({ id: hint.id, keys: hint.keys.map((k) => formatKeySequence(parseKeySequence(k), platform)), label: hint.description });
+      const variants = hint.keys.map((k) => variant(k, platform));
+      rows.push({ id: hint.id, kind: 'hint', keys: variants.map((v) => v.keys), chords: variants.map((v) => v.chords), label: hint.description });
     }
     return { group, label: GROUP_LABELS[group], rows };
   }).filter((g) => g.rows.length > 0);
 }
 
-/** Markdown til README mellom `<!-- hurtigtaster:start -->` og `<!-- hurtigtaster:end -->`. */
+/**
+ * Markdown til README mellom `<!-- hurtigtaster:start -->` og `<!-- hurtigtaster:end -->`: én tabell med
+ * én rad per kommando (gruppen står på første rad i hver gruppe), og tastehintene som liste under.
+ */
 export function renderShortcutsMarkdown(groups: readonly ShortcutGroup[]): string {
-  const code = (k: string) => k.split(' / ').map((v) => `\`${v}\``).join(' / ');
-  return groups
-    .map((g) => [`#### ${g.label}`, '', '| Taster | Hva |', '|---|---|', ...g.rows.map((r) => `| ${r.keys.map(code).join(', ')} | ${r.label} |`)].join('\n'))
-    .join('\n\n');
+  const code = (k: string) =>
+    k
+      .split(' / ')
+      .map((v) => `\`${v}\``)
+      .join(' / ');
+  const cell = (text: string) => text.replace(/\|/g, '\\|');
+  const table = ['| Gruppe | Taster | Kommando |', '|---|---|---|'];
+  const hints: string[] = [];
+  for (const g of groups) {
+    let first = true;
+    for (const row of g.rows) {
+      if (row.kind === 'hint') {
+        hints.push(`- ${row.keys.map(code).join(', ')}: ${row.label}`);
+        continue;
+      }
+      table.push(`| ${first ? g.label : ''} | ${row.keys.map(code).join(', ')} | ${cell(row.label)} |`);
+      first = false;
+    }
+  }
+  const parts = [table.join('\n')];
+  if (hints.length > 0) parts.push(['Taster i paletten, base-fanene og hopp-lenken (håndteres av komponentene selv):', '', ...hints].join('\n'));
+  return parts.join('\n\n');
 }
 
 export const README_MARKERS = { start: '<!-- hurtigtaster:start -->', end: '<!-- hurtigtaster:end -->' } as const;

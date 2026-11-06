@@ -239,3 +239,13 @@ Se [ADR-007](arkitektur/ADR-007-kommandoer-og-tastatur.md), [ADR-008](arkitektur
 - **PO-54 (AR-1.1-22)** Overskrifter i innrammede (ikke-diskré) embeds, callouts og sitater kan ikke foldes og får ikke §-nummer. Godkjent.
 - **PO-55** `Ctrl d`/`Ctrl u` er primært for macOS; om nettleseren på Windows/Linux sluker dem, er det akseptert (QA dokumenterer).
 - **PO-56** Space beholder vanlig funksjon på knapper/faner/skjemaelementer; ellers er den leader (bevisst endring).
+
+## PO-avgjørelser etter QA-testplan v1.1
+
+Alle QAs forslag i testplan-v1.1 (Q-01–Q-12) er **godkjent**, med disse presiseringene:
+- **PO-57 (Q-02)** Tittelen til et innebygd notat teller som nærmeste overskrift for embeds inni det (A-tittel H2 → B-tittel H3).
+- **PO-58 (Q-01)** Embed før første overskrift i vertsnotatet: notattittelen (H1) regnes som nærmeste overskrift → embed-tittel blir H2.
+- **PO-59 (Q-03/Q-04)** Fold-knapp: «Fold sammen X» / «Fold ut X». Toast: «Diskré embedding på/av for dette notatet».
+- **PO-60 (Q-05)** Kildelenke på touch: alltid synlig, dempet.
+- **PO-61 (Q-06/Q-07)** Zen kan slås på fra Utseende. I zen vises en diskré, alltid tilgjengelig «Avslutt zen»-knapp (på touch alltid synlig; på desktop synlig ved hover/fokus i øvre hjørne).
+- **PO-62 (Q-09/Q-11)** Full bredde på `.base`-sider: ingen synlig endring, ingen feil. `zM` som skjuler fokusert element flytter fokus til ytterste foldede overskrift.

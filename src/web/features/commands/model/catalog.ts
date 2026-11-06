@@ -3,6 +3,8 @@
 // `createCommandRegistry(handlers)`, som krever en handler for hver id her (typesjekket).
 //
 // Rekkefølgen her er rekkefølgen i `?`-oversikten, README og paletten (innen gruppe).
+// Alle kommandoer vises i paletten (AK-1.1-06: «alle registrerte kommandoer kan kjøres derfra»),
+// også `system.escape` og `palette.commands`; `inPalette` finnes for senere bruk.
 
 import type { CommandSpecBody } from './command-types';
 
@@ -70,7 +72,6 @@ export const COMMAND_CATALOG = {
     group: 'navigasjon',
     description: 'Lukker palett, dialog og oversikt, avbryter en påbegynt tastesekvens og går ut av zen.',
     bindings: { normal: [{ keys: 'Escape' }] },
-    inPalette: false,
   },
 
   // ---------------------------------------------------------------- Lesing
@@ -182,7 +183,6 @@ export const COMMAND_CATALOG = {
     group: 'sok',
     description: 'Åpner paletten i kommandomodus (:).',
     bindings: { normal: [{ keys: ':' }] },
-    inPalette: false,
   },
   'help.shortcuts': {
     name: 'Hurtigtastoversikt',

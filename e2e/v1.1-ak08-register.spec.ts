@@ -2,10 +2,8 @@
 // kommandoregisteret (P2). Testplan: TC-08-*.
 //
 // Del 1 (aktiv nå): selvtest av reglene i e2e/support/keymap-rules.ts, så vi vet at sjekken faktisk fanger brudd.
-// Del 2 (fixme): sjekken mot registeret. Når arkitekten har lagt registeret i src/web/features/…:
-//   1. legg den eksakte stien først i REGISTER_KANDIDATER (keymap-rules.ts),
-//   2. tilpass normaliserRegister() hvis formen er ny (testen sier fra),
-//   3. fjern `test.fixme`.
+// Del 2 (aktiv): sjekken mot registeret via `catalogBindings()` (ADR-007), med QAs egen parser – en
+//   uavhengig kontroll av arkitektens `validateBindings` (commands/model/catalog.test.ts).
 // Del 3 (fixme): samme sjekk mot det brukeren ser i `?`-oversikten (fanger bindinger utenfor registeret).
 import { expect, openNote, test } from './support/guards';
 import {
@@ -90,21 +88,19 @@ test.describe('AK-1.1-08 selvtest av tastereglene (kjører nå)', () => {
 test.describe('AK-1.1-08 registeret (P2, P4, P5)', () => {
   test.skip(({ isMobile }) => isMobile, 'Ren logikk – kjøres én gang');
 
-  test.fixme('TC-08-08 ingen reserverte taster, ingen ⌥-taster og ingen konflikter i registeret', async () => {
+  test('TC-08-08 ingen reserverte taster, ingen ⌥-taster og ingen konflikter i registeret', async () => {
     const register = await lastRegister();
-    expect(register, 'fant ikke registeret – oppdater REGISTER_KANDIDATER i e2e/support/keymap-rules.ts').not.toBeNull();
-    const kommandoer = register?.kommandoer ?? [];
+    const kommandoer = register.kommandoer;
     const bindinger = kommandoer.flatMap((k) => k.bindings);
-    expect(bindinger.length, `${register?.fil} › ${register?.eksport}: bindinger funnet`).toBeGreaterThan(15);
+    expect(bindinger.length, `${register.fil}: bindinger funnet`).toBeGreaterThan(15);
     const normal = bindinger.filter((x) => x.mode === 'normal');
     expect(normal.map(brytReservert).filter(Boolean), 'P4').toEqual([]);
     expect(bindinger.map(brytNorskTastatur).filter(Boolean), 'P5').toEqual([]);
     expect(konflikter(bindinger), 'konflikter').toEqual([]);
   });
 
-  test.fixme('TC-08-09 registeret dekker hele tastaturkartet i spesifikasjonen, og bare kjente modi', async () => {
-    const register = await lastRegister();
-    const kommandoer = register?.kommandoer ?? [];
+  test('TC-08-09 registeret dekker hele tastaturkartet i spesifikasjonen, og bare kjente modi', async () => {
+    const { kommandoer } = await lastRegister();
     const alle = new Set(kommandoer.flatMap((k) => k.bindings.filter((x) => x.mode === 'normal').map((x) => visTrinn(x.steps))));
     const forventet = fasit.tastaturkart.bindinger.map((raw) => visTrinn(parseBinding(raw)));
     expect(forventet.filter((f) => !alle.has(f))).toEqual([]);
