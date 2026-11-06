@@ -13,6 +13,7 @@ let dir: string;
 let vault: string;
 let base: string;
 
+// eslint-disable-next-line no-empty-pattern -- Playwright krever objektdestrukturering av fixtures
 test.beforeAll(async ({}, info) => {
   const port = E2E_PORT + (info.project.name === 'mobil' ? 6 : 5);
   dir = join(process.env.E2E_TMP_DIR!, `live-${info.project.name}`);

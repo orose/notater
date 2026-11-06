@@ -34,6 +34,13 @@ describe('createCodeHighlighter', () => {
     expect(all.every((s) => !/#[0-9a-f]{3,6}\b/i.test(s))).toBe(true);
   });
 
+  it('diff bruker bare variabler som tokens.css definerer (ingen --shiki-token-inserted/-deleted/-changed)', () => {
+    const all = styles(highlighter.highlight('--- a/x\n+++ b/x\n@@ -1 +1 @@\n-gammel\n+ny\n! endret', 'diff'));
+    expect(all.some((s) => s.includes('var(--shiki-token-string)'))).toBe(true);
+    expect(all.some((s) => s.includes('var(--shiki-token-keyword)'))).toBe(true);
+    expect(all.filter((s) => /--shiki-token-(inserted|deleted|changed)/.test(s))).toEqual([]);
+  });
+
   it('støtter alias som ts, sh, yml', () => {
     for (const lang of ['ts', 'typescript', 'sh', 'bash', 'shell', 'yml', 'yaml', 'json', 'sql', 'kotlin', 'xml', 'diff', 'html', 'markdown']) {
       expect(highlighter.isSupported(lang), lang).toBe(true);

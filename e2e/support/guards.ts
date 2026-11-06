@@ -17,6 +17,7 @@ export interface GuardState {
 }
 
 export const test = base.extend<{ guards: GuardState; vaultDir: string }>({
+  // eslint-disable-next-line no-empty-pattern -- Playwright krever objektdestrukturering av fixtures
   vaultDir: async ({}, use) => {
     const dir = process.env.E2E_VAULT_DIR;
     if (!dir) throw new Error('E2E_VAULT_DIR mangler – kjør via playwright.config.ts (globalSetup).');

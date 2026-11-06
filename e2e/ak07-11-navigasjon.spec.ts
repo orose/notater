@@ -171,7 +171,7 @@ test.describe('AK10 tilbakelenker (README-QA «Tilbakelenker»)', () => {
 });
 
 test.describe('AK11 stabile URL-er og frem/tilbake (README-QA §2)', () => {
-  const special = [
+  const special: [string, string][] = [
     ['edge/Æøå og mellomrom – særnorsk', 'Æøå og mellomrom – særnorsk'],
     ['edge/versjon 2.0.1 notater', 'versjon 2.0.1 notater'],
     ['edge/Notat (kopi)', 'Notat (kopi)'],
