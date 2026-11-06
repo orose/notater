@@ -132,3 +132,21 @@ function mergeRanges(ranges: [number, number][]): [number, number][] {
   }
   return out;
 }
+
+/** Antall dokumenter per bit når indeksen bygges i bakgrunnen. */
+export const SEARCH_BUILD_CHUNK = 25;
+
+/**
+ * Bygger søkeindeksen i biter og kaller `between()` mellom bitene, slik at bygging av indeksen over
+ * ~2000 notater (flere hundre ms) ikke blokkerer forespørsler (BUG-008). Samme resultat som
+ * `createSearchIndex`.
+ */
+export async function buildSearchIndex(docs: Iterable<SearchDocument>, between: () => Promise<void>): Promise<SearchIndex> {
+  const index = createSearchIndex([]);
+  let n = 0;
+  for (const doc of docs) {
+    index.add(doc);
+    if (++n % SEARCH_BUILD_CHUNK === 0) await between();
+  }
+  return index;
+}

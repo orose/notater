@@ -2,6 +2,8 @@
 export interface LruCache<K, V> {
   get(key: K): V | undefined;
   set(key: K, value: V): void;
+  /** Uten å endre rekkefølgen (forhåndsrendering skal ikke «bruke» oppføringer). */
+  has(key: K): boolean;
   readonly size: number;
 }
 
@@ -20,6 +22,7 @@ export function createLruCache<K, V>(capacity: number): LruCache<K, V> {
       map.set(key, value);
       if (map.size > capacity) map.delete(map.keys().next().value as K);
     },
+    has: (key) => map.has(key),
     get size() {
       return map.size;
     },

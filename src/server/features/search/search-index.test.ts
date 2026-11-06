@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSearchIndex, foldDiacritics } from './search-index';
+import { buildSearchIndex, createSearchIndex, foldDiacritics, SEARCH_BUILD_CHUNK } from './search-index';
 import type { SearchDocument } from './search-index';
 
 const DOCS: SearchDocument[] = [
@@ -66,5 +66,18 @@ describe('createSearchIndex', () => {
     expect(updated.search('Bestilling', 20).map((h) => h.path)).not.toContain('domene/Ordre');
     updated.add({ ...DOCS[1]!, aliases: ['Innkjøp'] });
     expect(updated.search('Innkjøp', 20)[0]!.path).toBe('domene/Ordre');
+  });
+});
+
+describe('buildSearchIndex (i biter)', () => {
+  it('gir samme treff som createSearchIndex og gir fra seg event-loopen mellom bitene', async () => {
+    const many = Array.from({ length: SEARCH_BUILD_CHUNK * 3 + 7 }, (_, i) => ({ ...DOCS[i % DOCS.length]!, path: `x/${i}` }));
+    let yields = 0;
+    const chunked = await buildSearchIndex(many, async () => {
+      yields++;
+    });
+    expect(yields).toBe(3);
+    const whole = createSearchIndex(many);
+    for (const q of ['kafka', 'kunde', '#task']) expect(chunked.search(q, 50)).toEqual(whole.search(q, 50));
   });
 });

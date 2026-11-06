@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { extractNoteMeta } from './extract-note-meta';
-import { createWorkerMetaExtractor } from './meta-extractor';
+import { bundledWorkerSource, createWorkerMetaExtractor } from './meta-extractor';
 
 describe('createWorkerMetaExtractor', () => {
   it('gir samme resultat som inline-uttrekk, i riktig rekkefølge', async () => {
@@ -14,5 +14,11 @@ describe('createWorkerMetaExtractor', () => {
     } finally {
       await extractor.close();
     }
+  }, 20_000);
+
+  it('workerne kjører en ferdig bunt (rask oppstart, ikke tsx per modul)', async () => {
+    const bundle = await bundledWorkerSource();
+    expect(bundle?.includes('parentPort')).toBe(true);
+    expect(bundle?.includes('micromark')).toBe(true);
   }, 20_000);
 });

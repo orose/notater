@@ -17,7 +17,7 @@ beforeAll(async () => {
     { id: 'test', name: 'Testvault', root: join(process.cwd(), 'test-vault'), ignore: [], hiddenProperties: [] },
     { highlighter: testHighlighter, createInitialExtractor: createInlineMetaExtractor, incrementalExtractor: createInlineMetaExtractor(), watch: null },
   );
-  state = await vault.ready();
+  state = await vault.renderReady();
 }, 60_000);
 
 const note = (path: string): NoteDocument => {

@@ -73,6 +73,9 @@ interface TreeFile   { kind: 'note' | 'base' | 'asset' | 'unsupported'; name: st
 `unsupported` = `.canvas`, `.excalidraw.md`-filer o.l. – vises dempet; åpning gir «ikke støttet»-kort.
 
 ### `GET /api/vaults/:vaultId/document?path=<DocPath>`
+
+Svaret har `Server-Timing: wait;dur=<ms>, build;dur=<ms>` (tillegg, BE31): `wait` = venting på indeks/Shiki,
+`build` = oppbygging av dokumentet (rendering, baser, backlinks) inkl. JSON-serialisering.
 ```ts
 type DocumentResponse = NoteDocument | BaseDocument;
 

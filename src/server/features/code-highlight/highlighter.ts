@@ -9,9 +9,10 @@ export interface CodeHighlighter {
   isSupported(lang: string): boolean;
   /**
    * Kompilerer alle grammatikker på forhånd (Shiki gjør det lat ved første bruk, ~5–50 ms per språk).
-   * Ett språk per event-loop-runde, så forespørsler ikke blokkeres. Holder notatbytte < 200 ms (AK17).
+   * Ett språk per bit; `between` kalles før hver bit (standard: neste event-loop-runde, i serveren:
+   * vent til ingen forespørsler pågår), så forespørsler ikke blokkeres (AK17, BUG-008).
    */
-  warmUp(): Promise<void>;
+  warmUp(between?: () => Promise<void>, preferred?: readonly string[]): Promise<void>;
 }
 
 /** Fast språksett (ADR-002). Alias (ts, sh, yml …) følger med fra Shiki. */
@@ -61,8 +62,10 @@ export const SUPPORTED_LANGUAGES = [
 
 const THEME_NAME = 'vault-reader';
 
+const nextTick = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
+
 /** «Polyglott» eksempel som treffer vanlige grammatikkregler (strenger, tall, kommentarer, kall, tagger). */
-const WARM_UP_SAMPLE = [
+const WARM_UP_LINES: readonly string[] = [
   '// kommentar',
   '/* blokk */ # kommentar',
   'import x from "y"; package a.b;',
@@ -78,7 +81,7 @@ const WARM_UP_SAMPLE = [
   '@Annotation fun main(args: Array<String>) { println("hi") }',
   '+ lagt til',
   '- fjernet',
-].join('\n');
+];
 
 /**
  * CSS-variabel-tema (ADR-002, A9), utvidet med `number`, `type`, `property` og `operator` slik UX
@@ -118,10 +121,18 @@ export async function createCodeHighlighter(): Promise<CodeHighlighter> {
 
   return {
     isSupported,
-    async warmUp() {
-      for (const lang of SUPPORTED_LANGUAGES) {
-        await new Promise<void>((resolve) => setImmediate(resolve));
-        highlighter.codeToHast(WARM_UP_SAMPLE, { lang, theme: THEME_NAME });
+    async warmUp(between = nextTick, preferred = []) {
+      // Språkene vaultet faktisk bruker varmes opp først og uten å vente på ledig tid (de trengs straks;
+      // ellers kompileres grammatikken midt i en forespørsel, ~100–300 ms). Resten venter på `between`.
+      const first = [...new Set(preferred.filter(isSupported).map((l) => l.toLowerCase()))];
+      const rest = SUPPORTED_LANGUAGES.filter((l) => !first.includes(l));
+      // Én linje per bit: hele prøven på én gang kompilerte opptil ~300 ms per språk i én blokk
+      // (cpp, javascript); linje for linje er største bit ~60–130 ms, og totalen er den samme.
+      for (const [lang, wait] of [...first.map((l) => [l, nextTick] as const), ...rest.map((l) => [l, between] as const)]) {
+        for (const line of WARM_UP_LINES) {
+          await wait();
+          highlighter.codeToHast(line, { lang, theme: THEME_NAME });
+        }
       }
     },
     highlight(code, lang) {

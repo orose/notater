@@ -1,13 +1,14 @@
-import type { ChangedEvent, FileChange, Revision, VaultSummary } from '../../../shared/api-types';
+import type { ChangedEvent, FileChange, FilePath, Revision, VaultSummary } from '../../../shared/api-types';
+import { yieldToEventLoop } from '../../shared/activity';
 import type { CodeHighlighter } from '../code-highlight';
 import type { VaultConfig } from '../config';
 import { createNoteRenderer } from '../embeds';
 import type { NoteRenderer, RenderedNote } from '../embeds';
 import { buildBacklinkIndex, createLinkResolver } from '../links';
 import type { BacklinkIndex, LinkResolver } from '../links';
-import { createSearchIndex } from '../search';
+import { buildSearchIndex } from '../search';
 import type { SearchDocument, SearchIndex } from '../search';
-import { buildSnapshot, readVaultBytes, updateSnapshot } from '../vault-index';
+import { buildSnapshot, findByDocPath, readVaultBytes, updateSnapshot } from '../vault-index';
 import type { MetaExtractor, VaultFile, VaultSnapshot } from '../vault-index';
 import { createLruCache } from './lru-cache';
 import type { LruCache } from './lru-cache';
@@ -31,6 +32,18 @@ export interface VaultRuntime {
   summary(): VaultSummary;
   /** Starter indeksering ved første kall (lat, A12) og venter til indeksen er klar. */
   ready(): Promise<VaultState>;
+  /**
+   * Som `ready`, men venter også på syntaksfargeleggeren (Shiki), som lastes parallelt og ikke
+   * forsinker «indeks klar» (AK17). Brukes før rendering.
+   */
+  renderReady(): Promise<VaultState>;
+  /**
+   * Forhåndsrendrer notatene `docPath` lenker til (i ledig tid), slik at neste klikk treffer
+   * render-cachen (BUG-008).
+   */
+  prefetchLinks(docPath: string): void;
+  /** Kodeblokkspråk i vaultet, mest brukt først (Shiki varmer disse opp først). Tom før indeksen er klar. */
+  codeLanguages(): readonly string[];
   /** Søkeindeksen bygges i bakgrunnen etter at vaultet er klart. */
   searchIndex(): Promise<{ readonly index: SearchIndex; readonly revision: Revision }>;
   /** Lytter på endringsbunter (SSE `changed`). Returnerer avmeldingsfunksjon. */
@@ -46,6 +59,12 @@ export interface WatcherHandle {
   close(): Promise<void>;
 }
 
+const DEFAULT_PRERENDER_COUNT = 100;
+/** Maks antall lenkemål som forhåndsrendres per åpnet notat. */
+const MAX_PREFETCH_LINKS = 40;
+/** Åpning av kodeblokk med språk: ```java / ~~~ts. */
+const CODE_FENCE = /^[ \t]{0,3}(?:`{3,}|~{3,})[ \t]*([A-Za-z][\w+#-]*)/gm;
+
 export interface VaultRuntimeDeps {
   readonly highlighter: () => Promise<CodeHighlighter>;
   /** Extractor for første indeksering (worker-pool); lukkes etterpå. */
@@ -55,6 +74,13 @@ export interface VaultRuntimeDeps {
   /** Starter filovervåking; `null` = ingen (tester). */
   readonly watch: ((root: string, ignore: readonly string[], onBatch: (paths: string[]) => void) => WatcherHandle) | null;
   readonly renderCacheSize?: number;
+  /**
+   * Løses når serveren er ledig (ingen forespørsler pågår). Bakgrunnsarbeid (søkeindeks,
+   * forhåndsrendering) venter på denne mellom hver bit. Standard: neste event-loop-runde.
+   */
+  readonly idle?: () => Promise<void>;
+  /** Antall mest lenkede notater som forhåndsrendres etter indeksering og etter endringer. Standard 100. */
+  readonly prerenderCount?: number;
   readonly log?: (message: string) => void;
 }
 
@@ -68,8 +94,33 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
   let updateQueue: Promise<unknown> = Promise.resolve();
   let watcher: WatcherHandle | null = null;
   const listeners = new Set<(event: ChangedEvent) => void>();
+  const idle = deps.idle ?? yieldToEventLoop;
+  // Når noen søker, skal resten av søkeindeksen bygges uten å vente på ledig tid – søket selv er jo en
+  // pågående forespørsel, så å vente på «ledig» ville aldri slippe (vranglås).
+  let markSearchUrgent!: () => void;
+  const searchUrgent = new Promise<void>((resolve) => (markSearchUrgent = resolve));
+  let isSearchUrgent = false;
+  void searchUrgent.then(() => (isSearchUrgent = true));
 
-  const derive = (snapshot: VaultSnapshot, revision: Revision, highlighter: CodeHighlighter): VaultState => {
+  // Shiki lastes rett etter at indeksen er klar; «indeks klar» venter ikke på den (AK17).
+  let highlighterPromise: Promise<CodeHighlighter> | null = null;
+  let loadedHighlighter: CodeHighlighter | null = null;
+  const loadHighlighter = (): Promise<CodeHighlighter> => {
+    highlighterPromise ??= deps.highlighter().then((h) => (loadedHighlighter = h));
+    return highlighterPromise;
+  };
+  const loaded = (): CodeHighlighter => {
+    if (!loadedHighlighter) throw new Error('Syntaksfargeleggeren er ikke lastet ennå (bruk renderReady()).');
+    return loadedHighlighter;
+  };
+  /** Delegerer til Shiki når den er lastet; rendering skjer bare etter `renderReady()`. */
+  const highlighter: CodeHighlighter = {
+    highlight: (code, lang) => loaded().highlight(code, lang),
+    isSupported: (lang) => loaded().isSupported(lang),
+    warmUp: (between) => loaded().warmUp(between),
+  };
+
+  const derive = (snapshot: VaultSnapshot, revision: Revision): VaultState => {
     const aliases = new Map([...snapshot.notes].map(([path, note]) => [path, note.meta.aliases]));
     const links = createLinkResolver(snapshot.files.values(), aliases);
     return {
@@ -84,7 +135,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
         links,
         getNote: (filePath) => snapshot.notes.get(filePath) ?? null,
       }),
-      renderCache: createLruCache(deps.renderCacheSize ?? 200),
+      renderCache: createLruCache(deps.renderCacheSize ?? 500),
     };
   };
 
@@ -93,20 +144,24 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
     const started = performance.now();
     const extractor = deps.createInitialExtractor();
     try {
-      const [snapshot, highlighter] = await Promise.all([buildSnapshot(config.root, config.ignore, extractor), deps.highlighter()]);
-      state = derive(snapshot, 1, highlighter);
+      const snapshot = await buildSnapshot(config.root, config.ignore, extractor);
+      state = derive(snapshot, 1);
       indexMs = Math.round(performance.now() - started);
       status = 'ready';
       deps.log?.(`Vault «${config.id}» indeksert: ${snapshot.notes.size} notater, ${snapshot.files.size} filer på ${indexMs} ms.`);
       if (deps.watch) watcher = deps.watch(config.root, config.ignore, (paths) => void runtime.applyChanges(paths));
-      setImmediate(() => void runtime.searchIndex());
+      // Shiki (~0,5 s CPU på hovedtråden) lastes etter at indeksen er klar: parallelt kostet det ~0,4 s
+      // indekseringstid (workerne bruker alle kjerner). Rendering venter på den via renderReady().
+      void loadHighlighter().catch((error: unknown) => deps.log?.(`Kunne ikke laste Shiki: ${String(error)}`));
+      void startBackground();
       return state;
     } catch (error) {
       status = 'error';
       errorMessage = `Kunne ikke indeksere vaultet: ${error instanceof Error ? error.message : String(error)}`;
       throw new Error(errorMessage, { cause: error });
     } finally {
-      await extractor.close();
+      // Ikke vent på at workerne avsluttes: indeksen er klar.
+      void extractor.close();
     }
   };
 
@@ -120,6 +175,70 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
       if (file.kind === 'base') docs.push({ path: file.docPath, title: file.title, kind: 'base', aliases: [], tags: [], text: '' });
     }
     return docs;
+  };
+
+  /** Søkeindeksen bygges i biter i ledig tid; et søk gjør den «haster» (bitene venter ikke på ledig tid). */
+  const startSearchBuild = (snapshot: VaultSnapshot): Promise<SearchIndex> => {
+    searchPromise ??= buildSearchIndex(searchDocuments(snapshot), () =>
+      isSearchUrgent ? yieldToEventLoop() : Promise.race([idle(), searchUrgent.then(yieldToEventLoop)]),
+    );
+    return searchPromise;
+  };
+
+  // Forhåndsrendering (BUG-008): én note per bit, bare i ledig tid, inn i gjeldende revisjons render-cache.
+  // Render-cachen tilhører en revisjon (A20), så live reload invaliderer fortsatt alt, også embeds.
+  const prerenderQueue: FilePath[] = [];
+  const queued = new Set<FilePath>();
+  let pumping = false;
+
+  const enqueue = (filePaths: readonly FilePath[], urgent: boolean): void => {
+    const fresh = filePaths.filter((p) => !queued.has(p));
+    for (const p of fresh) queued.add(p);
+    if (urgent) prerenderQueue.unshift(...fresh);
+    else prerenderQueue.push(...fresh);
+    if (!pumping) void pump();
+  };
+
+  const pump = async (): Promise<void> => {
+    pumping = true;
+    try {
+      await loadHighlighter();
+      while (prerenderQueue.length > 0) {
+        await idle();
+        const filePath = prerenderQueue.shift()!;
+        queued.delete(filePath);
+        const current = state;
+        const file = current?.snapshot.files.get(filePath);
+        if (!current || !file || file.kind !== 'note' || current.renderCache.has(filePath)) continue;
+        current.renderCache.set(filePath, current.renderer.renderNote(file));
+      }
+    } catch (error) {
+      deps.log?.(`Forhåndsrendering stoppet: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      pumping = false;
+    }
+  };
+
+  /** De mest lenkede notatene er de som oftest åpnes via lenker (preferential attachment). */
+  const mostLinked = (current: VaultState): FilePath[] => {
+    const count = deps.prerenderCount ?? DEFAULT_PRERENDER_COUNT;
+    if (count <= 0) return [];
+    return [...current.snapshot.notes.values()]
+      .filter((n) => n.file.kind === 'note')
+      .map((n) => [n.file.filePath, current.backlinks.get(n.file.filePath).length] as const)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, count)
+      .map(([filePath]) => filePath);
+  };
+
+  const startBackground = async (): Promise<void> => {
+    try {
+      await idle();
+      await startSearchBuild(state!.snapshot);
+      if (state) enqueue(mostLinked(state), false);
+    } catch (error) {
+      deps.log?.(`Bakgrunnsarbeid feilet: ${error instanceof Error ? error.message : String(error)}`);
+    }
   };
 
   const runtime: VaultRuntime = {
@@ -139,10 +258,41 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
       readyPromise ??= startIndexing();
       return readyPromise;
     },
+    async renderReady() {
+      await runtime.ready();
+      await loadHighlighter();
+      return state!;
+    },
+    prefetchLinks(docPath) {
+      const current = state;
+      const file = current ? findByDocPath(current.snapshot, docPath) : null;
+      const note = file && current ? current.snapshot.notes.get(file.filePath) : undefined;
+      if (!current || !file || !note) return;
+      const targets = new Set<FilePath>();
+      for (const link of note.meta.links) {
+        if (link.kind === 'embed' || link.kind === 'markdown-embed' || link.target === '') continue;
+        const syntax = link.kind === 'markdown' ? 'markdown' : 'wiki';
+        const resolved = current.links.resolve(link.target, file.filePath, syntax);
+        if (resolved && resolved.file.kind === 'note' && resolved.file.filePath !== file.filePath) targets.add(resolved.file.filePath);
+        if (targets.size >= MAX_PREFETCH_LINKS) break;
+      }
+      enqueue([...targets], true);
+    },
+    codeLanguages() {
+      if (!state) return [];
+      const counts = new Map<string, number>();
+      for (const note of state.snapshot.notes.values()) {
+        for (const match of note.body.matchAll(CODE_FENCE)) {
+          const lang = match[1]!.toLowerCase();
+          counts.set(lang, (counts.get(lang) ?? 0) + 1);
+        }
+      }
+      return [...counts].sort((a, b) => b[1] - a[1]).map(([lang]) => lang);
+    },
     async searchIndex() {
       const current = await runtime.ready();
-      searchPromise ??= Promise.resolve().then(() => createSearchIndex(searchDocuments(current.snapshot)));
-      const index = await searchPromise;
+      markSearchUrgent();
+      const index = await startSearchBuild(current.snapshot);
       return { index, revision: state!.revision };
     },
     subscribe(listener) {
@@ -154,8 +304,10 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
         const current = await runtime.ready();
         const { snapshot, changes } = await updateSnapshot(current.snapshot, config.root, config.ignore, diskPaths, deps.incrementalExtractor);
         if (changes.length === 0) return changes;
-        const next = derive(snapshot, current.revision + 1, await deps.highlighter());
+        const next = derive(snapshot, current.revision + 1);
         state = next;
+        // Ny revisjon = tom render-cache (A20); fyll den igjen i ledig tid.
+        enqueue(mostLinked(next), false);
         if (searchPromise) {
           const docs = new Map(searchDocuments(snapshot).map((d) => [d.path, d]));
           searchPromise = searchPromise.then((index) => {

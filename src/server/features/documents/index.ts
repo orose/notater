@@ -2,4 +2,4 @@
 export { ALWAYS_HIDDEN_PROPERTIES, countWords, getBacklinks, getDocument } from './document-service';
 export type { DocumentOptions } from './document-service';
 export { createDocumentsRoutes } from './documents-routes';
-export type { DocumentSource, HiddenPropertiesLookup } from './documents-routes';
+export type { DocumentServedHook, DocumentSource, HiddenPropertiesLookup } from './documents-routes';

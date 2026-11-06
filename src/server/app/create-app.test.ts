@@ -25,7 +25,7 @@ const get = (path: string, headers: Record<string, string> = HOST) => app.reques
 beforeAll(async () => {
   registry = createVaultRegistry(
     { defaultVaultId: 'test', vaults: [{ id: 'test', name: 'Testvault', root: join(process.cwd(), 'test-vault'), ignore: [], hiddenProperties: [] }] },
-    { highlighter: testHighlighter, createInitialExtractor: createInlineMetaExtractor, incrementalExtractor: createInlineMetaExtractor(), watch: null },
+    { highlighter: testHighlighter, createInitialExtractor: createInlineMetaExtractor, incrementalExtractor: createInlineMetaExtractor(), watch: null, prerenderCount: 0 },
   );
   app = createApp({ webRoot: './dist/web', version: '0.0.0-test', registry });
   await registry.get('test')!.ready();
@@ -170,5 +170,42 @@ describe('GET /assets', () => {
       const response = await get(`/api/vaults/test/assets?path=${encodeURIComponent(path)}`);
       expect(response.status, path).toBe(404);
     }
+  });
+});
+
+describe('aktivitetssporing (BUG-008)', () => {
+  it('API-forespørsler teller som opptatt mens de pågår; SSE-tilkoblingen teller ikke', async () => {
+    const { createActivityTracker } = await import('../shared/activity');
+    const activity = createActivityTracker();
+    const tracked = createApp({ webRoot: './dist/web', version: '0', registry, activity });
+    const seen: boolean[] = [];
+    const begin = activity.begin.bind(activity);
+    activity.begin = () => {
+      seen.push(true);
+      return begin();
+    };
+    await tracked.request('/api/vaults/test/document?path=Velkommen', { headers: HOST });
+    expect(seen).toHaveLength(1);
+    expect(activity.busy).toBe(false);
+    const controller = new AbortController();
+    const sse = await tracked.request('/api/events?vault=test', { headers: HOST, signal: controller.signal });
+    expect(sse.status).toBe(200);
+    expect(seen).toHaveLength(1);
+    controller.abort();
+    await sse.body?.cancel().catch(() => undefined);
+  });
+
+  it('dokument-svar har Server-Timing (venting og oppbygging)', async () => {
+    const response = await get('/api/vaults/test/document?path=Velkommen');
+    expect(response.headers.get('Server-Timing')).toMatch(/^wait;dur=\d+(\.\d)?, build;dur=\d+(\.\d)?$/);
+    expect(response.headers.get('Content-Type')).toBe('application/json; charset=utf-8');
+  });
+
+  it('dokument-forespørsler forhåndsrendrer lenkemålene (prefetch)', async () => {
+    const state = await registry.get('test')!.renderReady();
+    expect(state.renderCache.has('domene/Ordre.md')).toBe(false);
+    await get('/api/vaults/test/document?path=lenker/Lenketest');
+    for (let i = 0; i < 100 && !state.renderCache.has('domene/Ordre.md'); i++) await new Promise((r) => setTimeout(r, 10));
+    expect(state.renderCache.has('domene/Ordre.md')).toBe(true);
   });
 });

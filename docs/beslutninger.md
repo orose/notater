@@ -174,3 +174,19 @@ Frontendens avvik 1–8 er **godkjent** (temascript som ekstern fil pga. CSP; br
 - **PO-47** Kanban-kolonnebredde min 168 px (10.5rem) godkjent – målet om 6 kolonner uten scroll ved 1440 px veier tyngst.
 - **PO-48** Bred base-blokk i notat vs. sticky høyre marg: TOC/marg tones ut (opacity 0, ikke klikkbar, `aria-hidden` uendret – fortsatt tilgjengelig via tastatur/skjermleser) mens en bred blokk overlapper margsonen, og kommer tilbake når blokken er passert.
 - **PO-49** SSE får eksplisitt `type: 'renamed'` med `from`/`to` (backend), klienten bruker den når den finnes.
+
+## Backend: ytelse AK17 (BUG-008/BUG-009, 2026-11-06, backend-utvikler)
+
+| # | Beslutning | Begrunnelse | Status |
+|---|---|---|---|
+| BE26 | Metadata-workerne kjører en esbuild-bunt laget i minnet ved oppstart (`Worker(kode, { eval: true })`), med tsx som reserve. `esbuild` er lagt til som direkte avhengighet (fantes fra før via tsx/vite). | Oppstart av en tsx-worker tok ~1,1 s (hver modul gjennom loader-krokene), bunten ~0,15 s. | Vedtatt |
+| BE27 | «Indeks klar» venter ikke på Shiki. Shiki lastes rett etter at indeksen er klar; rendering venter via `renderReady()`. | Shiki parallelt med workerne kostet ~0,4 s indekseringstid. Første dokument rett etter oppstart kan vente ~0,5 s én gang. | Vedtatt |
+| BE28 | Bakgrunnsarbeid (søkeindeks i biter à 25, Shiki-oppvarming linje for linje, forhåndsrendering) kjører bare når ingen API-forespørsel har pågått de siste 150 ms (`ActivityTracker`). Et søk gjør resten av søkeindeksen «haster» (ingen venting på ledig tid). | Før: søkeindeks (~1,4 s) og Shiki-oppvarming (opptil 1,5 s i én blokk) blokkerte forespørsler rett etter oppstart. | Vedtatt |
+| BE29 | Shiki varmer først opp kodespråkene vaultet faktisk bruker (mest brukt først, uten å vente på ledig tid), deretter resten i ledig tid. | Grammatikk-kompilering midt i en forespørsel kostet 150–300 ms. | Vedtatt |
+| BE30 | Forhåndsrendering: de 100 mest lenkede notatene etter indeksering og etter hver endring, og lenkemålene (maks 40) til hvert notat som åpnes, inn i render-cachen (LRU 500). Render-cachen tilhører fortsatt én revisjon (A20), så live reload invaliderer alt – også notater som embedder et endret notat. | Neste klikk treffer ofte cachen (byggetid < 1 ms). En innholds-/avhengighetsnøklet cache ble vurdert, men gir lite når kald rendering er ~4 ms, og øker risikoen for utdatert innhold. | Vedtatt |
+| BE31 | `GET /document` har `Server-Timing: wait;dur=…, build;dur=…` (venting på indeks/Shiki og oppbygging inkl. JSON). | Gjør det mulig å skille server- og klienttid i ytelsestester og devtools. | Vedtatt |
+
+## PO-avgjørelser etter ytelsesrunde
+
+- **PO-50** Første dokument etter oppstart kan vente ~0,5 s én gang (Shiki). Godtatt – indekseringskravet prioriteres.
+- **PO-51** AK17 notatbytte anses oppfylt på serversiden (p95 138–154 ms i nettleser under last). Frontend legger til prefetch ved hover/fokus for margin.

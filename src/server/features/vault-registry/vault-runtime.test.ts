@@ -16,6 +16,7 @@ const deps: VaultRuntimeDeps = {
   createInitialExtractor: createInlineMetaExtractor,
   incrementalExtractor: createInlineMetaExtractor(),
   watch: null,
+  prerenderCount: 0,
 };
 
 beforeEach(async () => {
@@ -73,6 +74,94 @@ describe('createVaultRuntime', () => {
     expect(await vault.applyChanges(['A.md'])).toEqual([]);
     expect((await vault.ready()).revision).toBe(1);
   });
+});
+
+describe('ytelse: lat Shiki, forhåndsrendering og ledig tid (BUG-008/009)', () => {
+  const config = () => ({ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] });
+  const waitFor = async (check: () => boolean): Promise<void> => {
+    for (let i = 0; i < 200 && !check(); i++) await new Promise((r) => setTimeout(r, 10));
+    expect(check()).toBe(true);
+  };
+
+  it('ready() venter ikke på Shiki; renderReady() gjør det', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const vault = createVaultRuntime(config(), { ...deps, highlighter: async () => (await gate, testHighlighter()) });
+    const state = await vault.ready();
+    expect(state.revision).toBe(1);
+    let rendered = false;
+    const render = vault.renderReady().then(() => (rendered = true));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(rendered).toBe(false);
+    release();
+    await render;
+    expect(rendered).toBe(true);
+  }, 30_000);
+
+  it('de mest lenkede notatene forhåndsrendres etter indeksering og etter en endring', async () => {
+    const vault = createVaultRuntime(config(), { ...deps, prerenderCount: 1 });
+    const first = await vault.renderReady();
+    await waitFor(() => first.renderCache.has('B.md'));
+    expect(first.renderCache.has('A.md')).toBe(false);
+    await writeFile(join(root, 'A.md'), '# A\nSe [[B]] igjen.');
+    await vault.applyChanges(['A.md']);
+    const next = await vault.ready();
+    expect(next.renderCache.has('B.md')).toBe(false);
+    await waitFor(() => next.renderCache.has('B.md'));
+  }, 30_000);
+
+  it('prefetchLinks rendrer lenkemålene i ledig tid – og venter mens serveren er opptatt', async () => {
+    let busy = true;
+    const waiting: Array<() => void> = [];
+    const idle = () => new Promise<void>((r) => (busy ? waiting.push(r) : setImmediate(r)));
+    const vault = createVaultRuntime(config(), { ...deps, idle });
+    const state = await vault.renderReady();
+    vault.prefetchLinks('A');
+    await new Promise((r) => setTimeout(r, 30));
+    expect(state.renderCache.has('B.md')).toBe(false);
+    busy = false;
+    for (const r of waiting.splice(0)) r();
+    await waitFor(() => state.renderCache.has('B.md'));
+    expect(state.renderCache.has('A.md')).toBe(false);
+  }, 30_000);
+
+  it('søk mens serveren aldri blir ledig: søkeindeksen bygges likevel ferdig (ingen vranglås)', async () => {
+    for (let i = 0; i < 80; i++) await writeFile(join(root, `N${i}.md`), `# N${i}\nord${i}`);
+    // Ledig de to første gangene (bakgrunnsbyggingen starter og tar første bit), deretter aldri.
+    let calls = 0;
+    const idle = () => (++calls <= 2 ? new Promise<void>((r) => setImmediate(r)) : new Promise<void>(() => undefined));
+    const vault = createVaultRuntime(config(), { ...deps, idle });
+    await vault.ready();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(calls).toBeGreaterThanOrEqual(3);
+    const { index } = await vault.searchIndex();
+    expect(index.search('ord79', 10).map((h) => h.path)).toContain('N79');
+  }, 30_000);
+
+  it('codeLanguages: kodeblokkspråk etter hyppighet', async () => {
+    await writeFile(join(root, 'Kode.md'), '```java\na\n```\n\n```ts\nb\n```\n\n~~~java\nc\n~~~\n\n```\nuten språk\n```');
+    const vault = createVaultRuntime(config(), deps);
+    expect(vault.codeLanguages()).toEqual([]);
+    await vault.ready();
+    expect(vault.codeLanguages()).toEqual(['java', 'ts']);
+  });
+
+  it('live reload: endret embed-mål gir nytt innhold selv om verten var forhåndsrendret', async () => {
+    const { getDocument } = await import('../documents');
+    const { createBaseEvaluator } = await import('../bases');
+    await writeFile(join(root, 'Vert.md'), '# Vert\n![[Mål]]');
+    await writeFile(join(root, 'Mål.md'), '# Mål\nGammel tekst');
+    const vault = createVaultRuntime(config(), { ...deps, prerenderCount: 10 });
+    const first = await vault.renderReady();
+    await waitFor(() => first.renderCache.has('Vert.md'));
+    const text = (s: typeof first) => JSON.stringify(getDocument(s, 'Vert', createBaseEvaluator()));
+    expect(text(first)).toContain('Gammel tekst');
+    await writeFile(join(root, 'Mål.md'), '# Mål\nNy tekst');
+    await vault.applyChanges(['Mål.md']);
+    const next = await vault.renderReady();
+    expect(text(next)).toContain('Ny tekst');
+    expect(text(next)).not.toContain('Gammel tekst');
+  }, 30_000);
 });
 
 describe('createVaultRegistry', () => {

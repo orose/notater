@@ -13,6 +13,7 @@ import { createTreeRoutes } from '../features/tree';
 import { findByDocPath } from '../features/vault-index';
 import { createVaultsRoutes } from '../features/vault-registry';
 import type { VaultRegistry } from '../features/vault-registry';
+import type { ActivityTracker } from '../shared/activity';
 import { apiError } from '../shared/api-error';
 import { hostGuard, readOnlyGuard, securityHeaders } from './security';
 
@@ -24,6 +25,8 @@ export interface AppOptions {
   /** Bases-evaluator (ADR-003). Standard: `createBaseEvaluator()`. */
   readonly bases?: BaseEvaluator;
   readonly events?: EventsOptions;
+  /** Sporer pågående forespørsler, slik at bakgrunnsarbeid venter på ledig tid (BUG-008). */
+  readonly activity?: ActivityTracker;
 }
 
 /**
@@ -38,6 +41,19 @@ export function createApp(options: AppOptions): Hono {
   app.use('*', securityHeaders());
   app.use('*', hostGuard());
   app.use('*', readOnlyGuard());
+  const { activity } = options;
+  if (activity) {
+    app.use('/api/*', async (c, next) => {
+      // SSE-tilkoblingen er åpen hele tiden og teller ikke som arbeid.
+      if (c.req.path === '/api/events') return next();
+      const end = activity.begin();
+      try {
+        await next();
+      } finally {
+        end();
+      }
+    });
+  }
 
   app.get('/api/health', (c) => c.json<HealthResponse>({ status: 'ok', version: options.version }));
   app.route('/', createVaultsRoutes(registry));
@@ -50,7 +66,12 @@ export function createApp(options: AppOptions): Hono {
   );
   app.route(
     '/',
-    createDocumentsRoutes(state, options.bases ?? createBaseEvaluator(), (id) => registry.get(id)?.hiddenProperties ?? []),
+    createDocumentsRoutes(
+      async (id) => (await registry.get(id)?.renderReady()) ?? null,
+      options.bases ?? createBaseEvaluator(),
+      (id) => registry.get(id)?.hiddenProperties ?? [],
+      (id, docPath) => registry.get(id)?.prefetchLinks(docPath),
+    ),
   );
   app.route(
     '/',
