@@ -1,8 +1,8 @@
 // Handlerne for alle kommandoene i katalogen (ADR-007 §1). Når resten av appen kun via `ctx.ports`
 // (AR-1.1-03), så de kan testes med falske porter. Ingen React her.
 //
-// Funksjoner som kommer i senere slices (folding 1.1-c, diskré 1.1-d) er registrert, men deaktivert med
-// begrunnelsen «Kommer snart» til de leveres (`pending`). Bredde og zen er levert (1.1-b).
+// Funksjoner som kommer i senere slices (diskré 1.1-d) er registrert, men deaktivert med begrunnelsen
+// «Kommer snart» til de leveres (`pending`). Bredde og zen (1.1-b) og folding (1.1-c) er levert.
 
 import type { CommandContext } from './model/command-context';
 import { ENABLED, type Availability, type CommandHandler } from './model/command-types';
@@ -11,7 +11,7 @@ import type { CommandHandlers } from './model/registry';
 /** Visningsfunksjoner fra senere slices. Fjern fra settet når funksjonen er levert. */
 export type PendingFeature = 'width' | 'zen' | 'folding' | 'discreet';
 
-export const PENDING_FEATURES: ReadonlySet<PendingFeature> = new Set<PendingFeature>(['folding', 'discreet']);
+export const PENDING_FEATURES: ReadonlySet<PendingFeature> = new Set<PendingFeature>(['discreet']);
 
 export const COMING_SOON = 'Kommer snart';
 export const NOTES_ONLY = 'Gjelder bare notater';

@@ -79,7 +79,8 @@ export const kildelenke = (page: Page, tittel: string): Locator => page.getByRol
 export const overskrift = (page: Page, tekst: string): Locator =>
   artikkel(page)
     .locator('h1, h2, h3, h4, h5, h6')
-    .filter({ hasText: new RegExp(`^[^\\p{L}\\p{N}]*${escapeRegex(tekst)}(?![\\p{L}\\p{N}.])`, 'u') });
+    // Teksten må slutte der (neste er #-ankeret, ikke flere ord): «Seksjon B» treffer ikke «Seksjon B hopper over H3».
+    .filter({ hasText: new RegExp(`^[^\\p{L}\\p{N}]*${escapeRegex(tekst)}(?![\\p{L}\\p{N}.]|\\s+[\\p{L}\\p{N}])`, 'u') });
 
 // ---------------------------------------------------------------------------------------------
 // Tastatur

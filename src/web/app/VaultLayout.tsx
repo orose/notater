@@ -5,6 +5,7 @@ import { LiveReloadProvider } from '../features/live-reload';
 import { Sidebar, Topbar } from '../features/navigation';
 import { DocumentPage } from '../features/note-view';
 import { CommandProvider, useCommands } from '../features/commands';
+import { OutlineHost } from '../features/outline';
 import { SearchProvider } from '../features/search';
 import { ThemePicker } from '../features/theme';
 import { ViewFlags, ZenChrome } from '../features/view-settings';
@@ -79,6 +80,7 @@ export function VaultLayout() {
 
   return (
     <SearchProvider vaultId={vaultId}>
+      <OutlineHost>
       <CommandProvider vaultId={vaultId} docPath={docPath} onOpenAppearance={() => setThemeOpen(true)}>
       <LiveReloadProvider vaultId={vaultId}>
         <a className="skip-link" href="#innhold">
@@ -108,6 +110,7 @@ export function VaultLayout() {
         <ZenChrome />
       </LiveReloadProvider>
       </CommandProvider>
+      </OutlineHost>
     </SearchProvider>
   );
 }

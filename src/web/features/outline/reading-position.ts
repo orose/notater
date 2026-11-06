@@ -5,8 +5,8 @@ export const READING_LINE = 0.3;
 
 export function isRendered(el: Element): boolean {
   const check = (el as Element & { checkVisibility?: () => boolean }).checkVisibility;
-  if (typeof check === 'function') return check.call(el);
-  return (el as HTMLElement).offsetParent !== null || getComputedStyle(el).position === 'fixed';
+  if (el.closest('[hidden]')) return false;
+  return typeof check === 'function' ? check.call(el) : true;
 }
 
 /**

@@ -93,9 +93,14 @@ describe('kommandohandlere', () => {
     expect(ports.view.toggleZen).toHaveBeenCalled();
   });
 
+  it('folding er levert (1.1-c): krever overskrifter', () => {
+    expect(registry.get('outline.foldAll').isEnabled(context('note', 3).ctx)).toEqual({ enabled: true });
+    expect(registry.get('outline.foldAll').isEnabled(context('note', 0).ctx)).toEqual({ enabled: false, reason: NO_HEADINGS });
+  });
+
   it('funksjoner fra senere slices er deaktivert med «Kommer snart»', () => {
     const { ctx } = context();
-    for (const id of ['view.toggleDiscreet', 'outline.toggleSection', 'outline.foldAll', 'outline.unfoldAll'] as const) {
+    for (const id of ['view.toggleDiscreet'] as const) {
       expect(registry.get(id).isEnabled(ctx), id).toEqual({ enabled: false, reason: COMING_SOON });
     }
   });

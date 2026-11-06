@@ -6,12 +6,13 @@ import { assetUrl, baseName, docPathFromPathname, folderOf, isImagePath, isNotFo
 import { Backlinks, OutgoingLinks, RailBacklinks, collectOutgoingLinks } from '../backlinks';
 import { BaseBlock } from '../bases';
 import { pushRecent } from '../recent';
+import { FoldingProvider, buildOutline } from '../outline';
 import { InlineToc, Toc } from '../toc';
 import { HastContent } from './HastContent';
 import { splitLeadingTitle } from './leading-title';
 import { MissingNotePage } from './MissingNotePage';
 import { NoteHeader } from './NoteHeader';
-import { readingMinutes } from './prepare-content';
+import { prepareContent, readingMinutes } from './prepare-content';
 import { useRailDimming } from './rail-overlap';
 import { useDocumentScroll } from './use-document-scroll';
 
@@ -114,20 +115,23 @@ interface NotePageProps {
 
 function NotePage({ doc, display, busy }: NotePageProps) {
   const minutes = useMemo(() => readingMinutes(doc.content), [doc.content]);
+  // ADR-009: prepareContent → buildOutline (§-nummer, seksjoner) → folding i HastContent.
+  const prepared = useMemo(() => prepareContent(display.content), [display.content]);
+  const outline = useMemo(() => buildOutline(prepared, display.toc), [prepared, display.toc]);
   const outgoing = useMemo(() => collectOutgoingLinks(doc.content, doc.path), [doc.content, doc.path]);
   const railRef = useRef<HTMLElement>(null);
   useRailDimming(railRef, display.content);
   return (
-    <>
+    <FoldingProvider outline={outline} docKey={`${doc.vaultId}\n${doc.path}`}>
       <main className="page" id="innhold" tabIndex={-1} aria-busy={busy || undefined}>
         <div className="col">
           <NoteHeader doc={doc} title={display.title} readingMinutes={minutes} />
-          <InlineToc entries={display.toc} />
+          <InlineToc entries={outline.toc} />
           <article className="prose">
             {isEmptyContent(display.content) ? (
               <p className="empty-note">Notatet er tomt.</p>
             ) : (
-              <HastContent vaultId={doc.vaultId} content={display.content} bases={doc.bases} />
+              <HastContent vaultId={doc.vaultId} content={outline.content} bases={doc.bases} prepared />
             )}
           </article>
           {/* Utdragene inneholder lenketeksten (filnavnet), ikke visningstittelen. */}
@@ -135,11 +139,11 @@ function NotePage({ doc, display, busy }: NotePageProps) {
         </div>
       </main>
       <aside className="rail" aria-label="På denne siden" ref={railRef}>
-        <Toc entries={display.toc} />
+        <Toc entries={outline.toc} />
         <OutgoingLinks vaultId={doc.vaultId} links={outgoing} />
         <RailBacklinks backlinks={doc.backlinks} />
       </aside>
-    </>
+    </FoldingProvider>
   );
 }
 

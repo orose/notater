@@ -3,33 +3,47 @@ import { Link } from 'react-router';
 import { Icon } from '../../shared/ui/Icon';
 import { nodeText } from '../../shared/ui/node-text';
 import { UnsupportedCard, unsupportedText } from '../../shared/ui/UnsupportedCard';
+import { FoldLine, FoldToggle, useHeadingFold } from '../outline';
 
 // Små komponenter for standard-HTML og enkle vr-*-elementer i notatinnhold.
 
-type HeadingProps = HTMLAttributes<HTMLHeadingElement> & { readonly children?: ReactNode };
+type HeadingProps = HTMLAttributes<HTMLHeadingElement> & {
+  readonly children?: ReactNode;
+  readonly 'data-vr-sec'?: string;
+};
 
-function heading(Tag: 'h2' | 'h3') {
+type HeadingTag = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+/**
+ * Overskrifter i notatinnhold: ankerlenke (`#`, som i v1 bare på h2/h3) og, for foldbare toppnivå-overskrifter, fold-pilen og
+ * fold-linjen (F3, ADR-009). Pilen er siste interaktive barn; fold-linjen står under teksten når foldet.
+ */
+function heading(Tag: HeadingTag) {
   function ContentHeading({ id, children, ...rest }: HeadingProps) {
+    const fold = useHeadingFold(id);
+    const text = nodeText(children).trim();
     return (
-      <Tag id={id} {...rest}>
+      <Tag id={id} {...rest} data-vr-folded={fold?.folded ? '' : undefined} data-vr-foldable={fold ? '' : undefined}>
         {children}
-        {id ? (
-          <Link
-            className="heading-anchor"
-            to={{ hash: `#${encodeURIComponent(id)}` }}
-            aria-label={`Lenke til seksjonen «${nodeText(children).trim()}»`}
-          >
+        {id && (Tag === 'h2' || Tag === 'h3') ? (
+          <Link className="heading-anchor" to={{ hash: `#${encodeURIComponent(id)}` }} aria-label={`Lenke til seksjonen «${text}»`}>
             #
           </Link>
         ) : null}
+        {fold ? <FoldToggle text={text} fold={fold} sec={rest['data-vr-sec']} /> : null}
+        {fold?.folded ? <FoldLine fold={fold} /> : null}
       </Tag>
     );
   }
   return ContentHeading;
 }
 
+export const ContentH1 = heading('h1');
 export const ContentH2 = heading('h2');
 export const ContentH3 = heading('h3');
+export const ContentH4 = heading('h4');
+export const ContentH5 = heading('h5');
+export const ContentH6 = heading('h6');
 
 export function ContentTable(props: HTMLAttributes<HTMLTableElement>) {
   return (

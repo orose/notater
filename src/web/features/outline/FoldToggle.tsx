@@ -35,10 +35,8 @@ export function FoldLine({ fold }: { readonly fold: HeadingFold }) {
   return (
     <span className="fold-line" data-testid="fold-indikator" aria-hidden="true" onClick={fold.toggle}>
       <span className="fl-mark" />
-      <span className="fl-text">
-        {plural(words, 'ord', 'ord')}
-        {figures > 0 ? ` · ${plural(figures, 'figur', 'figurer')}` : ''}
-      </span>
+      {/* Teksten tegnes med CSS (attr), så den ikke blir en del av overskriftens tekstinnhold. */}
+      <span className="fl-text" data-text={`${plural(words, 'ord', 'ord')}${figures > 0 ? ` · ${plural(figures, 'figur', 'figurer')}` : ''}`} />
       <span className="fl-lead" />
       <span className="fl-act" />
     </span>

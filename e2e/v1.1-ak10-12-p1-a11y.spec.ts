@@ -132,7 +132,7 @@ test.describe('AK-1.1-12 tilgjengelighet (axe 0 brudd, lys og mørk)', () => {
     });
   }
 
-  test.fixme('TC-12-03 fold-knappen: rolle, navn, aria-expanded og aria-controls peker på innholdet', async ({ page }) => {
+  test('TC-12-03 fold-knappen: rolle, navn, aria-expanded og aria-controls peker på innholdet', async ({ page }) => {
     await openNote(page, fasit.dypStruktur.sti);
     const knapp = foldKnapp(page, 'Seksjon A');
     await expect(knapp).toHaveAttribute('aria-expanded', 'true');

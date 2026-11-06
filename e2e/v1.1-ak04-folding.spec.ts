@@ -22,7 +22,7 @@ const tekst = (page: import('@playwright/test').Page, t: string) => artikkel(pag
 
 test.describe('AK-1.1-04 folding med pil', () => {
   for (const s of DS.seksjoner) {
-    test.fixme(`TC-04-01 H${s.nivå} «${s.overskrift}»: seksjonen løper til neste overskrift på samme eller høyere nivå`, async ({ page }) => {
+    test(`TC-04-01 H${s.nivå} «${s.overskrift}»: seksjonen løper til neste overskrift på samme eller høyere nivå`, async ({ page }) => {
       await openNote(page, DS.sti);
       const knapp = foldKnapp(page, s.overskrift);
       await expect(knapp).toHaveAttribute('aria-expanded', 'true');
@@ -43,7 +43,7 @@ test.describe('AK-1.1-04 folding med pil', () => {
     });
   }
 
-  test.fixme('TC-04-02 pilen er usynlig til hover, og synlig ved hover (desktop)', async ({ page, isMobile }) => {
+  test('TC-04-02 pilen er usynlig til hover, og synlig ved hover (desktop)', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Touch: se TC-04-03');
     await openNote(page, DS.sti);
     await page.mouse.move(0, 0);
@@ -53,7 +53,7 @@ test.describe('AK-1.1-04 folding med pil', () => {
     await forventSynlig(knapp);
   });
 
-  test.fixme('TC-04-03 pilen er synlig ved tastaturfokus (Tab) og kan brukes med Enter og Space', async ({ page, isMobile }) => {
+  test('TC-04-03 pilen er synlig ved tastaturfokus (Tab) og kan brukes med Enter og Space', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur testes på desktop');
     await openNote(page, DS.sti);
     const knapp = foldKnapp(page, 'Seksjon A');
@@ -67,7 +67,7 @@ test.describe('AK-1.1-04 folding med pil', () => {
     await expect(page.getByTestId('leader-hint')).toBeHidden();
   });
 
-  test.fixme('TC-04-04 touch: pilen er alltid synlig, dempet', async ({ page, isMobile }) => {
+  test('TC-04-04 touch: pilen er alltid synlig, dempet', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'Touch');
     await openNote(page, DS.sti);
     expect(await page.evaluate(() => matchMedia('(hover: none)').matches), 'mobilprosjektet emulerer touch uten hover').toBe(true);
@@ -83,7 +83,7 @@ test.describe('AK-1.1-04 folding med pil', () => {
     expect(Math.min(box?.width ?? 0, box?.height ?? 0)).toBeGreaterThanOrEqual(24);
   });
 
-  test.fixme('TC-04-05 innhold før første overskrift kan ikke foldes og forblir synlig', async ({ page }) => {
+  test('TC-04-05 innhold før første overskrift kan ikke foldes og forblir synlig', async ({ page }) => {
     await openNote(page, DS.sti);
     await kjørKommando(page, 'fold alle');
     await expect(artikkel(page).getByRole('link', { name: DS.dyplenke.lenketekst })).toBeVisible();
@@ -93,7 +93,7 @@ test.describe('AK-1.1-04 folding med pil', () => {
 test.describe('AK-1.1-04 folding med tastatur (za, zM, zR)', () => {
   test.skip(({ isMobile }) => isMobile, 'Tastatur testes på desktop');
 
-  test.fixme('TC-04-06 zM folder alle, zR folder ut alle', async ({ page }) => {
+  test('TC-04-06 zM folder alle, zR folder ut alle', async ({ page }) => {
     await openNote(page, DS.sti);
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['z', 'Shift+M']);
@@ -106,7 +106,7 @@ test.describe('AK-1.1-04 folding med tastatur (za, zM, zR)', () => {
     for (const s of DS.seksjoner) for (const t of s.skjuler) await expect(tekst(page, t)).toBeVisible();
   });
 
-  test.fixme('TC-04-07 za på fokusert overskrift', async ({ page }) => {
+  test('TC-04-07 za på fokusert overskrift', async ({ page }) => {
     await openNote(page, DS.sti);
     await foldKnapp(page, 'Seksjon A.1').focus();
     await trykkSekvens(page, ['z', 'a']);
@@ -116,7 +116,7 @@ test.describe('AK-1.1-04 folding med tastatur (za, zM, zR)', () => {
     await expect(tekst(page, 'Markør A-3.')).toBeVisible();
   });
 
-  test.fixme('TC-04-08 za ved leseposisjon: siste foldbare overskrift over TOC-leselinjen (30 %, PO-53)', async ({ page }) => {
+  test('TC-04-08 za ved leseposisjon: siste foldbare overskrift over TOC-leselinjen (30 %, PO-53)', async ({ page }) => {
     // Rapporten i rammevisning: etter «Del I – Drift» kommer en høy ramme uten foldbare overskrifter (PO-54),
     // så «Del I – Drift» er siste foldbare overskrift over leselinjen når den står 10 % ned i visningen.
     await openNote(page, fasit.rapport.sti);
@@ -130,7 +130,7 @@ test.describe('AK-1.1-04 folding med tastatur (za, zM, zR)', () => {
     await expect(foldKnapp(page, 'Del II – Feiltilstander')).toHaveAttribute('aria-expanded', 'true');
   });
 
-  test.fixme('TC-04-16 za over første overskrift gjør ingenting (toast «Ingen seksjon her»)', async ({ page }) => {
+  test('TC-04-16 za over første overskrift gjør ingenting (toast «Ingen seksjon her»)', async ({ page }) => {
     // Lang brødtekst: første overskrift («Andre del») ligger langt under leselinjen ved toppen av siden.
     await openNote(page, fasit.langBrodtekst.sti);
     await fokusPåInnhold(page);
@@ -139,13 +139,13 @@ test.describe('AK-1.1-04 folding med tastatur (za, zM, zR)', () => {
     await expect(page.getByRole('status').filter({ hasText: 'Ingen seksjon her' })).toBeVisible();
   });
 
-  test.fixme('TC-04-17 overskrifter i rammede embeds og callouts kan ikke foldes (PO-54)', async ({ page }) => {
+  test('TC-04-17 overskrifter i rammede embeds og callouts kan ikke foldes (PO-54)', async ({ page }) => {
     await openNote(page, fasit.rapport.sti);
     await expect(foldKnapp(page, 'Hendelser')).toHaveCount(0);
     await expect(foldKnapp(page, 'Nøkkeltall')).toHaveCount(1);
   });
 
-  test.fixme('TC-04-09 :fold alle og :utfold alle i paletten', async ({ page }) => {
+  test('TC-04-09 :fold alle og :utfold alle i paletten', async ({ page }) => {
     await openNote(page, DS.sti);
     await kjørKommando(page, 'fold alle');
     await expect(tekst(page, 'Markør C-2.')).toBeHidden();
@@ -155,7 +155,7 @@ test.describe('AK-1.1-04 folding med tastatur (za, zM, zR)', () => {
 });
 
 test.describe('AK-1.1-04 automatisk utfolding og ingen hukommelse', () => {
-  test.fixme('TC-04-10 dyplenke #^blokk folder ut alle forfedre, og bare dem', async ({ page }) => {
+  test('TC-04-10 dyplenke #^blokk folder ut alle forfedre, og bare dem', async ({ page }) => {
     await openNote(page, DS.sti);
     await kjørKommando(page, 'fold alle');
     await artikkel(page).getByRole('link', { name: DS.dyplenke.lenketekst }).click();
@@ -165,7 +165,7 @@ test.describe('AK-1.1-04 automatisk utfolding og ingen hukommelse', () => {
     for (const h of DS.dyplenke.forblirFoldet) await expect(foldKnapp(page, h), h).toHaveAttribute('aria-expanded', 'false');
   });
 
-  test.fixme('TC-04-11 dyplenke til #overskrift i foldet seksjon folder ut', async ({ page }) => {
+  test('TC-04-11 dyplenke til #overskrift i foldet seksjon folder ut', async ({ page }) => {
     await openNote(page, DS.sti);
     await kjørKommando(page, 'fold alle');
     await artikkel(page).getByRole('link', { name: 'Nivå 6 – bunnen' }).click();
@@ -173,7 +173,7 @@ test.describe('AK-1.1-04 automatisk utfolding og ingen hukommelse', () => {
     await expect(tekst(page, 'Markør A-6.')).toBeVisible();
   });
 
-  test.fixme('TC-04-12 klikk i TOC folder ut', async ({ page, isMobile }) => {
+  test('TC-04-12 klikk i TOC folder ut', async ({ page, isMobile }) => {
     test.skip(isMobile, 'TOC i høyremargen (desktop)');
     await openNote(page, DS.sti);
     await kjørKommando(page, 'fold alle');
@@ -182,7 +182,7 @@ test.describe('AK-1.1-04 automatisk utfolding og ingen hukommelse', () => {
     await expect(overskrift(page, 'Seksjon A.1.1')).toBeInViewport();
   });
 
-  test.fixme('TC-04-13 søketreff i foldet seksjon folder ut', async ({ page }) => {
+  test('TC-04-13 søketreff i foldet seksjon folder ut', async ({ page }) => {
     await openNote(page, DS.sti);
     await kjørKommando(page, 'fold alle');
     await fokusPåInnhold(page);
@@ -193,7 +193,7 @@ test.describe('AK-1.1-04 automatisk utfolding og ingen hukommelse', () => {
     await expect(tekst(page, DS.søk.mål)).toBeVisible();
   });
 
-  test.fixme('TC-04-14 folding huskes ikke: reload, navigasjon bort og tilbake gir alt utfoldet', async ({ page }) => {
+  test('TC-04-14 folding huskes ikke: reload, navigasjon bort og tilbake gir alt utfoldet', async ({ page }) => {
     await openNote(page, DS.sti);
     await kjørKommando(page, 'fold alle');
     await page.reload();

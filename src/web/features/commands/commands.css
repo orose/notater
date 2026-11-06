@@ -92,10 +92,13 @@
   font-feature-settings: "calt" 0;
 }
 
-/* ---------- Toast fra kommandoer ---------- */
-.command-toast .toast { z-index: calc(var(--z-hint) + 10); }
+/* ---------- Toast fra kommandoer ----------
+   Live-regionen (role=status) finnes alltid og bærer posisjonen; toasten inni er statisk. Da har regionen
+   samme boks som toasten (synlig når den har innhold, uten størrelse ellers). */
+.command-toast { position: fixed; left: 50%; bottom: var(--space-5); transform: translateX(-50%); z-index: calc(var(--z-hint) + 10); max-width: calc(100vw - 2rem); }
+.command-toast .toast { position: static; transform: none; left: auto; bottom: auto; max-width: none; }
 
 @media print { .whichkey, .showcmd, .command-toast { display: none !important; } }
 .rc-cmd { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.15em; }
 /* I zen står førstegangshintet nederst i midten (§11.6): toasten legger seg over det. */
-[data-zen] .command-toast .toast { bottom: calc(var(--space-5) + 4.5rem); }
+[data-zen] .command-toast { bottom: calc(var(--space-5) + 4.5rem); }

@@ -1,4 +1,4 @@
-import type { Root } from 'hast';
+import type { Root, RootContent } from 'hast';
 import { toJsxRuntime, type Components } from 'hast-util-to-jsx-runtime';
 import { memo, useMemo, type ReactNode } from 'react';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
@@ -10,8 +10,12 @@ import { Embed } from '../embed';
 import { MermaidDiagram } from '../mermaid';
 import { ContentLink } from './ContentLink';
 import {
+  ContentH1,
   ContentH2,
   ContentH3,
+  ContentH4,
+  ContentH5,
+  ContentH6,
   ContentImage,
   ContentInput,
   ContentTable,
@@ -19,12 +23,15 @@ import {
   Sidenote,
   Unsupported,
 } from './content-elements';
+import { useHiddenBlocks } from '../outline';
 import { prepareContent } from './prepare-content';
 
 interface HastContentProps {
   readonly vaultId: VaultId;
   readonly content: Root;
   readonly bases: Readonly<Record<string, BaseResult>>;
+  /** Innholdet er allerede kjørt gjennom `prepareContent` (og `buildOutline`). */
+  readonly prepared?: boolean;
 }
 
 type Props = Record<string, unknown> & { children?: ReactNode };
@@ -32,8 +39,12 @@ type Props = Record<string, unknown> & { children?: ReactNode };
 function createComponents(vaultId: VaultId, bases: Readonly<Record<string, BaseResult>>): Partial<Components> {
   const custom: Record<string, (props: never) => ReactNode> = {
     a: (props: Props) => <ContentLink vaultId={vaultId} {...props} />,
+    h1: ContentH1,
     h2: ContentH2,
     h3: ContentH3,
+    h4: ContentH4,
+    h5: ContentH5,
+    h6: ContentH6,
     table: ContentTable,
     img: ContentImage,
     input: ContentInput,
@@ -64,18 +75,50 @@ function createComponents(vaultId: VaultId, bases: Readonly<Record<string, BaseR
   return custom as unknown as Partial<Components>;
 }
 
+const OPTIONS = {
+  Fragment,
+  jsx,
+  jsxs,
+  passKeys: true,
+  ignoreInvalidStyle: true,
+  elementAttributeNameCase: 'react',
+  stylePropertyNameCase: 'dom',
+} as const;
+
+/**
+ * Én toppnivåblokk, memoisert på node-identitet (ADR-009 §5): en fold rendrer bare blokkene som endret seg
+ * (AK17). En skjult blokk pakkes i `div[hidden]` (komponenter som kodeblokk og embed tar ikke `hidden`).
+ */
+const Block = memo(function Block({
+  node,
+  index,
+  hidden,
+  components,
+}: {
+  readonly node: RootContent;
+  readonly index: number;
+  readonly hidden: boolean;
+  readonly components: Partial<Components>;
+}) {
+  const rendered = toJsxRuntime({ type: 'root', children: [node] }, { ...OPTIONS, components }) as ReactNode;
+  if (!hidden) return rendered;
+  return (
+    <div hidden className="folded-block" data-folded-block={index}>
+      {rendered}
+    </div>
+  );
+});
+
 /** Rendrer sanitert HAST fra serveren til React – aldri innerHTML (ADR-002). */
-export const HastContent = memo(function HastContent({ vaultId, content, bases }: HastContentProps) {
-  const prepared = useMemo(() => prepareContent(content), [content]);
+export const HastContent = memo(function HastContent({ vaultId, content, bases, prepared = false }: HastContentProps) {
+  const ready = useMemo(() => (prepared ? content : prepareContent(content)), [content, prepared]);
   const components = useMemo(() => createComponents(vaultId, bases), [vaultId, bases]);
-  return toJsxRuntime(prepared, {
-    Fragment,
-    jsx,
-    jsxs,
-    components,
-    passKeys: true,
-    ignoreInvalidStyle: true,
-    elementAttributeNameCase: 'react',
-    stylePropertyNameCase: 'dom',
-  }) as ReactNode;
+  const hidden = useHiddenBlocks();
+  return (
+    <>
+      {ready.children.map((node, index) => (
+        <Block key={index} node={node} index={index} hidden={hidden.has(index)} components={components} />
+      ))}
+    </>
+  );
 });

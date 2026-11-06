@@ -6,7 +6,16 @@ export interface ScrollSpyState {
   readonly progress: number;
 }
 
-/** Aktiv overskrift = siste overskrift som har passert 30 % av vinduet (som prototypen). */
+function isRendered(el: Element): boolean {
+  const check = (el as Element & { checkVisibility?: () => boolean }).checkVisibility;
+  if (el.closest('[hidden]')) return false;
+  return typeof check === 'function' ? check.call(el) : true;
+}
+
+/**
+ * Aktiv overskrift = siste overskrift som har passert 30 % av vinduet (som prototypen). Samme leselinje som
+ * `za` (READING_LINE i outline, PO-53). Skjulte (foldede) overskrifter hoppes over.
+ */
 export function useScrollSpy(ids: readonly string[]): ScrollSpyState {
   const [state, setState] = useState<ScrollSpyState>({ activeId: ids[0] ?? null, progress: 0 });
   const key = ids.join('\n');
@@ -20,7 +29,9 @@ export function useScrollSpy(ids: readonly string[]): ScrollSpyState {
       const limit = window.innerHeight * 0.3;
       for (const id of list) {
         const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top < limit) active = id;
+        // Foldede seksjoner (F3): et skjult element har top = 0 og ville ellers blitt «aktivt».
+        if (!el || !isRendered(el)) continue;
+        if (el.getBoundingClientRect().top < limit) active = id;
       }
       const doc = document.documentElement;
       const max = Math.max(1, doc.scrollHeight - doc.clientHeight);

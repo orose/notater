@@ -20,6 +20,7 @@ import {
 } from '../keyboard';
 import { usePalette, type PaletteCommandItem, type PaletteCommandSource } from '../search';
 import { PALETTES, PALETTE_INFO, TYPES, TYPE_INFO, useTheme } from '../theme';
+import { useOutlineControl } from '../outline';
 import { useViewSettings } from '../view-settings';
 import { CommandsContext, type CommandsContextValue } from './commands-context';
 import { createCommandHandlers } from './handlers';
@@ -93,6 +94,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
 
   const { setPreferences, toggleMode, preferences, resolvedMode } = theme;
   const { toggleWidth, setZen, zen, width } = viewSettings;
+  const outlineControl = useOutlineControl();
   const ports = useMemo<CommandPorts>(
     () => ({
       scroll,
@@ -145,13 +147,26 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
           return true;
         },
       },
-      outline: { toggleAtReadingPosition: noop, foldAll: noop, unfoldAll: noop },
+      outline: {
+        toggleAtReadingPosition: () => {
+          if (!outlineControl?.toggleAtReadingPosition()) showToast('Ingen seksjon her');
+        },
+        foldAll: () => {
+          outlineControl?.foldAll();
+          showToast('Alle seksjoner er foldet', ['z', 'R']);
+        },
+        unfoldAll: () => {
+          outlineControl?.unfoldAll();
+          showToast('Alle seksjoner er foldet ut', ['z', 'M']);
+        },
+      },
       toast: showToast,
     }),
-    [scroll, navigate, palette.openSearch, palette.openCommands, onOpenAppearance, resolvedMode, toggleMode, setPreferences, preferences.type, preferences.palette, showToast, toggleWidth, setZen, zen],
+    [scroll, navigate, palette.openSearch, palette.openCommands, onOpenAppearance, resolvedMode, toggleMode, setPreferences, preferences.type, preferences.palette, showToast, toggleWidth, setZen, zen, outlineControl],
   );
 
-  const view = useMemo<ViewSnapshot>(() => ({ width, discreet: false, zen, noteEmbeds: 0, foldableHeadings: 0 }), [width, zen]);
+  const foldableHeadings = outlineControl?.foldableHeadings ?? 0;
+  const view = useMemo<ViewSnapshot>(() => ({ width, discreet: false, zen, noteEmbeds: 0, foldableHeadings }), [width, zen, foldableHeadings]);
   const ctx = useMemo<CommandContext>(() => ({ mode: 'normal', route: routeOf(vaultId, docPath), view, ports }), [vaultId, docPath, view, ports]);
   const ctxRef = useRef(ctx);
   useLayoutEffect(() => {

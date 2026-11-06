@@ -28,7 +28,7 @@ button.tag:hover { text-decoration: underline; }
 .meta { font-family: var(--font-meta); font-size: 0.75rem; letter-spacing: var(--tracking-meta); color: var(--color-muted); margin: 0; font-variant-numeric: tabular-nums; }
 
 /* ---------- Brødtekst ---------- */
-.prose { counter-reset: sec fig; hanging-punctuation: first allow-end last; overflow-wrap: break-word; }
+.prose { counter-reset: fig; hanging-punctuation: first allow-end last; overflow-wrap: break-word; }
 .prose > * + * { margin-top: var(--space-flow); }
 .prose > :first-child { margin-top: 0; }
 .prose p, .callout-body, .embed-body { text-wrap: pretty; hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 8 4 3; -webkit-hyphenate-limit-before: 4; -webkit-hyphenate-limit-after: 3; }
@@ -40,7 +40,7 @@ button.tag:hover { text-decoration: underline; }
 .prose h4 { font-size: var(--step-0); font-weight: var(--weight-strong); }
 .prose h5, .prose h6 { font-size: var(--step-0); font-weight: var(--weight-strong); color: var(--color-muted); }
 .prose h2 {
-  counter-increment: sec; position: relative;
+  position: relative;
   font-family: var(--font-display); font-weight: var(--weight-h2); font-size: var(--step-3);
   line-height: var(--leading-heading); letter-spacing: calc(var(--tracking-display) * 0.6);
   margin: var(--space-section) 0 var(--space-4); text-wrap: balance;
@@ -51,13 +51,14 @@ button.tag:hover { text-decoration: underline; }
 }
 .prose h2 + *, .prose h3 + *, .prose h4 + * { margin-top: 0; }
 .prose > h2:first-child { margin-top: 0; }
-[data-type="tidsskrift"] .prose > h2::before {
-  content: "§\2009" counter(sec); position: absolute; right: calc(100% + 1.1rem); top: 0.5em;
+/* §-nummer beregnes av buildOutline (data-vr-sec, AR-1.1-19); CSS-telleren er fjernet. */
+[data-type="tidsskrift"] .prose h2[data-vr-sec]::before {
+  content: "§\2009" attr(data-vr-sec); position: absolute; right: calc(100% + 1.1rem); top: 0.5em;
   font-family: var(--font-body); font-style: italic; font-size: 1.05rem; font-weight: 400; letter-spacing: 0; color: var(--color-accent); white-space: nowrap;
 }
 [data-type="terminal"] .prose > h2 { padding-top: var(--space-4); border-top: 1px solid var(--color-rule); }
-[data-type="terminal"] .prose > h2::before {
-  content: counter(sec, decimal-leading-zero) " /"; display: block; margin-bottom: var(--space-2);
+[data-type="terminal"] .prose h2[data-vr-sec]::before {
+  content: attr(data-vr-sec-pad) " /"; display: block; margin-bottom: var(--space-2);
   font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; color: var(--color-accent);
 }
 .heading-anchor { opacity: 0; margin-left: 0.3em; color: var(--color-muted) !important; text-decoration: none !important; font-weight: 400; font-style: normal; transition: opacity var(--dur-fast); }
@@ -74,7 +75,7 @@ h2:hover .heading-anchor, h3:hover .heading-anchor, .heading-anchor:focus-visibl
 /* PO-19: «Ornamentikk» av = ingen initial, småkapitél-linje eller seksjonsnummer. */
 [data-ornaments="off"] .prose > p.lede::first-line { font-family: inherit; letter-spacing: inherit; }
 [data-ornaments="off"] .prose > p.lede::first-letter { -webkit-initial-letter: normal; initial-letter: normal; font-family: inherit; font-weight: inherit; color: inherit; margin: 0; }
-[data-ornaments="off"] .prose > h2::before { content: none !important; }
+[data-ornaments="off"] .prose h2[data-vr-sec]::before { content: none !important; }
 [data-ornaments="off"] .toc a::before { content: none !important; }
 
 /* Lister */
@@ -213,7 +214,7 @@ a.wikilink.anchor-missing { text-decoration-style: dashed; }
 [data-type="terminal"] .prose tbody tr + tr td { border-top: 0; }
 
 @media (max-width: 859px) {
-  [data-type="tidsskrift"] .prose > h2::before { position: static; display: block; margin-bottom: var(--space-1); }
+  [data-type="tidsskrift"] .prose h2[data-vr-sec]::before { position: static; display: block; margin-bottom: var(--space-1); }
   .prose blockquote { padding-left: 0.6em; }
   .broken-pop { position: fixed; left: var(--space-4); right: var(--space-4); top: auto; bottom: var(--space-4); width: auto; max-width: none; }
 }
