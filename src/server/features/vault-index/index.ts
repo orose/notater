@@ -5,6 +5,6 @@ export { createInlineMetaExtractor, createWorkerMetaExtractor, defaultPoolSize }
 export type { MetaExtractor } from './meta-extractor';
 export { readVaultBytes, readVaultText, resolveInsideVault, scanVault, statVaultFile } from './scan-vault';
 export { buildSnapshot, detectRenames, findByDocPath, hashText, toVaultFile, updateSnapshot } from './vault-snapshot';
-export type { IndexedNote, SnapshotUpdate, VaultFile, VaultSnapshot } from './vault-snapshot';
+export type { BuildSnapshotOptions, IndexedNote, SnapshotUpdate, VaultFile, VaultSnapshot } from './vault-snapshot';
 export { describeVaultPath, isIgnoredPath, normalizeVaultPath } from './vault-paths';
 export type { FileKind, UnsupportedFileKind } from './vault-paths';

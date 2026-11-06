@@ -287,3 +287,4 @@ Designet (prototype-v1.1.html, designsystem §11) er **godkjent** som referanse.
 - **PO-79** Feilkort for embeds skal få designets v1.1-utseende (§11.4) – frontend.
 - **PO-80** TC-12-04 bruker piltaster i radiogruppen (riktig radio-semantikk) – QA.
 - **PO-81 (bug)** Tast rett etter at en dialog lukkes med `Esc` skal virke (vim-brukere trykker `Esc` + `j` i én bevegelse). Tastaturmotoren skal aktiveres synkront når dialogen lukkes – frontend. Dekker de ustabile TC-05-08/TC-12-02.
+- **PO-82** Tilbakeholdsvindu for slettinger 1000 ms (rene slettinger kan komme inntil ~1 s senere). Godkjent.

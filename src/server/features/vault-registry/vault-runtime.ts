@@ -223,21 +223,21 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
 
   /**
    * BUG-012: det som endret seg mellom vår skanning og overvåkerens `ready`, regner chokidar som
-   * «initial» og melder aldri. En rask ny skanning (bare stat) etter `ready` fanger det opp.
+   * «initial» og melder aldri. En rask ny skanning (bare stat) etter `ready` finner det; returnerer
+   * disk-stiene som avviker fra de skannede filene.
    */
-  const reconcile = async (snapshot: VaultSnapshot): Promise<VaultSnapshot> => {
+  const rescanDiff = async (files: ReadonlyMap<FilePath, VaultFile>): Promise<string[]> => {
     const scanned = await scanVault(config.root, config.ignore);
     const seen = new Set<FilePath>();
     const paths: string[] = [];
     for (const s of scanned) {
       const filePath = normalizeVaultPath(s.diskPath);
       seen.add(filePath);
-      const known = snapshot.files.get(filePath);
+      const known = files.get(filePath);
       if (!known || known.mtimeMs !== s.mtimeMs || known.size !== s.size) paths.push(s.diskPath);
     }
-    for (const file of snapshot.files.values()) if (!seen.has(file.filePath)) paths.push(file.diskPath);
-    if (paths.length === 0) return snapshot;
-    return (await updateSnapshot(snapshot, config.root, config.ignore, paths, deps.incrementalExtractor)).snapshot;
+    for (const file of files.values()) if (!seen.has(file.filePath)) paths.push(file.diskPath);
+    return paths;
   };
 
   const startIndexing = async (): Promise<VaultState> => {
@@ -245,14 +245,24 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
     const started = performance.now();
     const extractor = deps.createInitialExtractor();
     try {
-      // BUG-012: overvåkeren startes før skanningen (chokidars første skanning går parallelt med vår),
-      // og «klar» venter på begge. Bunter som kommer underveis, samles og sendes videre etterpå.
-      if (deps.watch) watcher = deps.watch(config.root, config.ignore, onWatchBatch);
-      let snapshot = await buildSnapshot(config.root, config.ignore, extractor);
-      if (watcher) {
-        await watcher.ready;
-        snapshot = await reconcile(snapshot);
-      }
+      // BUG-012: «klar» venter på at filovervåkeren er klar. Den startes etter at filene er lest, mens
+      // workerne trekker ut metadata (hovedtråden er da stort sett ledig, så chokidars første skanning
+      // koster lite – AK17). Etter `ready` finner en ny stat-skanning det som endret seg før overvåkeren
+      // så det; senere endringer kommer som bunter, som samles og sendes videre når indeksen er klar.
+      let missed: string[] = [];
+      const watch = deps.watch;
+      let snapshot = await buildSnapshot(config.root, config.ignore, extractor, {
+        ...(watch
+          ? {
+              whileExtracting: async (files) => {
+                watcher = watch(config.root, config.ignore, onWatchBatch);
+                await watcher.ready;
+                missed = await rescanDiff(files);
+              },
+            }
+          : {}),
+      });
+      if (missed.length > 0) snapshot = (await updateSnapshot(snapshot, config.root, config.ignore, missed, deps.incrementalExtractor)).snapshot;
       state = derive(snapshot, 1);
       indexMs = Math.round(performance.now() - started);
       status = 'ready';

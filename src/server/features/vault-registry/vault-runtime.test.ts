@@ -215,6 +215,7 @@ function fakeWatcher() {
   return {
     watch,
     markReady: () => markReady(),
+    started: () => onBatch !== null,
     batch: (paths: string[]) => {
       if (!onBatch) throw new Error('Overvåkeren er ikke startet');
       onBatch(paths);
@@ -369,7 +370,8 @@ describe('oppstart venter på filovervåkeren (BUG-012)', () => {
     const watcher = fakeWatcher();
     const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] }, { ...deps, watch: watcher.watch, renameWindowMs: 0 });
     const ready = vault.ready();
-    await until(() => vault.summary().status === 'indexing');
+    await until(watcher.started); // startes mens workerne trekker ut metadata
+    expect(vault.summary().status).toBe('indexing');
     watcher.batch(['D.md']); // bunt før «ready»: må ikke kaste eller gå tapt
     watcher.markReady();
     await ready;

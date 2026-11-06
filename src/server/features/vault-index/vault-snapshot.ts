@@ -45,10 +45,19 @@ export interface VaultSnapshot {
 
 const READ_CONCURRENCY = 32;
 
+export interface BuildSnapshotOptions {
+  /**
+   * Kjøres parallelt med metadata-uttrekket (workerne), når hovedtråden ellers er ledig. Får filene slik
+   * de ble skannet. Brukes til å starte filovervåkeren uten å konkurrere med lesingen (BUG-012).
+   */
+  readonly whileExtracting?: (files: ReadonlyMap<FilePath, VaultFile>) => Promise<void>;
+}
+
 export async function buildSnapshot(
   root: string,
   ignore: readonly string[],
   extractor: MetaExtractor,
+  options: BuildSnapshotOptions = {},
 ): Promise<VaultSnapshot> {
   const scanned = await scanVault(root, ignore);
   const files = new Map<FilePath, VaultFile>();
@@ -80,7 +89,7 @@ export async function buildSnapshot(
       noteSources.push(texts[i]!);
     }
   });
-  const metas = await extractor.extractMany(noteSources);
+  const [metas] = await Promise.all([extractor.extractMany(noteSources), options.whileExtracting?.(files)]);
   noteFiles.forEach((file, i) => {
     notes.set(file.filePath, { file, meta: metas[i]!, body: splitFrontmatter(noteSources[i]!).body });
   });
