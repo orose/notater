@@ -564,3 +564,51 @@
   --callout-example: var(--hue-plum);
   --callout-quote: var(--hue-grey);
 }
+
+/* ==========================================================================
+   v1.1 – Lesekomfort og tastaturstyring (designsystem §11)
+   Nye tilstander settes som attributter på <html> av appen (aldri fra frontmatter, P1):
+     data-width="optimal|full"   F1 lesebredde (global, localStorage)
+     data-zen                    F4 zen (finnes bare mens zen er på; huskes ikke)
+   Diskré embedding (F2) er per notat og settes som data-embeds="diskret" på notatets .page.
+   Alle nye farger er AVLEDET av palett-tokens – kontrast verifiseres med kontrast-v1.1.mjs.
+   ========================================================================== */
+:root {
+  /* --- Tastatur (F5–F7) – JS leser disse med getComputedStyle, så tallene bor ett sted --- */
+  --leader-delay: 400ms;        /* which-key-hint vises etter Space + så lenge uten neste tast */
+  --sequence-timeout: 1000ms;   /* gg, za, zM … avbrytes etter dette (pauses mens which-key vises) */
+  --hint-linger: 4000ms;        /* zen-hint og «showcmd» blir stående så lenge */
+
+  /* --- Folding (F3) --- */
+  --fold-col: 1.1rem;           /* avstand fra tekstkant til fold-kolonnen i margen (= §-avstanden i v1) */
+  --fold-size: 0.62em;          /* chevron relativt til overskriftens font-size; min. trykkflate 24 px (44 px på touch) */
+
+  /* --- Diskré embedding (F2) --- */
+  --embed-bracket: -0.9rem;     /* hover-klammens x-posisjon (venstre for tekstkanten) */
+
+  /* --- Overlegg (F5–F7) --- */
+  --refcard-w: 54rem;
+  --whichkey-w: 34rem;
+  --z-hint: 45;                 /* which-key, showcmd, zen-hint: over skuff (40), under popover (50) */
+}
+
+/* F1 Full bredde: målbredden oppheves, kodefigurer stikker ikke ut (det finnes ingen marg å stikke ut i),
+   og linjeavstanden økes litt fordi lange linjer trenger mer luft for at øyet skal finne neste linje. */
+[data-width="full"] { --measure: none; --code-wide: 0rem; }
+[data-width="full"][data-type="tidsskrift"] { --leading-body: 1.68; }
+[data-width="full"][data-type="terminal"]   { --leading-body: 1.62; }
+[data-width="full"][data-type="klartekst"]  { --leading-body: 1.74; }
+
+/* Avledede v1.1-farger (felles for alle paletter). Bruk tokens, aldri råverdier, i komponentene. */
+:root {
+  --color-kbd-bg: color-mix(in oklab, var(--color-sunken) 55%, var(--color-surface));   /* tasttegn */
+  --color-kbd-fg: var(--color-text);
+  --color-kbd-edge: var(--color-rule-strong);                                           /* ≥ 3:1 mot bg/surface */
+  --color-kbd-edge-active: var(--color-muted);       /* kant på tasttegn i valgt rad (rule-strong gir bare 2.5:1 der) */
+  --color-row-active: var(--color-tag-bg);           /* valgt rad i palett/underliste (som v1) */
+  --color-cmd: var(--color-accent);                  /* «:»-prompt, kommandomodus-strek, which-key-taster */
+  --color-disabled: var(--color-muted);              /* deaktiverte kommandoer: fortsatt ≥ 4.5 – «grå under AA» er forbudt */
+  --color-fold-leader: var(--color-faint);           /* prikkede ledere i fold-linjen – KUN dekor */
+  --color-src-rule: var(--color-rule-strong);        /* klammen ved hover på diskré embed */
+  --color-veil: color-mix(in oklab, var(--color-bg) 92%, transparent);   /* bak zen-hint/which-key */
+}

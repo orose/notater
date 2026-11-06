@@ -1,0 +1,120 @@
+{
+  "$kommentar": "Fasit for v1.1 (lesekomfort og tastaturstyring). Speiler test-vault/README-QA.md §19. Endres testvaultet, endres denne i samme commit (teststrategi §1.2). Nivåer i diskré modus er QA-forslag Q-01..Q-04 i docs/test/testplan-v1.1.md til PO har avgjort.",
+  "rapport": {
+    "sti": "lesekomfort/Kvartalsrapport",
+    "tittel": "Kvartalsrapport",
+    "normal": {
+      "toc": ["Nøkkeltall", "Detaljer", "Bilde og base"],
+      "paragrafer": ["Nøkkeltall", "Bilde og base"],
+      "antallRammer": 15
+    },
+    "diskret": {
+      "overskrifter": [
+        [2, "Sammendrag"],
+        [3, "Funn"],
+        [3, "Konklusjon"],
+        [1, "Del I – Drift"],
+        [2, "Driftsstatus"],
+        [3, "Hendelser"],
+        [4, "Nattlige jobber"],
+        [3, "Kapasitet"],
+        [4, "Lagring"],
+        [3, "Videre arbeid"],
+        [2, "Nøkkeltall"],
+        [3, "Kapasitet"],
+        [4, "Lagring"],
+        [3, "Detaljer"],
+        [4, "Leveranser"],
+        [5, "Levert"],
+        [5, "Planlagt"],
+        [6, "Plan"],
+        [6, "Steg"],
+        [5, "Fotnoter til detaljene"],
+        [6, "Konklusjon"],
+        [6, "Ytterste nivå"],
+        [6, "Risiko"],
+        [6, "Tiltak"],
+        [1, "Del II – Feiltilstander"],
+        [2, "Sirkel A"],
+        [3, "Sirkel B"],
+        [2, "Trinn 1"],
+        [3, "Trinn 2"],
+        [4, "Trinn 3"],
+        [5, "Trinn 4"],
+        [6, "Trinn 5"],
+        [2, "Bilde og base"]
+      ],
+      "toc": [
+        "Sammendrag",
+        "Funn",
+        "Konklusjon",
+        "Driftsstatus",
+        "Hendelser",
+        "Nattlige jobber",
+        "Kapasitet",
+        "Lagring",
+        "Videre arbeid",
+        "Nøkkeltall",
+        "Kapasitet",
+        "Lagring",
+        "Detaljer",
+        "Leveranser",
+        "Sirkel A",
+        "Sirkel B",
+        "Trinn 1",
+        "Trinn 2",
+        "Trinn 3",
+        "Bilde og base"
+      ],
+      "paragrafer": ["Sammendrag", "Driftsstatus", "Nøkkeltall", "Sirkel A", "Trinn 1", "Bilde og base"],
+      "kilder": {
+        "Driften i kvartalet var stabil.": "Driftsstatus",
+        "Neste kvartal prioriteres stabilitet foran nye funksjoner.": "Plan",
+        "Oppetiden var 99,95 prosent målt over hele kvartalet.": "Driftsstatus"
+      },
+      "feilkort": [
+        "Fant ikke «Finnes ikke i rapporten»",
+        "Innbygging stoppet: syklus",
+        "Innbygging stoppet: for mange nivåer"
+      ],
+      "aldriSynlig": ["Bunnen av trappen."]
+    },
+    "uendret": { "baseRader": 12, "bilde": "arkitektur.png" }
+  },
+  "dypStruktur": {
+    "sti": "lesekomfort/Dyp struktur",
+    "tittel": "Dyp struktur",
+    "toc": ["Seksjon A", "Seksjon A.1", "Seksjon A.1.1", "Seksjon A.2", "Seksjon B", "Seksjon B hopper over H3", "Seksjon C"],
+    "seksjoner": [
+      { "overskrift": "Seksjon A", "nivå": 2, "skjuler": ["Markør A-2.", "Markør A-3.", "Markør A-4.", "Markør A-5.", "Markør A-6.", "Bunnavsnittet har en blokk-ID.", "Markør A2-3."], "beholder": ["Markør B-2."] },
+      { "overskrift": "Seksjon A.1", "nivå": 3, "skjuler": ["Markør A-3.", "Markør A-4.", "Markør A-5.", "Markør A-6.", "Bunnavsnittet har en blokk-ID."], "beholder": ["Markør A2-3.", "Markør A-2."] },
+      { "overskrift": "Seksjon A.1.1", "nivå": 4, "skjuler": ["Markør A-4.", "Markør A-5.", "Markør A-6.", "Bunnavsnittet har en blokk-ID."], "beholder": ["Markør A2-3."] },
+      { "overskrift": "Seksjon A.1.1.1", "nivå": 5, "skjuler": ["Markør A-5.", "Markør A-6.", "Bunnavsnittet har en blokk-ID."], "beholder": ["Markør A2-3.", "Markør A-4."] },
+      { "overskrift": "Nivå 6 – bunnen", "nivå": 6, "skjuler": ["Markør A-6.", "Bunnavsnittet har en blokk-ID."], "beholder": ["Markør A2-3.", "Markør A-5."] },
+      { "overskrift": "Seksjon A.2", "nivå": 3, "skjuler": ["Markør A2-3."], "beholder": ["Markør B-2."] },
+      { "overskrift": "Seksjon B", "nivå": 2, "skjuler": ["Markør B-2.", "Markør B-4."], "beholder": ["Markør H1-2."] },
+      { "overskrift": "Seksjon B hopper over H3", "nivå": 4, "skjuler": ["Markør B-4."], "beholder": ["Markør H1-2.", "Markør B-2."] },
+      { "overskrift": "Andre del", "nivå": 1, "skjuler": ["Markør H1-2.", "Markør C-2."], "beholder": ["Markør B-4."] },
+      { "overskrift": "Seksjon C", "nivå": 2, "skjuler": ["Markør C-2."], "beholder": ["Markør H1-2."] }
+    ],
+    "dyplenke": {
+      "lenketekst": "til blokken",
+      "mål": "Bunnavsnittet har en blokk-ID.",
+      "måUtfoldes": ["Seksjon A", "Seksjon A.1", "Seksjon A.1.1", "Seksjon A.1.1.1", "Nivå 6 – bunnen"],
+      "forblirFoldet": ["Seksjon A.2", "Seksjon B", "Andre del"]
+    },
+    "søk": { "ord": "lyngspinner", "mål": "Markør C-2." }
+  },
+  "langBrodtekst": {
+    "sti": "lesekomfort/Lang brødtekst",
+    "tittel": "Lang brødtekst",
+    "lenkeTil": "Dyp struktur",
+    "minstBredereFullPx": 100
+  },
+  "tastaturkart": {
+    "$kommentar": "Spesifikasjonens tastaturkart (normal-modus). Visning normaliseres (mellomrom og + fjernes, Space/Mellomrom/␣ → ␣, Ctrl/Control/⌃ → Ctrl).",
+    "bindinger": ["j", "k", "Ctrl d", "Ctrl u", "g g", "G", "H", "L", "z a", "z M", "z R", "Space w", "Space d", "Space z", "Space m", "Space t", ":", "?", "/"],
+    "grupper": ["Navigasjon", "Lesing", "Visning", "Søk og kommandoer"],
+    "leaderHint": ["w", "d", "z", "m", "t"]
+  }
+}
