@@ -86,7 +86,8 @@ På macOS brukes `⌘`, ellers `Ctrl`. Begge virker overalt.
 | `↑` `↓`, `↵` | Velg og åpne treff i søket. |
 | `⌘ ↵` / `Ctrl ↵` | Åpne treffet i ny fane. |
 | `⌘ .` / `Ctrl .` | Bytt mellom lys og mørk modus. |
-| `Esc` | Lukk søk, dialoger og mobilmenyen. |
+| `←` `→`, `Home` `End` | Bytt fane (view) i en base når fanene har fokus. |
+| `Esc` | Lukk søk, dialoger, forstørret diagram og mobilmenyen. |
 | `Tab` | Første trykk gir «Hopp til innhold». |
 
 ### Temaer
@@ -94,11 +95,18 @@ På macOS brukes `⌘`, ellers `Ctrl`. Begge virker overalt.
 Åpne **Utseende** nederst i sidepanelet (ikonet øverst til høyre på mobil):
 
 - **Modus:** System, Lys eller Mørk.
-- **Typografi:** *Tidsskrift* (seriff, marginalnoter, figurnummer) eller *Terminal* (grotesk + mono).
-- **Palett:** Papir, Cyanotypi, Fosfor eller Signal.
-- **Ornamentikk:** initial og seksjonsnummer (§) av/på.
+- **Typografi:**
+  - *Tidsskrift* – seriff (Spectral), marginalnoter, figurnummer og initial.
+  - *Terminal* – grotesk (Schibsted Grotesk) og mono med ligaturer, tett og teknisk.
+  - *Klartekst* – Atkinson Hyperlegible: tydelige tegnformer (I l 1, 0 O), stor x-høyde og romslig linjeavstand. Godt valg ved
+    lesevansker eller nedsatt syn.
+- **Palett:** Papir, Cyanotypi, Fosfor eller Signal. Alle typesett virker med alle paletter, i lys og mørk
+  (3 × 4 × 2 kombinasjoner, alle kontrollert mot WCAG AA).
+- **Ornamentikk:** initial og seksjonsnummer (§) av/på (påvirker bare Tidsskrift og Terminal).
 
-Valget lagres i nettleseren. Du kan også lenke til et tema: `?type=terminal&palette=fosfor&mode=dark`.
+Valget lagres i nettleseren. Du kan også lenke til et tema: `?type=klartekst&palette=signal&mode=dark`
+(`type` = `tidsskrift` | `terminal` | `klartekst`, `palette` = `papir` | `cyanotypi` | `fosfor` | `signal`,
+`mode` = `light` | `dark` | `system`).
 
 ## Lese på mobilen
 

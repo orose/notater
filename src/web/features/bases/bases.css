@@ -91,3 +91,6 @@ a.src:hover { color: var(--color-accent) !important; }
   /* Lesekolonnen er sentrert: bruk hele sidebredden. */
   article.prose > .base { width: 100cqw; max-width: none; margin-left: calc((100% - 100cqw) / 2); }
 }
+
+/* Berøringsflate ≥ 24 px (WCAG 2.5.8) for kildelenken i base-hodet. */
+.base-head .src { min-height: 1.5rem; }

@@ -34,16 +34,16 @@ Prototypen kan styres med URL-parametre: `prototype.html?type=terminal&palette=f
 Temaet settes som tre attributter på `<html>`:
 
 ```html
-<html lang="nb" data-type="tidsskrift|terminal" data-palette="papir|cyanotypi|fosfor|signal" data-mode="light|dark">
+<html lang="nb" data-type="tidsskrift|terminal|klartekst" data-palette="papir|cyanotypi|fosfor|signal" data-mode="light|dark">
 ```
 
 | Akse | Verdier | Påvirker |
 |---|---|---|
-| **Typografisk sett** (`data-type`) | `tidsskrift` (A), `terminal` (C) | fonter, typeskala, linjehøyde, målbredde, radier, strektykkelser, noen komponentvarianter |
+| **Typografisk sett** (`data-type`) | `tidsskrift` (A), `terminal` (C), `klartekst` (K, PO-18) | fonter, typeskala, linjehøyde, målbredde, radier, strektykkelser, noen komponentvarianter |
 | **Palett** (`data-palette`) | `papir`, `cyanotypi` (anbefalt for A) · `fosfor`, `signal` (anbefalt for C) | alle farger inkl. kode og callouts |
 | **Modus** (`data-mode`) | `light`, `dark` (brukervalg `system` løses i JS) | velger lys/mørk variant av paletten |
 
-Alle **2 × 4 × 2 = 16** kombinasjoner er gyldige og kontrastverifisert. Paletten er uavhengig av typesettet (kontrast avhenger kun av palett × modus); «anbefalt» vises bare som et hint i temavelgeren.
+Alle **3 × 4 × 2 = 24** kombinasjoner er gyldige og kontrastverifisert (K kontrollert med axe-core i nettleser, 0 brudd – se §3.1). Paletten er uavhengig av typesettet (kontrast avhenger kun av palett × modus); «anbefalt» vises bare som et hint i temavelgeren.
 
 ### 2.1 Lagring og oppstart (AK2, AK3)
 
@@ -88,6 +88,25 @@ Fontfamilienavnene i `tokens.css` er nøyaktig de fontsource registrerer: `"Spec
 - **Spectral** (Production Type) er en skjermoptimalisert tekstantikva med tidsskriftpreg, lett 300-vekt for store titler og en *ekte* SC-søsterfamilie. Viktig funn: fontsource/Google-byggene **fjerner OpenType-funksjonene `smcp`/`onum`** fra alle seriffer vi testet (Source Serif 4, Newsreader, Literata, EB Garamond, Alegreya, Crimson Pro, Fraunces …) – `font-variant-caps: small-caps` ville gitt falske, syntetiserte småkapitéler. Spectral SC løser det: skriv etiketten med `text-transform: lowercase` i `--font-sc`, så blir hele ordet ekte småkapitéler (c2sc-effekt).
 - **Schibsted Grotesk** er tegnet for Schibsteds norske/nordiske aviser – en presis, litt kantete grotesk med god variabel vektakse (vi bruker 800 for titler, 420 for brødtekst). Norsk opphav er en fin detalj, og den er ikke «Inter».
 - **JetBrains Mono** har `calt`-ligaturer (`->`, `!=`, `=>`, `>=`) og høy x-høyde – gir Terminal-settet sitt tekniske bitt. **IBM Plex Mono** er roligere, uten ligaturer, og passer ved siden av en antikva.
+
+### 3.1 Sett K «Klartekst» (PO-18, slice 6)
+
+Lesbarhet først – for lesevansker, nedsatt syn eller bare slitne øyne. Ingen ornamentikk-varianter: ingen initial,
+ingen §-nummer, ingen småkapitéler.
+
+| Rolle | Sett K «Klartekst» |
+|---|---|
+| Brødtekst, titler, etiketter | **Atkinson Hyperlegible Next** – `@fontsource-variable/atkinson-hyperlegible-next` (wght + italic). Etiketter = sperrede versaler, 700. |
+| Kode og metadata | **Atkinson Hyperlegible Mono** – `@fontsource-variable/atkinson-hyperlegible-mono` (wght + italic), uten ligaturer. |
+
+Tokens (`tokens.css`, `[data-type="klartekst"]`): skala 16,5→18,5 px, ratio 1,2→1,25 (Atkinsons store x-høyde gjør at
+den leses større enn A ved samme px); `--leading-body` 1.65; vekter 400 / 700 (strong, display, h2) / 600 (h3), h3 ikke
+kursiv; `--measure` 34em (≈ 62–66 tegn); radier 3 / 5 / 8 px; `--rule-heavy` 2px; lenkeunderstrek 1,5 px med 0,22em
+avstand; `--dropcap: 0`. Komponentene bruker felles grunnstil (ingen `[data-type="klartekst"]`-varianter utover
+etiketter, «Tilbakelenker (n) ↓» i margen og temapanelets ramme).
+
+Kvalitetssjekk (2026-11-06): alle 3 typesett × 4 paletter × lys/mørk med axe-core `color-contrast` på `teknisk/Callouts`:
+**0 brudd**. Skjermbilder i scratchpad `fe4/`.
 
 ---
 
@@ -450,7 +469,7 @@ Anatomi: tittellinje = ikon (1.1em strek-ikon) + **typeetikett** + « — egen t
 
 - Åpnes fra sidepanelets bunnlinje («◐ Utseende») og topplinjen på mobil. Modal `<dialog>`, 24rem.
 - **Modus:** segmentert kontroll Lys / Mørk / System (radioknapper; valgt = invertert).
-- **Typografi:** to valg med typografisk prøve «Aa*g*» i Spectral 300 og «Aa→» i Schibsted 800 + JetBrains-ligatur, navn og én linje beskrivelse.
+- **Typografi:** tre valg med typografisk prøve «Aa*g*» i Spectral 300, «Aa→» i Schibsted 800 + JetBrains-ligatur og «Il1» i Atkinson Hyperlegible Next 700, navn og én linje beskrivelse.
 - **Palett:** fire valg med stripe-prøve (bg · tekst · aksent · aksent2) **i gjeldende modus**, navn og beskrivelse; paletter som anbefales for valgt typesett merkes «Anbefalt».
 - Endring gjelder umiddelbart (ingen «Lagre»), lagres i localStorage. Snarvei `⌘.` bytter lys/mørk.
 - Overgang ved bytte: bakgrunn/tekst `--dur-base` – ikke for alt (`transition: all` er forbudt).
