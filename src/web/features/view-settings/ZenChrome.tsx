@@ -25,10 +25,10 @@ function isTouch(): boolean {
 
 /**
  * Zen-krom (F4, PO-61): «Avslutt zen»-knappen i øvre høyre hjørne (desktop: synlig ved musebevegelse, hover
- * og fokus; touch: alltid) og førstegangshintet de tre første gangene.
+ * og fokus; touch: alltid). Førstegangshintet (`ZenHint`) rendres i den felles varselsonen (BUG-014).
  */
 export function ZenChrome() {
-  const { zen, setZen, zenHint, dismissZenHint } = useViewSettings();
+  const { zen, setZen } = useViewSettings();
   const [awake, setAwake] = useState(false);
   const awakeTimer = useRef<number | undefined>(undefined);
 
@@ -47,13 +47,6 @@ export function ZenChrome() {
     };
   }, [zen]);
 
-  useEffect(() => {
-    if (!zenHint) return undefined;
-    const timer = window.setTimeout(dismissZenHint, cssMs('--hint-linger', HINT_MS));
-    return () => window.clearTimeout(timer);
-  }, [zenHint, dismissZenHint]);
-
-  const hint = zen && zenHint ? (isTouch() ? 'touch' : 'desktop') : null;
   if (!zen) return null;
   return (
     <>
@@ -66,22 +59,39 @@ export function ZenChrome() {
         </kbd>
         <Icon name="close" className="x" />
       </button>
-      <div className="hint-card" role="status" hidden={hint === null}>
-        {hint === 'touch' ? (
-          <>
-            <strong>Zen</strong> Panelene er skjult. Trykk ✕ øverst til høyre for å gå tilbake.
-          </>
-        ) : hint === 'desktop' ? (
-          <>
-            <strong>Zen</strong> Panelene er skjult – tastene virker som før. <kbd className="k">Esc</kbd> eller{' '}
-            <span className="keys-inline">
-              <kbd className="k lead">Space</kbd>
-              <kbd className="k">z</kbd>
-            </span>{' '}
-            tar deg tilbake.
-          </>
-        ) : null}
-      </div>
     </>
+  );
+}
+
+/**
+ * Førstegangshintet for zen (designsystem §11.6), de tre første gangene. Rendres i den felles varselsonen
+ * (BUG-014) mellom toasts og which-key; en ny toast fjerner det (`dismissZenHint`).
+ */
+export function ZenHint() {
+  const { zen, zenHint, dismissZenHint } = useViewSettings();
+  useEffect(() => {
+    if (!zenHint) return undefined;
+    const timer = window.setTimeout(dismissZenHint, cssMs('--hint-linger', HINT_MS));
+    return () => window.clearTimeout(timer);
+  }, [zenHint, dismissZenHint]);
+  if (!zen || !zenHint) return null;
+  const touch = isTouch();
+  return (
+    <div className="hint-card" role="status" data-testid="zen-hint">
+      {touch ? (
+        <>
+          <strong>Zen</strong> Panelene er skjult. Trykk ✕ øverst til høyre for å gå tilbake.
+        </>
+      ) : (
+        <>
+          <strong>Zen</strong> Panelene er skjult – tastene virker som før. <kbd className="k">Esc</kbd> eller{' '}
+          <span className="keys-inline">
+            <kbd className="k lead">Space</kbd>
+            <kbd className="k">z</kbd>
+          </span>{' '}
+          tar deg tilbake.
+        </>
+      )}
+    </div>
   );
 }

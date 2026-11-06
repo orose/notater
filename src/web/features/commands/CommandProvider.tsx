@@ -22,7 +22,7 @@ import {
 import { usePalette, type PaletteCommandItem, type PaletteCommandSource } from '../search';
 import { PALETTES, PALETTE_INFO, TYPES, TYPE_INFO, useTheme } from '../theme';
 import { useOutlineControl } from '../outline';
-import { useViewSettings } from '../view-settings';
+import { ZenHint, useViewSettings } from '../view-settings';
 import { CommandsContext, type CommandsContextValue } from './commands-context';
 import { createCommandHandlers } from './handlers';
 import { COMMAND_CATALOG, type CommandId } from './model/catalog';
@@ -82,9 +82,14 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
   const registry = useMemo(() => createCommandRegistry(createCommandHandlers()), []);
   const scroll = useMemo(() => createScrollPort(), []);
 
+  // BUG-014: en ny toast erstatter zen-hintet i varselsonen i stedet for å legge seg over det.
+  const { dismissZenHint } = viewSettings;
   const showToast = useCallback(
-    (message: string, keys: readonly string[] = []) => setToast((t) => ({ message, keys, id: (t?.id ?? 0) + 1 })),
-    [],
+    (message: string, keys: readonly string[] = []) => {
+      dismissZenHint();
+      setToast((t) => ({ message, keys, id: (t?.id ?? 0) + 1 }));
+    },
+    [dismissZenHint],
   );
   useEffect(() => {
     if (!toast) return undefined;
@@ -349,31 +354,35 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
     <CommandsContext.Provider value={value}>
       {children}
       <ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} platform={platform} />
-      {showHints ? <WhichKey leader={formatKeySequence([parseChord(LEADER_KEY)], platform)} items={whichKeyItems} /> : null}
       {pending ? (
         // showcmd (vim): påbegynt sekvens vises med en gang; kun visuelt.
         <div className="showcmd" aria-hidden="true">
           {pending.chords.map((chord) => (chord === LEADER_KEY ? '␣' : formatKeySequence([parseChord(chord)], platform))).join('')}
         </div>
       ) : null}
-      <div className="command-toast" role="status" aria-live="polite">
-        {toast ? (
-          <div className="toast" key={toast.id}>
-            {toast.message}
-            {toast.keys.length > 0 ? (
-              <span className="keys-inline" aria-hidden="true">
-                {toast.keys.map((k, i) => (
-                  <kbd key={i} className={k === 'Space' ? 'k lead' : 'k'}>
-                    {k}
-                  </kbd>
-                ))}
-              </span>
-            ) : null}
-            <button type="button" className="icon-btn" aria-label="Lukk melding" onClick={() => setToast(null)}>
-              ×
-            </button>
-          </div>
-        ) : null}
+      {/* BUG-014: én felles varselsone nederst – toasts øverst, zen-hint, which-key alltid nederst. */}
+      <div className="notice-zone">
+        <div className="command-toast" role="status" aria-live="polite">
+          {toast ? (
+            <div className="toast" key={toast.id}>
+              {toast.message}
+              {toast.keys.length > 0 ? (
+                <span className="keys-inline" aria-hidden="true">
+                  {toast.keys.map((k, i) => (
+                    <kbd key={i} className={k === 'Space' ? 'k lead' : 'k'}>
+                      {k}
+                    </kbd>
+                  ))}
+                </span>
+              ) : null}
+              <button type="button" className="icon-btn" aria-label="Lukk melding" onClick={() => setToast(null)}>
+                ×
+              </button>
+            </div>
+          ) : null}
+        </div>
+        <ZenHint />
+        {showHints ? <WhichKey leader={formatKeySequence([parseChord(LEADER_KEY)], platform)} items={whichKeyItems} /> : null}
       </div>
     </CommandsContext.Provider>
   );

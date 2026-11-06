@@ -118,6 +118,28 @@ describe('CommandProvider: tastatur → kommandoer', () => {
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
+  it('BUG-014: varsler stables i én sone (toast over, which-key nederst); en toast fjerner zen-hintet', () => {
+    vi.useFakeTimers();
+    setup();
+    key(' ');
+    key('z');
+    expect(screen.getByTestId('zen-hint')).toBeInTheDocument();
+    key(' ');
+    key('w');
+    expect(screen.queryByTestId('zen-hint')).not.toBeInTheDocument();
+    expect(screen.getByText('Full bredde')).toBeInTheDocument();
+    key(' ');
+    act(() => {
+      vi.advanceTimersByTime(WHICH_KEY_DELAY_MS);
+    });
+    const zone = document.querySelector('.notice-zone') as HTMLElement;
+    const order = [...zone.children].map((c) => c.className);
+    expect(order).toEqual(['command-toast', 'whichkey']);
+    expect(zone.querySelector('.command-toast')).toHaveTextContent('Full bredde');
+    key('Escape');
+    key('Escape');
+  });
+
   it('PO-81: Esc lukker paletten, og neste tast virker med en gang – også før fokus er gitt tilbake', () => {
     setup();
     key(':', { shiftKey: true });

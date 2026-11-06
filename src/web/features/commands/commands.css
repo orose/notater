@@ -101,4 +101,19 @@
 @media print { .whichkey, .showcmd, .command-toast { display: none !important; } }
 .rc-cmd { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.15em; }
 /* I zen står førstegangshintet nederst i midten (§11.6): toasten legger seg over det. */
-[data-zen] .command-toast { bottom: calc(var(--space-5) + 4.5rem); }
+
+/* ---------- BUG-014: felles varselsone nederst i midten ----------
+   Toasts, zen-hint og which-key stables i én flex-kolonne i stedet for å ligge oppå hverandre:
+   toasts øverst, så zen-hintet, og which-key alltid nederst. Sonen selv tar ingen klikk. */
+.notice-zone {
+  position: fixed; left: 50%; bottom: var(--space-5); transform: translateX(-50%); z-index: calc(var(--z-hint) + 10);
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  width: max-content; max-width: calc(100vw - 2rem); pointer-events: none;
+}
+.notice-zone > * { pointer-events: auto; max-width: 100%; }
+.notice-zone .command-toast, [data-zen] .notice-zone .command-toast { position: static; transform: none; left: auto; bottom: auto; max-width: 100%; }
+/* Live-regionen beholdes i DOM-en også når den er tom (skjermlesere), men tar da ingen plass. */
+.notice-zone .whichkey { position: static; translate: none; width: min(var(--whichkey-w), calc(100vw - 2rem)); animation-name: vr-rise-static; }
+.notice-zone .hint-card { position: static; translate: none; max-width: 100%; animation-name: vr-rise-static; }
+@keyframes vr-rise-static { from { opacity: 0; transform: translateY(0.35rem); } to { opacity: 1; transform: none; } }
+@media print { .notice-zone { display: none !important; } }
