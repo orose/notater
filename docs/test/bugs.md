@@ -153,3 +153,13 @@ Reproduksjon generelt: `E2E_PORT=4418 npx playwright test` (porten kan velges fr
   server som allerede svarte på porten.
 - **Retting:** `e2e/support/real-server.ts` sjekker at porten er ledig før start og ber om `E2E_PORT=<port>`.
   README (Utvikling) viser `E2E_PORT=4418 npm run test:e2e` og hvordan ytelsestesten kjøres.
+
+## BUG-012 – endringer rett etter oppstart går tapt – ÅPEN
+
+- **Alvorlighet:** Middels · **AK:** AK12 (live reload) · **Eier:** backend
+- **Funn (PO-76):** `vault-runtime.ts` setter status `ready` og starter chokidar (`ignoreInitial: true`) uten å vente på
+  `watcher.ready`. En fil som opprettes i vinduet mellom «ready» og chokidars første skanning, regnes som «initial»
+  og blir **aldri** indeksert (verifisert: 404 også etter 10 s). Det samme gjelder endringer i det vinduet.
+- **Forslag:** sett `ready` først etter `watcher.ready`, eller kjør en ny skanning/diff når overvåkeren er klar.
+- **Test:** `ak12-live-reload` venter i sin fixture til en probe-fil blir indeksert. Når feilen er rettet, kan
+  proben fjernes og en egen test legges til («fil skrevet rett etter ready blir indeksert»).
