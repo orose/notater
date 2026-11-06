@@ -67,28 +67,30 @@ test('AK17: notatbytte < 200 ms (p95 over 20 klikk på interne lenker)', async (
   await page.goto(`${base}/v/test/${start.split('/').map(encodeURIComponent).join('/')}`);
   await page.getByRole('heading', { level: 1 }).waitFor();
 
-  const timings: { ms: number; from: string; to: string }[] = [];
-  for (let i = 0; i < 25 && timings.length < 20; i++) {
-    const links = page.locator('main article a[data-vr-link="internal"], main article a.wikilink[href^="/v/test/"]');
+  interface Sample { ms: number; fetchMs: number; serverMs: number; from: string; to: string }
+
+  /** Ett notatbytte. `hoverFirst` = hold musa over lenken 400 ms først (prefetch, PO-51). */
+  const switchOnce = async (i: number, hoverFirst: boolean): Promise<Sample | null> => {
+    const links = page.locator('main article a.wikilink[href^="/v/test/"], main article a[data-vr-link="internal"]');
     const count = await links.count();
-    if (count === 0) {
-      await page.goto(`${base}/v/test/${vaults.hits[i % vaults.hits.length]!.path.split('/').map(encodeURIComponent).join('/')}`);
-      await page.getByRole('heading', { level: 1 }).waitFor();
-      continue;
-    }
-    const link = links.nth((i * 7) % count);
-    const href = (await link.getAttribute('href')) ?? '';
+    const link = links.nth((i * 7) % Math.max(count, 1));
+    const href = count > 0 ? ((await link.getAttribute('href')) ?? '') : '';
     if (!href || href.includes('#') || href.endsWith('.base') || decodeURIComponent(href) === decodeURIComponent(new URL(page.url()).pathname)) {
       await page.goto(`${base}/v/test/${vaults.hits[(i * 3) % vaults.hits.length]!.path.split('/').map(encodeURIComponent).join('/')}`);
       await page.getByRole('heading', { level: 1 }).waitFor();
-      continue;
+      return null;
     }
     const from = new URL(page.url()).pathname;
     await link.scrollIntoViewIfNeeded();
+    if (hoverFirst) {
+      await link.hover();
+      await page.waitForTimeout(400);
+    }
     // Måles i nettleseren: fra klikk (capture) til ny H1 og artikkel er i DOM og malt (MutationObserver + rAF).
+    // Server-/nettverksdelen hentes fra Resource Timing for /document-kallet (inkl. Server-Timing, BE31).
     const measuring = page.evaluate(
-      () =>
-        new Promise<number>((resolve) => {
+      (prefetchWindow) =>
+        new Promise<{ total: number; fetchMs: number; serverMs: number }>((resolve) => {
           const oldTitle = document.querySelector('main h1')?.textContent ?? '';
           let t0 = 0;
           addEventListener('click', () => (t0 = performance.now()), { capture: true, once: true });
@@ -96,21 +98,56 @@ test('AK17: notatbytte < 200 ms (p95 over 20 klikk på interne lenker)', async (
             const h = document.querySelector('main h1');
             if (t0 && h && h.textContent !== oldTitle && document.querySelector('main article')) {
               obs.disconnect();
-              requestAnimationFrame(() => resolve(performance.now() - t0));
+              requestAnimationFrame(() => {
+                const total = performance.now() - t0;
+                const entries = (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).filter(
+                  (e) => e.name.includes('/api/vaults/test/document') && e.startTime >= t0 - prefetchWindow,
+                );
+                const e = entries[entries.length - 1];
+                // Bare den delen av hentingen som skjedde ETTER klikket teller som ventetid for brukeren.
+                const fetchMs = e ? Math.max(0, e.responseEnd - Math.max(e.startTime, t0)) : 0;
+                const serverMs = e ? e.serverTiming.reduce((sum, st) => sum + st.duration, 0) : 0;
+                resolve({ total, fetchMs, serverMs });
+              });
             }
           };
           const obs = new MutationObserver(check);
           obs.observe(document.body, { subtree: true, childList: true, characterData: true });
         }),
+      hoverFirst ? 1000 : 200,
     );
     await link.click();
-    const ms = await measuring;
-    timings.push({ ms: Math.round(ms), from: decodeURIComponent(from), to: decodeURIComponent(new URL(page.url()).pathname) });
-  }
-  const values = timings.map((t) => t.ms);
-  const result = `notatbytte (n=${values.length}): median ${median(values)} ms, p95 ${p95(values)} ms, maks ${Math.max(...values)} ms`;
-  test.info().annotations.push({ type: 'måling', description: result });
-  console.log(`[perf] ${result}\n${timings.map((t) => `  ${t.ms} ms  ${t.from} → ${t.to}`).join('\n')}`);
-  expect(values.length).toBeGreaterThanOrEqual(15);
-  expect(p95(values)).toBeLessThan(200);
+    const m = await measuring;
+    return { ms: Math.round(m.total), fetchMs: Math.round(m.fetchMs), serverMs: Math.round(m.serverMs), from: decodeURIComponent(from), to: decodeURIComponent(new URL(page.url()).pathname) };
+  };
+
+  const collect = async (hoverFirst: boolean, n: number): Promise<Sample[]> => {
+    const out: Sample[] = [];
+    for (let i = 0; i < n * 2 && out.length < n; i++) {
+      const sample = await switchOnce(i + (hoverFirst ? 101 : 0), hoverFirst);
+      if (sample) out.push(sample);
+    }
+    return out;
+  };
+
+  const report = (label: string, samples: Sample[]) => {
+    const total = samples.map((t) => t.ms);
+    const server = samples.map((t) => t.serverMs);
+    const fetch = samples.map((t) => t.fetchMs);
+    const client = samples.map((t) => Math.max(0, t.ms - t.fetchMs));
+    const line =
+      `${label} (n=${samples.length}): totalt median ${median(total)} / p95 ${p95(total)} ms; ` +
+      `server (Server-Timing) median ${median(server)} / p95 ${p95(server)} ms; ` +
+      `henting etter klikk median ${median(fetch)} / p95 ${p95(fetch)} ms; ` +
+      `klient (totalt − henting) median ${median(client)} / p95 ${p95(client)} ms`;
+    test.info().annotations.push({ type: 'måling', description: line });
+    console.log(`[perf] ${line}\n${samples.map((t) => `  ${t.ms} ms (henting ${t.fetchMs}, server ${t.serverMs})  ${t.from} → ${t.to}`).join('\n')}`);
+    return total;
+  };
+
+  const plain = report('notatbytte uten prefetch', await collect(false, 20));
+  const withHover = report('notatbytte med hover-prefetch', await collect(true, 10));
+  expect(plain.length).toBeGreaterThanOrEqual(15);
+  expect(withHover.length).toBeGreaterThanOrEqual(8);
+  expect(p95(plain)).toBeLessThan(200);
 });

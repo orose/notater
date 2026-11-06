@@ -145,3 +145,32 @@ test('endring mellom første lasting og SSE-tilkobling går ikke tapt', async ({
   release();
   await expect(page.getByRole('region', { name: 'Tilbakelenker' }).locator('a.bl-title')).toHaveCount(4, { timeout: 5000 });
 });
+
+test('omdøping/flytting sender «renamed» med from/to, og åpent notat peker til ny plass (PO-49, BE32)', async ({ page, guards }) => {
+  guards.allowConsole.push(/status of 404/);
+  writeFileSync(join(vault, 'domene/Flytt kilde.md'), '# Flytt kilde\n\nSkal flyttes.\n');
+  await expect.poll(async () => (await page.request.get(`${base}/api/vaults/test/document?path=${encodeURIComponent('domene/Flytt kilde')}`)).status()).toBe(200);
+  await page.goto(url('domene/Flytt kilde'));
+  await expect(page.locator('main article')).toContainText('Skal flyttes');
+  // Lytt på SSE i siden og samle «changed»-hendelser.
+  await page.evaluate((vaultId) => {
+    const w = window as unknown as { __changes: unknown[] };
+    w.__changes = [];
+    new EventSource(`/api/events?vault=${vaultId}`).addEventListener('changed', (e) => w.__changes.push(JSON.parse((e as MessageEvent).data)));
+  }, 'test');
+  await page.waitForTimeout(300);
+  // Flytt til annen mappe og nytt navn, og legg til en annen fil i samme bunt – da kan ikke
+  // klientens reserveheuristikk (1 fjernet + 1 lagt til / samme filnavn) gjette flyttingen.
+  mkdirSync(join(vault, 'arkiv/flyttet'), { recursive: true });
+  renameSync(join(vault, 'domene/Flytt kilde.md'), join(vault, 'arkiv/flyttet/Helt nytt navn.md'));
+  writeFileSync(join(vault, 'domene/Støy.md'), '# Støy\n');
+  await expect
+    .poll(async () => JSON.stringify(await page.evaluate(() => (window as unknown as { __changes: unknown[] }).__changes)), { timeout: 5000 })
+    .toContain('"type":"renamed"');
+  const changes = (await page.evaluate(() => (window as unknown as { __changes: { changes: { type: string; from?: string; to?: string }[] }[] }).__changes)).flatMap((c) => c.changes);
+  expect(changes).toContainEqual(expect.objectContaining({ type: 'renamed', from: 'domene/Flytt kilde', to: 'arkiv/flyttet/Helt nytt navn' }));
+  await expect(page.locator('main')).toContainText('Notatet er flyttet til', { timeout: 5000 });
+  await page.locator('main').getByRole('link', { name: 'Helt nytt navn' }).click();
+  await expect(page).toHaveURL(/arkiv\/flyttet\/Helt%20nytt%20navn$/);
+  await expect(page.locator('main article')).toContainText('Skal flyttes');
+});

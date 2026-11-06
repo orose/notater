@@ -158,8 +158,16 @@ Excalidraw vises som et «ikke støttet»-kort med kildeteksten.
 npm run dev         # server med omstart (:4317) + Vite med hot reload (http://127.0.0.1:5173)
 npm test            # enhetstester (Vitest)
 npm run test:e2e    # Playwright mot ekte server og en kopi av test-vault
+E2E_PORT=4418 npm run test:e2e   # samme, på en annen port hvis 4318 er opptatt
 npm run lint        # ESLint
 npm run build       # typesjekk + produksjonsbygg
+```
+
+Ytelsestest (AK17) mot et generert vault med 2000 notater:
+
+```sh
+node test-vault-tools/generate-large-vault.mjs --out /tmp/vault-2000 --count 2000
+PERF_VAULT=/tmp/vault-2000 npx playwright test --project=perf
 ```
 
 Kode: `src/server` (Hono, indeks, rendering), `src/web` (React), `src/shared` (API-typer).

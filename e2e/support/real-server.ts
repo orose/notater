@@ -61,11 +61,21 @@ export function writeConfig(dir: string, vaultPath: string, port: number, extra:
  * Starter `src/server/main.ts` med `--config <fil>` og cwd = `dir` (der `dist/web` ligger).
  * Venter til standard-vaultet er indeksert.
  */
-export async function startServer(dir: string, configFile: string, port: number, timeoutMs = 60_000, vaultId = E2E_VAULT_ID): Promise<RunningServer> {
+export async function startServer(
+  dir: string,
+  configFile: string,
+  port: number,
+  timeoutMs = 60_000,
+  vaultId = E2E_VAULT_ID,
+  extraArgs: readonly string[] = [],
+): Promise<RunningServer> {
+  // Porten må være ledig – ellers kunne vi ha testet en annen server (f.eks. en annen e2e-kjøring) uten å merke det.
+  const busy = await fetch(`http://127.0.0.1:${port}/api/health`).then(() => true, () => false);
+  if (busy) throw new Error(`Port ${port} på 127.0.0.1 er allerede i bruk. Velg en ledig port for e2e: E2E_PORT=<port> npx playwright test`);
   const started = performance.now();
-  const child = spawn(process.execPath, [join(REPO, 'node_modules/tsx/dist/cli.mjs'), join(REPO, 'src/server/main.ts'), '--config', configFile], {
+  const child = spawn(process.execPath, [join(REPO, 'node_modules/tsx/dist/cli.mjs'), join(REPO, 'src/server/main.ts'), '--config', configFile, ...extraArgs], {
     cwd: dir,
-    env: { ...process.env, TZ: 'Europe/Oslo', VAULT_READER_PORT: undefined, VAULT_READER_VAULT: undefined, VAULT_READER_CONFIG: undefined },
+    env: { ...process.env, TZ: 'Europe/Oslo', VAULT_READER_PORT: undefined, VAULT_READER_VAULT: undefined, VAULT_READER_CONFIG: undefined, VAULT_READER_LAN: undefined },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let output = '';
@@ -78,7 +88,7 @@ export async function startServer(dir: string, configFile: string, port: number,
   let indexMs: number | null = null;
   let readyAfterMs = -1;
   while (performance.now() - started < timeoutMs) {
-    if (exited) throw new Error(`Serveren avsluttet under oppstart:\n${output}`);
+    if (exited) throw new Error(`Serveren avsluttet under oppstart (porten opptatt? sett E2E_PORT):\n${output}`);
     try {
       const res = await fetch(`${base}/api/vaults`);
       if (res.ok) {

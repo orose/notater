@@ -82,6 +82,9 @@ test.describe('AK1 flere vaults via konfigfil', () => {
       await page.goto(`http://127.0.0.1:${port}${noteUrl('Velkommen')}`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Velkommen til testvaultet');
     } finally {
+      // Lukk sidens tilkoblinger (SSE, prefetch, fonter) til hjelpeserveren FØR den stoppes. Ellers logger Chromium
+      // ERR_INCOMPLETE_CHUNKED_ENCODING/ERR_CONNECTION_REFUSED fordi testen dreper serveren midt i en strøm (testfeil).
+      await page.goto('about:blank');
       await server.stop();
       removeDir(dir);
     }

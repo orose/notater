@@ -1,4 +1,4 @@
-# Bugliste – QA (slice 0–4)
+# Bugliste – QA (v1, slice 0–6)
 
 Eier: QA. Funnet ved akseptansetester mot den **ekte** serveren (Playwright-prosjektene `desktop` 1440 px og
 `mobil` 360 px, globalSetup med vault-kopi og fixture-mtimes, PO-17). Hver bug har en test som er merket
@@ -12,21 +12,25 @@ Reproduksjon generelt: `E2E_PORT=4418 npx playwright test` (porten kan velges fr
 
 | ID | Alvorlighet | Tittel | AK / fasit | Sannsynlig eier | Status |
 |----|-------------|--------|------------|-----------------|--------|
-| BUG-008 | Middels | AK17: notatbytte p95 > 200 ms i 2000-vaultet | AK17, QA-KOD-12 | backend (dokument-API/rendering) + frontend | Åpen |
-| BUG-009 | Middels | AK17: indeksering av 2000 notater > 3 s når maskinen er belastet | AK17, PO-4 | backend | Åpen (måleusikkerhet) |
+| BUG-008 | Middels | AK17: notatbytte p95 > 200 ms i 2000-vaultet | AK17, QA-KOD-12 | backend (dokument-API/rendering) + frontend | **Rettet** 2026-11-06 (BE26–BE31, PO-51): p95 141 ms uten prefetch, 107 ms med hover-prefetch |
+| BUG-009 | Middels | AK17: indeksering av 2000 notater > 3 s når maskinen er belastet | AK17, PO-4 | backend | **Rettet** 2026-11-06 (BE26–BE28): median `indexMs` 2015 ms |
 | BUG-001 | Middels | «Ikke skrevet ennå»-siden mangler «Lenket fra» | QA-URL-07, PO-28, AK10 | frontend | **Rettet** 2026-11-06 (verifisert i e2e) |
 | BUG-003 | Middels | Ugyldig frontmatter: advarselen vises ikke | QA-IDX-07, QA-FM-04, PO-27 | frontend | **Rettet** 2026-11-06 (verifisert i e2e) |
 | BUG-004 | Middels | For lav kontrast på tall i taggskyen (lyst tema) | AK19, AK8 | frontend (tokens/CSS) | **Rettet** 2026-11-06 (verifisert i e2e) |
 | BUG-005 | Middels | Avkrysningsbokser i oppgavelister mangler tilgjengelig navn | AK19, QA-MD-04 | frontend (evt. backend i HAST) | **Rettet** 2026-11-06 (verifisert i e2e) |
-| BUG-006 | Middels | Åpent notat som slettes/omdøpes blir stående utdatert | AK12, QA-IDX-13 | frontend | Åpen |
+| BUG-006 | Middels | Åpent notat som slettes/omdøpes blir stående utdatert | AK12, QA-IDX-13 | frontend | **Rettet** 2026-11-06 (verifisert i e2e) |
 | BUG-002 | Lav | Tilbakelenker fra properties merkes ikke «fra egenskap» | AK10, QA-LNK-04, PO-9 | frontend | **Rettet** 2026-11-06 (verifisert i e2e) |
-| BUG-007 | Lav | Endring mellom første lasting og SSE-tilkobling går tapt | AK12 | frontend | Åpen |
+| BUG-007 | Lav | Endring mellom første lasting og SSE-tilkobling går tapt | AK12 | frontend | **Rettet** 2026-11-06 (verifisert i e2e) |
+| BUG-010 | Lav | AK1-testen «to vaults» feilet med ERR_INCOMPLETE_CHUNKED_ENCODING | AK1 | **QA (testfeil)** | **Rettet** 2026-11-06 i testen |
+| BUG-011 | Lav | README: e2e-kjøring når port 4318 er opptatt var ikke dokumentert; testhjelperen kunne i verste fall teste en annen server | AK18 | QA / README | **Rettet** 2026-11-06 |
 
-Ingen funn med alvorlighet **Høy**. Sikkerhet (AK20) er grønn: ingen traversal, ingen XSS, riktige headere.
+**Status v1 (2026-11-06): ingen åpne bugs.** Ingen funn med alvorlighet **Høy** i noen runde. Sikkerhet (AK20) har vært grønn hele veien.
 
 ---
 
-## BUG-008 – Notatbytte p95 over 200 ms i 2000-vaultet
+## BUG-008 – Notatbytte p95 over 200 ms i 2000-vaultet – RETTET
+
+- **Status:** rettet 2026-11-06, verifisert i avsluttende akseptansetest (se `docs/test/akseptanserapport-v1.md`).
 
 - **Alvorlighet:** Middels · **AK:** AK17 («notatbytte < 200 ms») · **Eier:** backend (først), frontend
 - **Steg:** `node test-vault-tools/generate-large-vault.mjs --out <sti> --count 2000 --seed 42` →
@@ -40,7 +44,9 @@ Ingen funn med alvorlighet **Høy**. Sikkerhet (AK20) er grønn: ingen traversal
   fordi målingen er miljøavhengig).
 - **Forslag:** forhåndsrender/cache naboene til åpent notat, eller prefetch av `document` ved hover/fokus på lenker.
 
-## BUG-009 – Indeksering > 3 s under belastning
+## BUG-009 – Indeksering > 3 s under belastning – RETTET
+
+- **Status:** rettet 2026-11-06, verifisert i avsluttende akseptansetest (se `docs/test/akseptanserapport-v1.md`).
 
 - **Alvorlighet:** Middels · **AK:** AK17, PO-4 · **Eier:** backend
 - **Steg:** som BUG-008, testen «AK17: indeksering av 2000 notater» (5 kalde starter, median av `indexMs`).
@@ -94,7 +100,9 @@ Ingen funn med alvorlighet **Høy**. Sikkerhet (AK20) er grønn: ingen traversal
 - **Faktisk:** `li.task-list-item > input[type=checkbox][disabled]` uten label.
 - **Test:** `e2e/ak02-03-19-tema-a11y.spec.ts` › «BUG-005 …».
 
-## BUG-006 – Åpent notat som slettes/omdøpes blir stående utdatert
+## BUG-006 – Åpent notat som slettes/omdøpes blir stående utdatert – RETTET
+
+- **Status:** rettet 2026-11-06, verifisert i avsluttende akseptansetest (se `docs/test/akseptanserapport-v1.md`).
 
 - **Alvorlighet:** Middels · **AK:** AK12, QA-IDX-13 · **Eier:** frontend
 - **Steg:** åpne et notat, slett fila i vaultet (eller gi den nytt navn).
@@ -113,7 +121,9 @@ Ingen funn med alvorlighet **Høy**. Sikkerhet (AK20) er grønn: ingen traversal
 - **Faktisk:** vises som vanlig tilbakelenke med utdraget `lenkeliste: [[Ordre]]`.
 - **Test:** `e2e/ak07-11-navigasjon.spec.ts` › «property-lenke merkes «fra egenskap» (PO-9)».
 
-## BUG-007 – Endring mellom første lasting og SSE-tilkobling går tapt
+## BUG-007 – Endring mellom første lasting og SSE-tilkobling går tapt – RETTET
+
+- **Status:** rettet 2026-11-06, verifisert i avsluttende akseptansetest (se `docs/test/akseptanserapport-v1.md`).
 
 - **Alvorlighet:** Lav · **AK:** AK12 · **Eier:** frontend (`LiveReloadProvider`)
 - **Steg:** last et notat; endre en fil før `EventSource` har koblet til (testen holder igjen `/api/events`).
@@ -122,3 +132,24 @@ Ingen funn med alvorlighet **Høy**. Sikkerhet (AK20) er grønn: ingen traversal
   Observert som sporadisk feil i live reload-testene før testen ble gjort deterministisk.
 - **Test:** `e2e/ak12-live-reload.spec.ts` › «endring mellom første lasting og SSE-tilkobling går ikke tapt».
 - **Forslag:** sammenlign `ready.revision` med `revision` i dokument-/tre-dataene, eller invalider alltid ved første `ready`.
+
+## BUG-010 – AK1-testen «to vaults» feilet med ERR_INCOMPLETE_CHUNKED_ENCODING – RETTET (testfeil)
+
+- **Alvorlighet:** Lav · **AK:** AK1 · **Eier:** QA
+- **Symptom:** `e2e/ak01-vault-indeks.spec.ts` › «to vaults i én konfig» feilet i vaktene med `Failed to load resource:
+  net::ERR_INCOMPLETE_CHUNKED_ENCODING` (og ERR_CONTENT_LENGTH_MISMATCH / ERR_CONNECTION_REFUSED).
+- **Årsak:** testen stoppet hjelpeserveren med `server.stop()` mens siden fortsatt var åpen mot den. SSE-strømmen
+  (`/api/events`) og prefetch/font-forespørsler ble brutt midt i overføringen, og Chromium logget det som konsollfeil.
+  Alle meldingene kom etter `stop()`; ingen kom mens serveren kjørte.
+- **Vurdering:** **testfeil, ikke produktfeil.** Når en server stoppes midt i en strøm, er det ventet at klienten ser
+  avbrutte tilkoblinger. Live-indikatoren i appen går til «frakoblet», slik den skal.
+- **Retting:** testen navigerer siden til `about:blank` før `server.stop()`. Kjørt 3 × 2 prosjekter uten feil.
+
+## BUG-011 – e2e på opptatt port – RETTET
+
+- **Alvorlighet:** Lav · **AK:** AK18 · **Eier:** QA (testhjelper) / README
+- **Funn i README-gjennomgangen:** hvis 4318 var opptatt, feilet `npm run test:e2e` med serverens melding «velg en annen
+  port: npm start -- --port 4400», som ikke gjelder e2e. Dessuten kunne testhjelperen i verste fall godta en *annen*
+  server som allerede svarte på porten.
+- **Retting:** `e2e/support/real-server.ts` sjekker at porten er ledig før start og ber om `E2E_PORT=<port>`.
+  README (Utvikling) viser `E2E_PORT=4418 npm run test:e2e` og hvordan ytelsestesten kjøres.
