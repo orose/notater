@@ -10,7 +10,19 @@ import { buildSearchIndex } from '../search';
 import type { SearchDocument, SearchIndex } from '../search';
 import { createDeletionHold } from '../live-events';
 import type { BatchClassification, DeletionHold } from '../live-events';
-import { buildSnapshot, findByDocPath, normalizeVaultPath, readVaultBytes, scanVault, statVaultFile, updateSnapshot } from '../vault-index';
+import {
+  buildSnapshot,
+  detectRenames,
+  findByDocPath,
+  hashText,
+  normalizeVaultPath,
+  readVaultBytes,
+  readVaultText,
+  scanVault,
+  statVaultFile,
+  toVaultFile,
+  updateSnapshot,
+} from '../vault-index';
 import type { MetaExtractor, VaultFile, VaultSnapshot } from '../vault-index';
 import { createLruCache } from './lru-cache';
 import type { LruCache } from './lru-cache';
@@ -153,21 +165,50 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
     };
   };
 
-  /** PO-78: hva som er slettet (holdes tilbake) og om bunten har en ny fil (kan være omdøpingsmålet). */
-  const classifyBatch = async (paths: readonly string[]): Promise<BatchClassification> => {
-    const files = state?.snapshot.files;
+  /**
+   * PO-78: hva i bunten som er slettet (holdes tilbake), og hvilke slettinger som er samme fil som en ny
+   * fil i bunten – samme kriterier som paringen i `updateSnapshot` (inode + størrelse eller innholdshash).
+   */
+  const classifyBatch = async (paths: readonly string[], held: readonly string[]): Promise<BatchClassification> => {
+    const files = state?.snapshot.files ?? new Map<FilePath, VaultFile>();
     const stats = await Promise.all(paths.map((p) => statVaultFile(config.root, p)));
     const deleted: string[] = [];
     const present: string[] = [];
-    let hasNew = false;
+    const fresh: VaultFile[] = [];
     paths.forEach((path, i) => {
-      if (!stats[i]) deleted.push(path);
+      const scanned = stats[i];
+      if (!scanned) deleted.push(path);
       else {
         present.push(path);
-        if (!files?.has(normalizeVaultPath(path))) hasNew = true;
+        if (!files.has(normalizeVaultPath(path))) fresh.push(toVaultFile(scanned));
       }
     });
-    return { deleted, present, hasNew };
+    const candidates = [...held, ...deleted];
+    if (fresh.length === 0 || candidates.length === 0) return { deleted, present, release: [] };
+
+    // Gamle filer per slettet sti (en slettet mappe dekker filene under den).
+    const owner = new Map<string, string>();
+    for (const path of candidates) {
+      const filePath = normalizeVaultPath(path);
+      const exact = files.get(filePath);
+      if (exact) owner.set(exact.docPath, path);
+      else {
+        const prefix = `${filePath.replace(/\/+$/, '')}/`;
+        for (const file of files.values()) if (file.filePath.startsWith(prefix)) owner.set(file.docPath, path);
+      }
+    }
+    const removed = [...files.values()].filter((f) => owner.has(f.docPath));
+    // Innholdshash bare for nye tekstfiler, og bare når det finnes tilbakeholdte slettinger å pare med.
+    const added = await Promise.all(
+      fresh.map(async (file): Promise<VaultFile> => {
+        if (file.ext !== 'md' && file.kind !== 'base') return file;
+        const text = await readVaultText(config.root, file.diskPath).catch(() => null);
+        return text === null ? file : { ...file, contentHash: hashText(text) };
+      }),
+    );
+    const release = new Set<string>();
+    for (const pair of detectRenames(removed, added)) release.add(owner.get(pair.from!)!);
+    return { deleted, present, release: [...release] };
   };
 
   const onWatchBatch = (paths: string[]): void => {

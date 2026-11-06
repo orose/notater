@@ -292,6 +292,39 @@ describe('omdøping delt over to debounce-bunter (PO-78)', () => {
     expect(events).toEqual([{ vaultId: 'v', revision: 2, changes: [{ type: 'removed', path: 'B' }] }]);
   });
 
+  it('en annen ny fil i samme bunt som slettingen hindrer ikke paringen (ak12-scenariet)', async () => {
+    const { mkdir, rename } = await import('node:fs/promises');
+    const { watcher, events } = await start();
+    await mkdir(join(root, 'arkiv'));
+    await rename(join(root, 'B.md'), join(root, 'arkiv/B2.md'));
+    await writeFile(join(root, 'Støy.md'), '# Støy');
+
+    watcher.batch(['B.md', 'Støy.md']);
+    await until(() => events.length > 0);
+    expect(events[0]!.changes).toEqual([{ type: 'added', path: 'Støy' }]);
+
+    await vi.advanceTimersByTimeAsync(150);
+    watcher.batch(['arkiv/B2.md']);
+    await until(() => events.length > 1);
+    expect(events[1]!.changes).toEqual([
+      { type: 'removed', path: 'B' },
+      { type: 'added', path: 'arkiv/B2' },
+      { type: 'renamed', path: 'arkiv/B2', from: 'B', to: 'arkiv/B2' },
+    ]);
+  });
+
+  it('kopi + sletting (ny inode, samme innhold) pares også over to bunter', async () => {
+    const { watcher, events } = await start();
+    await writeFile(join(root, 'B-kopi.md'), '# B');
+    await rm(join(root, 'B.md'));
+    watcher.batch(['B.md']);
+    await realSleep(50);
+    await vi.advanceTimersByTimeAsync(200);
+    watcher.batch(['B-kopi.md']);
+    await until(() => events.length > 0);
+    expect(events[0]!.changes).toContainEqual({ type: 'renamed', path: 'B-kopi', from: 'B', to: 'B-kopi' });
+  });
+
   it('vanlige endringer venter ikke på vinduet', async () => {
     const { watcher, events } = await start();
     await writeFile(join(root, 'A.md'), '# A endret og lengre');

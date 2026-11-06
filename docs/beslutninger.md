@@ -281,3 +281,9 @@ Designet (prototype-v1.1.html, designsystem §11) er **godkjent** som referanse.
 - **PO-76** Testene i `ak12-live-reload` skal tåle gjentatt kjøring (egen vault-kopi per test eller tilbakestilling) – QA-oppgave.
 - **PO-77** QA-hjelperen `overskrift()` (eksakt tekstslutt) – godkjent. Ankerlenke `#` kun på h2/h3 som i v1 – godkjent.
 - **PO-78 (bug)** Omdøping kan splittes over to SSE-batcher (removed i én, added i neste) → ingen `renamed`. Backend skal holde tilbake `removed` i et kort vindu (f.eks. 300 ms) for å pare med en påfølgende `added`.
+
+## PO-avgjørelser etter slice 1.1-d
+
+- **PO-79** Feilkort for embeds skal få designets v1.1-utseende (§11.4) – frontend.
+- **PO-80** TC-12-04 bruker piltaster i radiogruppen (riktig radio-semantikk) – QA.
+- **PO-81 (bug)** Tast rett etter at en dialog lukkes med `Esc` skal virke (vim-brukere trykker `Esc` + `j` i én bevegelse). Tastaturmotoren skal aktiveres synkront når dialogen lukkes – frontend. Dekker de ustabile TC-05-08/TC-12-02.

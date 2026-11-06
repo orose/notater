@@ -175,7 +175,8 @@ function readImageSize(root: string, file: VaultFile): Promise<ImageSize | null>
   }
 }
 
-function hashText(text: string): string {
+/** SHA-1 av tekstinnhold (`VaultFile.contentHash`). */
+export function hashText(text: string): string {
   return createHash('sha1').update(text).digest('hex');
 }
 
@@ -198,6 +199,6 @@ export function detectRenames(removed: readonly VaultFile[], added: readonly Vau
   return renames;
 }
 
-function toVaultFile(scanned: ScannedFile): VaultFile {
+export function toVaultFile(scanned: ScannedFile): VaultFile {
   return { ...describeVaultPath(scanned.diskPath), ...scanned };
 }
