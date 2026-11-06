@@ -1,11 +1,6 @@
 /* Kodeblokk = «figur» (designsystem §5.2). */
 figure { margin: 0; }
 .code {
-  /* Shikis innebygde css-variables-tema (basis for vårt) bruker også diff-variabler som tokens.css
-     ikke definerer. Uten dem får +/–-linjer i ```diff ingen farge. */
-  --shiki-token-inserted: var(--shiki-token-string);
-  --shiki-token-deleted: var(--shiki-token-keyword);
-  --shiki-token-changed: var(--shiki-token-constant);
   position: relative; margin-block: var(--space-6) !important;
   background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius-l);
   font-size: var(--step-n1);

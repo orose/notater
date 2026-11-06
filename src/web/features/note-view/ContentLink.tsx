@@ -22,6 +22,8 @@ type ContentLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
 /** Navigasjonsstate: målseksjonen finnes ikke (README-QA regel 7). Leses av `useDocumentScroll`. */
 export interface LinkNavigationState {
   readonly anchorMissing?: boolean;
+  /** Ankeret som ikke finnes (backend sender `data-vr-anchor`). */
+  readonly anchor?: string;
 }
 
 function parseAlternatives(raw: string | undefined): string[] {
@@ -90,9 +92,9 @@ export function ContentLink(props: ContentLinkProps) {
     const title = ambiguous
       ? ambiguityTitle(ambiguous, target, parseAlternatives(alternatives))
       : missing
-        ? 'Fant ikke seksjonen i notatet – lenken går til toppen.'
+        ? `Fant ikke seksjonen${anchor ? ` «${anchor}»` : ''} i notatet – lenken går til toppen.`
         : undefined;
-    const state: LinkNavigationState | undefined = missing ? { anchorMissing: true } : undefined;
+    const state: LinkNavigationState | undefined = missing ? { anchorMissing: true, ...(anchor ? { anchor } : {}) } : undefined;
     return (
       <Link
         {...rest}

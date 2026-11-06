@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type {
+  BacklinksResponse,
   DocPath,
   DocumentResponse,
   SearchResponse,
@@ -38,6 +39,18 @@ export function useDocument(vaultId: VaultId, docPath: DocPath, enabled = true) 
     // Vis forrige notat til det nye er klart (designsystem §9: ingen skeleton).
     placeholderData: keepPreviousData,
     retry: (count, error) => !(error instanceof ApiRequestError && error.status < 500) && count < 2,
+  });
+}
+
+/** PO-28: «Lenket fra» – også for mål som ikke finnes (siden «ikke skrevet ennå»). */
+export function useBacklinks(vaultId: VaultId, target: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.backlinks(vaultId, target),
+    queryFn: ({ signal }) =>
+      apiGet<BacklinksResponse>(`/api/vaults/${v(vaultId)}/backlinks?path=${encodeURIComponent(target)}`, signal),
+    enabled: enabled && target.length > 0,
+    staleTime: Infinity,
+    retry: false,
   });
 }
 

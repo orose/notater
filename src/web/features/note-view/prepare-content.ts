@@ -90,6 +90,31 @@ function withSidenotes(nodes: ElementContent[], footnotes: Map<string, Footnote>
   return out;
 }
 
+function inlineText(node: ElementContent): string {
+  if (node.type === 'text') return node.value;
+  if (node.type === 'element') return node.children.map(inlineText).join('');
+  return '';
+}
+
+/** BUG-005: avkrysningsbokser i oppgavelister får punktets tekst som tilgjengelig navn. */
+function labelTaskItems<T extends RootContent | ElementContent>(node: T): T {
+  if (!isElement(node) || node.children.length === 0) return node;
+  const children = node.children.map(labelTaskItems);
+  if (node.tagName === 'li' && classList(node).includes('task-list-item')) {
+    const label = children
+      .filter((c) => !(isElement(c) && ['input', 'ul', 'ol'].includes(c.tagName)))
+      .map(inlineText)
+      .join('')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const labelled = children.map((c) =>
+      isElement(c) && c.tagName === 'input' && label ? cloneElement(c, { properties: { ...c.properties, ariaLabel: label } }) : c,
+    );
+    return cloneElement(node, { children: labelled }) as T;
+  }
+  return cloneElement(node, { children }) as T;
+}
+
 export function prepareContent(tree: Root): Root {
   const { map, section } = collectFootnotes(tree);
 
@@ -103,6 +128,8 @@ export function prepareContent(tree: Root): Root {
     }
     return node;
   });
+
+  children = children.map(labelTaskItems);
 
   const first = children.findIndex((node) => !isBlankText(node));
   const firstNode = children[first];

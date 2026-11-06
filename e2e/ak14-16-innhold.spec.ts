@@ -274,7 +274,7 @@ test.describe('Callouts, markdown og header (QA-CAL-*, QA-MD-*, PO-35)', () => {
   });
 
   test('ugyldig frontmatter: advarselen vises i UI (QA-IDX-07, PO-27)', async ({ page }) => {
-    test.fail(true, 'BUG-003: frontmatterError/warnings fra API-et vises ikke i notatvisningen');
+    // BUG-003 rettet 2026-11-06.
     await openNote(page, 'edge/Ugyldig frontmatter');
     await expect(page.locator('main')).toContainText('Egenskapene kunne ikke leses', { timeout: 3000 });
   });

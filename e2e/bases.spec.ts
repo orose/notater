@@ -145,7 +145,7 @@ test.describe('Bases – inline-blokker i Sprintoversikt.md (bases-fasit §3)', 
   test('blokk 1 Kritisk (4), blokk 2 Team-kanban (5 kort / 3 kolonner)', async ({ page }) => {
     await openNote(page, 'Sprintoversikt');
     const bases = page.locator('main article section.base');
-    await expect(bases).toHaveCount(3);
+    await expect(bases).toHaveCount(4);
     const [b1, b2] = fasit['Sprintoversikt.md'].blokker as { views: FasitView[] }[];
     await expectView(page, bases.nth(0), b1!.views[0]!);
     await expectView(page, bases.nth(1), b2!.views[0]!);
@@ -163,7 +163,10 @@ test.describe('Bases – inline-blokker i Sprintoversikt.md (bases-fasit §3)', 
 
   test('blokk 4: ugyldig YAML gir feilkort, resten av notatet rendres', async ({ page }) => {
     await openNote(page, 'Sprintoversikt');
-    await expect(page.locator('main article')).toContainText(/kunne ikke (leses|vises)/i);
+    const block = page.locator('main article section.base').nth(3);
+    await expect(block).toContainText(/Kunne ikke lese base-definisjonen \(linje \d+\)/);
+    await expect(block).toContainText(/ugyldig YAML/);
+    await expect(page.locator('main article')).toContainText(/Oppgrader Spring Boot/);
     const doc = (await (await page.request.get('/api/vaults/test/document?path=Sprintoversikt')).json()) as NoteDocument;
     const warnings = Object.values(doc.bases).flatMap((b) => b.warnings.map((w) => w.code));
     expect(warnings.some((c) => /parse|yaml/i.test(c))).toBe(true);

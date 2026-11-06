@@ -21,11 +21,16 @@ interface Violation {
   readonly html: string;
 }
 
-/** Kjente brudd med bug-ID (docs/test/bugs.md). Filtreres bort i hovedtestene og har egne test.fail-tester. */
-const KNOWN: readonly { bug: string; id: string; html?: RegExp; target?: RegExp }[] = [
+/** Kjente, uløste brudd med bug-ID (docs/test/bugs.md). Filtreres bort i hovedtestene og skal ha egne test.fail-tester. */
+// BUG-004 og BUG-005 er rettet (2026-11-06); listen er tom, men beholdes for framtidige kjente brudd.
+const KNOWN: readonly { bug: string; id: string; html?: RegExp; target?: RegExp }[] = [];
+
+/** Regresjonssignaturer for rettede bugs. */
+const REGRESSIONS: readonly { bug: string; id: string; html?: RegExp; target?: RegExp }[] = [
   { bug: 'BUG-004', id: 'color-contrast', html: /^<b>\d+<\/b>$/ },
   { bug: 'BUG-005', id: 'label', target: /task-list-item/ },
 ];
+const regressionOf = (v: Violation) => REGRESSIONS.find((k) => k.id === v.id && (!k.html || k.html.test(v.html)) && (!k.target || k.target.test(v.target)))?.bug;
 
 const knownBug = (v: Violation) => KNOWN.find((k) => k.id === v.id && (!k.html || k.html.test(v.html)) && (!k.target || k.target.test(v.target)))?.bug;
 
@@ -74,20 +79,18 @@ test.describe('AK19 axe-core (wcag2a/aa, wcag21a/aa) – 0 brudd', () => {
   }
 });
 
-test.describe('AK19 kjente axe-brudd (fjern test.fail når bugen er rettet)', () => {
+test.describe('AK19 regresjon for rettede axe-bugs', () => {
   test('BUG-004: tallene i taggskyen har for lav kontrast i lyst tema', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Sidepanelet er skjult på mobil');
-    test.fail(true, 'BUG-004');
     await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
     await openNote(page, 'Velkommen');
-    expect((await axe(page)).filter((v) => knownBug(v) === 'BUG-004')).toEqual([]);
+    expect((await axe(page)).filter((v) => regressionOf(v) === 'BUG-004')).toEqual([]);
   });
 
   test('BUG-005: avkrysningsbokser i oppgavelister mangler tilgjengelig navn', async ({ page }) => {
-    test.fail(true, 'BUG-005');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openNote(page, 'teknisk/Callouts');
-    expect((await axe(page)).filter((v) => knownBug(v) === 'BUG-005')).toEqual([]);
+    expect((await axe(page)).filter((v) => regressionOf(v) === 'BUG-005')).toEqual([]);
   });
 });
 
@@ -99,8 +102,8 @@ test.describe('AK2/AK3 tema mot ekte server', () => {
     const darkBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     await page.emulateMedia({ colorScheme: 'light' });
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'light');
-    const lightBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(lightBg).not.toBe(darkBg);
+    // Bakgrunnen kan ha en transition; vent til den er ferdig.
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe(darkBg);
   });
 
   test('manuelt valg «Mørk» huskes over reload og overstyrer OS; «System» gjenoppretter (AK3)', async ({ page }) => {

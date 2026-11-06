@@ -1,19 +1,14 @@
 import { Link } from 'react-router';
 import type { Backlink } from '../../../shared/api-types';
 
-/** Kompakt liste i høyre marg; hopper til full seksjon nederst. */
+/** PO-44: høyre marg viser bare en kompakt lenke ned til tilbakelenkene (primærvisningen er nederst). */
 export function RailBacklinks({ backlinks }: { readonly backlinks: readonly Backlink[] }) {
   if (backlinks.length === 0) return null;
   return (
     <section>
-      <span className="label">Tilbakelenker</span>
-      <ul className="rail-links">
-        {backlinks.map((b) => (
-          <li key={b.source}>
-            <Link to={{ hash: '#tilbakelenker' }}>{b.sourceTitle}</Link>
-          </li>
-        ))}
-      </ul>
+      <Link className="rail-jump" to={{ hash: '#tilbakelenker' }}>
+        Tilbakelenker ({backlinks.length}) ↓
+      </Link>
     </section>
   );
 }

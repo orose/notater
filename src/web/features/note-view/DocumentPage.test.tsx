@@ -81,7 +81,7 @@ describe('DocumentPage – notat', () => {
         title: 'Lenketest',
         properties: [],
         content: root(
-          h('p', {}, h('a', { href: '/v/test/domene/Ordre', dataVrLink: 'internal', dataVrTarget: 'domene/Ordre', dataVrAnchorMissing: 'true' }, 'Ordre › Borte')),
+          h('p', {}, h('a', { href: '/v/test/domene/Ordre', dataVrLink: 'internal', dataVrTarget: 'domene/Ordre', dataVrAnchorMissing: 'true', dataVrAnchor: 'Borte' }, 'Ordre › Borte')),
         ),
         toc: [],
         backlinks: [],
@@ -92,7 +92,25 @@ describe('DocumentPage – notat', () => {
     renderAt('/v/test/lenker/Lenketest');
     fireEvent.click(await screen.findByRole('link', { name: 'Ordre › Borte' }));
     await screen.findByRole('heading', { level: 1, name: 'Ordre' });
-    expect(await screen.findByText('Fant ikke seksjonen – viser toppen av notatet.')).toHaveClass('toast');
+    expect(await screen.findByText('Fant ikke seksjonen «Borte» – viser toppen av notatet.')).toHaveClass('toast');
+  });
+
+  it('viser dokumentadvarsler diskret i headeren (PO-27, BUG-003)', async () => {
+    const message = 'Egenskapene kunne ikke leses (ugyldig YAML i frontmatter).';
+    mockApi({
+      '/api/vaults/test/document?path=edge/Ugyldig frontmatter': noteFixture({
+        path: 'edge/Ugyldig frontmatter',
+        title: 'Ugyldig frontmatter',
+        properties: [],
+        frontmatterError: message,
+        warnings: [{ code: 'invalid-frontmatter', message }],
+      }),
+      '/api/vaults': vaultsFixture,
+    });
+    renderAt('/v/test/edge/Ugyldig%20frontmatter');
+    const notes = await screen.findAllByText(message);
+    expect(notes).toHaveLength(1);
+    expect(notes[0]?.closest('.note-warn')).not.toBeNull();
   });
 
   it('husker notatet i «Nylig åpnet»', async () => {
@@ -133,6 +151,25 @@ describe('DocumentPage – notat', () => {
     expect(screen.getByText('domene/Outbox-mønster.md')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Søk etter «Outbox-mønster»' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '← Til forsiden' })).toHaveAttribute('href', '/v/test');
+  });
+
+  it('ukjent notat viser «Lenket fra» (PO-28, BUG-001)', async () => {
+    mockApi({
+      '/api/vaults': vaultsFixture,
+      '/api/vaults/test/backlinks?path=Finnes ikke': {
+        vaultId: 'test',
+        revision: 1,
+        path: 'Finnes ikke',
+        exists: false,
+        backlinks: [
+          { source: 'lenker/Lenketest', sourceTitle: 'Lenketest', snippet: 'Finnes ikke', count: 2 },
+          { source: 'edge/Frontmatter-typer', sourceTitle: 'Frontmatter-typer', snippet: 'lenkeliste: [[Finnes ikke]]', count: 1, fromProperty: true },
+        ],
+      },
+    });
+    renderAt('/v/test/Finnes%20ikke');
+    const region = await screen.findByRole('region', { name: 'Lenket fra' });
+    expect(within(region).getAllByRole('link').map((a) => a.textContent)).toEqual(['Lenketest', 'Frontmatter-typer']);
   });
 
   it('viser ikke-støttet-filer (canvas) via innholdet', async () => {

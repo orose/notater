@@ -127,7 +127,7 @@ function NotePage({ doc, display, busy }: NotePageProps) {
             )}
           </article>
           {/* Utdragene inneholder lenketeksten (filnavnet), ikke visningstittelen. */}
-          <Backlinks vaultId={doc.vaultId} title={doc.title} backlinks={doc.backlinks} />
+          <Backlinks vaultId={doc.vaultId} title={doc.title} path={doc.path} backlinks={doc.backlinks} />
         </div>
       </main>
       <aside className="rail" aria-label="På denne siden">
@@ -152,12 +152,10 @@ function BasePage({ doc, busy }: { readonly doc: BaseDocument; readonly busy: bo
           <div className="prose">
             <BaseBlock vaultId={doc.vaultId} result={doc.result} sourcePath={doc.path} />
           </div>
-          <Backlinks vaultId={doc.vaultId} title={doc.title} backlinks={doc.backlinks} />
+          <Backlinks vaultId={doc.vaultId} title={doc.title} path={doc.path} backlinks={doc.backlinks} />
         </div>
       </main>
-      <aside className="rail" aria-label="På denne siden">
-        <RailBacklinks backlinks={doc.backlinks} />
-      </aside>
+      {/* PO-43: ingen høyre marg på .base-sider – basen får hele bredden. */}
     </>
   );
 }

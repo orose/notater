@@ -88,3 +88,29 @@ describe('readingMinutes', () => {
     expect(readingMinutes(root(code))).toBe(1);
   });
 });
+
+describe('prepareContent – oppgavelister (BUG-005)', () => {
+  it('gir avkrysningsboksen tilgjengelig navn fra punktets tekst (uten nestede lister)', () => {
+    const out = prepareContent(
+      root(
+        h(
+          'ul',
+          { className: ['contains-task-list'] },
+          h(
+            'li',
+            { className: ['task-list-item'] },
+            h('input', { type: 'checkbox', checked: false, disabled: true }),
+            ' ',
+            h('strong', {}, 'Nestet'),
+            ':',
+            h('ul', {}, h('li', { className: ['task-list-item'] }, h('input', { type: 'checkbox', checked: true, disabled: true }), ' Under')),
+          ),
+        ),
+      ),
+    );
+    const outer = el(el(el(out.children[0]).children[0]).children[0]);
+    expect(outer.properties.ariaLabel).toBe('Nestet:');
+    const nested = el(el(el(el(el(out.children[0]).children[0]).children[4]).children[0]).children[0]);
+    expect(nested.properties.ariaLabel).toBe('Under');
+  });
+});

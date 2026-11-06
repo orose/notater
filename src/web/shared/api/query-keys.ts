@@ -8,4 +8,5 @@ export const queryKeys = {
   document: (vaultId: VaultId, docPath: DocPath) => ['vault', vaultId, 'document', docPath] as const,
   search: (vaultId: VaultId, q: string) => ['vault', vaultId, 'search', q] as const,
   tags: (vaultId: VaultId) => ['vault', vaultId, 'tags'] as const,
+  backlinks: (vaultId: VaultId, target: string) => ['vault', vaultId, 'backlinks', target] as const,
 };

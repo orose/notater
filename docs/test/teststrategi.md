@@ -99,31 +99,36 @@ Ytelsestestene kjøres som eget Playwright-prosjekt (`perf`), ikke på hver lagr
 
 ## 3. Sporbarhetsmatrise AK → test
 
-| AK | Beskrivelse (kort) | Enhet | Integrasjon | E2E / annet | QA-ID-er |
-|----|--------------------|-------|-------------|-------------|----------|
-| AK1 | Ulike vaults via konfigfil | `config` | Start mot to ulike vault-kopier, bytt via config | Velg vault (hvis UI) | – |
-| AK2 | Tema følger OS | – | – | `colorScheme: dark/light` → riktige tokens, mermaid/kode følger | QA-MER-02, QA-KOD-01 |
-| AK3 | Manuell overstyring huskes | `theme`-store | – | Velg mørk med OS=lys → reload → fortsatt mørk; «system» gjenoppretter | – |
-| AK4 | Kjører lokalt på Mac | – | – | Manuell: `npm start` på ren Mac (Node 22) per slice; WebKit-prosjekt i Playwright | – |
-| AK5 | Mobilvennlig, ingen sidescroll | – | – | `mobil`-prosjekt: scrollWidth-sjekk på alle notater; kode/tabell/mermaid scroller internt | QA-KOD-07, QA-IMG-06, QA-MD-03/08, QA-IDX-10 |
-| AK6 | Distinkt design | – | – | Skjermbildematrise + PO-gjennomgang | – |
-| AK7 | Navigasjon via lenker | `links` | Notat-API gir oppløste lenker | Klikk gjennom Lenketest-punktene | README-QA §4 |
-| AK8 | Temasystem 2 akser, AA | tokens-test (alle kombinasjoner definert) | – | axe-kontrast per kombinasjon; skjermbilder | QA-CAL-01 |
-| AK9 | Ødelagte lenker tydelige, ikke stygge | `links` | – | Stil + tooltip + ikke-navigerende; visuell | Lenketest 29–35, 48; QA-EMB-08, QA-IMG-10 |
-| AK10 | Tilbakelenker | `links` (graf) | Antall/kilder for 8 mål | Panel viser riktige, klikkbare | README-QA «Tilbakelenker» |
-| AK11 | Stabile URL-er, frem/tilbake | `routing` (slug/encode) | Notat via URL for spesielle filnavn | Bokmerk/reload, `goBack`/`goForward` | QA-URL-01..07 |
-| AK12 | Live reload | `watcher` (debounce) | Fil-hendelser → event | Endre fil i kopi → oppdatert uten refresh, scroll bevart | QA-IDX-13 |
-| AK13 | ⌘K-søk, tastatur | `search` | Søke-API | Tastaturflyt | QA-SOK-* |
-| AK14 | Kode: highlight, merke, kopier, tittel | `markdown` (meta) | – | Kopier → clipboard-innhold; tema-bytte | QA-KOD-* |
-| AK15 | Mermaid følger tema, forstørr | – | – | Alle typer rendres, ugyldig gir feilkort, zoom-modal | QA-MER-* |
-| AK16 | TOC, scroll-spy | `markdown` (overskrifter/slugs) | TOC i notat-API | Klikk/scroll i langt notat | QA-TOC-* |
-| AK17 | 2000 notater < 3 s, bytte < 200 ms | – | Indekstid mot generert vault | `perf`-prosjekt | §2.6 |
-| AK18 | Én kommando + README | – | – | CI-jobb: ren klon → `npm ci && npm start` → health OK innen 10 s; README-steg følges manuelt av QA | – |
-| AK19 | WCAG AA, fokus, reduced motion | – | – | axe, tastatur, reduced-motion | §2.4, QA-CAL-05 |
-| AK20 | Traversal, sanitering, 127.0.0.1 | `vault/paths`, `sanitize` | Traversal-API, bind-adresse, headers | Dialog-/request-vakter | QA-SEC-*, QA-URL-08, QA-IMG-12 |
-| Bases | Begge kundebaser identisk med Obsidian | `bases/*` mot `bases-fasit.json` | Base-API == fasit | Tabell/kanban/faner rendres som fasit, mobil-scroll | `bases-fasit.md` |
-| B1 | Skriver aldri til vault | – | Sjekksum før/etter, ingen skrivende endepunkt | Avkrysningsbokser/kanban ikke interaktive | QA-MD-04 |
-| B10 | Ingen nettverk ut | – | – | Request-vakt; bundle-sjekk for eksterne URL-er (`grep` i `dist/`) | QA-SEC-05, QA-IMG-13 |
+Status per 2026-11-06 (slice 0–4). Siste fulle kjøring: se rapport til PO; ytelse målt på belastet 4-kjerners container. E2E kjører mot den **ekte** serveren og en temp-kopi av testvaultet med
+fixture-mtimes (globalSetup, PO-17), i prosjektene `desktop` (1440 px) og `mobil` (360 px). Frontendens
+mock-tester (`e2e/ui.spec.ts`) kjører i `mock-desktop`/`mock-mobil`. Kjente bugs: `docs/test/bugs.md`
+(testene er merket `test.fail` med bug-ID).
+
+| AK | Beskrivelse (kort) | Enhet / integrasjon (Vitest) | E2E (fil › test) | QA-ID-er | Status |
+|----|--------------------|------------------------------|------------------|----------|--------|
+| AK1 | Ulike vaults via konfigfil | `config/resolve-config.test.ts` | `ak01-vault-indeks` › to vaults i én konfig; vaultnavn fra konfig | QA-IDX-01..04, 09 | Bestått |
+| AK2 | Tema følger OS | – | `ak02-03-19-tema-a11y` › følger OS live; `ak14-16-innhold` › mermaid følger tema; `ui.spec` (mock) | QA-MER-02, QA-KOD-01 | Bestått |
+| AK3 | Manuell overstyring huskes | web-enhetstester (theme) | `ak02-03-19-tema-a11y` › «Mørk» huskes, «System» gjenoppretter; `ui.spec` | – | Bestått |
+| AK4 | Kjører lokalt på Mac | `scripts/check-node.test.ts` | Manuell (`npm start` på ren Mac) | – | Ikke testet (manuell) |
+| AK5 | Mobil, ingen sidescroll | – | `ak05-layout` › alle dokumenter på 360 px; dypt tre; bredt bilde; `ak14-16` › lang kodelinje; `bases` › tabell/kanban scroller internt | QA-KOD-07, QA-IMG-06, QA-MD-03/08, QA-IDX-10 | Bestått |
+| AK6 | Distinkt design | – | Skjermbildematrise (`e2e/support/shots.spec.ts`) + PO-gjennomgang | – | Ikke testet (manuell) |
+| AK7 | Navigasjon via lenker | `links/*`, `documents/*` | `ak07-11-navigasjon` › AK7-blokken (9 lenketyper, overskrift, blokk, samme notat, tvetydig, ekstern, canvas) | README-QA §4 | Bestått |
+| AK8 | Temasystem 2 akser, AA | tokens | axe i standardpalett lys/mørk (`ak02-03-19`); alle kombinasjoner gjenstår (slice 6) | QA-CAL-01 | Ikke testet fullt (utenfor denne runden) |
+| AK9 | Brutte lenker tydelige | `links/*` | `ak07-11-navigasjon` › AK9-blokken (ikke-navigerende, stil, alias-hint, alle brutte, manglende anker, manglende embed) | Lenketest 11–14, 18, 29–35, 48; QA-EMB-08 | Bestått |
+| AK10 | Tilbakelenker | `documents/document-service.test.ts` | `ak07-11-navigasjon` › 7 mål mot fasit, base, klikk, «fra egenskap»; «Lenket fra» | README-QA «Tilbakelenker», PO-9, PO-28 | Bestått (BUG-001/002 rettet) |
+| AK11 | Stabile URL-er, frem/tilbake | routing-enhetstester | `ak07-11-navigasjon` › 8 spesielle filnavn + reload, `&`, frem/tilbake, scroll, #anker, 404-side | QA-URL-01..07 | Bestått |
+| AK12 | Live reload | `live-events/*` | `ak12-live-reload` (egen server + kopi): endring < 2 s, scroll bevart, nytt notat + backlinks, atomisk skriving, debounce, sletting, omdøping, SSE-race | QA-IDX-13 | Delvis (BUG-006, BUG-007) |
+| AK13 | ⌘K-søk, tastatur | `search/*` | `ak13-sok` › API mot QA-SOK-01..08, taggsøk, excalidraw; UI: tastaturflyt, Esc/fokus, alias, `<script>`, `Ctrl K` (PO-36), tagg-chip | QA-SOK-*, QA-TAG-14 | Bestått |
+| AK14 | Kodeblokker | `code-highlight/*`, `markdown/*` | `ak14-16-innhold` › highlight/merke, ukjent språk, kopier (clipboard), tittel, `<script>`, lang linje, liste, stor blokk, sequenceDiagram | QA-KOD-01..13 | Bestått |
+| AK15 | Mermaid | – | `ak14-16-innhold` › 7 SVG + feilkort, tema-bytte, forstørr/Esc/fokus, i callout; `ak20` › strict | QA-MER-01..05 | Bestått |
+| AK16 | TOC, scroll-spy | `markdown` (slugs) | `ak14-16-innhold` › nivå 2–4, unike ankre + klikk, scroll-spy, < 3 overskrifter, mobil | QA-TOC-01..06 | Bestått |
+| AK17 | 2000 notater < 3 s, bytte < 200 ms | `bases-performance.test.ts` | `perf.spec.ts` (prosjekt `perf`, `PERF_VAULT=…`) | §2.6 | Feilet (BUG-008, BUG-009) |
+| AK18 | Én kommando + README | `check-node.test.ts` | globalSetup starter `src/server/main.ts --config`; README følges manuelt | – | Ikke testet (manuell README-gjennomgang) |
+| AK19 | WCAG AA, fokus, reduced motion | – | `ak02-03-19-tema-a11y` › axe (7 sider + søk + 404) × lys/mørk × desktop/mobil, hopp-lenke, tastaturflyt med synlig fokus, reduced motion; `bases` › axe Oppgaver.base; `ak14-16` › callout-fold | §2.4, QA-CAL-05 | Bestått for standardpalett (BUG-004/005 rettet); VoiceOver gjenstår (manuell) |
+| AK20 | Traversal, sanitering, 127.0.0.1 | `vault-index/*`, `markdown` (sanitize), `app/security` | `ak20-sikkerhet` › 30 traversal-payloads × `document`/`assets`, NUL, backlinks, vault-id, statiske ruter, 404-rute; CSP/nosniff/referrer, SVG-sandbox, Host-guard 403, 405, bind; XSS (ingen dialog/script ved last/hover/fokus/klikk), ufarlig HTML, `javascript:`-property, traversal-lenker, mermaid. Globale vakter: dialog/eksterne forespørsler/JS-feil i **alle** QA-tester | QA-SEC-01..07, QA-URL-08, QA-IMG-12, QA-LNK-05, QA-FM-03 | Bestått |
+| Bases | Kundebaser == fasit | `bases/*` (inkl. `bases-fasit.test.ts`) | `bases.spec.ts` › Domene, Huskeliste/Kanban/Arkiv, columnSize, mtime i Oslo, faner med tastatur, Sprintoversikt blokk 1–4, embeds (#Kanban, #Ukjent PO-34/42), mobil, axe | `bases-fasit.md` | Bestått |
+| B1 | Skriver aldri til vault | `app/security` | `ak20` › 405 for skrivende metoder; `ak14-16` › avkrysning disabled; `bases` › ingen drag | QA-MD-04 | Bestått |
+| B10 | Ingen nettverk ut | – | Global request-vakt i `e2e/support/guards.ts` (alle QA-tester) | QA-SEC-05, QA-IMG-13 | Bestått |
 
 ## 4. Definition of Done per slice
 
@@ -159,7 +164,7 @@ Felles for alle slices (fra brief): tester grønne · QA har verifisert mot AK �
 
 Forslag til hjelpefunksjon i testkoden (arkitekten plasserer den): `lagVaultKopi({ mtimes: true }) → { sti, rydd() }`.
 
-**Avvik fra arkitekturen som må løses:** `playwright.config.ts` (jf. `docs/arkitektur/struktur.md`) starter serveren direkte mot `./test-vault`. Da er Arkiv-viewet ikke deterministisk (mtime fra git-checkout), og live reload-tester ville skrevet i repoet. Forslag: Playwright `globalSetup` lager en kopi med fixture-mtimes og starter serveren med `--vault <kopi>`.
+**Løst (PO-17):** `e2e/global-setup.ts` kopierer `test-vault/` til en temp-mappe, setter fixture-mtimes, bygger web til temp og starter `src/server/main.ts --config <temp-konfig>` (vault-id `test`). Hjelpere i `e2e/support/real-server.ts` (`copyTestVault`, `startServer` …) brukes også av live reload-, AK1- og ytelsestestene, som starter egne servere på `E2E_PORT + n`. Rapporter/traces skrives til `$TMPDIR/vault-leser-e2e-results-<port>`. Kjøring: `npx playwright test` (alle prosjekter), `E2E_PORT=4418 …` ved samtidige kjøringer, `PERF_VAULT=<sti> npx playwright test --project=perf` for AK17.
 
 ## 6. Plattformrisikoer å teste eksplisitt
 

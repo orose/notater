@@ -24,3 +24,9 @@
 .rail-links a:hover { color: var(--color-accent); text-decoration: underline; }
 .rail-links small { display: block; font-family: var(--font-meta); font-size: 0.68rem; color: var(--color-muted); }
 .rail-links .broken-link { color: var(--color-link-broken); text-decoration: underline dotted; text-underline-offset: 0.2em; cursor: help; }
+
+/* PO-44: kompakt hopp-lenke i margen. */
+.rail-jump { font-family: var(--font-sc); font-size: var(--step-n1); letter-spacing: var(--tracking-sc); text-transform: lowercase; color: var(--color-muted); text-decoration: none; }
+[data-type="terminal"] .rail-jump { font-family: var(--font-meta); text-transform: uppercase; font-size: 0.72rem; }
+.rail-jump:hover { color: var(--color-accent); }
+.bl-prop { font-style: italic; }

@@ -88,7 +88,7 @@ describe('HastContent – lenker (AK7, AK9)', () => {
           {},
           h(
             'a',
-            { href: '/v/test/teknisk/Kafka/Kafka-grunnleggende', dataVrLink: 'internal', dataVrTarget: 'teknisk/Kafka/Kafka-grunnleggende', dataVrAnchorMissing: 'true' },
+            { href: '/v/test/teknisk/Kafka/Kafka-grunnleggende', dataVrLink: 'internal', dataVrTarget: 'teknisk/Kafka/Kafka-grunnleggende', dataVrAnchorMissing: 'true', dataVrAnchor: 'Finnes ikke' },
             'Kafka-grunnleggende › Finnes ikke',
           ),
         ),
@@ -96,7 +96,7 @@ describe('HastContent – lenker (AK7, AK9)', () => {
     );
     const link = screen.getByRole('link', { name: 'Kafka-grunnleggende › Finnes ikke' });
     expect(link).toHaveClass('anchor-missing');
-    expect(link).toHaveAttribute('title', 'Fant ikke seksjonen i notatet – lenken går til toppen.');
+    expect(link).toHaveAttribute('title', 'Fant ikke seksjonen «Finnes ikke» i notatet – lenken går til toppen.');
   });
 
   it('eksterne lenker åpnes i ny fane', () => {

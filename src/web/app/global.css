@@ -52,6 +52,11 @@ kbd {
 .page.standalone { max-width: 40rem; margin: 0 auto; padding-inline: var(--gutter); }
 .col { max-width: var(--measure); }
 .col-wide { max-width: none; }
+/* PO-43: .base-sider bruker ikke høyre marg – siden tar begge kolonnene. */
+.page-wide { grid-column: 1 / -1; }
+/* PO-43: base-blokker måler seg mot sidekolonnen (100cqw). Bare fra 860 px: containment gjør .page til
+   inneholdende blokk for position: fixed, og mobilens popover for brutte lenker er fixed. */
+@media (min-width: 860px) { .page { container-type: inline-size; } }
 @media (min-width: 1380px) { .col { margin-right: calc(var(--sidenote-w) + 2rem); } .col-wide { margin-right: 0; } }
 
 /* ---------- Knapper, tilstander ---------- */

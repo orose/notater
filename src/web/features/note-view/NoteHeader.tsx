@@ -1,5 +1,6 @@
 import type { NoteDocument, PropertyEntry } from '../../../shared/api-types';
 import { folderOf } from '../../shared/api';
+import { Icon } from '../../shared/ui/Icon';
 import { PropertyList, formatDateTime } from '../properties';
 import { useOpenSearch } from '../search';
 
@@ -25,6 +26,8 @@ export function NoteHeader({ doc, title, readingMinutes }: NoteHeaderProps) {
   const folder = folderOf(doc.path);
   const dek = ingress(doc.properties);
   const onTag = (tag: string) => openSearch(`#${tag}`);
+  // PO-27: frontmatterError og warnings kan ha samme melding – vis hver melding én gang.
+  const warnings = [...new Set([...(doc.warnings ?? []).map((w) => w.message), ...(doc.frontmatterError ? [doc.frontmatterError] : [])])];
 
   return (
     <header className="note-head">
@@ -40,6 +43,12 @@ export function NoteHeader({ doc, title, readingMinutes }: NoteHeaderProps) {
       ) : null}
       <h1 className="title">{title}</h1>
       {dek ? <p className="dek">{dek}</p> : null}
+      {warnings.map((message) => (
+        <p key={message} className="note-warn" role="note">
+          <Icon name="warning" />
+          {message}
+        </p>
+      ))}
       <PropertyList vaultId={doc.vaultId} properties={doc.properties} aliases={doc.aliases} onTagClick={onTag} />
       <div className="head-foot">
         {doc.tags.length > 0 ? (

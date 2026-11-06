@@ -36,13 +36,41 @@ describe('Backlinks', () => {
     expect(screen.getByText('Ingen notater lenker hit ennå.')).toBeInTheDocument();
   });
 
-  it('kompakt liste i margen hopper til full seksjon', () => {
+  it('margen viser bare en kompakt lenke ned til seksjonen (PO-44)', () => {
     render(
       <MemoryRouter initialEntries={['/v/test/x']}>
         <RailBacklinks backlinks={backlinks} />
       </MemoryRouter>,
     );
-    expect(screen.getByRole('link', { name: 'Velkommen' })).toHaveAttribute('href', '/v/test/x#tilbakelenker');
+    expect(screen.getByRole('link', { name: 'Tilbakelenker (2) ↓' })).toHaveAttribute('href', '/v/test/x#tilbakelenker');
+    expect(screen.queryByRole('link', { name: 'Velkommen' })).toBeNull();
+  });
+
+  it('uthever hele lenketeksten, også filendelsen (PO-45)', () => {
+    render(
+      <MemoryRouter>
+        <Backlinks
+          vaultId="test"
+          title="Oppgaver"
+          path="Oppgaver.base"
+          backlinks={[{ source: 'Velkommen', sourceTitle: 'Velkommen', snippet: 'Oppgaver: Oppgaver.base og Sprintoversikt', count: 1 }]}
+        />
+      </MemoryRouter>,
+    );
+    expect([...document.querySelectorAll('.bl-ctx mark')].map((m) => m.textContent)).toEqual(['Oppgaver', 'Oppgaver.base']);
+  });
+
+  it('lenker fra egenskaper merkes «fra egenskap» (PO-9, BUG-002)', () => {
+    render(
+      <MemoryRouter>
+        <Backlinks
+          vaultId="test"
+          title="Ordre"
+          backlinks={[{ source: 'edge/Frontmatter-typer', sourceTitle: 'Frontmatter-typer', snippet: '', count: 1, fromProperty: true }]}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('listitem')).toHaveTextContent(/fra egenskap/);
   });
 });
 

@@ -86,7 +86,8 @@ export function useDocumentScroll(ready: boolean, docId: string): { toast: strin
       }
     } else if ((location.state as { anchorMissing?: boolean } | null)?.anchorMissing && navigationType !== 'POP') {
       // README-QA regel 7: lenken pekte på en seksjon som ikke finnes – vis toppen og si fra.
-      setToast('Fant ikke seksjonen – viser toppen av notatet.');
+      const missing = (location.state as { anchor?: string }).anchor;
+      setToast(`Fant ikke seksjonen${missing ? ` «${missing}»` : ''} – viser toppen av notatet.`);
       window.scrollTo(0, 0);
     } else if (navigationType === 'POP' && positions.has(location.key)) {
       window.scrollTo(0, positions.get(location.key) ?? 0);

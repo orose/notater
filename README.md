@@ -17,7 +17,8 @@ npm start
 
 Åpne <http://127.0.0.1:4317>. Uten videre oppsett viser leseren testvaultet i `test-vault/`.
 
-`npm start` bygger nettsiden og starter serveren. Avslutt med `Ctrl C`.
+`npm start` bygger nettsiden (bare når kilden er endret siden forrige gang) og starter serveren.
+Avslutt med `Ctrl C`.
 
 ## Pek på ditt eget vault
 

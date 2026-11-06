@@ -217,3 +217,7 @@ a.wikilink.anchor-missing { text-decoration-style: dashed; }
   .prose blockquote { padding-left: 0.6em; }
   .broken-pop { position: fixed; left: var(--space-4); right: var(--space-4); top: auto; bottom: var(--space-4); width: auto; max-width: none; }
 }
+
+/* PO-27: diskret advarsel i notat-headeren (f.eks. ugyldig frontmatter). */
+.note-warn { display: flex; gap: 0.5em; align-items: baseline; margin: var(--space-3) 0 0; font-family: var(--font-meta); font-size: 0.75rem; color: var(--color-muted); }
+.note-warn svg { color: var(--hue-amber); flex: none; }

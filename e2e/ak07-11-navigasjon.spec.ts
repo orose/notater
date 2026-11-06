@@ -163,7 +163,7 @@ test.describe('AK10 tilbakelenker (README-QA «Tilbakelenker»)', () => {
   });
 
   test('property-lenke merkes «fra egenskap» (PO-9)', async ({ page }) => {
-    test.fail(true, 'BUG-002: tilbakelenkepanelet viser ikke «fra egenskap» (fromProperty ignoreres)');
+    // BUG-002 rettet 2026-11-06.
     await openNote(page, 'domene/Ordre');
     const item = page.getByRole('region', { name: 'Tilbakelenker' }).locator('li', { hasText: 'Frontmatter-typer' });
     await expect(item).toContainText(/egenskap/i);
@@ -238,7 +238,7 @@ test.describe('AK11 stabile URL-er og frem/tilbake (README-QA §2)', () => {
   });
 
   test('«ikke skrevet ennå» viser «Lenket fra» (QA-URL-07, PO-28)', async ({ page, guards }) => {
-    test.fail(true, 'BUG-001: «ikke skrevet ennå»-siden viser ikke «Lenket fra» (PO-28)');
+    // BUG-001 rettet 2026-11-06.
     guards.allowConsole.push(/status of 404/);
     await page.goto(noteUrl('Finnes ikke'));
     await expect(page.getByRole('heading', { level: 1, name: 'Dette notatet er ikke skrevet ennå' })).toBeVisible();
