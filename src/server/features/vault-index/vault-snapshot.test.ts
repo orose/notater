@@ -7,7 +7,7 @@ import { buildSnapshot, findByDocPath, updateSnapshot } from './vault-snapshot';
 
 let root: string;
 
-async function put(path: string, content: string): Promise<void> {
+async function put(path: string, content: string | Uint8Array): Promise<void> {
   await mkdir(join(root, path, '..'), { recursive: true });
   await writeFile(join(root, path), content);
 }
@@ -138,6 +138,61 @@ describe('updateSnapshot (inkrementell)', () => {
     const result = await updateSnapshot(snap, root, [], ['Velkommen.md'], extractor);
     expect(result.changes).toEqual([]);
     expect(result.snapshot).toBe(snap);
+  });
+});
+
+/** Minste PNG-header vi trenger: signatur + IHDR med bredde/høyde. */
+function pngHeader(width: number, height: number): Uint8Array {
+  const bytes = new Uint8Array(33);
+  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52]);
+  new DataView(bytes.buffer).setUint32(16, width);
+  new DataView(bytes.buffer).setUint32(20, height);
+  return bytes;
+}
+
+describe('bildedimensjoner i indeksen (PO-71)', () => {
+  it('leses ved indeksering for bildevedlegg; ukjent/ødelagt gir null, andre filer får ingen verdi', async () => {
+    await put('attachments/bilde.png', pngHeader(320, 180));
+    await put('attachments/tegning.svg', '<svg viewBox="0 0 40 30"/>');
+    await put('attachments/ødelagt.jpg', 'ikke et bilde');
+    await put('attachments/dokument.pdf', '%PDF');
+    const snap = await buildSnapshot(root, [], createInlineMetaExtractor());
+    expect(snap.files.get('attachments/bilde.png')!.imageSize).toEqual({ width: 320, height: 180 });
+    expect(snap.files.get('attachments/tegning.svg')!.imageSize).toEqual({ width: 40, height: 30 });
+    expect(snap.files.get('attachments/logo.svg')!.imageSize).toBeNull();
+    expect(snap.files.get('attachments/ødelagt.jpg')!.imageSize).toBeNull();
+    expect(snap.files.get('attachments/dokument.pdf')!.imageSize).toBeUndefined();
+    expect(snap.files.get('Velkommen.md')!.imageSize).toBeUndefined();
+  });
+
+  it('invalideres når fila endres (live reload); uendrede bilder beholder cachet verdi', async () => {
+    await put('attachments/bilde.png', pngHeader(320, 180));
+    await put('attachments/annet.png', pngHeader(10, 10));
+    const extractor = createInlineMetaExtractor();
+    const snap = await buildSnapshot(root, [], extractor);
+    const untouched = snap.files.get('attachments/annet.png')!;
+
+    await put('attachments/bilde.png', Uint8Array.from([...pngHeader(1600, 900), 0, 0, 0])); // ny størrelse på disk
+    await put('attachments/nytt.png', pngHeader(5, 6));
+    const result = await updateSnapshot(snap, root, [], ['attachments/bilde.png', 'attachments/nytt.png', 'attachments/annet.png'], extractor);
+
+    expect(result.changes).toEqual([
+      { type: 'changed', path: 'attachments/bilde.png' },
+      { type: 'added', path: 'attachments/nytt.png' },
+    ]);
+    expect(result.snapshot.files.get('attachments/bilde.png')!.imageSize).toEqual({ width: 1600, height: 900 });
+    expect(result.snapshot.files.get('attachments/nytt.png')!.imageSize).toEqual({ width: 5, height: 6 });
+    expect(result.snapshot.files.get('attachments/annet.png')).toBe(untouched);
+    expect(snap.files.get('attachments/bilde.png')!.imageSize).toEqual({ width: 320, height: 180 });
+  });
+
+  it('et bilde som blir ødelagt mister dimensjonene uten feil', async () => {
+    await put('attachments/bilde.png', pngHeader(320, 180));
+    const extractor = createInlineMetaExtractor();
+    const snap = await buildSnapshot(root, [], extractor);
+    await put('attachments/bilde.png', 'avkortet under synk');
+    const result = await updateSnapshot(snap, root, [], ['attachments/bilde.png'], extractor);
+    expect(result.snapshot.files.get('attachments/bilde.png')!.imageSize).toBeNull();
   });
 });
 
