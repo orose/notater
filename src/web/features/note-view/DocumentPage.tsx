@@ -8,6 +8,7 @@ import { BaseBlock } from '../bases';
 import { pushRecent } from '../recent';
 import { InlineToc, Toc } from '../toc';
 import { HastContent } from './HastContent';
+import { splitLeadingTitle } from './leading-title';
 import { MissingNotePage } from './MissingNotePage';
 import { NoteHeader } from './NoteHeader';
 import { readingMinutes } from './prepare-content';
@@ -44,11 +45,13 @@ export function DocumentView({ vaultId, docPath }: DocumentViewProps) {
   const doc = query.data;
   const ready = image || (!!doc && !query.isPlaceholderData) || query.isError;
   const { toast, dismissToast } = useDocumentScroll(ready, `${vaultId}/${docPath}`);
-  useDocTitle(image ? baseName(docPath) : (doc?.title ?? null), vaultId);
+  const display = useMemo(() => (doc?.kind === 'note' ? splitLeadingTitle(doc) : null), [doc]);
+  const title = display?.title ?? doc?.title ?? null;
+  useDocTitle(image ? baseName(docPath) : title, vaultId);
 
   useEffect(() => {
-    if (doc && !query.isPlaceholderData) pushRecent(vaultId, { path: doc.path, title: doc.title });
-  }, [doc, query.isPlaceholderData, vaultId]);
+    if (doc && title !== null && !query.isPlaceholderData) pushRecent(vaultId, { path: doc.path, title });
+  }, [doc, title, query.isPlaceholderData, vaultId]);
 
   let body;
   if (image) {
@@ -77,8 +80,8 @@ export function DocumentView({ vaultId, docPath }: DocumentViewProps) {
     body = <main className="page" id="innhold" tabIndex={-1} aria-busy="true" />;
   } else if (doc.kind === 'base') {
     body = <BasePage doc={doc} busy={query.isPlaceholderData} />;
-  } else {
-    body = <NotePage doc={doc} busy={query.isPlaceholderData} />;
+  } else if (display) {
+    body = <NotePage doc={doc} display={display} busy={query.isPlaceholderData} />;
   }
 
   return (
@@ -96,31 +99,39 @@ export function DocumentView({ vaultId, docPath }: DocumentViewProps) {
   );
 }
 
-function isEmptyContent(doc: NoteDocument): boolean {
-  return doc.content.children.every((c) => c.type === 'text' && c.value.trim() === '');
+function isEmptyContent(content: NoteDocument['content']): boolean {
+  return content.children.every((c) => c.type === 'text' && c.value.trim() === '');
 }
 
-function NotePage({ doc, busy }: { readonly doc: NoteDocument; readonly busy: boolean }) {
+interface NotePageProps {
+  readonly doc: NoteDocument;
+  /** Visningstittel, brødtekst og TOC etter PO-35 (`splitLeadingTitle`). */
+  readonly display: ReturnType<typeof splitLeadingTitle>;
+  readonly busy: boolean;
+}
+
+function NotePage({ doc, display, busy }: NotePageProps) {
   const minutes = useMemo(() => readingMinutes(doc.content), [doc.content]);
   const outgoing = useMemo(() => collectOutgoingLinks(doc.content, doc.path), [doc.content, doc.path]);
   return (
     <>
       <main className="page" id="innhold" tabIndex={-1} aria-busy={busy || undefined}>
         <div className="col">
-          <NoteHeader doc={doc} readingMinutes={minutes} />
-          <InlineToc entries={doc.toc} />
+          <NoteHeader doc={doc} title={display.title} readingMinutes={minutes} />
+          <InlineToc entries={display.toc} />
           <article className="prose">
-            {isEmptyContent(doc) ? (
+            {isEmptyContent(display.content) ? (
               <p className="empty-note">Notatet er tomt.</p>
             ) : (
-              <HastContent vaultId={doc.vaultId} content={doc.content} bases={doc.bases} />
+              <HastContent vaultId={doc.vaultId} content={display.content} bases={doc.bases} />
             )}
           </article>
+          {/* Utdragene inneholder lenketeksten (filnavnet), ikke visningstittelen. */}
           <Backlinks vaultId={doc.vaultId} title={doc.title} backlinks={doc.backlinks} />
         </div>
       </main>
       <aside className="rail" aria-label="På denne siden">
-        <Toc entries={doc.toc} />
+        <Toc entries={display.toc} />
         <OutgoingLinks vaultId={doc.vaultId} links={outgoing} />
         <RailBacklinks backlinks={doc.backlinks} />
       </aside>

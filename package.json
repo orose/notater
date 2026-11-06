@@ -8,8 +8,8 @@
     "node": ">=22.22.0"
   },
   "scripts": {
-    "start": "vite build && tsx src/server/main.ts",
-    "dev": "concurrently --kill-others --names server,web --prefix-colors blue,magenta \"tsx watch --clear-screen=false src/server/main.ts\" \"vite\"",
+    "start": "node scripts/check-node.js && vite build && tsx src/server/main.ts",
+    "dev": "node scripts/check-node.js && concurrently --kill-others --names server,web --prefix-colors blue,magenta \"tsx watch --clear-screen=false src/server/main.ts\" \"vite\"",
     "build": "npm run typecheck && vite build",
     "typecheck": "tsc -b",
     "lint": "eslint .",
@@ -29,7 +29,6 @@
     "github-slugger": "^2.0.0",
     "hast-util-to-jsx-runtime": "^2.3.7",
     "hono": "^4.13.16",
-    "mdast-util-find-and-replace": "^3.0.4",
     "mdast-util-gfm-footnote": "^2.1.0",
     "mdast-util-gfm-strikethrough": "^2.0.1",
     "mdast-util-gfm-table": "^2.0.1",
@@ -45,7 +44,6 @@
     "react-router": "^7.18.5",
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",
-    "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
@@ -56,6 +54,7 @@
     "yaml": "^2.9.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "1.63.0",
     "@testing-library/jest-dom": "^7.0.1",

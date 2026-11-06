@@ -25,6 +25,11 @@ describe('ThemePicker', () => {
     expect(within(dialog).getByRole('radio', { name: 'System' })).toBeChecked();
   });
 
+  it('hintet viser Ctrl . utenfor macOS (PO-36)', () => {
+    const { dialog } = renderPicker();
+    expect(within(dialog).getByText(/bytter lys\/mørk/)).toHaveTextContent('Ctrl . bytter lys/mørk');
+  });
+
   it('endringer gjelder umiddelbart og lagres', () => {
     const { dialog } = renderPicker();
     fireEvent.click(within(dialog).getByRole('radio', { name: 'Mørk' }));

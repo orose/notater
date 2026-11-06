@@ -51,6 +51,50 @@ describe('DocumentPage – notat', () => {
     expect(document.querySelector('.prose p.lede')).toHaveTextContent('En ordre opprettes');
   });
 
+  it('første H1 blir visningstittel og vises ikke dobbelt (PO-35)', async () => {
+    mockApi({
+      '/api/vaults/test/document?path=Velkommen': noteFixture({
+        path: 'Velkommen',
+        title: 'Velkommen',
+        properties: [],
+        content: root(h('h1', { id: 'velkommen-til-testvaultet' }, 'Velkommen til testvaultet'), '\n', h('p', {}, 'Dette er et vault.')),
+        toc: [{ depth: 1, text: 'Velkommen til testvaultet', id: 'velkommen-til-testvaultet' }],
+        backlinks: [{ source: 'Sprintoversikt', sourceTitle: 'Sprintoversikt', snippet: 'Tilbake til Velkommen.', count: 1 }],
+      }),
+      '/api/vaults': vaultsFixture,
+    });
+    renderAt('/v/test/Velkommen');
+    await screen.findByRole('heading', { level: 1, name: 'Velkommen til testvaultet' });
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.queryByText('Velkommen', { selector: 'h1' })).not.toBeInTheDocument();
+    expect(document.querySelector('.prose p.lede')).toHaveTextContent('Dette er et vault.');
+    expect(document.title).toBe('Velkommen til testvaultet · Testvault');
+    expect(readRecent('test')[0]).toEqual({ path: 'Velkommen', title: 'Velkommen til testvaultet' });
+    // Utdrag i tilbakelenker uthever lenketeksten (filnavnet), ikke visningstittelen.
+    expect(screen.getByText('Velkommen', { selector: '.bl-ctx mark' })).toBeInTheDocument();
+  });
+
+  it('lenke med ukjent seksjon gir toast etter navigering (README-QA regel 7)', async () => {
+    mockApi({
+      '/api/vaults/test/document?path=lenker/Lenketest': noteFixture({
+        path: 'lenker/Lenketest',
+        title: 'Lenketest',
+        properties: [],
+        content: root(
+          h('p', {}, h('a', { href: '/v/test/domene/Ordre', dataVrLink: 'internal', dataVrTarget: 'domene/Ordre', dataVrAnchorMissing: 'true' }, 'Ordre › Borte')),
+        ),
+        toc: [],
+        backlinks: [],
+      }),
+      '/api/vaults/test/document?path=domene/Ordre': noteFixture(),
+      '/api/vaults': vaultsFixture,
+    });
+    renderAt('/v/test/lenker/Lenketest');
+    fireEvent.click(await screen.findByRole('link', { name: 'Ordre › Borte' }));
+    await screen.findByRole('heading', { level: 1, name: 'Ordre' });
+    expect(await screen.findByText('Fant ikke seksjonen – viser toppen av notatet.')).toHaveClass('toast');
+  });
+
   it('husker notatet i «Nylig åpnet»', async () => {
     mockApi({ '/api/vaults/test/document?path=domene/Ordre': noteFixture(), '/api/vaults': vaultsFixture });
     renderAt('/v/test/domene/Ordre');

@@ -7,7 +7,7 @@ Eier: QA. Dette er **fasiten** utviklerne tester mot. Hvert kanttilfelle har en 
 
 Endrer du et notat i `test-vault/`, oppdater fasiten her og i `docs/test/bases-fasit.md` i samme endring.
 
-Merket **(PO?)** = antakelse som PO må bekrefte. Foreslått svar står i siste seksjon, og testene skrives mot forslaget til PO har avgjort.
+Alle tidligere **(PO?)**-punkter er avgjort (PO-1 til PO-38 i `docs/beslutninger.md`). Der en PO-avgjørelse har endret fasiten, står PO-nummeret i raden. Endringslogg for fasiten står nederst (§18).
 
 ---
 
@@ -25,7 +25,7 @@ Merket **(PO?)** = antakelse som PO må bekrefte. Foreslått svar står i siste 
 | QA-IDX-08 | Uavsluttet frontmatter | `edge/Uavsluttet frontmatter.md`: ingen frontmatter. Første `---` rendres som horisontal linje, `tags: [qa] status: todo` som vanlig avsnitt. Ingen tagger. |
 | QA-IDX-09 | Unicode NFD | `edge/Årsrapport (NFD).md` har filnavn i NFD. Indeksen normaliserer til **NFC**: notatet finnes én gang, `[[Årsrapport (NFD)]]` (NFC) løses, URL-en er stabil. |
 | QA-IDX-10 | Dypt nestet | `edge/a/b/c/d/e/Dypt nestet notat.md` og `prosjekter/2026/q4/backend/sprint-12/Optimaliser SQL-spørring.md` vises i fil-treet uten at det sprenger bredden på 360 px. |
-| QA-IDX-11 | Excalidraw | `edge/Skisse.excalidraw.md` indekseres som notat med `file.name` = `Skisse.excalidraw`. Vises som «ikke støttet»-kort (Excalidraw) **(PO?)**. |
+| QA-IDX-11 | Excalidraw | `edge/Skisse.excalidraw.md` indekseres (lenker/tagger) med `file.name` = `Skisse.excalidraw`. Vises som «ikke støttet»-kort (Excalidraw) og er **ikke** med i søk (R5, BE15). |
 | QA-IDX-12 | Maler | `templates/` indekseres som vanlige notater (de er lesbare), men `{{title}}`/`{{date}}` vises rått. |
 | QA-IDX-13 | Live reload (AK12) | Endre/opprett/slett/omdøp en fil i en *kopi* av vaultet → endringen vises uten manuell refresh innen ~1 s; tilbakelenker og baser oppdateres. |
 
@@ -38,9 +38,9 @@ Merket **(PO?)** = antakelse som PO må bekrefte. Foreslått svar står i siste 
 | QA-URL-03 | `edge/Notat (kopi).md`, `oppgaver/Avklar (GDPR) sletting av kundedata.md` | Parenteser fungerer i URL, lenker og baser. |
 | QA-URL-04 | `edge/R&D – spørsmål og svar.md` | `&` kodes som `%26`; tolkes ikke som query-parameter. |
 | QA-URL-05 | `oppgaver/Oppgrader Spring Boot til 3.3.md` | `file.name` = `Oppgrader Spring Boot til 3.3`. |
-| QA-URL-06 | Frem/tilbake | Klikk Velkommen → Lenketest → Ordre, deretter nettleser-tilbake to ganger → Velkommen. Scrollposisjon gjenopprettes **(PO?)**. |
-| QA-URL-07 | Ukjent URL | URL til et notat som ikke finnes gir en pen 404-side i appen med lenke hjem – ikke en hvit side. |
-| QA-URL-08 | Path traversal (AK20) | `GET` med `../`, `%2e%2e/`, `..%2f`, absolutte stier og NUL-byte mot alle fil-/notat-endepunkter gir 400/404 og leser aldri utenfor vaultet. |
+| QA-URL-06 | Frem/tilbake | Klikk Velkommen → Lenketest → Ordre, deretter nettleser-tilbake to ganger → Velkommen; frem igjen → Lenketest. Scrollposisjon gjenopprettes (R10). |
+| QA-URL-07 | Ukjent URL | URL til et notat som ikke finnes gir en pen side i appen («Dette notatet er ikke skrevet ennå») med lenke hjem – ikke en hvit side. Siden viser «Lenket fra» med notatene som lenker til det manglende målet (PO-28), f.eks. `/v/test/Finnes ikke` → «Lenket fra»: `lenker/Embed-test.md` (embed), `edge/Frontmatter-typer.md` (fra egenskap), `lenker/Lenketest.md`. |
+| QA-URL-08 | Path traversal (AK20) | `GET` med `../`, `%2e%2e/`, `..%2f`, dobbelkodet `%252e`, `\`, absolutte stier og NUL-byte mot alle fil-/notat-endepunkter (`document`, `assets`, `backlinks`) og mot statiske filer gir 400/404 (statiske ruter: SPA-`index.html`) og leser aldri utenfor vaultet. Dot-mapper (`.obsidian/`, `.trash/`) gir 404. Ukjent API-rute gir 404 `NOT_FOUND` (PO-24). |
 
 ## 3. Tagger
 
@@ -61,7 +61,7 @@ Regel: tagger = frontmatter `tags` (liste **eller** skalar streng) + inline `#ta
 | QA-TAG-11 | `domene/Hendelseskatalog.md` | `kafka-topics`, `katalog` – `hasTag("kafka-topic")` = **usann** |
 | QA-TAG-12 | `edge/Ugyldig frontmatter.md` | ingen |
 | QA-TAG-13 | `README-QA.md` (denne) | ingen |
-| QA-TAG-14 | Tagg-klikk | Klikk på en tagg viser liste over notater med taggen (eller søk på taggen). Nestet: `task` inkluderer `task/backend` **(PO?)**. |
+| QA-TAG-14 | Tagg-klikk | Klikk på en tagg åpner søk på taggen (`#task`) med notatene som har den. Nestet: `task` inkluderer `task/backend` (T2). Taggsammenligning er case-insensitiv (PO-10). `GET /api/vaults/:id/tags` gir antall per tagg (PO-24). |
 
 ## 4. Lenker (AK7, AK9)
 
@@ -71,8 +71,8 @@ Oppløsningsregler (i tråd med arkitektens O1–O3 i `docs/beslutninger.md`; å
 2. Mål med `/` → eksakt sti fra vault-rot, så relativ til kilden (`./`, `../`), så sti-suffiks (`delt/Adresse` matcher `domene/delt/Adresse.md`). En sti som havner **utenfor** vaultet er alltid brutt. Wikilinks URL-dekodes ikke (`%2e%2e` er bokstavelig → brutt).
 3. Mål med kjent filendelse (`.md`, `.base`, `.canvas`, `.png`, `.svg`, …) → match på fullt filnavn.
 4. Ellers: match `.md`-filnavn uten endelse, case-insensitivt, Unicode-NFC.
-5. `aliases` brukes **ikke** til lenkeoppløsning (som i Obsidian, arkitektens O1) – bare i søk. `[[Bestilling]]` er derfor brutt med mindre PO bestemmer annet (L5).
-6. Flere treff → samme mappe som kildenotatet først, deretter korteste sti (færrest mapper), deretter alfabetisk sti.
+5. `aliases` brukes **ikke** til lenkeoppløsning (som i Obsidian, PO-1) – bare i søk og i notat-header. `[[Bestilling]]` er derfor brutt, men viser hint «Mente du *Ordre*?» (PO-7, `data-vr-suggest`, PO-25).
+6. Flere treff → samme mappe som kildenotatet først, deretter korteste sti (færrest mapper), deretter alfabetisk sti. Diskret tvetydighetsindikator (PO-8, `data-vr-ambiguous="<antall>"`, PO-26).
 7. Lenke til notat som finnes, men overskrift/blokk som ikke finnes → **ikke** brutt; går til notatet (toppen) og viser diskret hint.
 
 Fasit for `lenker/Lenketest.md` (nummer = listepunkt i notatet):
@@ -89,19 +89,19 @@ Fasit for `lenker/Lenketest.md` (nummer = listepunkt i notatet):
 | 8 | `[[domene/Betaling]]` | `domene/Betaling.md` | |
 | 9 | `[[teknisk/Kafka/Consumer groups\|konsumentgrupper]]` | `teknisk/Kafka/Consumer groups.md` | |
 | 10 | `[[Faktura.md]]` | `domene/Faktura.md` | |
-| 11 | `[[Bestilling]]` | **brutt** (O1) | alias av `domene/Ordre.md`. Alternativ hvis PO velger alias-oppløsning (L5): `domene/Ordre.md` |
-| 12 | `[[EDA]]` | **brutt** (O1) | alias av `teknisk/Arkitektur/Hendelsesdrevet arkitektur.md` (L5) |
-| 13 | `[[Loom\|virtuelle tråder]]` | **brutt** (O1) | alias av `teknisk/Java/Java 21 – virtuelle tråder.md` (L5) |
-| 14 | `[[Domenekart]]` | **brutt** (O1) | alias av `domene/_MOC.md` (L5) |
+| 11 | `[[Bestilling]]` | **brutt** (PO-1) | alias av `domene/Ordre.md` → hint «Mente du Ordre?» (PO-7) |
+| 12 | `[[EDA]]` | **brutt** (PO-1) | alias av `teknisk/Arkitektur/Hendelsesdrevet arkitektur.md` → hint (PO-7) |
+| 13 | `[[Loom\|virtuelle tråder]]` | **brutt** (PO-1) | alias av `teknisk/Java/Java 21 – virtuelle tråder.md` → hint (PO-7) |
+| 14 | `[[Domenekart]]` | **brutt** (PO-1) | alias av `domene/_MOC.md` → hint (PO-7) |
 | 15 | `[[kafka-grunnleggende]]` | `Kafka-grunnleggende` | case-avvik |
 | 16 | `[[ORDRE]]` | `domene/Ordre.md` | case-avvik |
 | 17 | `[[Avtale]]` | `domene/avtale.md` | case-avvik |
-| 18 | `[[bestilling]]` | **brutt** (O1) | alias + case-avvik (L5) |
+| 18 | `[[bestilling]]` | **brutt** (PO-1) | alias + case-avvik → hint «Mente du Ordre?» (PO-7) |
 | 19–25 | spesielle filnavn | respektive notater i `edge/`, `teknisk/Spring/` | 24 = NFD-fila |
-| 26 | `[[Kunde]]` | `domene/Kunde.md` | **tvetydig** (også `arkiv/2023/Kunde.md`). Regel 6: korteste sti. Vis diskret «tvetydig»-indikator **(PO?)** |
+| 26 | `[[Kunde]]` | `domene/Kunde.md` | **tvetydig** (også `arkiv/2023/Kunde.md`). Regel 6: korteste sti. Diskret «tvetydig»-indikator, `data-vr-ambiguous="2"` (PO-8, PO-26) |
 | 27 | `[[domene/Kunde]]` | `domene/Kunde.md` | |
 | 28 | `[[arkiv/2023/Kunde\|gammel kunde]]` | `arkiv/2023/Kunde.md` | |
-| 29–30 | `[[Finnes ikke]]` | **brutt** | stiplet/dempet stil + tooltip «Notatet finnes ikke». Ikke klikkbar som navigasjon, ingen 404-hopp (AK9) |
+| 29–30 | `[[Finnes ikke]]` | **brutt** | stiplet/dempet stil + tooltip «Notatet … finnes ikke (ennå)». Rendres som ikke-navigerende knapp som viser forklaring ved klikk (frontend-avvik godkjent av PO); ingen 404-hopp (AK9) |
 | 31 | `…#Overskrift som ikke finnes` | `Kafka-grunnleggende` (topp) | ikke brutt; hint «Fant ikke overskriften» |
 | 32 | `…#^blokk-som-ikke-finnes` | `Kafka-grunnleggende` (topp) | som 31 |
 | 33 | `[[domene/Finnes ikke]]` | **brutt** | |
@@ -127,7 +127,7 @@ Andre lenkefasiter:
 | QA-LNK-01 | Blokk-ID-er (`^offset-def`) | Vises aldri som tekst i rendret notat. |
 | QA-LNK-02 | `domene/_MOC.md`: `[[delt/Adresse\|Adresse]]` | Løses til `domene/delt/Adresse.md` (sti-suffiks). |
 | QA-LNK-03 | Lenke i tabellcelle med `\|` (`teknisk/Markdown-elementer.md`) | `[[Kunde\|lenke med alias i tabell]]` → lenke med tekst «lenke med alias i tabell», tabellen får ikke ekstra kolonne. |
-| QA-LNK-04 | Lenker i properties (`domene/Ordre.md` → `relatert`) | Klikkbare lenker i egenskapspanelet; teller som tilbakelenker **(PO?)**. `edge/Frontmatter-typer.md` → `[[Finnes ikke]]` i `lenkeliste` vises som brutt. |
+| QA-LNK-04 | Lenker i properties (`domene/Ordre.md` → `relatert`) | Klikkbare lenker i egenskapspanelet; teller som tilbakelenker, merket «fra egenskap» (PO-9). `edge/Frontmatter-typer.md` → `[[Finnes ikke]]` i `lenkeliste` vises som brutt. |
 | QA-LNK-05 | Sti-traversering i lenker (`edge/Sikkerhet – ondsinnet HTML.md`) | Alle er brutte; ingen forespørsel treffer filer utenfor vaultet. |
 | QA-LNK-06 | Lenke i overskrift (`edge/Veldig langt notat.md`) | Klikkbar i notatet; TOC viser ren tekst. |
 
@@ -157,11 +157,11 @@ Selvlenker (`[[#…]]`, `![[Selv-embed]]`) teller ikke som tilbakelenke. Lenker 
 | QA-EMB-03 | `![[Kafka-grunnleggende#^offset-def]]` | Bare avsnittet med blokk-ID-en. Også brukt i `teknisk/Kafka/Consumer groups.md`. |
 | QA-EMB-04 | `![[Kafka-grunnleggende#^liste-blokk]]` | Bare listepunktet. |
 | QA-EMB-05 | `lenker/Syklus A.md` ↔ `lenker/Syklus B.md` | Åpne A: A viser B, B viser **ikke** A igjen men et diskret kort «Syklisk innbygging stoppet». Ingen uendelig løkke, ingen stack overflow, server svarer < 200 ms. Fra `lenker/Embed-test.md`: Embed-test → A → B → (stopp). |
-| QA-EMB-06 | `lenker/Selv-embed.md` | `![[Selv-embed]]` og `![[#Seksjon]]` (inne i «Seksjon») stoppes med syklus-kort. `![[#Annen seksjon]]` er lov og rendres. |
-| QA-EMB-07 | Kjede `Kjede 1 → Kjede 2 → Kjede 3#Innhold` | Tre nivåer rendres; «Ikke med»-seksjonen vises ikke. Maks dybde foreslås 5 **(PO?)**. |
+| QA-EMB-06 | `lenker/Selv-embed.md` | Regel (PO-32, BE8): syklus = **samme fil + samme seksjon/anker** finnes allerede i embed-stakken. Det åpne notatet selv ligger i stakken som «hele fila». Derfor: (a) `![[Selv-embed]]` → syklus-kort. (b) `![[#Seksjon]]` står *før* overskriften «Seksjon» og er **lov**: seksjonen rendres innebygd, inkludert sin egen `![[#Annen seksjon]]`. (c) `![[#Annen seksjon]]` inne i «Seksjon» rendres. (d) Overskriften «Tredje seksjon» embedder seg selv med `![[#Tredje seksjon]]`: på toppnivå rendres embeden (seksjonen er ikke i stakken ennå), og *inne i* den innebygde seksjonen gir samme embed syklus-kort. Totalt: 2 syklus-kort, ingen uendelig løkke. |
+| QA-EMB-07 | Kjede `Kjede 1 → Kjede 2 → Kjede 3#Innhold` | Tre nivåer rendres; «Ikke med»-seksjonen vises ikke. Maks embed-dybde er 5 (PO-15), deretter «for mange nivåer»-kort (`data-status="depth-limit"`). |
 | QA-EMB-08 | `![[Finnes ikke]]`, `![[…#Seksjon som ikke finnes]]` | Diskret kort «Fant ikke …» (samme visuelle språk som brutte lenker). |
-| QA-EMB-09 | `![[Oppgaver.base]]` | Basen rendres inline med alle tre views som faner. |
-| QA-EMB-10 | `![[Oppgaver.base#Kanban]]` | Bare Kanban-viewet **(PO?)**. |
+| QA-EMB-09 | `![[Oppgaver.base]]` | Basen rendres inline med alle tre views som faner (slice 3/4). |
+| QA-EMB-10 | `![[Oppgaver.base#Kanban]]` | Bare Kanban-viewet (PO-12). `![[Oppgaver.base#Ukjent]]` → advarselskort «Viewet «Ukjent» finnes ikke» med liste over tilgjengelige views (PO-34; erstatter E2 «første view + advarsel»). Ikke i testvaultet ennå (legges i `lenker/Embed-test.md` sammen med slice 3). |
 | QA-EMB-11 | `![[Tomt notat]]` | Tomt innrammet kort / «Tomt notat», ingen krasj. |
 | QA-EMB-12 | `![[Tegning.canvas]]` | «ikke støttet»-kort (Canvas). |
 | QA-EMB-13 | `![[Domene.base]]` i `domene/_MOC.md` og `Velkommen.md` | Samme 12 rader som i `docs/test/bases-fasit.md`. |
@@ -174,17 +174,17 @@ Fil: `lenker/Bilder.md`.
 |----|---------|-----------|
 | QA-IMG-01 | `![[arkitektur.png]]` | 320×180-bilde, `alt` = filnavn. |
 | QA-IMG-02 | `![[arkitektur.png\|160]]` | Bredde 160 px. |
-| QA-IMG-03 | `![[arkitektur.png\|Arkitekturskisse\|200]]` | `alt` «Arkitekturskisse», bredde 200 px **(PO?)**. |
+| QA-IMG-03 | `![[arkitektur.png\|Arkitekturskisse\|200]]` | `alt` «Arkitekturskisse», bredde 200 px. |
 | QA-IMG-04 | `![[attachments/logo.svg]]` | SVG vises som `<img>` (ikke inline-SVG i DOM). |
 | QA-IMG-05 | `![[diagram med mellomrom.png]]` | Vises (mellomrom i filnavn). |
 | QA-IMG-06 | `![[bred.png]]` (2400 px) | `max-width: 100%`; ingen horisontal sidescroll på 360 px (AK5). |
 | QA-IMG-07 | `![…](../attachments/arkitektur.png)` | Relativ til notatets mappe. |
-| QA-IMG-08 | `![…](attachments/logo.svg)` | Faller tilbake til vault-rot når relativ sti ikke finnes **(PO?)**. |
+| QA-IMG-08 | `![…](attachments/logo.svg)` | Faller tilbake til vault-rot når relativ sti ikke finnes (BE7). |
 | QA-IMG-09 | `![…](<../attachments/diagram med mellomrom.png>)` og `%20`-variant | Begge vises. |
 | QA-IMG-10 | `![[mangler.png]]`, `![…](../attachments/mangler.png)` | Diskret plassholder «Bildet finnes ikke», ikke nettleserens knekt-bilde-ikon. |
 | QA-IMG-11 | `![[domenemodell.svg]]` | Finnes i `domene/` – løses via filnavn. |
-| QA-IMG-12 | `![[ondsinnet.svg]]` | Vises som `<img>`: ingen script kjører. Direkte URL til fila serveres med `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'` (eller tilsvarende) og `X-Content-Type-Options: nosniff` (AK20). |
-| QA-IMG-13 | Eksternt bilde `https://example.com/sporingspiksel.png` | Lastes **ikke** automatisk (B10); vises som plassholder med lenke **(PO?)**. |
+| QA-IMG-12 | `![[ondsinnet.svg]]` | Vises som `<img>`: ingen script kjører. Direkte URL til fila serveres med `Content-Security-Policy: sandbox; default-src 'none'; …` og `X-Content-Type-Options: nosniff` (AK20, ADR-005). |
+| QA-IMG-13 | Eksternt bilde `https://example.com/sporingspiksel.png` | Lastes **ikke** (B10); vises som ekstern lenke med bildeikon (PO-13, `data-vr-external-image`). Ingen forespørsel til `example.com`. |
 
 ## 7. Callouts (Må)
 
@@ -193,7 +193,7 @@ Fil: `teknisk/Callouts.md`.
 | ID | Forventet |
 |----|-----------|
 | QA-CAL-01 | Alle 13 typer + aliaser (`summary`/`tldr` → abstract, `hint`/`important` → tip, `check`/`done` → success, `help`/`faq` → question, `caution`/`attention` → warning, `fail`/`missing` → failure, `error` → danger, `cite` → quote) har riktig ikon og farge, AA-kontrast i alle temaer. |
-| QA-CAL-02 | Uten tittel: tittel = typenavn med stor forbokstav (`Note`). Norsk oversettelse av standardtitler **(PO?)**. |
+| QA-CAL-02 | Uten tittel: norsk standardtittel (PO-14): `[!note]` → «Merk», ellers Sammendrag, Info, Gjøremål, Tips, Fullført, Spørsmål, Advarsel, Feilet, Fare, Feil, Eksempel, Sitat. Ukjent type uten tittel → typen med stor forbokstav. |
 | QA-CAL-03 | `[!WARNING]` = warning. `[!egendefinert]` = note-utseende med tittel «Ukjent type». |
 | QA-CAL-04 | Callout med bare tittel: ingen tom innholdsboks. |
 | QA-CAL-05 | `[!tip]-`: lukket ved lasting. `[!tip]+`: åpen. Toggle med mus, Enter og Space; `aria-expanded` oppdateres; fokus synlig (AK19). Animasjon av når `prefers-reduced-motion`. |
@@ -220,7 +220,7 @@ Fil: `teknisk/Kodeblokker – alle språk.md` (+ kode i mange andre notater).
 | QA-KOD-08 | Kode i nummerert og nestet liste: riktig innrykk, listenummerering fortsetter (1, 2, 3). |
 | QA-KOD-09 | Innrykket kodeblokk (4 mellomrom) vises som kode. |
 | QA-KOD-10 | `html`-blokk med `<script>`: vises som tekst, kjøres aldri. |
-| QA-KOD-11 | Tittel/filnavn: `teknisk/Spring/Spring Boot – konfigurasjon.md` har ` ```yaml title="src/main/resources/application.yaml"` og ` ```java title:OrdreProperties.java` → filnavn-merke på begge **(PO?)**. |
+| QA-KOD-11 | Tittel/filnavn: `teknisk/Spring/Spring Boot – konfigurasjon.md` har ` ```yaml title="src/main/resources/application.yaml"` og ` ```java title:OrdreProperties.java` → filnavn-merke på begge (R6). |
 | QA-KOD-12 | `teknisk/Stor kodeblokk.md` (596 linjer): notatbytte < 200 ms (AK17), ingen hakking ved scroll, kopier gir alle linjene. Siste linje «Slutt på notatet…» vises. |
 | QA-KOD-13 | ` ```sequenceDiagram` i `teknisk/Kafka/Consumer groups.md` er **ikke** mermaid – vises som kodeblokk med ukjent språk. |
 
@@ -246,13 +246,13 @@ Fil: `teknisk/Markdown-elementer.md`.
 | QA-MD-01 | `==markert==` → `<mark>`. `\==ikke markert\==` vises bokstavelig. `==markering med **fet** inni==`: kjent begrensning i v1 (arkitektens O10) – skal ikke krasje, men kan vises rått. |
 | QA-MD-02 | `%%inline%%` og `%% … %%`-blokk vises **ikke**. Teksten «HEMMELIG-KOMMENTAR» finnes hverken i DOM eller i søkeresultater. |
 | QA-MD-03 | Tabeller: justering (venstre/midt/høyre) respekteres; bred tabell scroller internt på mobil. |
-| QA-MD-04 | Oppgavelister: `[ ]`, `[x]`, `[X]` som skrivebeskyttede avkrysningsbokser (`disabled`). `[/]` og `[-]` vises med egen stil eller som vanlig punkt **(PO?)**. Klikk endrer aldri fila (B1). |
-| QA-MD-05 | Fotnoter `[^1]`, `[^navn]` og inline `^[…]`: hevet nummer, liste nederst, lenker begge veier. Fotnote med lenke og formatering fungerer. |
+| QA-MD-04 | Oppgavelister: `[ ]`, `[x]`, `[X]` som skrivebeskyttede avkrysningsbokser (`disabled`). `[/]` og `[-]` får egne ikoner (delvis/kansellert, R11; `li[data-task]`). Klikk endrer aldri fila (B1). |
+| QA-MD-05 | Fotnoter `[^1]`, `[^navn]` og inline `^[…]`: hevet nummer, lenker begge veier. Fotnote med lenke og formatering fungerer. Bred skjerm: sidenoter i margen; smal skjerm/mobil: liste nederst med overskrift «Fotnoter» (PO-20, PO-30). |
 | QA-MD-06 | Inline-tagger rendres som tagg-chips (klikkbare). |
-| QA-MD-07 | Hard linjeskift med to mellomrom fungerer. Enkelt linjeskift: følg Obsidians standard «strict line breaks = av» → enkelt linjeskift blir `<br>` **(PO?)**. |
+| QA-MD-07 | Hard linjeskift med to mellomrom fungerer. Enkelt linjeskift blir `<br>` (Obsidian-standard, PO-14). |
 | QA-MD-08 | Veldig langt ord/URL brytes (`overflow-wrap: anywhere`), ingen horisontal sidescroll. |
 | QA-MD-09 | Ren URL (`https://spring.io`) og `<post@example.com>` blir lenker. |
-| QA-MD-10 | Overskrifter H1–H6 har tydelig hierarki; H1 i notatet dupliseres ikke med sidetittel **(PO?)**. |
+| QA-MD-10 | Overskrifter H1–H6 har tydelig hierarki. PO-35: er notatets **første innholdsblokk** en H1, brukes den som visningstittel og fjernes fra brødteksten (siden har nøyaktig én H1). Ellers er tittelen filnavnet. Initialen (ornamentikk, PO-19) gjelder første avsnitt etter dette. |
 
 ## 11. Frontmatter og properties (Må)
 
@@ -261,8 +261,9 @@ Fil: `edge/Frontmatter-typer.md`.
 | ID | Forventet |
 |----|-----------|
 | QA-FM-01 | Egenskapspanel viser tekst, tall (`42`, `3.14`), boolsk (avkrysning, deaktivert), dato (`05.11.2026` eller ISO – konsekvent), datotid, liste (chips), tom verdi (dempet «–»), `null`, nestet objekt (innrykket eller JSON), lenker (klikkbare; `[[Finnes ikke]]` brutt), URL (ekstern lenke). |
-| QA-FM-02 | `tags`, `aliases` og `cssclasses` vises som egne felt/chips, ikke som rå liste. |
+| QA-FM-02 | `tags` og `aliases` vises i egne dedikerte felt i header (chips), ikke som property-rader. `cssclasses`, `publish` og `position` vises **aldri** og sendes ikke fra serveren; ekstra skjulte nøkler via `hiddenProperties` i config (PO-22, PO-29). Ingress fra `description`, ellers `summary` (PO-21). Lesetid vises (PO-23). |
 | QA-FM-03 | `edge/Sikkerhet – ondsinnet HTML.md`: `tittel` med `<img onerror>` vises som tekst; `lenke: "javascript:…"` blir **ikke** en klikkbar lenke. |
+| QA-FM-04 | `edge/Ugyldig frontmatter.md`: API-et gir `frontmatterError` (norsk tekst), `properties` tom (PO-27). Gyldige notater: `frontmatterError: null`. |
 
 ## 12. Innholdsfortegnelse (AK16)
 
@@ -270,7 +271,7 @@ Fil: `edge/Veldig langt notat.md` (og `teknisk/Arkitektur/Hendelsesdrevet arkite
 
 | ID | Forventet |
 |----|-----------|
-| QA-TOC-01 | TOC vises for notater med ≥ 3 overskrifter **(PO?)**; skjules for korte notater. |
+| QA-TOC-01 | TOC vises for notater med ≥ 3 overskrifter (PO-15, R9); skjules for korte notater. |
 | QA-TOC-02 | Nivå 2–4 i TOC; nivå 5–6 utelates. |
 | QA-TOC-03 | To overskrifter «Oppsummering» får unike ankre (`oppsummering`, `oppsummering-1`); klikk i TOC går til riktig. |
 | QA-TOC-04 | Overskrift med `kode`, **fet** og lenke vises som ren tekst i TOC. |
@@ -285,11 +286,11 @@ Fil: `edge/Sikkerhet – ondsinnet HTML.md`.
 |----|-----------|
 | QA-SEC-01 | Ingen `alert`/dialog åpnes ved lasting, hover, klikk eller fokus (Playwright lytter på `page.on('dialog')` → test feiler). |
 | QA-SEC-02 | `<script>`, `<iframe>`, `<object>`, `<embed>`, `<style>`, `<form>`, `<meta>`, `<base>`, `on*`-attributter, `javascript:`/`data:`-URL-er (inkl. blandet case og HTML-entiteter) fjernes. |
-| QA-SEC-03 | Inline `style` med `position:fixed` fjernes (eller hele `style`-attributtet) – overlegget dekker ikke siden **(PO?)**. |
+| QA-SEC-03 | Alle inline `style`-attributter fjernes (R7) – `position:fixed`-overlegget dekker ikke siden. |
 | QA-SEC-04 | Ufarlig HTML (`<kbd>`, `<sub>`, `<sup>`, `<mark>`, `<details>/<summary>`) beholdes. `ontoggle` på `<details>` fjernes. |
 | QA-SEC-05 | Ingen nettverksforespørsler til andre verter enn `127.0.0.1` under hele e2e-kjøringen (Playwright `page.on('request')`). |
-| QA-SEC-06 | Server lytter kun på `127.0.0.1` (ikke `0.0.0.0`/`::`). |
-| QA-SEC-07 | Responsene har `Content-Security-Policy` som forbyr inline-script og eksterne kilder **(PO?)**. |
+| QA-SEC-06 | Server lytter kun på `127.0.0.1` (ikke `0.0.0.0`/`::`). Ingen `--host`-flagg (ukjent flagg gir feil). Opt-in `--lan` kommer i slice 6 med tydelig advarsel (PO-3). Host-header annet enn `127.0.0.1`/`localhost` → 403 (A16). |
+| QA-SEC-07 | Responsene har `Content-Security-Policy` som forbyr inline-script og eksterne kilder (PO-16), samt `X-Content-Type-Options: nosniff` og `Referrer-Policy: no-referrer`. Kun `GET`/`HEAD`: andre metoder → 405 (B1). |
 
 ## 14. Ikke i scope (vises som «ikke støttet»)
 
@@ -299,7 +300,7 @@ Fil: `edge/Ikke støttet – dataview, LaTeX, canvas.md`.
 |----|-----------|
 | QA-NS-01 | ` ```dataview `, ` ```dataviewjs `, ` ```tasks `: diskret «ikke støttet»-kort med plugin-navn og mulighet for å se kildekoden. |
 | QA-NS-02 | Inline dataview `` `= this.file.name` `` står i inline-kode og vises som kode. |
-| QA-NS-03 | LaTeX inline `$x^2 + …$`: vises **rått** (med `$`) i monospace/dempet stil **(PO?)**. Blokk `$$ … $$`: «ikke støttet»-kort (LaTeX) med kilde. |
+| QA-NS-03 | LaTeX inline `$x^2 + …$`: vises **rått** (med `$`) i monospace/dempet stil (PO-13). Blokk `$$ … $$`: «ikke støttet»-kort (LaTeX) med kilde. |
 | QA-NS-04 | `Det koster $5 og $10` (i notatet) skal **ikke** tolkes som LaTeX eller forsvinne. |
 | QA-NS-05 | `![[Tegning.canvas]]` og `![[Skisse.excalidraw]]`: «ikke støttet»-kort. |
 
@@ -310,12 +311,12 @@ Fil: `edge/Ikke støttet – dataview, LaTeX, canvas.md`.
 | QA-SOK-01 | `kafka grunn` | `Kafka-grunnleggende` (tittel) |
 | QA-SOK-02 | `Bestilling` | `Ordre` (alias) |
 | QA-SOK-03 | `særnorsk` / `Særnorsk` | `Æøå og mellomrom – særnorsk` |
-| QA-SOK-04 | `aerendelogg` | `Ærendelogg` hvis diakritika-ufølsomt søk **(PO?)** |
+| QA-SOK-04 | `aerendelogg` | `Ærendelogg` (diakritika-ufølsomt søk, R8) |
 | QA-SOK-05 | `idempotensnøkler` | `Betaling` (innhold) |
-| QA-SOK-06 | `HEMMELIG-KOMMENTAR` | **ingen treff** |
-| QA-SOK-07 | `Slettet notat` | **ingen treff** (`.trash/`) |
+| QA-SOK-06 | `HEMMELIG-KOMMENTAR` | **Ingen treff utenom `README-QA`** (PO-33: denne fila nevner selv ordet). Spesielt **ikke** `teknisk/Markdown-elementer` (kommentaren skal ikke indekseres). |
+| QA-SOK-07 | `Slettet notat` | Ingen treff i `.trash/` (stien `.trash/Slettet notat` finnes aldri blant treffene). Notater som *nevner* teksten (f.eks. `Lenketest`, `README-QA`) kan treffes på innhold. |
 | QA-SOK-08 | `<script>` | treff i Sikkerhet-notatet vises escapet, ingen kjøring |
-| QA-SOK-09 | Tastatur | `⌘K`/`Ctrl+K` åpner, piltaster flytter, Enter åpner, Esc lukker og returnerer fokus. |
+| QA-SOK-09 | Tastatur | `⌘K`/`Ctrl+K` åpner, piltaster flytter, Enter åpner, Esc lukker og returnerer fokus. Snarveien vises som `⌘K` på macOS og `Ctrl K` ellers (PO-36). |
 
 ## 16. Baser
 
@@ -336,17 +337,19 @@ Kort kontrollsum:
 
 ---
 
-## 17. Åpne spørsmål til PO (antakelser vi tester mot inntil avklart)
+## 17. Spørsmål til PO – alle avgjort
+
+Alle forslag i tabellen er **godkjent** av PO slik de står (PO-7 til PO-17), med presiseringene i `docs/beslutninger.md`. Avvik fra forslaget er markert i raden.
 
 | # | Spørsmål | QA foreslår |
 |---|----------|-------------|
-| L1 | Tvetydig `[[Kunde]]` – hvilket mål? | Samme mappe som kilden → korteste sti → alfabetisk. Vis diskret «tvetydig»-indikator med tooltip som lister alternativene. |
+| L1 | Tvetydig `[[Kunde]]` – hvilket mål? | Samme mappe som kilden → korteste sti → alfabetisk. Vis diskret «tvetydig»-indikator med tooltip som lister alternativene. **Vedtatt (PO-8, PO-26).** |
 | L2 | Teller lenker i properties (`relatert: "[[Kunde]]"`) som tilbakelenker? | Ja, merket «fra egenskap» (som Obsidian). |
 | L3 | Overskrift/blokk finnes ikke, men notatet finnes – brutt? | Ikke brutt; naviger til notatet og vis kort hint. |
 | L4 | Teller markdown-lenker `[x](../a.md)` som tilbakelenker? | Ja. |
 | L5 | Skal `[[Alias]]` løses til notatet som har aliaset? Arkitekten (U1/O1) anbefaler nei, som Obsidian. Oppgaven til QA nevner «lenker via frontmatter-aliases». | QA støtter arkitekten (nei), men foreslår at en brutt lenke som **treffer et alias** får et hint «Mente du *Ordre*?» med lenke. Gir Obsidian-likhet uten blindvei. Testvaultet dekker begge utfall. |
-| E1 | Maks embed-dybde? | 5 nivåer, deretter «for dypt»-kort. Syklus stoppes uansett ved første gjentakelse. |
-| E2 | `![[X.base#View]]` – bare ett view? | Ja, bare navngitt view; ukjent viewnavn → første view + advarsel. |
+| E1 | Maks embed-dybde? | 5 nivåer, deretter «for dypt»-kort. Syklus = samme fil + samme anker i stakken (PO-15, PO-32). **Vedtatt.** |
+| E2 | `![[X.base#View]]` – bare ett view? | Ja, bare navngitt view (PO-12). **Endret av PO-34:** ukjent viewnavn → advarselskort «Viewet «X» finnes ikke» med liste over tilgjengelige views (ikke første view). |
 | T1 | Er `hasTag`/tagger case-insensitive (`#Task`)? | Ja, som Obsidian. Visning beholder kildens skrivemåte. |
 | T2 | Tagg-siden for `task` – inkluder `task/backend`? | Ja. |
 | B1 | `file.inFolder("domene")` – rekursivt? | Ja (inkluderer `domene/delt/`), men ikke `domene-arkiv/`. |
@@ -371,3 +374,15 @@ Kort kontrollsum:
 | R9 | TOC-terskel | ≥ 3 overskrifter (H2–H4). |
 | R10 | Scrollposisjon ved tilbake | Gjenopprettes. |
 | R11 | `[/]` og `[-]` i oppgavelister | Egne ikoner (delvis/kansellert), fortsatt skrivebeskyttet. |
+
+## 18. Endringslogg for fasiten
+
+| Dato | Endring | Grunnlag |
+|------|---------|----------|
+| 2026-11-05 | QA-EMB-06 omskrevet: syklus = samme fil + samme seksjon. `![[#Seksjon]]` før seksjonen er lov. Ny seksjon «Tredje seksjon» i `lenker/Selv-embed.md` dekker ekte seksjons-selvembed. | PO-32 (BE-Q1) |
+| 2026-11-05 | QA-SOK-06: «ingen treff utenom README-QA». QA-SOK-07 presisert. | PO-33 (BE-Q2) |
+| 2026-11-05 | QA-EMB-10 / E2: ukjent view → advarselskort med liste over views. | PO-34 |
+| 2026-11-05 | QA-MD-10: første H1 blir visningstittel og fjernes fra brødteksten. | PO-35 |
+| 2026-11-05 | QA-SOK-09: snarvei vises som `⌘K` (macOS) / `Ctrl K` (ellers). | PO-36 |
+| 2026-11-05 | Alias-hint (PO-7/PO-25), tvetydighetsindikator (PO-8/PO-26), property-backlinks (PO-9), tagger case-insensitive (PO-10), norske callout-titler og `<br>` (PO-14), embed-dybde 5 og TOC ≥ 3 (PO-15), CSP (PO-16), ingress/skjulte properties/lesetid (PO-21–23, PO-29), tags-endepunkt og 404 for ukjent API-rute (PO-24), `frontmatterError` (PO-27, ny QA-FM-04), «Lenket fra» på manglende notat (PO-28), «Fotnoter»/sidenoter (PO-20, PO-30). Alle **(PO?)**-merker fjernet. | PO-1–PO-31 |
+

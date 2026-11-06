@@ -14,11 +14,13 @@ function ingress(properties: readonly PropertyEntry[]): string | null {
 
 interface NoteHeaderProps {
   readonly doc: NoteDocument;
+  /** Visningstittel (PO-35): første H1 eller filnavnet. */
+  readonly title: string;
   readonly readingMinutes: number;
 }
 
 /** Notat-header (designsystem §7.2). */
-export function NoteHeader({ doc, readingMinutes }: NoteHeaderProps) {
+export function NoteHeader({ doc, title, readingMinutes }: NoteHeaderProps) {
   const openSearch = useOpenSearch();
   const folder = folderOf(doc.path);
   const dek = ingress(doc.properties);
@@ -36,7 +38,7 @@ export function NoteHeader({ doc, readingMinutes }: NoteHeaderProps) {
           ))}
         </p>
       ) : null}
-      <h1 className="title">{doc.title}</h1>
+      <h1 className="title">{title}</h1>
       {dek ? <p className="dek">{dek}</p> : null}
       <PropertyList vaultId={doc.vaultId} properties={doc.properties} aliases={doc.aliases} onTagClick={onTag} />
       <div className="head-foot">

@@ -4,11 +4,15 @@ import type { MermaidConfig } from 'mermaid';
  * Mermaid kan ikke lese CSS-variabler, så vi leser ferdige hex-tokens fra getComputedStyle
  * ved hvert tema-bytte (designsystem §6).
  */
-export function mermaidConfig(root: HTMLElement = document.documentElement): MermaidConfig {
+export function mermaidConfig(root: HTMLElement = document.documentElement, containerWidth = 0): MermaidConfig {
   const cs = getComputedStyle(root);
   const t = (name: string) => cs.getPropertyValue(name).trim();
   const dark = root.dataset.mode === 'dark';
   return {
+    // Gantt måler ellers bredden på Mermaids midlertidige node i <body> (hele vinduet) og blir
+    // skalert ned til uleselig tekst i lesekolonnen.
+    // Kort norsk aksedato (dd.mm) – ISO-datoer overlapper i lesekolonnen. `axisFormat` i diagrammet vinner.
+    gantt: { axisFormat: '%d.%m', ...(containerWidth > 0 ? { useWidth: Math.round(containerWidth) } : {}) },
     startOnLoad: false,
     securityLevel: 'strict',
     theme: 'base',

@@ -40,6 +40,18 @@ describe('Sidebar', () => {
     expect(screen.getByRole('dialog', { name: 'Hurtigsøk' })).toBeInTheDocument();
   });
 
+  it('viser Ctrl K utenfor macOS (PO-36)', () => {
+    setup();
+    expect(screen.getByRole('button', { name: /Søk i notater/ })).toHaveTextContent('Ctrl K');
+  });
+
+  it('viser ⌘K på macOS (PO-36)', () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel');
+    setup();
+    expect(screen.getByRole('button', { name: /Søk i notater/ })).toHaveTextContent('⌘K');
+    vi.restoreAllMocks();
+  });
+
   it('filteret «Bases» viser bare .base-filer', async () => {
     setup();
     await screen.findByRole('link', { name: 'Kunde' });

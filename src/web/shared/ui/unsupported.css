@@ -11,3 +11,4 @@
 .unsupported summary { cursor: pointer; font-family: var(--font-meta); font-size: 0.72rem; width: max-content; }
 .unsupported summary:hover { color: var(--color-text); }
 .unsupported pre { margin: var(--space-2) 0 0; font-family: var(--font-mono); font-size: 0.78rem; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--color-text); background: var(--color-sunken); padding: var(--space-2) var(--space-3); border-radius: var(--radius-s); }
+.latex-inline { color: var(--color-muted); }

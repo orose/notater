@@ -1,6 +1,7 @@
 import type { Ref } from 'react';
 import { Icon } from '../../shared/ui/Icon';
 import { useOpenSearch } from '../search';
+import { shortcutLabel } from '../../shared/ui/shortcuts';
 
 interface TopbarProps {
   readonly where: string;
@@ -28,7 +29,7 @@ export function Topbar({ where, drawerId, drawerOpen, menuRef, onToggleDrawer, o
         <Icon name="menu" />
       </button>
       <span className="where">{where}</span>
-      <button type="button" className="icon-btn" aria-label="Søk (⌘K)" onClick={() => openSearch()}>
+      <button type="button" className="icon-btn" aria-label={`Søk (${shortcutLabel('K')})`} onClick={() => openSearch()}>
         <Icon name="search" />
       </button>
       <button type="button" className="icon-btn" aria-label="Utseende" onClick={onOpenTheme}>

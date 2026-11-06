@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import type { TreeFile, VaultId } from '../../shared/api-types';
 import { docUrl, useTree, useVaults } from '../shared/api';
 import { DocumentView } from '../features/note-view';
+import { shortcutLabel } from '../shared/ui/shortcuts';
 
 const HOME_NAMES = ['velkommen', 'index', 'readme'];
 
@@ -21,7 +22,7 @@ export function VaultHome({ vaultId }: { readonly vaultId: VaultId }) {
       <div className="col">
         <header className="note-head">
           <h1 className="title">{name}</h1>
-          <p className="dek">Velg et notat i sidepanelet, eller søk med ⌘K.</p>
+          <p className="dek">Velg et notat i sidepanelet, eller søk med {shortcutLabel('K')}.</p>
         </header>
         <ul className="overview">
           {tree.data.root.children.map((node) =>

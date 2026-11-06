@@ -51,6 +51,20 @@ function setup(query?: string) {
 }
 
 describe('CommandPalette', () => {
+  it('bunnlinjen viser Ctrl ↵ utenfor macOS (PO-36)', () => {
+    setup();
+    fireEvent.keyDown(document, { key: 'k', ctrlKey: true });
+    expect(screen.getByText(/åpne i ny fane/)).toHaveTextContent('Ctrl ↵ åpne i ny fane');
+  });
+
+  it('bunnlinjen viser ⌘ ↵ på macOS (PO-36)', () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel');
+    setup();
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    expect(screen.getByText(/åpne i ny fane/)).toHaveTextContent('⌘ ↵ åpne i ny fane');
+    vi.restoreAllMocks();
+  });
+
   it('⌘K åpner, viser grupperte treff og Enter åpner valgt notat', async () => {
     setup();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });

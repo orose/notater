@@ -142,3 +142,18 @@ Frontendens avvik 1–8 er **godkjent** (temascript som ekstern fil pga. CSP; br
 - **PO-36 Snarveier** Vis `⌘K` på macOS og `Ctrl K` ellers.
 - **PO-37 README** Mangler (AK18). Skal dekke: krav (Node ≥ 22.22, `.nvmrc`), `npm install && npm start`, peke på eget vault (config/CLI/env), flere vaults, snarveier, feilsøking.
 - **PO-38** Ubrukte pakker (`remark-frontmatter`, `mdast-util-find-and-replace`) fjernes.
+
+## Backend (slice 3–4, Bases, 2026-11-05, backend-utvikler)
+
+| # | Beslutning / antakelse | Begrunnelse | Status |
+|---|---|---|---|
+| BE16 | Bases-rader er **alle** indekserte filer (ikke bare `.md`), slik Obsidian gjør. | `Domene.base` filtrerer selv på `file.ext == "md"` (QA: `domenemodell.svg` skal filtreres av det leddet). | Vedtatt |
+| BE17 | `![[X.base#View]]`: serveren returnerer kun det viewet (eksakt navn, deretter uten hensyn til store/små bokstaver). Ukjent view → `views: []` + `unknown-view` med `availableViews` (nytt valgfritt felt på `BaseWarning`). | PO-12/PO-34; klienten slipper å filtrere og får listen strukturert. | Vedtatt |
+| BE18 | Filterledd med ukjent funksjon eller parse-feil ignoreres (= sant) med **én** advarsel `unknown-function`/`parse-error`. Ukjent funksjon i formel/verdi gir `null`. | B8/O8. | Vedtatt |
+| BE19 | Uten `sort` sorteres også **tabeller** på `file.name` ASC (ikke bare kanban). Siste uavgjort: `file.name`, så sti. | Fasit §3.3 («Med feil» sortert på navn); deterministisk rekkefølge. | Antakelse |
+| BE20 | `&&`/`||` har JS-verdisemantikk (`status \|\| "ingen"` gir en verdi). Sammenligning dato ↔ datostreng er tillatt (`due < "2026-12-01"`). Ellers O6 (ulike typer: `==` usant, `<` usant). | Naturlig i formler; påvirker ikke filtre. | Antakelse |
+| BE21 | Tom streng og tom liste regnes som «tom» (sorteres sist, havner i «(ingen)»). | Samme opplevelse som manglende property. | Antakelse |
+| BE22 | Gruppe-etiketter for datoer formateres `dd.MM.yyyy` (ren dato) / `dd.MM.yyyy HH:mm` Europe/Oslo (med tid) på serveren. Celler sendes som ISO (klienten formaterer). | B10. | Vedtatt |
+| BE23 | Resultater caches per snapshot (WeakMap); uttrykk med `now()`/`today()` caches ikke. Postkilden (én `VaultRecord` per fil, lat konvertering) bygges én gang per snapshot. | Live reload uten eksplisitt invalidering; < 50 ms kaldt. | Vedtatt |
+| BE24 | `this` = vertsnotatet for ` ```base `-blokker og `.base`-fila selv for fil-baser (også ved embed, siden `BaseRequest` ikke bærer verten). | Enkelt; utvides hvis kunden bruker `this` i embeddede baser. | Antakelse |
+| BE25 | PO-38 utført: `remark-frontmatter` og `mdast-util-find-and-replace` avinstallert. | Ubrukte. | Vedtatt |

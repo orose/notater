@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { ThemeContext, type ThemeContextValue } from './theme-context';
+import { isModifierPressed } from '../../shared/ui/shortcuts';
 import {
   DARK_QUERY,
   applyTheme,
@@ -59,7 +60,7 @@ export function ThemeProvider({ children }: { readonly children: ReactNode }) {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === '.') {
+      if (isModifierPressed(event) && event.key === '.') {
         event.preventDefault();
         toggleMode();
       }

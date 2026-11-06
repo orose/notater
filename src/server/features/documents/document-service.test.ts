@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import type { Element } from 'hast';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { BaseDocument, NoteDocument } from '../../../shared/api-types';
-import { createPendingBaseEvaluator } from '../bases';
+import { createBaseEvaluator } from '../bases';
 import { byTag, findAll, testHighlighter, textOf } from '../../test-support/render-fixtures';
 import { createInlineMetaExtractor } from '../vault-index';
 import { createVaultRuntime } from '../vault-registry';
@@ -10,7 +10,7 @@ import type { VaultState } from '../vault-registry';
 import { getDocument } from './document-service';
 
 let state: VaultState;
-const bases = createPendingBaseEvaluator();
+const bases = createBaseEvaluator();
 
 beforeAll(async () => {
   const vault = createVaultRuntime(
@@ -191,18 +191,21 @@ describe('getDocument – embeds i Embed-test (README-QA §5)', () => {
     expect(textOf(kjede3)).not.toContain('Ikke med');
   });
 
-  it('base-embeds registreres med pending-resultat, canvas er ikke støttet', () => {
+  it('base-embeds evalueres; #View gir bare det viewet (PO-12), canvas er ikke støttet', () => {
     const doc = note('lenker/Embed-test');
     const baseEls = findAll(doc.content, byTag('vr-base'));
     expect(baseEls.map((b) => b.properties.dataView ?? null)).toEqual([null, 'Kanban']);
-    for (const b of baseEls) expect(doc.bases[String(b.properties.dataBaseId)]).toBeDefined();
+    const results = baseEls.map((b) => doc.bases[String(b.properties.dataBaseId)]!);
+    expect(results.map((r) => r.views.map((v) => v.name))).toEqual([['Huskeliste', 'Kanban', 'Arkiv'], ['Kanban']]);
     expect(findAll(doc.content, byTag('vr-unsupported'))[0]!.properties.dataKind).toBe('canvas');
   });
 });
 
 describe('getDocument – andre filtyper', () => {
   it('base gir BaseDocument', () => {
-    expect(getDocument(state, 'Oppgaver.base', bases)).toMatchObject({ kind: 'base', title: 'Oppgaver', result: { views: [] } });
+    const doc = getDocument(state, 'Oppgaver.base', bases) as BaseDocument;
+    expect(doc).toMatchObject({ kind: 'base', title: 'Oppgaver', result: { warnings: [] } });
+    expect(doc.result.views.map((v) => v.name)).toEqual(['Huskeliste', 'Kanban', 'Arkiv']);
   });
 
   it('canvas og excalidraw gir vr-unsupported', () => {

@@ -107,7 +107,7 @@ Bildevedlegg returneres som `NoteDocument` med `content` = ett `img` (via vedleg
   Nestede objekter i frontmatter blir `{ type: 'string', value: <JSON> }`.
 - `backlinks`: distinkte kilder, inkl. embeds, markdown-lenker og lenker i properties (`fromProperty: true`,
   PO-9). Selvlenker telles ikke. Sortert på kildens tittel.
-- `bases`: inntil slice 3 er hvert resultat `{ views: [], warnings: [{ code: 'not-implemented', … }] }`.
+- `bases`: ferdig evaluert `BaseResult` per `vr-base` (slice 3/4, se «Bases-resultat»).
 
 ### `GET /api/vaults/:vaultId/backlinks?path=<mål>` (tillegg, PO-28)
 «Lenket fra» – også for mål som ikke finnes («ikke skrevet ennå»-siden). `path` kan være en `DocPath` eller
@@ -197,10 +197,68 @@ interface BaseUnsupportedView { type: 'unsupported'; name: string; originalType:
 
 interface BaseGroup { key: VaultValue | null; label: string; rows: BaseRow[] }
 interface BaseRow   { path: DocPath; cells: Record<string /* kolonne-id */, VaultValue> }
-interface BaseWarning { code: string; message: string; source?: string }
+interface BaseWarning {
+  code: string; message: string; source?: string;
+  availableViews?: string[];             // tillegg slice 3: kun ved code 'unknown-view' (PO-34)
+}
 ```
 Kolonne-id-er er **kanoniske**: bar `status` blir `note.status`. `columnSize`-nøkler normaliseres likt,
 så `file.name: 553` og `note.status: 101` treffer riktige kolonner. Klienten skal ikke tolke uttrykk.
+
+### Semantikk (slice 3/4, ADR-003)
+
+- **Rader:** alle indekserte filer (også `.svg`, `.base` osv.), filtrert av globalt filter `and` view-filter.
+  `filters` er et uttrykk eller `and`/`or`/`not` vilkårlig nøstet; `not: [a, b]` = ingen av.
+- **Sortering:** `sort` (flere nøkler). Uten `sort` – både tabell og kanban – sorteres på `file.name` ASC
+  (B5/PO-11). Tall numerisk, datoer kronologisk, tekst med `Intl.Collator('nb', { numeric: true, sensitivity: 'base' })`,
+  tomme verdier (`null`, `""`, tom liste) **sist** uansett retning. Endelig uavgjort: `file.name`, så sti.
+- **Gruppering (tabell):** `groupBy` + `direction`; `grouped: true`. Gruppene sorteres som over; «(ingen)» sist
+  med `key: null`, `label: '(ingen)'`. Uten `groupBy`: én gruppe `{ key: null, label: '' }`.
+- **Kanban:** `groupBy` er property-id-en (`note.status`). Kolonner: `groupOrder` i oppgitt rekkefølge – **også
+  tomme** (`rows: []`, PO-11) – deretter øvrige verdier sortert etter `direction` (nb-kollasjon), deretter
+  «(ingen)» hvis noen kort mangler verdi. Gruppering er case-sensitiv (`Todo` ≠ `todo`, PO-10). Kanban uten
+  `groupBy` → én kolonne «(ingen)» + advarsel `missing-group-by`.
+- **Kolonner:** fra `order` (standard `[file.name]`), duplikater fjernes. `label`: `properties.<id>.displayName`
+  hvis satt, ellers `file.name` «Navn», `file.tags` «Tagger», `file.mtime` «Endret», `file.ctime` «Opprettet»,
+  `file.path` «Sti», `file.folder` «Mappe», `file.ext` «Filtype», `file.size` «Størrelse», `file.links` «Lenker»;
+  `note.x`/`formula.x` → `x`. `width` fra `columnSize`. `limit` kutter etter sortering.
+- **Celler** (`VaultValue`): `file.name` er alltid `string` (klienten lager lenken). `file.tags`/`note.tags` er
+  liste av `tag` (original skrivemåte). `file.mtime`/`ctime` er `date` med `hasTime: true` (UTC-ISO; klienten
+  viser lokal tid). Frontmatter-verdier typet som i dokument-API-et: `YYYY-MM-DD` → `date` (`hasTime: false`),
+  `"[[x]]"` → `link` (oppløst `target`, `null` = brutt), også inne i lister; nestede objekter → `string` (JSON).
+  Formelverdier: tall/streng/bool/dato/liste/lenke tilsvarende.
+- **`view` i embed** (`![[X.base#View]]`, `data-view`): serveren returnerer **bare** det viewet (eksakt navn,
+  ellers uten hensyn til store/små bokstaver). Ukjent navn (PO-34): `views: []` og én advarsel
+  `{ code: 'unknown-view', message: 'Viewet «X» finnes ikke. Tilgjengelige views: «A», «B».', source: 'X', availableViews: ['A', 'B'] }`.
+- **Ugyldig YAML** (eller toppnivå som ikke er et objekt): `views: []` og én advarsel `invalid-yaml`
+  («Kunne ikke lese base-definisjonen (linje N): ugyldig YAML.», `source` = parserens melding). Klienten viser
+  feilkort.
+- **Advarselskoder:** base-nivå (`BaseResult.warnings`): `invalid-yaml`, `missing-base`, `unknown-view`,
+  `unknown-key`, `invalid-value`, `invalid-filter`, `parse-error`, `unknown-function`, `unknown-property`,
+  `unknown-formula`, `formula-cycle`. View-nivå (`view.warnings`): samme koder for view-filtre/-nøkler, pluss
+  `missing-group-by` og `unknown-view-type` (på `BaseUnsupportedView`). Én advarsel per unikt uttrykk/nøkkel.
+  Filterledd med parse-feil eller ukjent funksjon **ignoreres** (behandles som sanne, B8/O8).
+- **Live reload:** resultater caches per indeks-snapshot; enhver endring i vaultet gir ny revisjon og nye
+  resultater (SSE `changed` → klienten henter dokumentet på nytt). Baser som bruker `now()`/`today()` caches ikke.
+
+### Uttrykksspråket (implementert)
+
+Operatorer etter ADR-003 (`||` `&&` `==` `!=` `<` `>` `<=` `>=` `+` `-` `*` `/` `%`, unær `!` `-`, `a.b`, `f(x)`,
+`a[i]`, `[a, b]`). `&&`/`||` kortslutter og returnerer operanden (JS-semantikk; filtre bruker sannhetsverdien).
+`+` på strenger konkatenerer; `dato ± "1d"`/`"2 weeks"`/`"1M"` gir dato; `dato − dato` gir millisekunder.
+Navnerom: `file.*`, `note.*`/bar identifikator, `formula.*` (formler kan bruke formler; sykluser gir tom verdi +
+`formula-cycle`), `this` (filen som viser basen: vertsnotatet for ` ```base `, ellers `.base`-fila).
+
+| Område | Støttet |
+|---|---|
+| `file` felt | `name` (uten endelse), `basename`, `fullname`, `path` (med endelse), `folder` (`"/"` for rot), `ext`, `size`, `ctime`, `mtime`, `tags`, `links`, `properties` |
+| `file` metoder | `inFolder(f)` (rekursiv), `hasTag(...t)` (nestet, case-insensitiv), `hasLink(x)`, `hasProperty(p)`, `asLink(tekst?)` |
+| Globale | `if(c, a, b?)` (lat), `now()`, `today()`, `date(x)`, `number(x)`, `list(x)`, `link(sti, tekst?)`, `min(...)`, `max(...)` |
+| Streng | `length`, `contains`, `containsAll`, `containsAny`, `startsWith`, `endsWith`, `lower`, `upper`, `title`, `trim`, `replace`, `split`, `slice`, `reverse` |
+| Liste | `length`, `contains`, `containsAll`, `containsAny`, `join`, `reverse`, `sort`, `unique`, `flat`, `slice`, `[i]` (negativ fra slutten) |
+| Tall | `round(n?)`, `floor`, `ceil`, `abs`, `toFixed(n)` |
+| Dato | `year`, `month`, `day`, `hour`, `minute`, `second`, `format("DD.MM.YYYY HH:mm")`, `date()`, `time()` |
+| Alle | `isEmpty()`, `toString()`, `isTruthy()`, `isType(t)` |
 
 ## HAST-kontrakt (`NoteDocument.content`)
 

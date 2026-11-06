@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './support/guards';
 
 test('appen starter og sender / til standardvaultet', async ({ page }) => {
   await page.goto('/');

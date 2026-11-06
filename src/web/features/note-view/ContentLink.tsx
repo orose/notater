@@ -13,8 +13,32 @@ type ContentLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   readonly 'data-vr-tag'?: string;
   readonly 'data-vr-suggest'?: string;
   readonly 'data-vr-suggest-title'?: string;
+  readonly 'data-vr-ambiguous'?: string;
+  readonly 'data-vr-alternatives'?: string;
+  readonly 'data-vr-anchor-missing'?: string;
   readonly children?: ReactNode;
 };
+
+/** Navigasjonsstate: målseksjonen finnes ikke (README-QA regel 7). Leses av `useDocumentScroll`. */
+export interface LinkNavigationState {
+  readonly anchorMissing?: boolean;
+}
+
+function parseAlternatives(raw: string | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((p): p is string => typeof p === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+/** PO-8/PO-26: diskret forklaring på tvetydige lenker. */
+function ambiguityTitle(count: string, target: string | undefined, alternatives: string[]): string {
+  const others = alternatives.length > 0 ? ` (også: ${alternatives.join(', ')})` : '';
+  return `Tvetydig lenke: ${count} notater passer. Viser «${target ?? ''}»${others}.`;
+}
 
 function cx(...names: Array<string | undefined | false>): string {
   return names.filter(Boolean).join(' ');
@@ -31,6 +55,9 @@ export function ContentLink(props: ContentLinkProps) {
     'data-vr-tag': tag,
     'data-vr-suggest': suggest,
     'data-vr-suggest-title': suggestTitle,
+    'data-vr-ambiguous': ambiguous,
+    'data-vr-alternatives': alternatives,
+    'data-vr-anchor-missing': anchorMissing,
     href,
     className,
     children,
@@ -59,11 +86,20 @@ export function ContentLink(props: ContentLinkProps) {
   }
 
   if (kind === 'internal' && href) {
+    const missing = anchorMissing === 'true';
+    const title = ambiguous
+      ? ambiguityTitle(ambiguous, target, parseAlternatives(alternatives))
+      : missing
+        ? 'Fant ikke seksjonen i notatet – lenken går til toppen.'
+        : undefined;
+    const state: LinkNavigationState | undefined = missing ? { anchorMissing: true } : undefined;
     return (
       <Link
         {...rest}
         to={href}
-        className={cx('wikilink', className)}
+        state={state}
+        title={title}
+        className={cx('wikilink', ambiguous && 'ambiguous', missing && 'anchor-missing', className)}
         data-target={target}
         data-anchor={anchor}
       >

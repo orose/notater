@@ -4,6 +4,7 @@ import { Icon } from '../../shared/ui/Icon';
 import { Modal } from '../../shared/ui/Modal';
 import { PALETTES, PALETTE_INFO, type ThemeModePreference, type ThemeType } from './theme-state';
 import { useTheme } from './use-theme';
+import { modifierLabel } from '../../shared/ui/shortcuts';
 
 const MODE_LABELS: ReadonlyArray<readonly [ThemeModePreference, string]> = [
   ['light', 'Lys'],
@@ -144,7 +145,7 @@ function ThemePickerBody({ headingId }: { readonly headingId: string }) {
         </label>
 
         <p className="theme-hint">
-          Valget lagres i denne nettleseren. <kbd>⌘</kbd> <kbd>.</kbd> bytter lys/mørk.
+          Valget lagres i denne nettleseren. <kbd>{modifierLabel()}</kbd> <kbd>.</kbd> bytter lys/mørk.
         </p>
       </form>
     </>

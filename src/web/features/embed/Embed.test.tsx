@@ -36,6 +36,22 @@ describe('Embed', () => {
     expect(document.querySelector('.mini-state')).not.toBeNull();
   });
 
+  it('viser embed-målet uten ![[ ]]-syntaks (QA-EMB-08)', () => {
+    wrap(<Embed vaultId="test" data-status="missing" data-raw="![[Kafka-grunnleggende#Seksjon som ikke finnes]]" />);
+    expect(screen.getByText('Fant ikke «Kafka-grunnleggende#Seksjon som ikke finnes»')).toBeInTheDocument();
+  });
+
+  it('manglende bilde sier «Bildet finnes ikke» (QA-IMG-10)', () => {
+    wrap(
+      <>
+        <Embed vaultId="test" data-status="missing" data-raw="![[mangler.png]]" />
+        <Embed vaultId="test" data-status="missing" data-raw="![Mangler](../attachments/mangler.png)" />
+      </>,
+    );
+    expect(screen.getByText('Bildet finnes ikke: mangler.png')).toBeInTheDocument();
+    expect(screen.getByText('Bildet finnes ikke: ../attachments/mangler.png')).toBeInTheDocument();
+  });
+
   it('syklus stoppes med kort og lenke', () => {
     wrap(<Embed vaultId="test" data-status="cycle" data-target="lenker/Syklus A" data-title="Syklus A" />);
     expect(screen.getByText('Innbygging stoppet: syklus')).toBeInTheDocument();

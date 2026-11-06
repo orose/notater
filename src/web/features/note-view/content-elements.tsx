@@ -87,7 +87,27 @@ export function Footnotes({ children }: { readonly children?: ReactNode }) {
   );
 }
 
-export function Unsupported({ 'data-kind': kind, 'data-source': source }: { readonly 'data-kind'?: string; readonly 'data-source'?: string }) {
-  const text = unsupportedText(kind ?? 'other');
-  return <UnsupportedCard title={text.title} text={text.text} source={source} />;
+interface UnsupportedProps {
+  readonly 'data-kind'?: string;
+  readonly 'data-source'?: string;
+  readonly 'data-inline'?: string;
+  readonly 'data-name'?: string;
+}
+
+export function Unsupported({ 'data-kind': kind = 'other', 'data-source': source, 'data-inline': inline, 'data-name': name }: UnsupportedProps) {
+  // PO-13: inline-LaTeX står rått i teksten (et kort ville brutt avsnittet).
+  if (inline === 'true') {
+    return (
+      <code className="latex-inline" title="LaTeX vises ikke her – formelen står som kildetekst.">
+        {source}
+      </code>
+    );
+  }
+  const text = unsupportedText(kind);
+  // QA-NS-01: plugin-blokker nevner tillegget ved navn.
+  if (name && kind === 'other') {
+    return <UnsupportedCard title={`Tillegget «${name}» vises ikke her.`} text="Blokken kjøres bare i Obsidian." source={source} />;
+  }
+  const detail = name && name !== kind ? `Blokken «${name}» kjøres bare i Obsidian.` : text.text;
+  return <UnsupportedCard title={text.title} text={detail} source={source} />;
 }

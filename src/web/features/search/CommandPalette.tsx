@@ -6,6 +6,7 @@ import { docUrl, folderOf, useSearch, useVaults } from '../../shared/api';
 import { Icon } from '../../shared/ui/Icon';
 import { Modal } from '../../shared/ui/Modal';
 import { useRecentDocs } from '../recent';
+import { isModifierPressed, modifierLabel } from '../../shared/ui/shortcuts';
 
 interface CommandPaletteProps {
   readonly vaultId: VaultId;
@@ -152,7 +153,7 @@ function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; rea
       event.currentTarget.closest('dialog')?.close();
     } else if (event.key === 'Enter') {
       event.preventDefault();
-      openOption(options[current], event.metaKey || event.ctrlKey);
+      openOption(options[current], isModifierPressed(event));
     }
   };
 
@@ -205,7 +206,7 @@ function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; rea
               role="option"
               aria-selected={i === current}
               onMouseMove={() => i !== current && setSelected(i)}
-              onClick={(event) => openOption(option, event.metaKey || event.ctrlKey)}
+              onClick={(event) => openOption(option, isModifierPressed(event))}
             >
               <span className="t">{option.title}</span>
               {option.sub ? <span className="p">{option.sub}</span> : null}
@@ -231,7 +232,7 @@ function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; rea
           <kbd>↵</kbd> åpne
         </span>
         <span>
-          <kbd>⌘</kbd> <kbd>↵</kbd> åpne i ny fane
+          <kbd>{modifierLabel()}</kbd> <kbd>↵</kbd> åpne i ny fane
         </span>
         {typeof noteCount === 'number' ? (
           <span className="count">{noteCount.toLocaleString('nb-NO')} notater</span>

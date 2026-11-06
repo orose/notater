@@ -1,7 +1,11 @@
 /* Diagram (designsystem §6). */
 .diagram { margin-block: var(--space-6) !important; position: relative; }
 .diagram-frame { border: 1px solid var(--color-rule); border-radius: var(--radius-l); padding: var(--space-5) var(--space-4); background: var(--color-surface); overflow-x: auto; }
-.diagram-svg svg { display: block; margin: 0 auto; height: auto; min-width: min(520px, 100%); font-family: var(--font-ui); }
+.diagram-svg svg { display: block; margin: 0 auto; height: auto; font-family: var(--font-ui); }
+/* Mermaid bruker klassen «label» i SVG-en; appens globale .label (småkapitéler/versaler) skal ikke slå inn. */
+:is(.diagram-svg, .zoom-content, [id^="dvr-mermaid-"]) .label {
+  font-family: inherit; font-size: inherit; letter-spacing: normal; text-transform: none; font-weight: inherit; line-height: normal; color: inherit;
+}
 .diagram-loading { min-height: 8rem; }
 .diagram figcaption { display: flex; align-items: baseline; gap: var(--space-3); margin-top: var(--space-2); font-size: var(--step-n1); color: var(--color-muted); }
 .diagram figcaption .zoom { margin-left: auto; }

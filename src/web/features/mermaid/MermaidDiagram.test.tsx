@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ThemeProvider } from '../theme';
 import { MermaidDiagram } from './MermaidDiagram';
-import { mermaidCaption } from './mermaid-config';
+import { mermaidCaption, mermaidConfig } from './mermaid-config';
 import { renderMermaid } from './mermaid-loader';
 
 vi.mock('./mermaid-loader', () => ({ renderMermaid: vi.fn() }));
@@ -70,5 +70,15 @@ describe('mermaidCaption', () => {
   it('finner caption-kommentar', () => {
     expect(mermaidCaption('%% caption: Hei\nflowchart')).toBe('Hei');
     expect(mermaidCaption('flowchart')).toBeNull();
+  });
+});
+
+describe('mermaidConfig – bredde', () => {
+  it('gir gantt rammens bredde slik at diagrammet ikke skaleres ned til smått (QA-MER-01)', () => {
+    expect(mermaidConfig(document.documentElement, 612).gantt).toEqual({ axisFormat: '%d.%m', useWidth: 612 });
+  });
+
+  it('lar Mermaid velge bredde når rammen ikke er målt', () => {
+    expect(mermaidConfig(document.documentElement, 0).gantt).toEqual({ axisFormat: '%d.%m' });
   });
 });

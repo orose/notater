@@ -6,25 +6,25 @@ Basene `test-vault/Domene.base` og `test-vault/Oppgaver.base` er byte-identiske 
 
 ## Forutsetninger
 
-Fasiten bygger på disse reglene (fra PO-merknadene i `bases-eksempler.md` + QAs forslag merket **(PO?)**, se `test-vault/README-QA.md` §17):
+Fasiten bygger på disse reglene (fra PO-merknadene i `bases-eksempler.md` + QAs forslag i `test-vault/README-QA.md` §17, som alle er **godkjent** av PO, se PO-7–PO-12 og PO-34 i `docs/beslutninger.md`):
 
 | Regel | Kilde |
 |-------|-------|
 | `file.tags`/`file.hasTag` dekker frontmatter `tags` (liste eller skalar) **og** inline `#tagg` utenfor kode/kommentarer. | PO |
 | `hasTag("task")` matcher `task` og nestede `task/…`, men **ikke** `tasks`/`taskforce`. | PO |
-| `hasTag` er case-insensitiv (`#Task` matcher). | **(PO?)** T1 |
+| `hasTag` er case-insensitiv (`#Task` matcher). | Vedtatt (T1, PO-10) |
 | `file.name` = filnavn uten `.md`. `file.folder` = mappesti relativt til vault-rot uten avsluttende `/` (`"/"` for rot, jf. arkitektens O4). | PO |
-| `file.inFolder("x")` = `folder == "x"` eller `folder` starter med `"x/"`. | **(PO?)** B1 |
+| `file.inFolder("x")` = `folder == "x"` eller `folder` starter med `"x/"`. | Vedtatt (B1) |
 | `file.folder != "templates"` er **ikke** rekursiv: `templates/sprint/…` slipper gjennom (som i Obsidian). | Obsidian-semantikk |
-| Strengsammenligning `==`/`!=` er case-sensitiv (`"Todo" != "todo"`). | **(PO?)** B6 |
-| Manglende property: `status != "done"` → sann; `status == "done"` → usann. | **(PO?)** B4 |
-| Sortering: tall numerisk, datoer kronologisk, tekst med `Intl.Collator('nb', { sensitivity: 'base', numeric: true })`. Manglende verdier **sist** uansett retning. | **(PO?)** B2, B3 |
-| Kanban: kolonner i `groupOrder`-rekkefølge, deretter ikke-oppførte verdier alfabetisk (nb-kollasjon), deretter «(ingen)». | PO (+ B2) |
-| Kanban uten `sort`: kort sortert på `file.name` stigende. | **(PO?)** B5 |
+| Strengsammenligning `==`/`!=` er case-sensitiv (`"Todo" != "todo"`). | Vedtatt (B6, PO-10: property-verdier er case-sensitive) |
+| Manglende property: `status != "done"` → sann; `status == "done"` → usann. | Vedtatt (B4) |
+| Sortering: tall numerisk, datoer kronologisk, tekst med `Intl.Collator('nb', { sensitivity: 'base', numeric: true })`. Manglende verdier **sist** uansett retning. | Vedtatt (B2, B3) |
+| Kanban: kolonner i `groupOrder`-rekkefølge, deretter ikke-oppførte verdier alfabetisk (nb-kollasjon), deretter «(ingen)». Tomme `groupOrder`-kolonner **vises** (med 0 kort). | PO (+ B2, B7, PO-11) |
+| Kanban uten `sort`: kort sortert på `file.name` stigende. | Vedtatt (B5, PO-11) |
 | `.obsidian/` og `.trash/` indekseres ikke. | QA-IDX-03/04 |
 | Arkiv-viewet forutsetter mtimes fra `docs/test/fixture-mtimes.json` (git bevarer ikke mtime). Kjør `node test-vault-tools/sett-fixture-mtimes.mjs <kopi-av-vault>` før testen. | QA |
 
-Kolonneoverskrifter (forslag): `file.name` → «Navn», `file.tags` → «Tagger», `file.mtime` → «Endret», `status` → «status», `due` → «due» (note-properties vises med eget navn). Datoer vises `dd.MM.yyyy`, `file.mtime` som `dd.MM.yyyy HH:mm` i Europe/Oslo **(PO?)** B10. Tomme celler vises som dempet «–».
+Kolonneoverskrifter (forslag): `file.name` → «Navn», `file.tags` → «Tagger», `file.mtime` → «Endret», `status` → «status», `due` → «due» (note-properties vises med eget navn). Datoer vises `dd.MM.yyyy`, `file.mtime` som `dd.MM.yyyy HH:mm` i Europe/Oslo (B10, vedtatt). Tomme celler vises som dempet «–».
 
 ---
 
@@ -179,7 +179,7 @@ Globalt: `hasTag("team") or inFolder("prosjekter")`. View: `hasTag("task") and n
 | doing | Optimaliser SQL-spørring — 2026-11-09 · Skriv integrasjonstest for ordre-API — 2026-11-12 |
 | blocked | Evaluer Testcontainers — 2026-12-01 |
 
-Sum 5. Ingen «(ingen)»-kolonne (alle har status). `done` vises ikke (ikke i `groupOrder`, ingen kort).
+Sum 5. Ingen «(ingen)»-kolonne (alle har status). `done` vises ikke (ikke i `groupOrder`, ingen kort). Hvis en `groupOrder`-verdi er uten kort, vises kolonnen tom (PO-11).
 
 ### 3.3 Blokk 3 – ukjent funksjon / nøkkel / view-type
 
@@ -196,7 +196,8 @@ Feilkort i blokken («Kunne ikke lese base-definisjonen» + linjenummer hvis mul
 |------|-----------|
 | `domene/_MOC.md`, `Velkommen.md`: `![[Domene.base]]` | Samme 12 rader som §1. |
 | `lenker/Embed-test.md`: `![[Oppgaver.base]]` | Alle tre views som faner, første fane «Huskeliste» aktiv. |
-| `lenker/Embed-test.md`: `![[Oppgaver.base#Kanban]]` | Bare Kanban (E2). |
+| `lenker/Embed-test.md`: `![[Oppgaver.base#Kanban]]` | Bare Kanban (PO-12). |
+| Embed med ukjent viewnavn, f.eks. `![[Oppgaver.base#Ukjent]]` (ikke i testvaultet ennå – backends test i `document-service.test.ts` sjekker eksakt liste over base-embeds i `Embed-test`; legges til i samme endring som slice 3-testene) | Advarselskort «Viewet «Ukjent» finnes ikke» med liste over tilgjengelige views: Huskeliste, Kanban, Arkiv (PO-34). Ingen fallback til første view. |
 
 ## 5. Feilsøkingsnøkkel – symptom → sannsynlig feil
 

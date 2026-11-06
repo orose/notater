@@ -9,6 +9,7 @@ import { VaultPicker } from '../vault-picker';
 import { FileLink, FileTree } from './FileTree';
 import { useRecentDocs } from '../recent';
 import { countNotes, flattenFiles } from './tree-utils';
+import { shortcutLabel } from '../../shared/ui/shortcuts';
 
 type Filter = 'alle' | 'nylig' | 'bases';
 
@@ -21,8 +22,6 @@ interface SidebarProps {
   readonly onOpenTheme: () => void;
   readonly onNavigate: () => void;
 }
-
-const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 
 /** Sidepanel (designsystem §7.1). På mobil er det samme element en skuff. */
 export function Sidebar({ id, vaultId, currentPath, open, onOpenTheme, onNavigate }: SidebarProps) {
@@ -121,7 +120,7 @@ export function Sidebar({ id, vaultId, currentPath, open, onOpenTheme, onNavigat
         <button type="button" className="search-btn" onClick={() => openSearch()}>
           <Icon name="search" />
           <span>Søk i notater</span>
-          <kbd aria-hidden="true">{isMac ? '⌘K' : 'Ctrl K'}</kbd>
+          <kbd aria-hidden="true">{shortcutLabel('K')}</kbd>
         </button>
         <div className="filter-row" role="group" aria-label="Filter">
           {chips.map(([value, label]) => (

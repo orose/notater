@@ -2,7 +2,7 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import type { HealthResponse } from '../../shared/api-types';
 import { createAssetsRoutes } from '../features/assets';
-import { createPendingBaseEvaluator } from '../features/bases';
+import { createBaseEvaluator } from '../features/bases';
 import type { BaseEvaluator } from '../features/bases';
 import { createDocumentsRoutes } from '../features/documents';
 import { createEventsRoutes } from '../features/live-events';
@@ -21,7 +21,7 @@ export interface AppOptions {
   readonly webRoot: string;
   readonly version: string;
   readonly registry: VaultRegistry;
-  /** Bases-evaluator (slice 3). Standard: «kommer senere»-resultat. */
+  /** Bases-evaluator (ADR-003). Standard: `createBaseEvaluator()`. */
   readonly bases?: BaseEvaluator;
   readonly events?: EventsOptions;
 }
@@ -50,7 +50,7 @@ export function createApp(options: AppOptions): Hono {
   );
   app.route(
     '/',
-    createDocumentsRoutes(state, options.bases ?? createPendingBaseEvaluator(), (id) => registry.get(id)?.hiddenProperties ?? []),
+    createDocumentsRoutes(state, options.bases ?? createBaseEvaluator(), (id) => registry.get(id)?.hiddenProperties ?? []),
   );
   app.route(
     '/',

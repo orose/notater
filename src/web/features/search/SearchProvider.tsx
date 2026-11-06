@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import type { VaultId } from '../../../shared/api-types';
 import { CommandPalette } from './CommandPalette';
 import { SearchContext } from './search-context';
+import { isModifierPressed } from '../../shared/ui/shortcuts';
 
 interface SearchProviderProps {
   readonly vaultId: VaultId;
@@ -18,7 +19,7 @@ export function SearchProvider({ vaultId, children }: SearchProviderProps) {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      if (isModifierPressed(event) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
         setState((s) => (s.open ? { ...s, open: false } : { open: true, initial: '', nonce: s.nonce + 1 }));
       }

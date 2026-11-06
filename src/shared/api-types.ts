@@ -224,6 +224,11 @@ export interface BaseWarning {
   readonly message: string;
   /** Uttrykket/nøkkelen det gjelder, hvis relevant. */
   readonly source?: string;
+  /**
+   * Tillegg (slice 3, bakoverkompatibelt): ved `unknown-view` (PO-34) navnene på viewene som finnes,
+   * i fil-rekkefølge, slik at klienten kan vise dem som en liste.
+   */
+  readonly availableViews?: readonly string[];
 }
 
 export interface BaseColumn {

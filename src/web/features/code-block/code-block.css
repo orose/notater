@@ -1,6 +1,11 @@
 /* Kodeblokk = «figur» (designsystem §5.2). */
 figure { margin: 0; }
 .code {
+  /* Shikis innebygde css-variables-tema (basis for vårt) bruker også diff-variabler som tokens.css
+     ikke definerer. Uten dem får +/–-linjer i ```diff ingen farge. */
+  --shiki-token-inserted: var(--shiki-token-string);
+  --shiki-token-deleted: var(--shiki-token-keyword);
+  --shiki-token-changed: var(--shiki-token-constant);
   position: relative; margin-block: var(--space-6) !important;
   background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius-l);
   font-size: var(--step-n1);
@@ -42,6 +47,8 @@ figure { margin: 0; }
   counter-increment: ln; content: counter(ln); display: inline-block; min-width: 2ch; margin-right: 1.4ch; text-align: right;
   color: var(--color-muted); user-select: none;
 }
+/* Inne i callouts og embeds skal figuren ikke stikke ut over rammens høyrekant. */
+[data-type="tidsskrift"] :is(.callout, .embed) .code { margin-right: 0; }
 @media (max-width: 1099px) { [data-type="tidsskrift"] .code { margin-right: 0; } }
 @media (max-width: 859px) {
   .code { margin-inline: calc(-1 * var(--gutter)) !important; border-radius: 0 !important; border-inline: 0 !important; }

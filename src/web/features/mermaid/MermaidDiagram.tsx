@@ -1,5 +1,5 @@
 import './mermaid.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../../shared/ui/Icon';
 import { UnsupportedCard } from '../../shared/ui/UnsupportedCard';
 import { useTheme } from '../theme';
@@ -24,10 +24,14 @@ export function MermaidDiagram(props: MermaidDiagramProps) {
   const themeKey = `${preferences.type}/${preferences.palette}/${resolvedMode}`;
   const [state, setState] = useState<State>({ status: 'loading' });
   const [zoomOpen, setZoomOpen] = useState(false);
+  const frameRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
-    renderMermaid(source, mermaidConfig()).then(
+    const frame = frameRef.current;
+    const padding = frame ? parseFloat(getComputedStyle(frame).paddingLeft) + parseFloat(getComputedStyle(frame).paddingRight) : 0;
+    const width = frame ? frame.clientWidth - (Number.isFinite(padding) ? padding : 0) : 0;
+    renderMermaid(source, mermaidConfig(document.documentElement, width)).then(
       (svg) => {
         if (!cancelled) setState({ status: 'ok', svg });
       },
@@ -54,7 +58,7 @@ export function MermaidDiagram(props: MermaidDiagramProps) {
 
   return (
     <figure className="diagram">
-      <div className="diagram-frame" data-state={state.status}>
+      <div className="diagram-frame" data-state={state.status} ref={frameRef}>
         {state.status === 'ok' ? (
           // SVG-en er generert av Mermaid med securityLevel 'strict' (DOMPurify internt).
           <div className="diagram-svg" role="img" aria-label={label} dangerouslySetInnerHTML={{ __html: state.svg }} />

@@ -90,6 +90,9 @@ h2:hover .heading-anchor, h3:hover .heading-anchor, .heading-anchor:focus-visibl
 .prose .task-list-item::marker { content: none; }
 .prose .task-list-item > input { accent-color: var(--color-accent); margin: 0 0.6em 0 0; transform: translateY(0.1em); }
 .prose .task-list-item:has(> input:checked) { color: var(--color-muted); text-decoration: line-through; text-decoration-color: var(--color-rule-strong); }
+/* QA-MD-04: [/] «delvis» er ikke ferdig – ingen gjennomstreking, dempet avkrysning. [-] «kansellert» beholder strek. */
+.prose .task-list-item[data-task="/"] { color: inherit; text-decoration: none; }
+.prose .task-list-item[data-task="/"] > input { opacity: 0.45; }
 .prose .contains-task-list .contains-task-list { padding-left: 1.6em; }
 
 /* Lenker */
@@ -104,6 +107,9 @@ h2:hover .heading-anchor, h3:hover .heading-anchor, .heading-anchor:focus-visibl
 [data-type="tidsskrift"] .prose a.wikilink:hover, [data-type="tidsskrift"] .link.wikilink:hover { color: var(--color-accent); }
 [data-type="terminal"] .prose a.wikilink:hover { background: var(--color-tag-bg); }
 a.external::after { content: "\2009↗"; font-size: 0.8em; color: var(--color-muted); }
+/* PO-8: tvetydig lenke – diskret markør; forklaringen ligger i title. */
+a.wikilink.ambiguous::after { content: "\2009≈"; font-family: var(--font-meta); font-size: 0.72em; vertical-align: super; line-height: 0; color: var(--color-muted); }
+a.wikilink.anchor-missing { text-decoration-style: dashed; }
 
 .wikilink.broken {
   display: inline; font: inherit; line-height: inherit; padding: 0; margin: 0;

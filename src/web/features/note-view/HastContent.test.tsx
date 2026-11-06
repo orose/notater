@@ -61,6 +61,44 @@ describe('HastContent – lenker (AK7, AK9)', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/v/test/lenker/Lenketest');
   });
 
+  it('tvetydige lenker får diskret indikator med alternativene (PO-8/PO-26)', () => {
+    renderContent(
+      root(
+        h(
+          'p',
+          {},
+          h(
+            'a',
+            { href: '/v/test/domene/Kunde', dataVrLink: 'internal', dataVrTarget: 'domene/Kunde', dataVrAmbiguous: '2', dataVrAlternatives: '["arkiv/2023/Kunde"]' },
+            'Kunde',
+          ),
+        ),
+      ),
+    );
+    const link = screen.getByRole('link', { name: 'Kunde' });
+    expect(link).toHaveClass('ambiguous');
+    expect(link).toHaveAttribute('title', 'Tvetydig lenke: 2 notater passer. Viser «domene/Kunde» (også: arkiv/2023/Kunde).');
+  });
+
+  it('lenke til ukjent seksjon forklarer og varsler etter navigering (README-QA regel 7)', () => {
+    renderContent(
+      root(
+        h(
+          'p',
+          {},
+          h(
+            'a',
+            { href: '/v/test/teknisk/Kafka/Kafka-grunnleggende', dataVrLink: 'internal', dataVrTarget: 'teknisk/Kafka/Kafka-grunnleggende', dataVrAnchorMissing: 'true' },
+            'Kafka-grunnleggende › Finnes ikke',
+          ),
+        ),
+      ),
+    );
+    const link = screen.getByRole('link', { name: 'Kafka-grunnleggende › Finnes ikke' });
+    expect(link).toHaveClass('anchor-missing');
+    expect(link).toHaveAttribute('title', 'Fant ikke seksjonen i notatet – lenken går til toppen.');
+  });
+
   it('eksterne lenker åpnes i ny fane', () => {
     renderContent(root(h('p', {}, h('a', { href: 'https://spring.io', dataVrLink: 'external', rel: ['noopener', 'noreferrer'] }, 'Spring'))));
     const link = screen.getByRole('link', { name: 'Spring' });
@@ -104,6 +142,27 @@ describe('HastContent – elementer', () => {
     expect(document.querySelector('figure.code')).not.toBeNull();
     expect(screen.getByText('Fant ikke «Finnes ikke»')).toBeInTheDocument();
     expect(screen.getByText('Dataview vises ikke her.')).toBeInTheDocument();
+  });
+
+  it('inline-LaTeX vises rått i teksten, ikke som kort (PO-13, QA-NS-03)', () => {
+    renderContent(root(h('p', {}, 'Pytagoras: ', h('vr-unsupported', { dataKind: 'latex', dataSource: '$x^2 + y^2 = z^2$', dataInline: 'true' }), '.')));
+    const raw = screen.getByText('$x^2 + y^2 = z^2$');
+    expect(raw.tagName).toBe('CODE');
+    expect(raw).toHaveClass('latex-inline');
+    expect(raw.closest('p')).toHaveTextContent('Pytagoras: $x^2 + y^2 = z^2$.');
+    expect(document.querySelector('.unsupported')).toBeNull();
+  });
+
+  it('plugin-blokker nevner tillegget ved navn (QA-NS-01)', () => {
+    renderContent(
+      root(
+        h('vr-unsupported', { dataKind: 'dataview', dataName: 'dataviewjs', dataSource: 'dv.table()' }),
+        h('vr-unsupported', { dataKind: 'other', dataName: 'tasks', dataSource: 'not done' }),
+      ),
+    );
+    expect(screen.getByText('Dataview vises ikke her.')).toBeInTheDocument();
+    expect(screen.getByText(/Blokken «dataviewjs» kjøres bare i Obsidian\./)).toBeInTheDocument();
+    expect(screen.getByText('Tillegget «tasks» vises ikke her.')).toBeInTheDocument();
   });
 
   it('oppgavelister er skrivebeskyttede', () => {

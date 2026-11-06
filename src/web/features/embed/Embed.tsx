@@ -14,6 +14,17 @@ interface EmbedProps {
   readonly children?: ReactNode;
 }
 
+const IMAGE = /\.(png|jpe?g|gif|webp|avif|svg|bmp)$/i;
+
+/** Embed-målet uten syntaks: `![[x|200]]` → `x`, `![alt](<sti>)` → `sti`. */
+function embedTargetText(raw: string): string {
+  const wiki = /^!\[\[(.*)\]\]$/.exec(raw.trim());
+  if (wiki) return (wiki[1] ?? '').split('|')[0]?.trim() ?? '';
+  const md = /^!\[[^\]]*\]\((.*)\)$/.exec(raw.trim());
+  if (md) return (md[1] ?? '').replace(/^<(.*)>$/, '$1').trim();
+  return raw.trim();
+}
+
 function isEmpty(children: ReactNode): boolean {
   return Children.toArray(children).every((child) => typeof child === 'string' && child.trim() === '');
 }
@@ -67,9 +78,18 @@ export function Embed(props: EmbedProps) {
     );
   }
 
+  const missing = embedTargetText(props['data-raw'] ?? title);
+  if (IMAGE.test(missing.split('#')[0] ?? '')) {
+    return (
+      <div className="mini-state embed-state">
+        <strong>Bildet finnes ikke: {missing}</strong>
+        Sjekk filnavnet og at bildet ligger i vaultet.
+      </div>
+    );
+  }
   return (
     <div className="mini-state embed-state">
-      <strong>Fant ikke «{props['data-raw'] ?? title}»</strong>
+      <strong>Fant ikke «{missing}»</strong>
       Notatet eller seksjonen finnes ikke i vaultet.
     </div>
   );
