@@ -103,7 +103,8 @@ interface BaseDocument {
 }
 ```
 `unsupported`-filer (canvas o.l.) returneres som `NoteDocument` med `content` = ett `vr-unsupported`-element.
-Bildevedlegg returneres som `NoteDocument` med `content` = ett `img` (via vedleggsruten); andre vedlegg som
+Bildevedlegg returneres som `NoteDocument` med `content` = ett `img` (via vedleggsruten, med `width`/`height`
+når størrelsen er kjent, PO-71); andre vedlegg som
 `vr-unsupported` (`data-kind="other"`).
 
 - `properties`: `cssclasses`, `publish` og `position` sendes aldri, heller ikke nøklene i vaultets
@@ -366,8 +367,30 @@ liste). Tittel leses fra `title="…"`, `title:…` eller et bart filnavn i meta
 
 Barn ved `ok`: målets innhold (ferdig rendret HAST, samme kontrakt rekursivt). Ellers ingen barn.
 Bilde-embeds blir **ikke** `vr-embed`, men `img` med `src="/api/vaults/<id>/assets?path=…"`,
-`alt` (standard: filnavnet) og evt. `width`/`height` fra `![[bilde.png|300]]` / `|300x200` /
-`|alt|300`. Markdown-bilder `![alt](sti)` går samme vei (sti relativ til notatet, så vault-rot).
+`alt` (standard: filnavnet) og `width`/`height` (se under). Markdown-bilder `![alt](sti)` går samme vei
+(sti relativ til notatet, så vault-rot); `![alt|300](sti)` støttes som i Obsidian.
+
+**`width`/`height` på lokale bilder (tillegg v1.1, PO-71).** Så klienten kan reservere plass før bildet er
+lastet (ingen layout-hopp), setter serveren `width` og `height` (tall, CSS-px) på `img` for lokale vedlegg –
+både bilde-embeds, markdown-bilder, `<img>` i rå HTML og bildevedlegg åpnet som dokument:
+
+| Kilde | `width` × `height` |
+|---|---|
+| `![[bilde.png]]`, `![alt](sti)` | bildets egen størrelse |
+| `![[bilde.png\|300]]`, `![alt\|300](sti)`, `<img width="300">` | 300 × høyde etter sideforholdet |
+| `<img height="100">` | bredde etter sideforholdet × 100 |
+| `![[bilde.png\|300x200]]` (også `\|alt\|300x200`) | skalert til å passe **inni** 300 × 200, sideforholdet bevares |
+
+- Dimensjonene leses fra filheaderen uten avhengigheter: PNG (IHDR), JPEG (første SOF-markør; EXIF-orientering
+  5–8 bytter bredde/høyde slik nettleseren viser bildet), GIF, WebP (VP8, VP8L, VP8X) og SVG (`width`/`height`
+  i px eller absolutte enheter – pt, pc, mm, cm, in – ellers `viewBox`; med bare én av dem regnes den andre ut
+  fra `viewBox`). Formatet avgjøres av innholdet (SVG: endelsen `.svg`).
+- Ukjent størrelse (avif, bmp, ico, ødelagt/avkortet header, SVG med bare `%`/`em` og uten `viewBox`, verdier
+  over 100 000): **ingen** attributter, eller bare det `|300`/`|300x200` ba om – aldri en feil.
+- Dimensjonene caches i indeksen (`VaultFile.imageSize`) ved indeksering og leses på nytt når fila endres
+  (live reload), så `changed` for et bilde gir nye verdier i dokumentet.
+- Klienten bør ha `img { max-width: 100%; height: auto }` (finnes i `note-view.css`), så attributtene bare
+  gir sideforholdet når bildet er bredere enn spalten.
 Manglende bilde → `vr-embed[data-status=missing]` med `data-raw`. Eksterne bilder lastes aldri: de blir
 `a[data-vr-link=external][data-vr-external-image=true]`.
 Syklus: samme fil + samme anker allerede i stakken. Maks dybde **5** (PO-15). `![[x#Finnes ikke]]` → `missing`.

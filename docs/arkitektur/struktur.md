@@ -59,6 +59,7 @@ bibliotek), er `src/server/features/bases` allerede isolert nok til å flyttes u
     │       ├── documents/       GET /document: setter sammen indeks + markdown + links + bases
     │       ├── search/          MiniSearch-indeks, GET /search
     │       ├── assets/          GET /assets (vedlegg, MIME-hviteliste, CSP)
+    │       ├── image-size/      bildedimensjoner fra filheader (PO-71), width/height for <img>; blad-feature
     │       └── live-events/     chokidar → debounce → indeksoppdatering → SSE /api/events
     └── web/
         ├── index.html
@@ -113,7 +114,8 @@ bibliotek), er `src/server/features/bases` allerede isolert nok til å flyttes u
 - **Avhengighetsretning (server), faktisk:**
   `config`, `markdown-syntax` ← `vault-index` ← `links` ← `markdown` ← `embeds` ← `search`/`properties` ←
   `vault-registry` ← `documents`/`tree`/`tags`/`assets`/`live-events` (ruter) ← `app`.
-  `code-highlight`, `assets` (MIME-hviteliste) og `bases` (port) er blad-features.
+  `code-highlight`, `assets` (MIME-hviteliste), `image-size` (brukes av `vault-index`, `embeds`, `documents`) og
+  `bases` (port) er blad-features.
 - **Rute-features definerer egne, smale porter** (`TreeSource`, `SearchSource`, `AssetSource`, `EventSource` …)
   i stedet for å importere vault-registeret. `app/create-app.ts` kobler portene. Det hindrer sykler
   (registeret bruker f.eks. `search` og `live-events`), og rutene kan testes med falske kilder.

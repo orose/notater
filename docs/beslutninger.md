@@ -269,3 +269,11 @@ Designet (prototype-v1.1.html, designsystem §11) er **godkjent** som referanse.
 - **PO-72** QA-filen `e2e/support/keymap-rules.ts` peker på `commands/model/index.ts` – godkjent.
 - **PO-73** Kunden godkjenner «§ → ⌄»: fold-pil erstatter §-tegnet ved hover, nummeret står fast.
 - **PO-74 (kundefunn)** I prototype-v1.1 henger det igjen en loddrett strek på hver side av lesespalten etter veksling mellom optimal og full bredde. Strekene skal ikke være der. Rettes i prototypen og må ikke forekomme i implementasjonen (e2e-sjekk).
+
+## Backend: bildedimensjoner PO-71 (2026-11-06, backend-utvikler)
+
+| # | Beslutning | Begrunnelse | Status |
+|---|---|---|---|
+| BE35 | Ny blad-feature `src/server/features/image-size`: egen header-parser for PNG, JPEG (inkl. EXIF-orientering), GIF, WebP (VP8/VP8L/VP8X) og SVG. Leser 4 KiB med én gang, deretter bare posisjonslesing (JPEG hopper over store EXIF/ICC-segmenter; SVG leser maks 64 KiB). Faste grenser (1024 JPEG-markører, 256 IFD-oppføringer, dimensjon ≤ 100 000); alt ugyldig gir `null`. | Ingen ny avhengighet (ADR-006). Begrenset I/O og ingen løkker på ondsinnede filer. | Vedtatt |
+| BE36 | Dimensjonene caches som `VaultFile.imageSize` og leses parallelt med tekstfilene ved indeksering, og på nytt i `updateSnapshot` bare når mtime/størrelse endres. | Rendering er synkron og trenger størrelsen uten I/O. Målt merkostnad ~70–100 ms per 1000 bilder (test: < 300 ms, AK17). | Vedtatt |
+| BE37 | `\|300x200` og `<img width height>` skaleres til å passe inni boksen med bevart sideforhold; `\|300` / bare `height` regner ut den andre siden. Ukjent størrelse gir bare det som ble bedt om. `![alt\|300](sti)` støttes (bare med `\|`, så alt-tekst som «2024» ikke blir en bredde). | PO-71: bevar sideforholdet, ingen forvrengning selv uten `height: auto`. | Vedtatt |
