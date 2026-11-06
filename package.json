@@ -13,6 +13,7 @@
     "build": "npm run typecheck && vite build",
     "typecheck": "tsc -b",
     "lint": "eslint .",
+    "check:deps": "node scripts/check-dependency-age.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"
@@ -80,5 +81,8 @@
   },
   "overrides": {
     "playwright-core": "$@playwright/test"
+  },
+  "allowScripts": {
+    "esbuild": false
   }
 }

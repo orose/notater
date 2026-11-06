@@ -33,7 +33,7 @@ if (!isAtLeast(parse(version), MINIMUM)) {
       '    - Med nvm:  nvm install && nvm use   (leser .nvmrc i prosjektmappa)\n' +
       '    - Ellers:   last ned Node 22 LTS eller 24 LTS fra https://nodejs.org\n' +
       '\n' +
-      '  Kjør deretter npm install på nytt før npm start.\n\n',
+      '  Kjør deretter npm ci på nytt før npm start.\n\n',
   );
   process.exit(1);
 }

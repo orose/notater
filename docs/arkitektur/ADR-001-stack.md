@@ -1,7 +1,7 @@
 # ADR-001: Teknisk stack
 
 - Status: Vedtatt (arkitekt), 2026-11-05
-- Relaterte: ADR-002 (rendering), ADR-003 (Bases), ADR-004 (indeks, lenker, live reload), ADR-005 (konfig og sikkerhet)
+- Relaterte: ADR-002 (rendering), ADR-003 (Bases), ADR-004 (indeks, lenker, live reload), ADR-005 (konfig og sikkerhet), ADR-006 (avhengighetspolicy)
 
 ## Kontekst
 
@@ -16,7 +16,7 @@ og ytelseskrav ~2000 notater < 3 s / notatbytte < 200 ms (AK17). Teamet er lite 
 
 | Valg | Versjon | Begrunnelse |
 |---|---|---|
-| Node | **≥ 22.22** (Node 22 LTS, siste patch) | Kravet fra PO. Flere dev-verktøy (jsdom 31, Vite 8) krever 22.12+/22.22+. Kunden bør bruke siste Node 22 eller 24. |
+| Node | **≥ 22.22** (Node 22 LTS, siste patch) | Kravet fra PO. Flere dev-verktøy (jsdom 30, Vite 8) krever 22.12+/22.22+. Kunden bør bruke siste Node 22 eller 24 (`.nvmrc`: 24 LTS). Avhengighetsalder: ADR-006. |
 | TypeScript | **~6.0** | TS 7 (native) finnes, men typescript-eslint støtter foreløpig < 6.1. Oppgraderes når lint-verktøyet følger etter. |
 | `tsx` | ^4 | Kjører serverens TypeScript direkte, både i dev (`tsx watch`) og ved `npm start`. Ingen egen server-kompilering. |
 

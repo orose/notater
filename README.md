@@ -6,14 +6,17 @@ lys/mørk modus. Den endrer aldri filene dine og lytter bare på `127.0.0.1`.
 
 ## Kom i gang
 
-**Krav:** Node.js **22.22 eller nyere** (22 LTS eller 24 LTS). Versjonen vi tester med står i
-[`.nvmrc`](.nvmrc).
+**Krav:** Node.js **22.22 eller nyere** – både Node 22 LTS og Node 24 LTS (med npm 10 eller 11) er testet.
+[`.nvmrc`](.nvmrc) peker på Node 24 LTS.
 
 ```sh
 nvm install && nvm use   # valgfritt: henter versjonen i .nvmrc
-npm install
+npm ci
 npm start
 ```
+
+Bruk `npm ci`, ikke `npm install`: `npm ci` installerer nøyaktig versjonene i `package-lock.json`, som alle er
+minst 21 dager gamle ([ADR-006](docs/arkitektur/ADR-006-avhengighetspolicy.md)).
 
 Åpne <http://127.0.0.1:4317>. Uten videre oppsett viser leseren testvaultet i `test-vault/`.
 
@@ -137,7 +140,14 @@ adressene du kan åpne på mobilen (samme Wi-Fi), for eksempel:
 ## Feilsøking
 
 **`Vault-leseren krever Node.js 22.22 eller nyere`** – oppgrader Node (`nvm install && nvm use`, eller
-last ned fra [nodejs.org](https://nodejs.org)), og kjør `npm install` på nytt.
+last ned fra [nodejs.org](https://nodejs.org)), og kjør `npm ci` på nytt.
+
+**`npm error code E403` … `Requested item is quarantined`** – firmaets npm-proxy/brannmur (f.eks. Sonatype
+Nexus) holder tilbake en pakkeversjon, som regel fordi den er nylig publisert. Sjekk at du bruker `npm ci`
+(ikke `npm install`, som kan hente nyere versjoner enn lockfila). Alle versjoner i lockfila skal være minst
+21 dager gamle; `npm run check:deps` viser om noen er yngre (`-- --days 30` for en strengere grense). Står
+pakken fortsatt i karantene, send pakkenavn og versjon fra feilmeldingen til den som drifter npm-proxyen,
+eller til oss.
 
 **`Porten 4317 på 127.0.0.1 er allerede i bruk`** – en annen prosess, ofte en leser som allerede kjører,
 bruker porten. Leseren avslutter da med denne meldingen. Stopp den andre prosessen, eller velg en annen port:
@@ -161,7 +171,11 @@ npm run test:e2e    # Playwright mot ekte server og en kopi av test-vault
 E2E_PORT=4418 npm run test:e2e   # samme, på en annen port hvis 4318 er opptatt
 npm run lint        # ESLint
 npm run build       # typesjekk + produksjonsbygg
+npm run check:deps  # alle versjoner i lockfila er minst 21 dager gamle (ADR-006)
 ```
+
+Avhengigheter oppdateres med `npm install --before=<dato for 21 dager siden>`, se
+[ADR-006](docs/arkitektur/ADR-006-avhengighetspolicy.md).
 
 Ytelsestest (AK17) mot et generert vault med 2000 notater:
 
