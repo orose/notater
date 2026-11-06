@@ -28,7 +28,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     await expect(høyremarg(page)).toBeVisible();
   });
 
-  test.fixme('TC-05-01 Space z skjuler begge paneler og krom; tittel og properties beholdes; innholdet sentreres', async ({ page }) => {
+  test('TC-05-01 Space z skjuler begge paneler og krom; tittel og properties beholdes; innholdet sentreres', async ({ page }) => {
     await openNote(page, LANG.sti);
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['Space', 'z']);
@@ -42,7 +42,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     expect(Math.abs(midt - 1440 / 2)).toBeLessThan(40);
   });
 
-  test.fixme('TC-05-02 ikke nettleserens fullskjerm, og ingen avsnittsdemping', async ({ page }) => {
+  test('TC-05-02 ikke nettleserens fullskjerm, og ingen avsnittsdemping', async ({ page }) => {
     await openNote(page, LANG.sti);
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['Space', 'z']);
@@ -54,7 +54,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     expect(opasiteter.every((o) => o === 1)).toBe(true);
   });
 
-  test.fixme('TC-05-03 kombinerbar med full bredde', async ({ page }) => {
+  test('TC-05-03 kombinerbar med full bredde', async ({ page }) => {
     await openNote(page, LANG.sti);
     const lese = await brødtekstBredde(page);
     await fokusPåInnhold(page);
@@ -66,7 +66,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     expect(await harHorisontalScroll(page)).toBe(false);
   });
 
-  test.fixme('TC-05-04 overlever navigasjon: lenkeklikk, H (tilbake) og palett-søk', async ({ page }) => {
+  test('TC-05-04 overlever navigasjon: lenkeklikk, H (tilbake) og palett-søk', async ({ page }) => {
     await openNote(page, LANG.sti);
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['Space', 'z']);
@@ -84,7 +84,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     expect(await erZen(page, false)).toBe(true);
   });
 
-  test.fixme('TC-05-05 hurtigtaster og palett virker i zen', async ({ page }) => {
+  test('TC-05-05 hurtigtaster og palett virker i zen', async ({ page }) => {
     await openNote(page, LANG.sti);
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['Space', 'z']);
@@ -97,7 +97,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   });
 
-  test.fixme('TC-05-06 avsluttes med Space z', async ({ page }) => {
+  test('TC-05-06 avsluttes med Space z', async ({ page }) => {
     await openNote(page, LANG.sti);
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['Space', 'z']);
@@ -107,7 +107,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     await expect(høyremarg(page)).toBeVisible();
   });
 
-  test.fixme('TC-05-07 avsluttes med :zen', async ({ page }) => {
+  test('TC-05-07 avsluttes med :zen', async ({ page }) => {
     await openNote(page, LANG.sti);
     await kjørKommando(page, 'zen');
     await expect.poll(() => erZen(page, false)).toBe(true);
@@ -115,7 +115,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     await expect(sidepanel(page)).toBeVisible();
   });
 
-  test.fixme('TC-05-08 Esc avslutter zen bare når ingen dialog er åpen', async ({ page }) => {
+  test('TC-05-08 Esc avslutter zen bare når ingen dialog er åpen', async ({ page }) => {
     await openNote(page, LANG.sti);
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['Space', 'z']);
@@ -128,7 +128,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     await expect(sidepanel(page)).toBeVisible();
   });
 
-  test.fixme('TC-05-09 Esc avbryter en påbegynt sekvens før den avslutter zen', async ({ page }) => {
+  test('TC-05-09 Esc avbryter en påbegynt sekvens før den avslutter zen', async ({ page }) => {
     await openNote(page, LANG.sti);
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['Space', 'z']);
@@ -137,7 +137,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     expect(await erZen(page, false), 'Esc avbrøt bare sekvensen (Q-07)').toBe(true);
   });
 
-  test.fixme('TC-05-10 starter aldri aktivert: reload og ny fane', async ({ page, context }) => {
+  test('TC-05-10 starter aldri aktivert: reload og ny fane', async ({ page, context }) => {
     await openNote(page, LANG.sti);
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['Space', 'z']);
@@ -150,7 +150,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
     await ny.close();
   });
 
-  test.fixme('TC-05-11 nåbar med mus: :zen klikket i paletten', async ({ page }) => {
+  test('TC-05-11 nåbar med mus: :zen klikket i paletten', async ({ page }) => {
     await openNote(page, LANG.sti);
     await page.getByRole('button', { name: 'Søk i notater' }).click();
     await palett(page).getByRole('combobox').fill(':zen');
@@ -162,7 +162,7 @@ test.describe('AK-1.1-05 zen på desktop', () => {
 test.describe('AK-1.1-05 zen på mobil og touch', () => {
   test.skip(({ isMobile }) => !isMobile, 'Mobil');
 
-  test.fixme('TC-05-12 zen skjuler mobil-topplinjen; ingen horisontal scroll; avsluttes med «Avslutt zen» (touch)', async ({ page }) => {
+  test('TC-05-12 zen skjuler mobil-topplinjen; ingen horisontal scroll; avsluttes med «Avslutt zen» (touch)', async ({ page }) => {
     await openNote(page, LANG.sti);
     await expect(page.getByRole('banner')).toBeVisible();
     await kjørKommando(page, 'zen');
@@ -173,7 +173,7 @@ test.describe('AK-1.1-05 zen på mobil og touch', () => {
     await expect(page.getByRole('banner')).toBeVisible();
   });
 
-  test.fixme('TC-05-13 zen + full bredde på 360 px: ingen horisontal scroll', async ({ page }) => {
+  test('TC-05-13 zen + full bredde på 360 px: ingen horisontal scroll', async ({ page }) => {
     await openNote(page, LANG.sti);
     await velgLesebredde(page, 'Full bredde');
     await kjørKommando(page, 'zen');

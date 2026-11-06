@@ -1,5 +1,5 @@
 import './search.css';
-import { useEffect, useMemo, useId, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useId, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import type { SearchHit, VaultId } from '../../../shared/api-types';
 import { PREFETCH_DELAY_MS, docUrl, folderOf, usePrefetch, useSearch, useVaults } from '../../shared/api';
@@ -439,17 +439,28 @@ function useSearchList(vaultId: VaultId, query: string, listId: string): ListVie
     document.querySelector<HTMLDialogElement>('dialog.palette[open]')?.close();
   };
 
+  const waiting = trimmed !== '' && (debounced.trim() !== trimmed || search.isFetching) && options.length === 0;
+  // Enter før søket har svart (rask skriving): åpne første treff når det kommer.
+  const pendingEnter = useRef<string | null>(null);
   const act = (action: Action): boolean => {
     if (action === 'up' || action === 'down') {
       if (options.length > 0) setSelected((current + (action === 'down' ? 1 : -1) + options.length) % options.length);
       return true;
     }
     if (action === 'enter' || action === 'enter-new-tab') {
-      openOption(options[current], action === 'enter-new-tab');
+      if (options.length === 0 && waiting && action === 'enter') pendingEnter.current = trimmed;
+      else openOption(options[current], action === 'enter-new-tab');
       return true;
     }
     return false;
   };
+  useEffect(() => {
+    if (pendingEnter.current === null || options.length === 0) return;
+    const wanted = pendingEnter.current;
+    pendingEnter.current = null;
+    if (wanted === trimmed) openOption(options[0], false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- kjøres når treffene kommer
+  }, [options]);
 
   useEffect(() => {
     document.getElementById(options[current]?.id ?? '')?.scrollIntoView({ block: 'nearest' });
@@ -465,7 +476,6 @@ function useSearchList(vaultId: VaultId, query: string, listId: string): ListVie
   }, [prefetch, selectedPath, vaultId]);
 
   const noteCount = vaults.data?.vaults.find((v) => v.id === vaultId)?.noteCount;
-  const waiting = trimmed !== '' && (debounced.trim() !== trimmed || search.isFetching) && options.length === 0;
 
   const body = (
     <>

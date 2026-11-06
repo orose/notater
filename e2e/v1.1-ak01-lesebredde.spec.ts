@@ -20,7 +20,7 @@ const LANG = fasit.langBrodtekst;
 test.describe('AK-1.1-01 lesebredde på desktop (1440 px)', () => {
   test.skip(({ isMobile }) => isMobile, 'Bredde måles ved 1440 px; 360 px dekkes under');
 
-  test.fixme('TC-01-01 standard er Leseoptimalisert, og Utseende viser valget', async ({ page }) => {
+  test('TC-01-01 standard er Leseoptimalisert, og Utseende viser valget', async ({ page }) => {
     await openNote(page, LANG.sti);
     const dialog = await åpneUtseende(page);
     await expect(dialog.getByRole('group', { name: 'Lesebredde' })).toBeVisible();
@@ -28,7 +28,7 @@ test.describe('AK-1.1-01 lesebredde på desktop (1440 px)', () => {
     await expect(dialog.getByRole('radio', { name: 'Full bredde' })).not.toBeChecked();
   });
 
-  test.fixme('TC-01-02 Full bredde via Utseende gir bredere brødtekst og beholder panelene', async ({ page }) => {
+  test('TC-01-02 Full bredde via Utseende gir bredere brødtekst og beholder panelene', async ({ page }) => {
     await openNote(page, LANG.sti);
     const lese = await brødtekstBredde(page);
     await velgLesebredde(page, 'Full bredde');
@@ -42,7 +42,7 @@ test.describe('AK-1.1-01 lesebredde på desktop (1440 px)', () => {
     expect(await brødtekstBredde(page)).toBeGreaterThan(ledig * 0.7);
   });
 
-  test.fixme('TC-01-03 Space w bytter frem og tilbake', async ({ page }) => {
+  test('TC-01-03 Space w bytter frem og tilbake', async ({ page }) => {
     await openNote(page, LANG.sti);
     const lese = await brødtekstBredde(page);
     await fokusPåInnhold(page);
@@ -52,14 +52,14 @@ test.describe('AK-1.1-01 lesebredde på desktop (1440 px)', () => {
     await expect.poll(() => brødtekstBredde(page)).toBeLessThan(lese + 2);
   });
 
-  test.fixme('TC-01-04 :bredde i paletten bytter', async ({ page }) => {
+  test('TC-01-04 :bredde i paletten bytter', async ({ page }) => {
     await openNote(page, LANG.sti);
     const lese = await brødtekstBredde(page);
     await kjørKommando(page, 'bredde');
     await expect.poll(() => brødtekstBredde(page)).toBeGreaterThan(lese + LANG.minstBredereFullPx);
   });
 
-  test.fixme('TC-01-05 valget huskes etter reload og gjelder alle notater (globalt)', async ({ page }) => {
+  test('TC-01-05 valget huskes etter reload og gjelder alle notater (globalt)', async ({ page }) => {
     await openNote(page, LANG.sti);
     const lese = await brødtekstBredde(page);
     await velgLesebredde(page, 'Full bredde');
@@ -72,7 +72,7 @@ test.describe('AK-1.1-01 lesebredde på desktop (1440 px)', () => {
     await expect(dialog.getByRole('radio', { name: 'Full bredde' })).toBeChecked();
   });
 
-  test.fixme('TC-01-06 full bredde på en .base-side gir ingen feil og ingen horisontal sidescroll', async ({ page }) => {
+  test('TC-01-06 full bredde på en .base-side gir ingen feil og ingen horisontal sidescroll', async ({ page }) => {
     await openNote(page, 'Oppgaver.base');
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['Space', 'w']);

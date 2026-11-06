@@ -198,7 +198,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     expect(await brødtekstBredde(page)).toBeCloseTo(bredde, 0);
   });
 
-  test.fixme('TC-F7-07 rask Space w viser ikke hint (utføres direkte)', async ({ page }) => {
+  test('TC-F7-07 rask Space w viser ikke hint (utføres direkte)', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     const bredde = await brødtekstBredde(page);

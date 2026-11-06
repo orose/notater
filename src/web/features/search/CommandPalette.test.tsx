@@ -104,6 +104,15 @@ describe('CommandPalette', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('Enter før søket har svart åpner første treff når det kommer', async () => {
+    setup();
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    const input = screen.getByRole('combobox');
+    fireEvent.change(input, { target: { value: 'idempot' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/v/test/domene/kafka/Idempotent%20produsent'));
+  });
+
   it('åpnes med forhåndsutfylt spørring (tagg-klikk)', async () => {
     setup('#kafka');
     fireEvent.click(screen.getByRole('button', { name: 'Søk' }));

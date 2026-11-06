@@ -97,3 +97,5 @@
 
 @media print { .whichkey, .showcmd, .command-toast { display: none !important; } }
 .rc-cmd { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.15em; }
+/* I zen står førstegangshintet nederst i midten (§11.6): toasten legger seg over det. */
+[data-zen] .command-toast .toast { bottom: calc(var(--space-5) + 4.5rem); }

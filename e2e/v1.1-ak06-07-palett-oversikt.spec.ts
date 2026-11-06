@@ -126,8 +126,8 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     ['hjelp', 'Velkommen', async (page) => expect(hurtigtastoversikt(page)).toBeVisible()],
     ['taster', 'Velkommen', async (page) => expect(hurtigtastoversikt(page)).toBeVisible()],
   ];
-  // Slice 1.1-a: tema, palett, modus og hjelp. Zen/bredde (1.1-b), folding (1.1-c) og diskré (1.1-d) kommer.
-  const levert = new Set(['tema terminal', 'palett fosfor', 'mørk', 'hjelp', 'taster']);
+  // Levert: 1.1-a (tema, palett, modus, hjelp) og 1.1-b (zen). Folding (1.1-c) og diskré (1.1-d) kommer.
+  const levert = new Set(['tema terminal', 'palett fosfor', 'mørk', 'hjelp', 'taster', 'zen', 'zn']);
   for (const [søk, sti, forvent] of effekter) {
     (levert.has(søk) ? test : test.fixme)(`TC-06-05 :${søk} kjører kommandoen`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: 'light' });

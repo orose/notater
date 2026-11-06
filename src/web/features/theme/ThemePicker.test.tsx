@@ -2,12 +2,15 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ThemePicker } from './ThemePicker';
 import { ThemeProvider } from './ThemeProvider';
+import { ViewSettingsProvider } from '../view-settings';
 
 function renderPicker() {
   const onClose = vi.fn();
   render(
     <ThemeProvider>
-      <ThemePicker open onClose={onClose} />
+      <ViewSettingsProvider>
+        <ThemePicker open onClose={onClose} />
+      </ViewSettingsProvider>
     </ThemeProvider>,
   );
   return { onClose, dialog: screen.getByRole('dialog', { name: 'Utseende' }) };
@@ -70,5 +73,16 @@ describe('ThemePicker', () => {
     const { dialog, onClose } = renderPicker();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Lukk' }));
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('Lesing: lesebredde som radioknapper i gruppen «Lesebredde» (F1), og lenke til zen (PO-61)', () => {
+    const { dialog } = renderPicker();
+    const group = within(dialog).getByRole('group', { name: 'Lesebredde' });
+    expect(within(group).getByRole('radio', { name: 'Leseoptimalisert' })).toBeChecked();
+    fireEvent.click(within(group).getByRole('radio', { name: 'Full bredde' }));
+    expect(root.dataset.width).toBe('full');
+    fireEvent.click(within(group).getByRole('radio', { name: 'Leseoptimalisert' }));
+    expect(root.hasAttribute('data-width')).toBe(false);
+    expect(within(dialog).getByRole('button', { name: /Zen/ })).toBeInTheDocument();
   });
 });

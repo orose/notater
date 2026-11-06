@@ -170,7 +170,7 @@ test.describe('AK-1.1-12 tilgjengelighet (axe 0 brudd, lys og mørk)', () => {
     expect(await page.evaluate(() => document.activeElement?.closest('[role="status"]') ?? null)).toBeNull();
   });
 
-  test.fixme('TC-12-06 zen: hopp-lenken og landemerket main finnes fortsatt', async ({ page, isMobile }) => {
+  test('TC-12-06 zen: hopp-lenken og landemerket main finnes fortsatt', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur');
     await openNote(page, fasit.langBrodtekst.sti);
     const bredde = await brødtekstBredde(page);
