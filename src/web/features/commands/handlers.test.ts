@@ -84,9 +84,18 @@ describe('kommandohandlere', () => {
     expect(ports.palette.openCommands).toHaveBeenCalledWith('palett ');
   });
 
+  it('bredde og zen er levert (1.1-b)', () => {
+    const { ctx, ports } = context();
+    expect(registry.get('view.toggleWidth').isEnabled(ctx)).toEqual({ enabled: true });
+    void registry.get('view.toggleWidth').run(ctx, {});
+    expect(ports.view.toggleWidth).toHaveBeenCalled();
+    void registry.get('view.toggleZen').run(ctx, {});
+    expect(ports.view.toggleZen).toHaveBeenCalled();
+  });
+
   it('funksjoner fra senere slices er deaktivert med «Kommer snart»', () => {
     const { ctx } = context();
-    for (const id of ['view.toggleWidth', 'view.toggleZen', 'view.toggleDiscreet', 'outline.toggleSection', 'outline.foldAll', 'outline.unfoldAll'] as const) {
+    for (const id of ['view.toggleDiscreet', 'outline.toggleSection', 'outline.foldAll', 'outline.unfoldAll'] as const) {
       expect(registry.get(id).isEnabled(ctx), id).toEqual({ enabled: false, reason: COMING_SOON });
     }
   });

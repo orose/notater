@@ -7,6 +7,8 @@ const FALLBACK: ViewSettingsValue = {
   toggleWidth: () => 'readable',
   zen: false,
   setZen: () => {},
+  zenHint: false,
+  dismissZenHint: () => {},
 };
 
 export function useViewSettings(): ViewSettingsValue {

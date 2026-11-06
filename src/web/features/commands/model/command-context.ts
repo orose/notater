@@ -64,8 +64,8 @@ export interface CommandPorts {
     foldAll(): void;
     unfoldAll(): void;
   };
-  /** Kort bekreftelse (toast, `role=status`). */
-  toast(message: string): void;
+  /** Kort bekreftelse (toast, `role=status`), valgfritt med tasttegn (én etikett per akkord, `['Space', 'w']`). */
+  toast(message: string, keys?: readonly string[]): void;
 }
 
 export interface CommandContext {

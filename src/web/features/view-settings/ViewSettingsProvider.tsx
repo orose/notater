@@ -3,7 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import { flushSync } from 'react-dom';
 import { safeLocalStorage } from '../../shared/storage';
 import { ViewSettingsContext, type ViewSettingsValue } from './view-settings-context';
-import { WIDTH_STORAGE_KEY, applyWidth, applyZen, readWidth, writeWidth, type ReadingWidth } from './view-state';
+import { WIDTH_STORAGE_KEY, applyWidth, applyZen, readWidth, takeZenHint, writeWidth, type ReadingWidth } from './view-state';
 
 function reducedMotion(): boolean {
   try {
@@ -22,6 +22,7 @@ type DocumentWithTransitions = Document & { startViewTransition?: (update: () =>
 export function ViewSettingsProvider({ children }: { readonly children: ReactNode }) {
   const [width, setWidthState] = useState<ReadingWidth>(() => readWidth(safeLocalStorage()));
   const [zen, setZenState] = useState(false);
+  const [zenHint, setZenHint] = useState(false);
   const widthRef = useRef(width);
 
   useLayoutEffect(() => {
@@ -60,6 +61,7 @@ export function ViewSettingsProvider({ children }: { readonly children: ReactNod
   }, [setWidth]);
 
   const setZen = useCallback((on: boolean) => {
+    setZenHint(on && takeZenHint(safeLocalStorage()));
     // Overgang (designsystem §11.6): View Transitions der det støttes, ellers umiddelbart.
     const doc = document as DocumentWithTransitions;
     if (typeof doc.startViewTransition === 'function' && !reducedMotion()) {
@@ -72,6 +74,10 @@ export function ViewSettingsProvider({ children }: { readonly children: ReactNod
     }
   }, []);
 
-  const value = useMemo<ViewSettingsValue>(() => ({ width, setWidth, toggleWidth, zen, setZen }), [width, setWidth, toggleWidth, zen, setZen]);
+  const dismissZenHint = useCallback(() => setZenHint(false), []);
+  const value = useMemo<ViewSettingsValue>(
+    () => ({ width, setWidth, toggleWidth, zen, setZen, zenHint, dismissZenHint }),
+    [width, setWidth, toggleWidth, zen, setZen, zenHint, dismissZenHint],
+  );
   return <ViewSettingsContext.Provider value={value}>{children}</ViewSettingsContext.Provider>;
 }

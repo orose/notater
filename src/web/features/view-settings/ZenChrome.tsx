@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../../shared/ui/Icon';
-import { safeLocalStorage } from '../../shared/storage';
 import { useViewSettings } from './use-view-settings';
-import { takeZenHint } from './view-state';
 
 const AWAKE_MS = 1800;
 const HINT_MS = 4000;
@@ -30,9 +28,8 @@ function isTouch(): boolean {
  * og fokus; touch: alltid) og førstegangshintet de tre første gangene.
  */
 export function ZenChrome() {
-  const { zen, setZen } = useViewSettings();
+  const { zen, setZen, zenHint, dismissZenHint } = useViewSettings();
   const [awake, setAwake] = useState(false);
-  const [hint, setHint] = useState<'desktop' | 'touch' | null>(null);
   const awakeTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -51,16 +48,12 @@ export function ZenChrome() {
   }, [zen]);
 
   useEffect(() => {
-    if (!zen) {
-      setHint(null);
-      return undefined;
-    }
-    if (!takeZenHint(safeLocalStorage())) return undefined;
-    setHint(isTouch() ? 'touch' : 'desktop');
-    const timer = window.setTimeout(() => setHint(null), cssMs('--hint-linger', HINT_MS));
+    if (!zenHint) return undefined;
+    const timer = window.setTimeout(dismissZenHint, cssMs('--hint-linger', HINT_MS));
     return () => window.clearTimeout(timer);
-  }, [zen]);
+  }, [zenHint, dismissZenHint]);
 
+  const hint = zen && zenHint ? (isTouch() ? 'touch' : 'desktop') : null;
   if (!zen) return null;
   return (
     <>

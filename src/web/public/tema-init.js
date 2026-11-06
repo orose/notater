@@ -33,4 +33,9 @@
   r.dataset.mode = dark ? 'dark' : 'light';
   r.dataset.modePref = d.mode;
   r.dataset.ornaments = d.ornaments ? 'on' : 'off';
+  /* F1 lesebredde (ADR-008): samme regler som src/web/features/view-settings/view-state.ts. */
+  try {
+    var w = JSON.parse(localStorage.getItem('vault-leser.visning') || 'null');
+    if (w && w.v === 1 && w.width === 'full') r.dataset.width = 'full';
+  } catch { /* ignorer */ }
 })();

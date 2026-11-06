@@ -153,12 +153,12 @@ describe('CommandPalette', () => {
     const input = screen.getByRole('combobox');
     expect(input).toHaveValue(':');
     expect(screen.getByRole('listbox', { name: 'Kommandoer' })).toBeInTheDocument();
-    fireEvent.change(input, { target: { value: ':bredde' } });
-    const width = screen.getAllByRole('option')[0] as HTMLElement;
-    expect(width).toHaveAttribute('data-command-id', 'view.toggleWidth');
-    expect(width).toHaveAttribute('aria-disabled', 'true');
-    expect(width).toHaveTextContent('Kommer snart');
-    expect([...width.querySelectorAll('kbd')].map((k) => k.textContent)).toEqual(['Space', 'w']);
+    fireEvent.change(input, { target: { value: ':diskret' } });
+    const discreet = screen.getAllByRole('option')[0] as HTMLElement;
+    expect(discreet).toHaveAttribute('data-command-id', 'view.toggleDiscreet');
+    expect(discreet).toHaveAttribute('aria-disabled', 'true');
+    expect(discreet).toHaveTextContent('Kommer snart');
+    expect([...discreet.querySelectorAll('kbd')].map((k) => k.textContent)).toEqual(['Space', 'd']);
     fireEvent.change(input, { target: { value: '' } });
     expect(screen.getByRole('listbox', { name: 'Søkeresultater' })).toBeInTheDocument();
   });

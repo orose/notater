@@ -5,11 +5,17 @@ import { Modal } from '../../shared/ui/Modal';
 import { PALETTES, PALETTE_INFO, TYPES, TYPE_INFO, type ThemeModePreference, type ThemeType } from './theme-state';
 import { useTheme } from './use-theme';
 import { modifierLabel } from '../../shared/ui/shortcuts';
+import { useViewSettings, type ReadingWidth } from '../view-settings';
 
 const MODE_LABELS: ReadonlyArray<readonly [ThemeModePreference, string]> = [
   ['light', 'Lys'],
   ['dark', 'Mørk'],
   ['system', 'System'],
+];
+
+const WIDTH_OPTIONS: ReadonlyArray<readonly [ReadingWidth, string, string]> = [
+  ['readable', 'Leseoptimalisert', 'M7 4h6M7 7h6M7 10h4'],
+  ['full', 'Full bredde', 'M3.5 4h13M3.5 7h13M3.5 10h9'],
 ];
 
 const TYPE_OPTIONS: ReadonlyArray<{ readonly id: ThemeType; readonly name: string; readonly desc: string }> = TYPES.map((id) => ({
@@ -36,6 +42,7 @@ export function ThemePicker({ open, onClose, onOpenShortcuts }: ThemePickerProps
 
 function ThemePickerBody({ headingId, onOpenShortcuts }: { readonly headingId: string; readonly onOpenShortcuts?: (() => void) | undefined }) {
   const { preferences, resolvedMode, setPreferences } = useTheme();
+  const { width, setWidth, setZen } = useViewSettings();
   const name = useId();
 
   return (
@@ -64,6 +71,22 @@ function ThemePickerBody({ headingId, onOpenShortcuts }: { readonly headingId: s
                   checked={preferences.mode === value}
                   onChange={() => setPreferences({ mode: value })}
                 />
+                {label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend className="label">Lesing</legend>
+          <div className="seg seg-width" role="group" aria-label="Lesebredde">
+            {WIDTH_OPTIONS.map(([value, label, lines]) => (
+              <label key={value}>
+                <input type="radio" name={`${name}-width`} value={value} checked={width === value} onChange={() => setWidth(value)} />
+                <svg className="wi" viewBox="0 0 20 14" aria-hidden="true" focusable="false">
+                  <rect x="0.7" y="0.7" width="18.6" height="12.6" rx="1.5" />
+                  <path d={lines} />
+                </svg>
                 {label}
               </label>
             ))}
@@ -153,18 +176,37 @@ function ThemePickerBody({ headingId, onOpenShortcuts }: { readonly headingId: s
           Valget lagres i denne nettleseren. <kbd>{modifierLabel()}</kbd> <kbd>.</kbd> eller <kbd>Space</kbd> <kbd>m</kbd>{' '}
           bytter lys/mørk.
         </p>
-        {onOpenShortcuts ? (
+        <div className="panel-links">
           <button
             type="button"
-            className="btn theme-shortcuts"
             onClick={(event) => {
               event.currentTarget.closest('dialog')?.close();
-              requestAnimationFrame(() => onOpenShortcuts());
+              requestAnimationFrame(() => setZen(true));
             }}
           >
-            Hurtigtaster
+            <Icon name="zen" />
+            Zen
+            <span className="keys-inline" aria-hidden="true">
+              <kbd className="k lead">Space</kbd>
+              <kbd className="k">z</kbd>
+            </span>
           </button>
-        ) : null}
+          {onOpenShortcuts ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.currentTarget.closest('dialog')?.close();
+                requestAnimationFrame(() => onOpenShortcuts());
+              }}
+            >
+              <Icon name="keys" />
+              Alle hurtigtaster
+              <kbd className="k" aria-hidden="true">
+                ?
+              </kbd>
+            </button>
+          ) : null}
+        </div>
       </form>
     </>
   );

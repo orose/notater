@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { ThemeProvider } from '../features/theme';
+import { ViewSettingsProvider } from '../features/view-settings';
 
 export function createTestQueryClient(): QueryClient {
   return new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
@@ -20,10 +21,12 @@ export function renderWithProviders(
   const result = render(
     <QueryClientProvider client={client}>
       <ThemeProvider>
-        <MemoryRouter initialEntries={[route]}>
-          {node}
-          <LocationProbe />
-        </MemoryRouter>
+        <ViewSettingsProvider>
+          <MemoryRouter initialEntries={[route]}>
+            {node}
+            <LocationProbe />
+          </MemoryRouter>
+        </ViewSettingsProvider>
       </ThemeProvider>
     </QueryClientProvider>,
   );

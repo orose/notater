@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { useVaults } from '../shared/api';
 import { ThemeProvider } from '../features/theme';
+import { ViewSettingsProvider } from '../features/view-settings';
 import { VaultLayout } from './VaultLayout';
 
 function RootRedirect() {
@@ -31,6 +32,7 @@ export function App() {
   return (
     <QueryClientProvider client={client}>
       <ThemeProvider>
+        <ViewSettingsProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<RootRedirect />} />
@@ -38,6 +40,7 @@ export function App() {
             <Route path="*" element={<RootRedirect />} />
           </Routes>
         </BrowserRouter>
+        </ViewSettingsProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

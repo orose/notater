@@ -8,6 +8,9 @@ export interface ViewSettingsValue {
   /** Zen (F4): flyktig, alltid av ved oppstart. */
   readonly zen: boolean;
   readonly setZen: (on: boolean) => void;
+  /** Førstegangshintet for zen skal vises (de tre første gangene, designsystem §11.6). */
+  readonly zenHint: boolean;
+  readonly dismissZenHint: () => void;
 }
 
 export const ViewSettingsContext = createContext<ViewSettingsValue | null>(null);

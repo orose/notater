@@ -7,6 +7,7 @@ import { DocumentPage } from '../features/note-view';
 import { CommandProvider, useCommands } from '../features/commands';
 import { SearchProvider } from '../features/search';
 import { ThemePicker } from '../features/theme';
+import { ViewFlags, ZenChrome } from '../features/view-settings';
 import { VaultHome } from './VaultHome';
 
 const DRAWER_ID = 'sidebar';
@@ -99,10 +100,12 @@ export function VaultLayout() {
             open={drawerOpen}
             onOpenTheme={() => setThemeOpen(true)}
             onNavigate={() => setDrawerOpen(false)}
+            flags={<ViewFlags />}
           />
           <div className="main">{docPath ? <DocumentPage /> : <VaultHome vaultId={vaultId} />}</div>
         </div>
         <AppearanceDialog open={themeOpen} onClose={() => setThemeOpen(false)} />
+        <ZenChrome />
       </LiveReloadProvider>
       </CommandProvider>
     </SearchProvider>

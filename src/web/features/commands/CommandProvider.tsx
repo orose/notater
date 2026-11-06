@@ -20,6 +20,7 @@ import {
 } from '../keyboard';
 import { usePalette, type PaletteCommandItem, type PaletteCommandSource } from '../search';
 import { PALETTES, PALETTE_INFO, TYPES, TYPE_INFO, useTheme } from '../theme';
+import { useViewSettings } from '../view-settings';
 import { CommandsContext, type CommandsContextValue } from './commands-context';
 import { createCommandHandlers } from './handlers';
 import { COMMAND_CATALOG, type CommandId } from './model/catalog';
@@ -40,8 +41,6 @@ interface CommandProviderProps {
   readonly children: ReactNode;
 }
 
-/** Visningstilstand (ADR-008) kobles på i 1.1-b–d; til da er dette standardverdiene. */
-const DEFAULT_VIEW: ViewSnapshot = { width: 'readable', discreet: false, zen: false, noteEmbeds: 0, foldableHeadings: 0 };
 
 const TOAST_MS = 4000;
 
@@ -76,12 +75,16 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
   const [platform] = useState<'apple' | 'other'>(() => (isApple() ? 'apple' : 'other'));
   const [helpOpen, setHelpOpen] = useState(false);
   const [pending, setPending] = useState<PendingSequence | null>(null);
-  const [toast, setToast] = useState<{ readonly message: string; readonly id: number } | null>(null);
+  const [toast, setToast] = useState<{ readonly message: string; readonly keys: readonly string[]; readonly id: number } | null>(null);
+  const viewSettings = useViewSettings();
 
   const registry = useMemo(() => createCommandRegistry(createCommandHandlers()), []);
   const scroll = useMemo(() => createScrollPort(), []);
 
-  const showToast = useCallback((message: string) => setToast((t) => ({ message, id: (t?.id ?? 0) + 1 })), []);
+  const showToast = useCallback(
+    (message: string, keys: readonly string[] = []) => setToast((t) => ({ message, keys, id: (t?.id ?? 0) + 1 })),
+    [],
+  );
   useEffect(() => {
     if (!toast) return undefined;
     const timer = setTimeout(() => setToast(null), TOAST_MS);
@@ -89,6 +92,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
   }, [toast]);
 
   const { setPreferences, toggleMode, preferences, resolvedMode } = theme;
+  const { toggleWidth, setZen, zen, width } = viewSettings;
   const ports = useMemo<CommandPorts>(
     () => ({
       scroll,
@@ -128,14 +132,27 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
           };
         }),
       },
-      view: { toggleWidth: noop, toggleDiscreet: noop, toggleZen: noop, exitZen: () => false },
+      view: {
+        toggleWidth: () => {
+          const next = toggleWidth();
+          showToast(next === 'full' ? 'Full bredde' : 'Leseoptimalisert bredde', ['Space', 'w']);
+        },
+        toggleDiscreet: noop,
+        toggleZen: () => setZen(!zen),
+        exitZen: () => {
+          if (!zen) return false;
+          setZen(false);
+          return true;
+        },
+      },
       outline: { toggleAtReadingPosition: noop, foldAll: noop, unfoldAll: noop },
       toast: showToast,
     }),
-    [scroll, navigate, palette.openSearch, palette.openCommands, onOpenAppearance, resolvedMode, toggleMode, setPreferences, preferences.type, preferences.palette, showToast],
+    [scroll, navigate, palette.openSearch, palette.openCommands, onOpenAppearance, resolvedMode, toggleMode, setPreferences, preferences.type, preferences.palette, showToast, toggleWidth, setZen, zen],
   );
 
-  const ctx = useMemo<CommandContext>(() => ({ mode: 'normal', route: routeOf(vaultId, docPath), view: DEFAULT_VIEW, ports }), [vaultId, docPath, ports]);
+  const view = useMemo<ViewSnapshot>(() => ({ width, discreet: false, zen, noteEmbeds: 0, foldableHeadings: 0 }), [width, zen]);
+  const ctx = useMemo<CommandContext>(() => ({ mode: 'normal', route: routeOf(vaultId, docPath), view, ports }), [vaultId, docPath, view, ports]);
   const ctxRef = useRef(ctx);
   useLayoutEffect(() => {
     ctxRef.current = ctx;
@@ -308,6 +325,15 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
         {toast ? (
           <div className="toast" key={toast.id}>
             {toast.message}
+            {toast.keys.length > 0 ? (
+              <span className="keys-inline" aria-hidden="true">
+                {toast.keys.map((k, i) => (
+                  <kbd key={i} className={k === 'Space' ? 'k lead' : 'k'}>
+                    {k}
+                  </kbd>
+                ))}
+              </span>
+            ) : null}
             <button type="button" className="icon-btn" aria-label="Lukk melding" onClick={() => setToast(null)}>
               ×
             </button>

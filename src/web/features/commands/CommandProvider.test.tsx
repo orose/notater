@@ -147,8 +147,33 @@ describe('CommandProvider: tastatur → kommandoer', () => {
   it('tast på deaktivert kommando gir begrunnelsen som toast (AR-1.1-02)', () => {
     setup();
     key(' ');
+    key('d');
+    expect(screen.getByText('Diskré embedding – dette notatet: Kommer snart')).toBeInTheDocument();
+  });
+
+  it('Space w bytter lesebredde (huskes) og gir toast med tasttegn', () => {
+    setup();
+    key(' ');
     key('w');
-    expect(screen.getByText('Bytt lesebredde: Kommer snart')).toBeInTheDocument();
+    expect(document.documentElement.dataset.width).toBe('full');
+    expect(JSON.parse(localStorage.getItem('vault-leser.visning') ?? '{}')).toEqual({ v: 1, width: 'full' });
+    expect(screen.getByText('Full bredde')).toBeInTheDocument();
+    key(' ');
+    key('w');
+    expect(document.documentElement.hasAttribute('data-width')).toBe(false);
+    expect(screen.getByText('Leseoptimalisert bredde')).toBeInTheDocument();
+  });
+
+  it('Space z slår på zen; Esc går ut; Esc med påbegynt sekvens avbryter bare sekvensen', () => {
+    setup();
+    key(' ');
+    key('z');
+    expect(document.documentElement.dataset.zen).toBe('on');
+    key('g');
+    key('Escape');
+    expect(document.documentElement.dataset.zen).toBe('on');
+    key('Escape');
+    expect(document.documentElement.hasAttribute('data-zen')).toBe(false);
   });
 
   it('which-key vises etter 400 ms med leader-kommandoene, og Esc skjuler den', () => {

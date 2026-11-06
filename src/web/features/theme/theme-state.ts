@@ -138,4 +138,3 @@ export function preferencesFromSearch(search: string, base: ThemePreferences): T
 }
 
 export { safeLocalStorage } from '../../shared/storage';
-}

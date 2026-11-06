@@ -1,5 +1,5 @@
 import './navigation.css';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { DocPath, VaultId } from '../../../shared/api-types';
 import { useSearch, useTags, useTree } from '../../shared/api';
 import { Icon } from '../../shared/ui/Icon';
@@ -21,10 +21,12 @@ interface SidebarProps {
   readonly open: boolean;
   readonly onOpenTheme: () => void;
   readonly onNavigate: () => void;
+  /** Statuslinjeflagg for aktive visningsvalg (`[full]`), satt av layouten. */
+  readonly flags?: ReactNode;
 }
 
 /** Sidepanel (designsystem §7.1). På mobil er det samme element en skuff. */
-export function Sidebar({ id, vaultId, currentPath, open, onOpenTheme, onNavigate }: SidebarProps) {
+export function Sidebar({ id, vaultId, currentPath, open, onOpenTheme, onNavigate, flags }: SidebarProps) {
   const tree = useTree(vaultId);
   const tags = useTags(vaultId);
   const openSearch = useOpenSearch();
@@ -163,6 +165,7 @@ export function Sidebar({ id, vaultId, currentPath, open, onOpenTheme, onNavigat
       ) : null}
 
       <div className="sidebar-foot">
+        {flags}
         <LiveStatus />
         <button type="button" className="icon-btn" onClick={onOpenTheme}>
           <Icon name="theme" />
