@@ -143,6 +143,7 @@ export function FoldingProvider({ outline, docKey, children }: { readonly outlin
   const control = useMemo<OutlineControl>(
     () => ({
       foldableHeadings: foldable.size,
+      noteEmbeds: outline.noteEmbeds,
       toggleAtReadingPosition: () => {
         const id = headingAtReadingPosition([...foldable]);
         if (!id) return false;
@@ -155,7 +156,7 @@ export function FoldingProvider({ outline, docKey, children }: { readonly outlin
       foldAll: () => update(new Set(foldable), { ...anchorNow(), mode: 'keep' }),
       unfoldAll: () => update(EMPTY, { ...anchorNow(), mode: 'keep' }),
     }),
-    [foldable, update, anchorNow],
+    [foldable, update, anchorNow, outline],
   );
 
   const host = useContext(OutlineHostContext);

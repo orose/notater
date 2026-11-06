@@ -1,7 +1,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChangedEvent } from '../../../shared/api-types';
 import { testHighlighter } from '../../test-support/render-fixtures';
 import { createInlineMetaExtractor } from '../vault-index';
@@ -200,5 +200,151 @@ describe('createLruCache', () => {
     expect(cache.get('b')).toBeUndefined();
     expect(cache.get('a')).toBe(1);
     expect(cache.size).toBe(2);
+  });
+});
+
+/** Falsk filovervåker: testen leverer buntene selv og styrer når den er «klar». */
+function fakeWatcher() {
+  let onBatch: ((paths: string[]) => void) | null = null;
+  let markReady!: () => void;
+  const ready = new Promise<void>((resolve) => (markReady = resolve));
+  const watch: VaultRuntimeDeps['watch'] = (_root, _ignore, cb) => {
+    onBatch = cb;
+    return { ready, close: async () => undefined };
+  };
+  return {
+    watch,
+    markReady: () => markReady(),
+    batch: (paths: string[]) => {
+      if (!onBatch) throw new Error('Overvåkeren er ikke startet');
+      onBatch(paths);
+    },
+  };
+}
+
+// Ekte setTimeout fanges før fake timers slås på, slik at testene kan vente på ekte fil-I/O.
+const realSetTimeout = globalThis.setTimeout;
+const realSleep = (ms: number): Promise<void> => new Promise((r) => realSetTimeout(r, ms));
+const until = async (check: () => boolean): Promise<void> => {
+  for (let i = 0; i < 300 && !check(); i++) await realSleep(10);
+  expect(check()).toBe(true);
+};
+
+describe('omdøping delt over to debounce-bunter (PO-78)', () => {
+  const config = () => ({ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const start = async (renameWindowMs = 300) => {
+    const watcher = fakeWatcher();
+    watcher.markReady();
+    const vault = createVaultRuntime(config(), { ...deps, watch: watcher.watch, renameWindowMs });
+    await vault.ready();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const events: ChangedEvent[] = [];
+    vault.subscribe((e) => events.push(e));
+    return { vault, watcher, events };
+  };
+
+  it('removed i én bunt og added i neste gir én hendelse med removed, added og renamed', async () => {
+    const { rename } = await import('node:fs/promises');
+    const { watcher, events } = await start();
+    await rename(join(root, 'B.md'), join(root, 'B2.md'));
+
+    watcher.batch(['B.md']);
+    await vi.advanceTimersByTimeAsync(150);
+    await realSleep(50);
+    expect(events).toEqual([]); // slettingen holdes tilbake
+
+    watcher.batch(['B2.md']);
+    await until(() => events.length > 0);
+    expect(events).toEqual([
+      {
+        vaultId: 'v',
+        revision: 2,
+        changes: [
+          { type: 'removed', path: 'B' },
+          { type: 'added', path: 'B2' },
+          { type: 'renamed', path: 'B2', from: 'B', to: 'B2' },
+        ],
+      },
+    ]);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    await realSleep(50);
+    expect(events).toHaveLength(1);
+  });
+
+  it('sletting uten ny fil kommer frem som removed når vinduet går ut', async () => {
+    const { watcher, events } = await start();
+    await rm(join(root, 'B.md'));
+
+    watcher.batch(['B.md']);
+    await realSleep(50);
+    await vi.advanceTimersByTimeAsync(299);
+    await realSleep(50);
+    expect(events).toEqual([]);
+
+    await vi.advanceTimersByTimeAsync(1);
+    await until(() => events.length > 0);
+    expect(events).toEqual([{ vaultId: 'v', revision: 2, changes: [{ type: 'removed', path: 'B' }] }]);
+  });
+
+  it('vanlige endringer venter ikke på vinduet', async () => {
+    const { watcher, events } = await start();
+    await writeFile(join(root, 'A.md'), '# A endret og lengre');
+    watcher.batch(['A.md']);
+    await until(() => events.length > 0); // ingen fake-tid flyttet
+    expect(events[0]!.changes).toEqual([{ type: 'changed', path: 'A' }]);
+  });
+});
+
+describe('oppstart venter på filovervåkeren (BUG-012)', () => {
+  it('«ready» kommer først når overvåkeren er klar, og endringer fra vinduet før det er med', async () => {
+    const watcher = fakeWatcher();
+    // Endringene skjer etter at skanningen er ferdig, men før overvåkeren er klar (= chokidar regner dem som «initial»).
+    const createInitialExtractor = () => {
+      const inner = createInlineMetaExtractor();
+      return {
+        ...inner,
+        extractMany: async (sources: readonly string[]) => {
+          await writeFile(join(root, 'C.md'), '# C');
+          await writeFile(join(root, 'A.md'), '# A er endret etter skanningen');
+          await rm(join(root, 'B.md'));
+          return inner.extractMany(sources);
+        },
+      };
+    };
+    const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] }, { ...deps, watch: watcher.watch, createInitialExtractor });
+    let resolved = false;
+    const ready = vault.ready().then((s) => ((resolved = true), s));
+    await realSleep(200);
+    expect(resolved).toBe(false);
+    expect(vault.summary().status).toBe('indexing');
+
+    watcher.markReady();
+    const state = await ready;
+    expect(state.revision).toBe(1);
+    expect([...state.snapshot.files.keys()].sort()).toEqual(['A.md', 'C.md']);
+    expect(state.snapshot.notes.get('A.md')!.body).toContain('endret etter skanningen');
+    expect(vault.summary()).toMatchObject({ status: 'ready', noteCount: 2, revision: 1 });
+  });
+
+  it('hendelser fra overvåkeren under indekseringen tas med', async () => {
+    const watcher = fakeWatcher();
+    const vault = createVaultRuntime({ id: 'v', name: 'V', root, ignore: [], hiddenProperties: [] }, { ...deps, watch: watcher.watch, renameWindowMs: 0 });
+    const ready = vault.ready();
+    await until(() => vault.summary().status === 'indexing');
+    watcher.batch(['D.md']); // bunt før «ready»: må ikke kaste eller gå tapt
+    watcher.markReady();
+    await ready;
+    const events: ChangedEvent[] = [];
+    vault.subscribe((e) => events.push(e));
+    await writeFile(join(root, 'D.md'), '# D');
+    watcher.batch(['D.md']);
+    await until(() => events.length > 0);
+    expect(events[0]!.changes).toEqual([{ type: 'added', path: 'D' }]);
   });
 });

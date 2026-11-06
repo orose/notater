@@ -31,7 +31,7 @@ test.describe('AK-1.1-02 av/på per notat', () => {
     await expect(rammeEtiketter(page)).toHaveCount(R.normal.antallRammer);
   });
 
-  test.fixme('TC-02-01 Utseende: «Diskré embedding – dette notatet» slår av rammene og viser toast', async ({ page }) => {
+  test('TC-02-01 Utseende: «Diskré embedding – dette notatet» slår av rammene og viser toast', async ({ page }) => {
     await openNote(page, R.sti);
     await settDiskret(page, true);
     await expect(rammeEtiketter(page)).toHaveCount(0);
@@ -40,7 +40,7 @@ test.describe('AK-1.1-02 av/på per notat', () => {
     await expect(rammeEtiketter(page)).toHaveCount(R.normal.antallRammer);
   });
 
-  test.fixme('TC-02-02 Space d bytter, med toast', async ({ page, isMobile }) => {
+  test('TC-02-02 Space d bytter, med toast', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur testes på desktop');
     await openNote(page, R.sti);
     await fokusPåInnhold(page);
@@ -52,13 +52,13 @@ test.describe('AK-1.1-02 av/på per notat', () => {
     await expect(toast(page)).toContainText(/av/i);
   });
 
-  test.fixme('TC-02-03 :diskret i paletten bytter', async ({ page }) => {
+  test('TC-02-03 :diskret i paletten bytter', async ({ page }) => {
     await openNote(page, R.sti);
     await kjørKommando(page, 'diskret');
     await expect(rammeEtiketter(page)).toHaveCount(0);
   });
 
-  test.fixme('TC-02-04 gjelder kun gjeldende notat; andre notater er upåvirket; huskes per notat etter reload', async ({ page }) => {
+  test('TC-02-04 gjelder kun gjeldende notat; andre notater er upåvirket; huskes per notat etter reload', async ({ page }) => {
     await openNote(page, R.sti);
     await settDiskret(page, true);
     await expect(rammeEtiketter(page)).toHaveCount(0);
@@ -83,7 +83,7 @@ test.describe('AK-1.1-02 av/på per notat', () => {
     await expect(artikkel(page).getByText('Innebygd fra', { exact: true }).first()).toBeVisible();
   });
 
-  test.fixme('TC-02-05 diskré på et notat som selv er innebygd et annet sted påvirker ikke vertsnotatet', async ({ page }) => {
+  test('TC-02-05 diskré på et notat som selv er innebygd et annet sted påvirker ikke vertsnotatet', async ({ page }) => {
     // Driftsstatus er kilde i rapporten. Diskré på Driftsstatus skal ikke gjøre rapportens embeds diskré.
     await openNote(page, 'lesekomfort/kilder/Driftsstatus');
     await settDiskret(page, true);
@@ -99,7 +99,7 @@ test.describe('AK-1.1-03 visning i diskré modus', () => {
     await settDiskret(page, true);
   });
 
-  test.fixme('TC-03-01 ingen ramme, ingen «Innebygd fra»-etikett, ingen «Åpne notat»-knapp', async ({ page }) => {
+  test('TC-03-01 ingen ramme, ingen «Innebygd fra»-etikett, ingen «Åpne notat»-knapp', async ({ page }) => {
     await expect(rammeEtiketter(page)).toHaveCount(0);
     await expect(artikkel(page).getByRole('link', { name: /Åpne notat/ })).toHaveCount(0);
     for (const tekst of Object.keys(D.kilder)) {
@@ -107,21 +107,21 @@ test.describe('AK-1.1-03 visning i diskré modus', () => {
     }
   });
 
-  test.fixme('TC-03-02 overskriftsnivåer: tittel ett nivå under nærmeste foregående overskrift (maks H6), seksjon justert, blokk uten overskrift', async ({ page }) => {
+  test('TC-03-02 overskriftsnivåer: tittel ett nivå under nærmeste foregående overskrift (maks H6), seksjon justert, blokk uten overskrift', async ({ page }) => {
     expect(await overskrifterIArtikkel(page)).toEqual(D.overskrifter.map(([n, t]) => [n, t]));
   });
 
-  test.fixme('TC-03-03 tittelen til et notat med egen H1 vises én gang (ikke dobbelt)', async ({ page }) => {
+  test('TC-03-03 tittelen til et notat med egen H1 vises én gang (ikke dobbelt)', async ({ page }) => {
     const tekster = (await overskrifterIArtikkel(page)).map(([, t]) => t);
     expect(tekster.filter((t) => t === 'Driftsstatus')).toHaveLength(1);
   });
 
-  test.fixme('TC-03-04 innebygde overskrifter er med i innholdsfortegnelsen', async ({ page, isMobile }) => {
+  test('TC-03-04 innebygde overskrifter er med i innholdsfortegnelsen', async ({ page, isMobile }) => {
     test.skip(isMobile, 'TOC i høyremargen på desktop; mobil-TOC dekkes av TC-03-11');
     await expect.poll(() => tocTekster(page)).toEqual([...D.toc]);
   });
 
-  test.fixme('TC-03-05 §-nummerering løper sammenhengende gjennom innebygde H2-er (Tidsskrift, standard)', async ({ page }) => {
+  test('TC-03-05 §-nummerering løper sammenhengende gjennom innebygde H2-er (Tidsskrift, standard)', async ({ page }) => {
     await expect(page.locator('html')).toHaveAttribute('data-type', 'tidsskrift');
     const { nummer, tekster, vist } = await paragrafOverskrifter(page);
     expect(tekster).toEqual([...D.paragrafer]);
@@ -129,7 +129,7 @@ test.describe('AK-1.1-03 visning i diskré modus', () => {
     expect(vist.every(Boolean), '§ vises i Tidsskrift').toBe(true);
   });
 
-  test.fixme('TC-03-15 §-nummer endres ikke når en seksjon foldes (ADR-009 beslutning 4)', async ({ page }) => {
+  test('TC-03-15 §-nummer endres ikke når en seksjon foldes (ADR-009 beslutning 4)', async ({ page }) => {
     // Del I inneholder de nummererte H2-ene Driftsstatus og Nøkkeltall; de skal beholde numrene (skjult).
     await foldKnapp(page, 'Del I – Drift').click();
     const { nummer, tekster } = await paragrafOverskrifter(page);
@@ -137,7 +137,7 @@ test.describe('AK-1.1-03 visning i diskré modus', () => {
     expect(nummer).toEqual(D.paragrafer.map((_, i) => i + 1));
   });
 
-  test.fixme('TC-03-06 kildelenke vises ved hover på den innebygde seksjonen', async ({ page, isMobile }) => {
+  test('TC-03-06 kildelenke vises ved hover på den innebygde seksjonen', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Hover finnes ikke på touch – se TC-03-12');
     await page.mouse.move(0, 0);
     const lenke = kildelenke(page, 'Driftsstatus').first();
@@ -147,7 +147,7 @@ test.describe('AK-1.1-03 visning i diskré modus', () => {
     await expect(lenke).toHaveAttribute('href', /lesekomfort\/kilder\/Driftsstatus$/);
   });
 
-  test.fixme('TC-03-07 kildelenke vises ved tastaturfokus i den innebygde seksjonen', async ({ page, isMobile }) => {
+  test('TC-03-07 kildelenke vises ved tastaturfokus i den innebygde seksjonen', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur testes på desktop');
     await page.mouse.move(0, 0);
     const lenke = kildelenke(page, 'Driftsstatus').first();
@@ -160,19 +160,19 @@ test.describe('AK-1.1-03 visning i diskré modus', () => {
     await expect(page.getByRole('heading', { level: 1 }).first()).toHaveText('Driftsstatus');
   });
 
-  test.fixme('TC-03-08 nestede embeds arver diskré modus (Plan i Leveranser)', async ({ page }) => {
+  test('TC-03-08 nestede embeds arver diskré modus (Plan i Leveranser)', async ({ page }) => {
     const plan = artikkel(page).getByText('Neste kvartal prioriteres stabilitet foran nye funksjoner.');
     await expect(plan).toBeVisible();
     expect(await rammerRundt(plan)).toEqual([]);
     await expect(kildelenke(page, 'Plan')).toHaveCount(1);
   });
 
-  test.fixme('TC-03-09 feilkort (manglende, syklus, dybdegrense) er fortsatt synlige', async ({ page }) => {
+  test('TC-03-09 feilkort (manglende, syklus, dybdegrense) er fortsatt synlige', async ({ page }) => {
     for (const kort of D.feilkort) await expect(artikkel(page).getByText(kort).first(), kort).toBeVisible();
     for (const tekst of D.aldriSynlig) await expect(artikkel(page).getByText(tekst)).toHaveCount(0);
   });
 
-  test.fixme('TC-03-10 baser og bilder er uendret', async ({ page }) => {
+  test('TC-03-10 baser og bilder er uendret', async ({ page }) => {
     const base = artikkel(page).getByRole('region', { name: /^Base/ }).or(artikkel(page).locator('section.base')).first();
     await expect(base).toBeVisible();
     await expect(base.locator('tbody tr')).toHaveCount(R.uendret.baseRader);
@@ -185,20 +185,20 @@ test.describe('AK-1.1-03 visning i diskré modus', () => {
     expect(diskret.base?.width).toBeCloseTo(normal.base?.width ?? -1, 0);
   });
 
-  test.fixme('TC-03-11 mobil: innebygde overskrifter er med i den sammenleggbare TOC-en', async ({ page, isMobile }) => {
+  test('TC-03-11 mobil: innebygde overskrifter er med i den sammenleggbare TOC-en', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'Mobil');
     const toc = page.getByRole('navigation', { name: 'Innhold (kompakt)' });
     await toc.getByText(/Innhold/).first().click();
     for (const t of ['Sammendrag', 'Driftsstatus', 'Leveranser', 'Trinn 1']) await expect(toc.getByRole('link', { name: t }).first()).toBeVisible();
   });
 
-  test.fixme('TC-03-12 touch: kildelenken kan nås uten hover (trykk i seksjonen viser den)', async ({ page, isMobile }) => {
+  test('TC-03-12 touch: kildelenken kan nås uten hover (trykk i seksjonen viser den)', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'Touch');
     await artikkel(page).getByText('Driften i kvartalet var stabil.').tap();
     await forventSynlig(kildelenke(page, 'Driftsstatus').first());
   });
 
-  test.fixme('TC-03-13 overskrifter i innebygde notater kan foldes; selve embeden kan ikke foldes som blokk', async ({ page }) => {
+  test('TC-03-13 overskrifter i innebygde notater kan foldes; selve embeden kan ikke foldes som blokk', async ({ page }) => {
     await foldKnapp(page, 'Driftsstatus').first().click();
     await expect(artikkel(page).getByText('Driften i kvartalet var stabil.')).toBeHidden();
     await expect(foldKnapp(page, 'Driftsstatus').first()).toHaveAttribute('aria-expanded', 'false');
@@ -208,7 +208,7 @@ test.describe('AK-1.1-03 visning i diskré modus', () => {
     await expect(artikkel(page).getByRole('button', { name: /^Fold (sammen|ut) «?Innebygd/ })).toHaveCount(0);
   });
 
-  test.fixme('TC-03-14 fold av vertsnotatets H1 skjuler alt innebygd innhold frem til neste H1', async ({ page }) => {
+  test('TC-03-14 fold av vertsnotatets H1 skjuler alt innebygd innhold frem til neste H1', async ({ page }) => {
     await foldKnapp(page, 'Del I – Drift').click();
     await expect(artikkel(page).getByText('Driften i kvartalet var stabil.')).toBeHidden();
     await expect(artikkel(page).getByText('Neste kvartal prioriteres stabilitet foran nye funksjoner.')).toBeHidden();
@@ -217,7 +217,7 @@ test.describe('AK-1.1-03 visning i diskré modus', () => {
 });
 
 test.describe('AK-1.1-02/05 kontekst', () => {
-  test.fixme('TC-02-06 :diskret er deaktivert med forklaring på en .base-side', async ({ page }) => {
+  test('TC-02-06 :diskret er deaktivert med forklaring på en .base-side', async ({ page }) => {
     await openNote(page, 'Oppgaver.base');
     await fokusPåInnhold(page);
     await page.keyboard.press(':');
@@ -229,7 +229,7 @@ test.describe('AK-1.1-02/05 kontekst', () => {
     await expect(toast(page)).toHaveCount(0);
   });
 
-  test.fixme('TC-02-07 Utseende-kontrollen er deaktivert (med forklaring) på en .base-side', async ({ page }) => {
+  test('TC-02-07 Utseende-kontrollen er deaktivert (med forklaring) på en .base-side', async ({ page }) => {
     await openNote(page, 'Oppgaver.base');
     const dialog = await åpneUtseende(page);
     await expect(dialog.getByLabel('Diskré embedding – dette notatet')).toBeDisabled();

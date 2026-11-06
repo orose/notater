@@ -11,6 +11,8 @@ interface EmbedProps {
   readonly 'data-anchor'?: string;
   readonly 'data-title'?: string;
   readonly 'data-raw'?: string;
+  /** Diskré embedding (F2): satt av disposisjonen (`buildOutline`), aldri av serveren. */
+  readonly 'data-vr-discreet'?: string;
   readonly children?: ReactNode;
 }
 
@@ -40,6 +42,22 @@ export function Embed(props: EmbedProps) {
       {title}
     </Link>
   ) : null;
+
+  if (status === 'ok' && props['data-vr-discreet'] === 'true') {
+    // Designsystem §11.4: ingen ramme/etikett/knapp; kildelenken er siste barn og vises ved hover/fokus.
+    const label = anchor?.startsWith('^') ? `${title} ${anchor}` : title;
+    return (
+      <div className="embed is-diskret" data-vr-discreet="true">
+        {props.children}
+        {target ? (
+          <Link className="embed-src" to={docUrl(props.vaultId, target, anchor)} aria-label={`Kilde: ${label}`}>
+            <span className="src-k">fra</span>
+            <span className="t">{label}</span>
+          </Link>
+        ) : null}
+      </div>
+    );
+  }
 
   if (status === 'ok') {
     return (

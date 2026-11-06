@@ -63,7 +63,7 @@ test.describe('AK-1.1-10 P1: frontmatter er data, ikke presentasjon (kjører nå
 });
 
 test.describe('AK-1.1-10 ingen skriving', () => {
-  test.fixme('TC-10-02 alle v1.1-funksjoner i bruk: ingen endrede filer og bare GET/HEAD mot serveren', async ({ page, vaultDir, isMobile }) => {
+  test('TC-10-02 alle v1.1-funksjoner i bruk: ingen endrede filer og bare GET/HEAD mot serveren', async ({ page, vaultDir, isMobile }) => {
     test.skip(isMobile, 'Desktop');
     const før = sjekksum(vaultDir);
     const metoder = new Set<string>();
@@ -84,7 +84,7 @@ test.describe('AK-1.1-10 ingen skriving', () => {
     expect(sjekksum(vaultDir)).toEqual(før);
   });
 
-  test.fixme('TC-10-03 visningsvalg lagres bare i nettleseren (localStorage), ikke i URL-en', async ({ page }) => {
+  test('TC-10-03 visningsvalg lagres bare i nettleseren (localStorage), ikke i URL-en', async ({ page }) => {
     await openNote(page, fasit.rapport.sti);
     const url = page.url();
     await settDiskret(page, true);
@@ -98,7 +98,7 @@ test.describe('AK-1.1-10 ingen skriving', () => {
 
 test.describe('AK-1.1-12 tilgjengelighet (axe 0 brudd, lys og mørk)', () => {
   for (const mode of ['light', 'dark'] as const) {
-    test.fixme(`TC-12-01 ${mode}: Utseende med nye kontroller, diskré rapport, foldet notat, zen`, async ({ page }) => {
+    test(`TC-12-01 ${mode}: Utseende med nye kontroller, diskré rapport, foldet notat, zen`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: mode, reducedMotion: 'reduce' });
       await openNote(page, fasit.rapport.sti);
       await åpneUtseende(page);
@@ -143,7 +143,7 @@ test.describe('AK-1.1-12 tilgjengelighet (axe 0 brudd, lys og mørk)', () => {
     await expect(knapp).toBeFocused();
   });
 
-  test.fixme('TC-12-04 nye kontroller i Utseende er nåbare med Tab og har synlig fokus', async ({ page, isMobile }) => {
+  test('TC-12-04 nye kontroller i Utseende er nåbare med Tab og har synlig fokus', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur');
     await openNote(page, fasit.rapport.sti);
     const dialog = await åpneUtseende(page);
@@ -161,7 +161,7 @@ test.describe('AK-1.1-12 tilgjengelighet (axe 0 brudd, lys og mørk)', () => {
     }
   });
 
-  test.fixme('TC-12-05 toast ved diskré-bytte annonseres (role=status) og stjeler ikke fokus', async ({ page, isMobile }) => {
+  test('TC-12-05 toast ved diskré-bytte annonseres (role=status) og stjeler ikke fokus', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur');
     await openNote(page, fasit.rapport.sti);
     await fokusPåInnhold(page);

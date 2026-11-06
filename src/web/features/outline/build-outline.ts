@@ -148,6 +148,8 @@ function rewriteEmbed(embed: Element, prev: number, counter: Counter): Element {
       children.push(child);
     }
   }
+  // Tomt mål: tittel + dempet «Notatet er tomt.» (som i rammet visning).
+  if (body.every(isBlank)) children.push({ type: 'element', tagName: 'p', properties: { className: ['embed-empty'] }, children: [{ type: 'text', value: 'Notatet er tomt.' }] });
   return { ...embed, properties: { ...embed.properties, dataVrDiscreet: 'true' }, children };
 }
 

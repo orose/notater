@@ -19,6 +19,6 @@
 .toc-inline summary { cursor: pointer; padding: var(--space-3) 0; display: flex; align-items: center; justify-content: space-between; list-style: none; min-height: 2.75rem; }
 .toc-inline summary::-webkit-details-marker { display: none; }
 .toc-inline .chev { transition: transform var(--dur-fast); }
-.toc-inline[open] .chev { transform: rotate(90deg); }
+.toc-inline details[open] .chev { transform: rotate(90deg); }
 .toc-inline .toc { padding-bottom: var(--space-3); font-size: 0.92rem; font-family: var(--font-ui); }
 @media (max-width: 1099px) { .toc-inline { display: block; } }

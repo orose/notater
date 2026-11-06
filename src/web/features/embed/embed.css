@@ -19,3 +19,69 @@
 [data-type="tidsskrift"] .embed { border-radius: 0; background: transparent; border: 0; border-left: 1px solid var(--color-rule-strong); box-shadow: inset 3px 0 0 var(--color-bg), inset 4px 0 0 var(--color-rule-strong); padding-left: var(--space-5); }
 [data-type="tidsskrift"] .embed-head { border-bottom: 0; padding-bottom: 0; }
 .embed-state { margin-block: var(--space-5) !important; }
+
+/* ---------- v1.1 F2 Diskré embedding (designsystem §11.4, prototype-v1.1.html) ----------
+   Ingen ramme, etikett eller knapp; innholdet glir inn i brødteksten. Klamme og kildelenke ved hover/fokus. */
+.embed.is-diskret {
+  position: relative; background: none; border: 0; border-radius: 0; box-shadow: none; padding: 0; font-size: inherit;
+  margin-block: var(--space-flow) 0;
+}
+[data-type="tidsskrift"] .embed.is-diskret { border: 0; box-shadow: none; padding-left: 0; }
+.embed.is-diskret > p { margin: 0; }
+.embed.is-diskret > * + * { margin-top: var(--space-flow); }
+.embed.is-diskret > p + * , .embed.is-diskret > * + p { margin-top: var(--space-flow); }
+.embed.is-diskret > :first-child { margin-top: 0; }
+.embed.is-diskret > h2:first-child { margin-top: var(--space-section); }
+.embed.is-diskret > :is(h3, h4):first-child { margin-top: var(--space-6); }
+.embed.is-diskret > .folded-block:has(> h2) + * { margin-top: var(--space-flow); }
+/* Klammen: et «spøkelse» av den vanlige embed-streken, til høyre for spalten. */
+.embed.is-diskret::before {
+  content: ""; position: absolute; right: var(--embed-bracket); top: 0.3em; bottom: 0.3em; width: 1px;
+  background: var(--color-src-rule); opacity: 0; transition: opacity var(--dur-fast) var(--ease-out); pointer-events: none;
+}
+.embed.is-diskret:has(> h2:first-child)::before { top: calc(var(--space-section) + 0.3em); }
+.embed.is-diskret:has(> :is(h3, h4):first-child)::before { top: calc(var(--space-6) + 0.3em); }
+[data-type="tidsskrift"] .embed.is-diskret::before { width: 4px; right: calc(var(--embed-bracket) - 3px); background: none; border-inline: 1px solid var(--color-src-rule); }
+[data-type="klartekst"] .embed.is-diskret::before { width: 2px; }
+.embed.is-diskret .embed.is-diskret::before { right: calc(var(--embed-bracket) + 0.4rem); }
+.embed.is-diskret:is(:hover, :focus-within)::before { opacity: 1; }
+
+/* Kildelenken: én DOM-node (siste barn), tre plasseringer styrt av CSS. */
+.prose a.embed-src {
+  display: block; width: max-content; max-width: 100%; margin: 0.35em 0 0 auto;
+  font-family: var(--font-meta); font-size: 0.72rem; letter-spacing: var(--tracking-meta); line-height: 1.3;
+  color: var(--color-muted); text-decoration: none; opacity: 0; transition: opacity var(--dur-fast) var(--ease-out);
+}
+.embed-src .src-k { margin-right: 0.35em; }
+.embed-src .t { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; text-decoration-color: color-mix(in oklab, currentColor 40%, transparent); }
+.prose a.embed-src:hover { color: var(--color-link); }
+.embed-src:hover .t { text-decoration-color: currentColor; }
+[data-type="tidsskrift"] .prose a.embed-src { font-family: var(--font-body); font-style: italic; font-size: var(--step-n1); letter-spacing: 0; }
+[data-type="tidsskrift"] .embed-src .src-k { font-family: var(--font-sc); font-style: normal; text-transform: lowercase; letter-spacing: var(--tracking-sc); }
+[data-type="terminal"] .embed-src .src-k::before { content: "↳ "; color: var(--color-accent); }
+.embed.is-diskret:is(:hover, :focus-within) > a.embed-src, .prose a.embed-src:focus-visible { opacity: 1; }
+/* a · pekeenhet uten marg: absolutt i luften under innholdet – null layoutskift */
+@media (hover: hover) {
+  .embed.is-diskret > a.embed-src { position: absolute; right: 0; top: calc(100% + 0.1rem); margin: 0; }
+}
+/* b · i margkolonnen når den finnes (leseoptimalisert ≥ 1380, zen ≥ 1100) – som en sidenote */
+@media (hover: hover) and (min-width: 1380px) {
+  html:not([data-width="full"]) .embed.is-diskret > a.embed-src { top: 0.45em; right: auto; left: calc(100% + 2rem); width: var(--sidenote-w); white-space: normal; }
+  html:not([data-width="full"]) .embed.is-diskret > h2:first-child ~ a.embed-src { top: calc(var(--space-section) + 0.6em); }
+}
+@media (hover: hover) and (min-width: 1100px) {
+  html[data-zen]:not([data-width="full"]) .embed.is-diskret > a.embed-src { top: 0.45em; right: auto; left: calc(100% + 2rem); width: var(--sidenote-w); white-space: normal; }
+  html[data-zen]:not([data-width="full"]) .embed.is-diskret > h2:first-child ~ a.embed-src { top: calc(var(--space-section) + 0.6em); }
+}
+.embed.is-diskret .embed.is-diskret > a.embed-src { left: auto !important; right: 0 !important; top: calc(100% + 0.1rem) !important; width: max-content !important; }
+/* c · touch (PO-60): alltid synlig, dempet, i flyt */
+@media (hover: none) {
+  .embed.is-diskret::before { opacity: 1; background: var(--color-rule); }
+  [data-type="tidsskrift"] .embed.is-diskret::before { background: none; border-color: var(--color-rule); }
+  .prose a.embed-src { opacity: 1; position: static; }
+}
+.embed.is-diskret .embed-empty { color: var(--color-muted); font-style: italic; }
+
+/* PO-68: overskrifter i rammede embeds er `p.embed-title` (overskrift-stil, ikke overskrift). */
+.embed-body .embed-title { margin: var(--space-4) 0 var(--space-2); font-family: var(--font-display); font-size: var(--step-1); font-weight: var(--weight-h3); font-style: var(--style-h3); line-height: 1.2; }
+.embed-body > .embed-title:first-child { margin-top: 0; }

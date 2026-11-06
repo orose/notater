@@ -126,10 +126,8 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     ['hjelp', 'Velkommen', async (page) => expect(hurtigtastoversikt(page)).toBeVisible()],
     ['taster', 'Velkommen', async (page) => expect(hurtigtastoversikt(page)).toBeVisible()],
   ];
-  // Levert: 1.1-a (tema, palett, modus, hjelp), 1.1-b (zen) og 1.1-c (folding). Diskré (1.1-d) kommer.
-  const levert = new Set(['tema terminal', 'palett fosfor', 'mørk', 'hjelp', 'taster', 'zen', 'zn', 'fold alle']);
   for (const [søk, sti, forvent] of effekter) {
-    (levert.has(søk) ? test : test.fixme)(`TC-06-05 :${søk} kjører kommandoen`, async ({ page }) => {
+    test(`TC-06-05 :${søk} kjører kommandoen`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: 'light' });
       await openNote(page, sti);
       await kjørKommando(page, søk);
@@ -207,7 +205,7 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
 });
 
 test.describe('AK-1.1-06 palett med mus/touch (P6)', () => {
-  test.fixme('TC-06-11 kommando kan kjøres ved å skrive «:» i søkefeltet og trykke på valget', async ({ page, isMobile }) => {
+  test('TC-06-11 kommando kan kjøres ved å skrive «:» i søkefeltet og trykke på valget', async ({ page, isMobile }) => {
     await openNote(page, 'lesekomfort/Kvartalsrapport');
     if (isMobile) await page.getByRole('button', { name: /^Søk/ }).first().tap();
     else await page.getByRole('button', { name: 'Søk i notater' }).click();

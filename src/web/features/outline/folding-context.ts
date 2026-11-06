@@ -18,6 +18,8 @@ export const FoldingContext = createContext<FoldingValue | null>(null);
 /** Kontrollen kommandoene (`za`, `zM`, `zR`) når via `OutlineHost` (ADR-007 porter). */
 export interface OutlineControl {
   readonly foldableHeadings: number;
+  /** Antall innebygde notater i dokumentet (til diskré-toasten). */
+  readonly noteEmbeds: number;
   /** `false` når det ikke finnes noen seksjon ved leseposisjonen. */
   readonly toggleAtReadingPosition: () => boolean;
   readonly foldAll: () => void;

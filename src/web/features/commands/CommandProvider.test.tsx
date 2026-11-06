@@ -146,9 +146,21 @@ describe('CommandProvider: tastatur → kommandoer', () => {
 
   it('tast på deaktivert kommando gir begrunnelsen som toast (AR-1.1-02)', () => {
     setup();
+    key('z');
+    key('M', { shiftKey: true });
+    expect(screen.getByText('Fold alle: Notatet har ingen overskrifter')).toBeInTheDocument();
+  });
+
+  it('Space d bytter diskré embedding for dette notatet (huskes per notat) og gir toast (PO-59)', () => {
+    setup();
     key(' ');
     key('d');
-    expect(screen.getByText('Diskré embedding – dette notatet: Kommer snart')).toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem('vault-leser.diskret') ?? '{}')).toEqual({ v: 1, notes: ['test\nVelkommen'] });
+    expect(screen.getByText(/^Diskré embedding på for dette notatet/)).toBeInTheDocument();
+    key(' ');
+    key('d');
+    expect(JSON.parse(localStorage.getItem('vault-leser.diskret') ?? '{}')).toEqual({ v: 1, notes: [] });
+    expect(screen.getByText(/^Diskré embedding av for dette notatet/)).toBeInTheDocument();
   });
 
   it('Space w bytter lesebredde (huskes) og gir toast med tasttegn', () => {

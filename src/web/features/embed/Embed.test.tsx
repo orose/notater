@@ -62,4 +62,18 @@ describe('Embed', () => {
     wrap(<Embed vaultId="test" data-status="depth-limit" data-target="lenker/Kjede 3" data-title="Kjede 3" />);
     expect(screen.getByText('Innbygging stoppet: for mange nivåer')).toBeInTheDocument();
   });
+
+  it('diskré (F2): ingen ramme, etikett eller «Åpne notat»; kildelenke sist med «Kilde: …»', () => {
+    const { container } = wrap(
+      <Embed vaultId="test" data-status="ok" data-target="lesekomfort/kilder/Driftsstatus" data-anchor="^oppetid" data-title="Driftsstatus" data-vr-discreet="true">
+        <p>Oppetiden var 99,95 prosent.</p>
+      </Embed>,
+    );
+    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByText('Innebygd fra')).toBeNull();
+    expect(screen.queryByRole('link', { name: /Åpne notat/ })).toBeNull();
+    const source = screen.getByRole('link', { name: 'Kilde: Driftsstatus ^oppetid' });
+    expect(source).toHaveAttribute('href', '/v/test/lesekomfort/kilder/Driftsstatus#%5Eoppetid');
+    expect(container.querySelector('.embed.is-diskret')?.lastElementChild).toBe(source);
+  });
 });

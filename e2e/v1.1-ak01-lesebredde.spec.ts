@@ -84,7 +84,7 @@ test.describe('AK-1.1-01 ingen horisontal sidescroll ved 360 px i noen tilstand'
   test.skip(({ isMobile }) => !isMobile, 'Mobilprosjektet (360 px)');
 
   for (const bredde of ['Leseoptimalisert', 'Full bredde'] as const) {
-    test.fixme(`TC-01-07 ${bredde}: Lang brødtekst, Kvartalsrapport (diskré) og Dyp struktur (foldet)`, async ({ page }) => {
+    test(`TC-01-07 ${bredde}: Lang brødtekst, Kvartalsrapport (diskré) og Dyp struktur (foldet)`, async ({ page }) => {
       await openNote(page, LANG.sti);
       await velgLesebredde(page, bredde);
       expect(await harHorisontalScroll(page), LANG.sti).toBe(false);

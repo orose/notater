@@ -8,7 +8,8 @@ import { CommandProvider, useCommands } from '../features/commands';
 import { OutlineHost } from '../features/outline';
 import { SearchProvider } from '../features/search';
 import { ThemePicker } from '../features/theme';
-import { ViewFlags, ZenChrome } from '../features/view-settings';
+import { DiscreetMoveSync, ViewFlags, ZenChrome, useViewSettings } from '../features/view-settings';
+import { useLiveState } from '../features/live-reload';
 import { VaultHome } from './VaultHome';
 
 const DRAWER_ID = 'sidebar';
@@ -102,11 +103,12 @@ export function VaultLayout() {
             open={drawerOpen}
             onOpenTheme={() => setThemeOpen(true)}
             onNavigate={() => setDrawerOpen(false)}
-            flags={<ViewFlags />}
+            flags={<LayoutFlags vaultId={vaultId} docPath={docPath} />}
           />
           <div className="main">{docPath ? <DocumentPage /> : <VaultHome vaultId={vaultId} />}</div>
         </div>
-        <AppearanceDialog open={themeOpen} onClose={() => setThemeOpen(false)} />
+        <AppearanceDialog open={themeOpen} onClose={() => setThemeOpen(false)} vaultId={vaultId} docPath={docPath} />
+        <MovedNotes vaultId={vaultId} />
         <ZenChrome />
       </LiveReloadProvider>
       </CommandProvider>
@@ -115,8 +117,37 @@ export function VaultLayout() {
   );
 }
 
-/** Utseende med knapp til hurtigtastoversikten (F6), som eies av kommandoregisteret. */
-function AppearanceDialog({ open, onClose }: { readonly open: boolean; readonly onClose: () => void }) {
+interface DocProps {
+  readonly vaultId: string;
+  readonly docPath: string;
+}
+
+/** Diskré-bryteren for notatet som er åpent: kjøres som kommando (samme toast og tilgjengelighet som Space d). */
+function useDiscreetControl({ vaultId, docPath }: DocProps) {
+  const { run, availability } = useCommands();
+  const { isDiscreet } = useViewSettings();
+  const state = availability('view.toggleDiscreet');
+  return {
+    checked: docPath ? isDiscreet(vaultId, docPath) : false,
+    disabledReason: state.enabled ? null : state.reason,
+    onToggle: () => run('view.toggleDiscreet'),
+  };
+}
+
+/** Utseende med diskré-bryter og knapp til hurtigtastoversikten (F2, F6), som eies av kommandoregisteret. */
+function AppearanceDialog({ open, onClose, ...doc }: { readonly open: boolean; readonly onClose: () => void } & DocProps) {
   const { openShortcuts } = useCommands();
-  return <ThemePicker open={open} onClose={onClose} onOpenShortcuts={openShortcuts} />;
+  const discreet = useDiscreetControl(doc);
+  return <ThemePicker open={open} onClose={onClose} onOpenShortcuts={openShortcuts} discreet={discreet} />;
+}
+
+function LayoutFlags(doc: DocProps) {
+  const discreet = useDiscreetControl(doc);
+  return <ViewFlags discreet={{ on: discreet.checked, onToggle: discreet.onToggle }} />;
+}
+
+/** PO-49: diskré-valget følger notatet ved omdøping mens leseren er åpen. */
+function MovedNotes({ vaultId }: { readonly vaultId: string }) {
+  const { moved } = useLiveState();
+  return <DiscreetMoveSync vaultId={vaultId} moved={moved} />;
 }

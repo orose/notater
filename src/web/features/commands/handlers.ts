@@ -1,8 +1,8 @@
 // Handlerne for alle kommandoene i katalogen (ADR-007 §1). Når resten av appen kun via `ctx.ports`
 // (AR-1.1-03), så de kan testes med falske porter. Ingen React her.
 //
-// Funksjoner som kommer i senere slices (diskré 1.1-d) er registrert, men deaktivert med begrunnelsen
-// «Kommer snart» til de leveres (`pending`). Bredde og zen (1.1-b) og folding (1.1-c) er levert.
+// Alle funksjonene i v1.1 er levert (1.1-a–d). `pending` brukes for funksjoner som registreres før de leveres:
+// de vises deaktivert med begrunnelsen «Kommer snart».
 
 import type { CommandContext } from './model/command-context';
 import { ENABLED, type Availability, type CommandHandler } from './model/command-types';
@@ -11,16 +11,18 @@ import type { CommandHandlers } from './model/registry';
 /** Visningsfunksjoner fra senere slices. Fjern fra settet når funksjonen er levert. */
 export type PendingFeature = 'width' | 'zen' | 'folding' | 'discreet';
 
-export const PENDING_FEATURES: ReadonlySet<PendingFeature> = new Set<PendingFeature>(['discreet']);
+export const PENDING_FEATURES: ReadonlySet<PendingFeature> = new Set<PendingFeature>();
 
 export const COMING_SOON = 'Kommer snart';
 export const NOTES_ONLY = 'Gjelder bare notater';
+export const NOT_ON_BASE = 'Ikke tilgjengelig – .base-sider har ingen innebygde notater';
 export const NO_HEADINGS = 'Notatet har ingen overskrifter';
 
 const onOff = (on: boolean) => (on ? 'på' : 'av');
 
 const coming: Availability = { enabled: false, reason: COMING_SOON };
 const notesOnly: Availability = { enabled: false, reason: NOTES_ONLY };
+const notOnBase: Availability = { enabled: false, reason: NOT_ON_BASE };
 
 export interface HandlerOptions {
   readonly pending?: ReadonlySet<PendingFeature>;
@@ -34,7 +36,8 @@ export function createCommandHandlers({ pending = PENDING_FEATURES }: HandlerOpt
       if (!contextual.enabled) return contextual;
       return pending.has(feature) ? coming : ENABLED;
     };
-  const onNote = (ctx: CommandContext): Availability => (ctx.route.kind === 'note' ? ENABLED : notesOnly);
+  // Designsystem §11.9: på en .base-side forklares hvorfor diskré ikke gir mening.
+  const onNote = (ctx: CommandContext): Availability => (ctx.route.kind === 'note' ? ENABLED : ctx.route.kind === 'base' ? notOnBase : notesOnly);
   const foldable = (ctx: CommandContext): Availability => {
     if (ctx.route.kind !== 'note') return notesOnly;
     // Antallet er først kjent når folding er levert (1.1-c); før det sier «Kommer snart» det som trengs.

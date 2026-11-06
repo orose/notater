@@ -29,18 +29,35 @@ interface ThemePickerProps {
   readonly onClose: () => void;
   /** Åpner hurtigtastoversikten (F6). Dialogen lukkes først, så modalene ikke stables. */
   readonly onOpenShortcuts?: () => void;
+  /** Diskré embedding for notatet som er åpent (F2). Utelatt = ingen bryter. */
+  readonly discreet?: DiscreetControl;
 }
 
-export function ThemePicker({ open, onClose, onOpenShortcuts }: ThemePickerProps) {
+export interface DiscreetControl {
+  readonly checked: boolean;
+  /** Begrunnelse når bryteren ikke kan brukes (f.eks. på en .base-side), ellers null. */
+  readonly disabledReason: string | null;
+  readonly onToggle: () => void;
+}
+
+export function ThemePicker({ open, onClose, onOpenShortcuts, discreet }: ThemePickerProps) {
   const headingId = useId();
   return (
     <Modal open={open} onClose={onClose} labelledBy={headingId} className="theme-panel">
-      <ThemePickerBody headingId={headingId} onOpenShortcuts={onOpenShortcuts} />
+      <ThemePickerBody headingId={headingId} onOpenShortcuts={onOpenShortcuts} discreet={discreet} />
     </Modal>
   );
 }
 
-function ThemePickerBody({ headingId, onOpenShortcuts }: { readonly headingId: string; readonly onOpenShortcuts?: (() => void) | undefined }) {
+function ThemePickerBody({
+  headingId,
+  onOpenShortcuts,
+  discreet,
+}: {
+  readonly headingId: string;
+  readonly onOpenShortcuts?: (() => void) | undefined;
+  readonly discreet?: DiscreetControl | undefined;
+}) {
   const { preferences, resolvedMode, setPreferences } = useTheme();
   const { width, setWidth, setZen } = useViewSettings();
   const name = useId();
@@ -91,6 +108,25 @@ function ThemePickerBody({ headingId, onOpenShortcuts }: { readonly headingId: s
               </label>
             ))}
           </div>
+          {discreet ? (
+            <label className="switch-row" aria-disabled={discreet.disabledReason ? true : undefined}>
+              <span>
+                <span className="name">Diskré embedding</span>
+                <span className="desc">
+                  {discreet.disabledReason ?? 'Bare dette notatet · innebygde notater glir inn i teksten'}
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                className="switch"
+                aria-label="Diskré embedding – dette notatet"
+                checked={discreet.checked}
+                disabled={discreet.disabledReason !== null}
+                onChange={discreet.onToggle}
+              />
+            </label>
+          ) : null}
         </fieldset>
 
         <fieldset>

@@ -61,7 +61,6 @@ function routeOf(vaultId: VaultId, docPath: string): CommandRoute {
   return { kind, vaultId, docPath: docPath === '' ? null : docPath };
 }
 
-function noop(): void {}
 
 /**
  * Kommandoregisteret i React (ADR-007): handlere + porter, én `keydown`-lytter på `window` (boblefase),
@@ -93,7 +92,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
   }, [toast]);
 
   const { setPreferences, toggleMode, preferences, resolvedMode } = theme;
-  const { toggleWidth, setZen, zen, width } = viewSettings;
+  const { toggleWidth, setZen, zen, width, toggleDiscreet, isDiscreet } = viewSettings;
   const outlineControl = useOutlineControl();
   const ports = useMemo<CommandPorts>(
     () => ({
@@ -139,7 +138,12 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
           const next = toggleWidth();
           showToast(next === 'full' ? 'Full bredde' : 'Leseoptimalisert bredde', ['Space', 'w']);
         },
-        toggleDiscreet: noop,
+        toggleDiscreet: () => {
+          if (!docPath) return;
+          const on = toggleDiscreet(vaultId, docPath);
+          const none = (outlineControl?.noteEmbeds ?? 0) === 0 ? ' – ingen innebygde notater her ennå' : '';
+          showToast(`Diskré embedding ${on ? 'på' : 'av'} for dette notatet${none}`, ['Space', 'd']);
+        },
         toggleZen: () => setZen(!zen),
         exitZen: () => {
           if (!zen) return false;
@@ -162,11 +166,16 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
       },
       toast: showToast,
     }),
-    [scroll, navigate, palette.openSearch, palette.openCommands, onOpenAppearance, resolvedMode, toggleMode, setPreferences, preferences.type, preferences.palette, showToast, toggleWidth, setZen, zen, outlineControl],
+    [scroll, navigate, palette.openSearch, palette.openCommands, onOpenAppearance, resolvedMode, toggleMode, setPreferences, preferences.type, preferences.palette, showToast, toggleWidth, setZen, zen, outlineControl, toggleDiscreet, vaultId, docPath],
   );
 
   const foldableHeadings = outlineControl?.foldableHeadings ?? 0;
-  const view = useMemo<ViewSnapshot>(() => ({ width, discreet: false, zen, noteEmbeds: 0, foldableHeadings }), [width, zen, foldableHeadings]);
+  const noteEmbeds = outlineControl?.noteEmbeds ?? 0;
+  const discreet = docPath ? isDiscreet(vaultId, docPath) : false;
+  const view = useMemo<ViewSnapshot>(
+    () => ({ width, discreet, zen, noteEmbeds, foldableHeadings }),
+    [width, discreet, zen, noteEmbeds, foldableHeadings],
+  );
   const ctx = useMemo<CommandContext>(() => ({ mode: 'normal', route: routeOf(vaultId, docPath), view, ports }), [vaultId, docPath, view, ports]);
   const ctxRef = useRef(ctx);
   useLayoutEffect(() => {
@@ -175,12 +184,13 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
 
   /** Kjører en kommando; deaktivert ⇒ begrunnelsen som toast (AR-1.1-02). */
   const execute = useCallback(
-    (id: CommandId, args: Readonly<Record<string, string>> = {}) => {
+    (id: CommandId, args: Readonly<Record<string, string>> = {}, from: 'key' | 'palette' = 'key') => {
       const current = ctxRef.current;
       const command = registry.get(id);
       const availability = command.isEnabled(current);
       if (!availability.enabled) {
-        current.ports.toast(`${command.name}: ${availability.reason}`);
+        // Fra paletten sto kommandonavnet allerede på raden; da holder begrunnelsen.
+        current.ports.toast(from === 'palette' ? availability.reason : `${command.name}: ${availability.reason}`);
         return;
       }
       void command.run(current, args);
@@ -312,7 +322,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
         );
         return { items, argument: paletteArgumentHeading(registry.commands, query) };
       },
-      run: (item) => execute(item.commandId as CommandId, item.args),
+      run: (item) => execute(item.commandId as CommandId, item.args, 'palette'),
     }),
     [registry, platform, execute],
   );
@@ -323,7 +333,14 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
     return () => setCommandSource(null);
   }, [setCommandSource, source]);
 
-  const value = useMemo<CommandsContextValue>(() => ({ openShortcuts: () => setHelpOpen(true) }), []);
+  const value = useMemo<CommandsContextValue>(
+    () => ({
+      openShortcuts: () => setHelpOpen(true),
+      run: (id) => execute(id),
+      availability: (id) => registry.get(id).isEnabled(ctx),
+    }),
+    [execute, registry, ctx],
+  );
 
   return (
     <CommandsContext.Provider value={value}>

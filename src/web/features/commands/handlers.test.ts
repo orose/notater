@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createCommandHandlers, COMING_SOON, NOTES_ONLY, NO_HEADINGS } from './handlers';
+import { createCommandHandlers, COMING_SOON, NOTES_ONLY, NOT_ON_BASE, NO_HEADINGS } from './handlers';
 import { COMMAND_IDS, createCommandRegistry, type CommandContext, type CommandPorts, type RouteKind } from './index';
 
 function fakePorts() {
@@ -98,16 +98,14 @@ describe('kommandohandlere', () => {
     expect(registry.get('outline.foldAll').isEnabled(context('note', 0).ctx)).toEqual({ enabled: false, reason: NO_HEADINGS });
   });
 
-  it('funksjoner fra senere slices er deaktivert med «Kommer snart»', () => {
-    const { ctx } = context();
-    for (const id of ['view.toggleDiscreet'] as const) {
-      expect(registry.get(id).isEnabled(ctx), id).toEqual({ enabled: false, reason: COMING_SOON });
-    }
+  it('en funksjon i pending vises deaktivert med «Kommer snart»', () => {
+    const early = createCommandRegistry(createCommandHandlers({ pending: new Set(['discreet']) }));
+    expect(early.get('view.toggleDiscreet').isEnabled(context().ctx)).toEqual({ enabled: false, reason: COMING_SOON });
   });
 
   it('diskré og folding på en .base-side: «Gjelder bare notater» (før «Kommer snart»)', () => {
     const { ctx } = context('base');
-    expect(registry.get('view.toggleDiscreet').isEnabled(ctx)).toEqual({ enabled: false, reason: NOTES_ONLY });
+    expect(registry.get('view.toggleDiscreet').isEnabled(ctx)).toEqual({ enabled: false, reason: NOT_ON_BASE });
     expect(registry.get('outline.foldAll').isEnabled(ctx)).toEqual({ enabled: false, reason: NOTES_ONLY });
   });
 

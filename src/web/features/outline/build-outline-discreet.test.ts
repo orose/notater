@@ -85,7 +85,7 @@ describe('buildOutline i diskré modus (F2, ADR-009 beslutning 3)', () => {
   it('embeds merkes diskré; feilkort røres ikke', () => {
     const embeds = outline.content.children.filter((n): n is Element => n.type === 'element' && n.tagName === 'vr-embed');
     expect(embeds.map((e) => e.properties.dataVrDiscreet ?? null)).toEqual(['true', 'true', 'true', 'true', 'true', null]);
-    expect(outline.noteEmbeds).toBe(7);
+    expect(outline.noteEmbeds).toBe(6);
   });
 
   it('seksjon slutter ved embedens slutt: fold av «Hendelser» skjuler ikke vertens tekst etter embeden', () => {

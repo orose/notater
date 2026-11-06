@@ -162,12 +162,12 @@ describe('CommandPalette', () => {
     const input = screen.getByRole('combobox');
     expect(input).toHaveValue(':');
     expect(screen.getByRole('listbox', { name: 'Kommandoer' })).toBeInTheDocument();
-    fireEvent.change(input, { target: { value: ':diskret' } });
-    const discreet = screen.getAllByRole('option')[0] as HTMLElement;
-    expect(discreet).toHaveAttribute('data-command-id', 'view.toggleDiscreet');
-    expect(discreet).toHaveAttribute('aria-disabled', 'true');
-    expect(discreet).toHaveTextContent('Kommer snart');
-    expect([...discreet.querySelectorAll('kbd')].map((k) => k.textContent)).toEqual(['Space', 'd']);
+    fireEvent.change(input, { target: { value: ':fold alle' } });
+    const foldAll = screen.getAllByRole('option')[0] as HTMLElement;
+    expect(foldAll).toHaveAttribute('data-command-id', 'outline.foldAll');
+    expect(foldAll).toHaveAttribute('aria-disabled', 'true');
+    expect(foldAll).toHaveTextContent('Notatet har ingen overskrifter');
+    expect([...foldAll.querySelectorAll('kbd')].map((k) => k.textContent)).toEqual(['z', 'M']);
     fireEvent.change(input, { target: { value: '' } });
     expect(screen.getByRole('listbox', { name: 'Søkeresultater' })).toBeInTheDocument();
   });

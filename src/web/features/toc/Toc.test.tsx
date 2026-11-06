@@ -84,6 +84,6 @@ describe('Toc', () => {
       </MemoryRouter>,
     );
     expect(screen.getByText('Innhold', { selector: 'summary span' })).toBeInTheDocument();
-    expect(document.querySelector('details.toc-inline')).not.toHaveAttribute('open');
+    expect(document.querySelector('.toc-inline details')).not.toHaveAttribute('open');
   });
 });

@@ -8,6 +8,7 @@ import { BaseBlock } from '../bases';
 import { pushRecent } from '../recent';
 import { FoldingProvider, buildOutline } from '../outline';
 import { InlineToc, Toc } from '../toc';
+import { useViewSettings } from '../view-settings';
 import { HastContent } from './HastContent';
 import { splitLeadingTitle } from './leading-title';
 import { MissingNotePage } from './MissingNotePage';
@@ -117,7 +118,9 @@ function NotePage({ doc, display, busy }: NotePageProps) {
   const minutes = useMemo(() => readingMinutes(doc.content), [doc.content]);
   // ADR-009: prepareContent → buildOutline (§-nummer, seksjoner) → folding i HastContent.
   const prepared = useMemo(() => prepareContent(display.content), [display.content]);
-  const outline = useMemo(() => buildOutline(prepared, display.toc), [prepared, display.toc]);
+  // F2: diskré embedding per notat (ADR-008), aldri fra frontmatter (P1).
+  const discreet = useViewSettings().isDiscreet(doc.vaultId, doc.path);
+  const outline = useMemo(() => buildOutline(prepared, display.toc, discreet), [prepared, display.toc, discreet]);
   const outgoing = useMemo(() => collectOutgoingLinks(doc.content, doc.path), [doc.content, doc.path]);
   const railRef = useRef<HTMLElement>(null);
   useRailDimming(railRef, display.content);

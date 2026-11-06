@@ -8,7 +8,9 @@ import { buildBacklinkIndex, createLinkResolver } from '../links';
 import type { BacklinkIndex, LinkResolver } from '../links';
 import { buildSearchIndex } from '../search';
 import type { SearchDocument, SearchIndex } from '../search';
-import { buildSnapshot, findByDocPath, readVaultBytes, updateSnapshot } from '../vault-index';
+import { createDeletionHold } from '../live-events';
+import type { BatchClassification, DeletionHold } from '../live-events';
+import { buildSnapshot, findByDocPath, normalizeVaultPath, readVaultBytes, scanVault, statVaultFile, updateSnapshot } from '../vault-index';
 import type { MetaExtractor, VaultFile, VaultSnapshot } from '../vault-index';
 import { createLruCache } from './lru-cache';
 import type { LruCache } from './lru-cache';
@@ -56,10 +58,14 @@ export interface VaultRuntime {
 }
 
 export interface WatcherHandle {
+  /** Løses når overvåkerens første skanning er ferdig (chokidar `ready`). Utelatt = klar straks. */
+  readonly ready?: Promise<void>;
   close(): Promise<void>;
 }
 
 const DEFAULT_PRERENDER_COUNT = 100;
+/** PO-78: slettinger holdes tilbake så lenge for å kunne pares med en ny fil i neste bunt. */
+const DEFAULT_RENAME_WINDOW_MS = 300;
 /** Maks antall lenkemål som forhåndsrendres per åpnet notat. */
 const MAX_PREFETCH_LINKS = 40;
 /** Åpning av kodeblokk med språk: ```java / ~~~ts. */
@@ -81,6 +87,11 @@ export interface VaultRuntimeDeps {
   readonly idle?: () => Promise<void>;
   /** Antall mest lenkede notater som forhåndsrendres etter indeksering og etter endringer. Standard 100. */
   readonly prerenderCount?: number;
+  /**
+   * PO-78: hvor lenge en sletting fra overvåkeren holdes tilbake før `removed` sendes, slik at en
+   * omdøping som deles over to debounce-bunter likevel gir `renamed`. Standard 300 ms; 0 = av.
+   */
+  readonly renameWindowMs?: number;
   readonly log?: (message: string) => void;
 }
 
@@ -93,6 +104,9 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
   let searchPromise: Promise<SearchIndex> | null = null;
   let updateQueue: Promise<unknown> = Promise.resolve();
   let watcher: WatcherHandle | null = null;
+  let deletionHold: DeletionHold | null = null;
+  /** Bunter fra overvåkeren før indeksen er klar (BUG-012); sendes videre når den er klar. */
+  let earlyBatches: string[][] | null = [];
   const listeners = new Set<(event: ChangedEvent) => void>();
   const idle = deps.idle ?? yieldToEventLoop;
   // Når noen søker, skal resten av søkeindeksen bygges uten å vente på ledig tid – søket selv er jo en
@@ -139,23 +153,83 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
     };
   };
 
+  /** PO-78: hva som er slettet (holdes tilbake) og om bunten har en ny fil (kan være omdøpingsmålet). */
+  const classifyBatch = async (paths: readonly string[]): Promise<BatchClassification> => {
+    const files = state?.snapshot.files;
+    const stats = await Promise.all(paths.map((p) => statVaultFile(config.root, p)));
+    const deleted: string[] = [];
+    const present: string[] = [];
+    let hasNew = false;
+    paths.forEach((path, i) => {
+      if (!stats[i]) deleted.push(path);
+      else {
+        present.push(path);
+        if (!files?.has(normalizeVaultPath(path))) hasNew = true;
+      }
+    });
+    return { deleted, present, hasNew };
+  };
+
+  const onWatchBatch = (paths: string[]): void => {
+    if (earlyBatches) earlyBatches.push(paths);
+    else deletionHold?.push(paths);
+  };
+
+  /**
+   * BUG-012: det som endret seg mellom vår skanning og overvåkerens `ready`, regner chokidar som
+   * «initial» og melder aldri. En rask ny skanning (bare stat) etter `ready` fanger det opp.
+   */
+  const reconcile = async (snapshot: VaultSnapshot): Promise<VaultSnapshot> => {
+    const scanned = await scanVault(config.root, config.ignore);
+    const seen = new Set<FilePath>();
+    const paths: string[] = [];
+    for (const s of scanned) {
+      const filePath = normalizeVaultPath(s.diskPath);
+      seen.add(filePath);
+      const known = snapshot.files.get(filePath);
+      if (!known || known.mtimeMs !== s.mtimeMs || known.size !== s.size) paths.push(s.diskPath);
+    }
+    for (const file of snapshot.files.values()) if (!seen.has(file.filePath)) paths.push(file.diskPath);
+    if (paths.length === 0) return snapshot;
+    return (await updateSnapshot(snapshot, config.root, config.ignore, paths, deps.incrementalExtractor)).snapshot;
+  };
+
   const startIndexing = async (): Promise<VaultState> => {
     status = 'indexing';
     const started = performance.now();
     const extractor = deps.createInitialExtractor();
     try {
-      const snapshot = await buildSnapshot(config.root, config.ignore, extractor);
+      // BUG-012: overvåkeren startes før skanningen (chokidars første skanning går parallelt med vår),
+      // og «klar» venter på begge. Bunter som kommer underveis, samles og sendes videre etterpå.
+      if (deps.watch) watcher = deps.watch(config.root, config.ignore, onWatchBatch);
+      let snapshot = await buildSnapshot(config.root, config.ignore, extractor);
+      if (watcher) {
+        await watcher.ready;
+        snapshot = await reconcile(snapshot);
+      }
       state = derive(snapshot, 1);
       indexMs = Math.round(performance.now() - started);
       status = 'ready';
       deps.log?.(`Vault «${config.id}» indeksert: ${snapshot.notes.size} notater, ${snapshot.files.size} filer på ${indexMs} ms.`);
-      if (deps.watch) watcher = deps.watch(config.root, config.ignore, (paths) => void runtime.applyChanges(paths));
+      if (watcher) {
+        deletionHold = createDeletionHold({
+          windowMs: deps.renameWindowMs ?? DEFAULT_RENAME_WINDOW_MS,
+          classify: classifyBatch,
+          apply: (paths) => void runtime.applyChanges(paths).catch((error: unknown) => deps.log?.(`Live reload feilet: ${String(error)}`)),
+          ...(deps.log ? { log: deps.log } : {}),
+        });
+        for (const paths of earlyBatches ?? []) deletionHold.push(paths);
+      }
+      earlyBatches = null;
       // Shiki (~0,5 s CPU på hovedtråden) lastes etter at indeksen er klar: parallelt kostet det ~0,4 s
       // indekseringstid (workerne bruker alle kjerner). Rendering venter på den via renderReady().
       void loadHighlighter().catch((error: unknown) => deps.log?.(`Kunne ikke laste Shiki: ${String(error)}`));
       void startBackground();
       return state;
     } catch (error) {
+      void watcher?.close();
+      watcher = null;
+      earlyBatches = null;
       status = 'error';
       errorMessage = `Kunne ikke indeksere vaultet: ${error instanceof Error ? error.message : String(error)}`;
       throw new Error(errorMessage, { cause: error });
@@ -331,6 +405,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
     },
     readFile: (file) => readVaultBytes(config.root, file.diskPath),
     async close() {
+      deletionHold?.close();
       await watcher?.close();
       listeners.clear();
     },

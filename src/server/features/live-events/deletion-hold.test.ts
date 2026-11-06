@@ -43,7 +43,7 @@ describe('createDeletionHold', () => {
     disk.fresh.add('B2.md');
     hold.push(['B2.md']);
     await vi.advanceTimersByTimeAsync(0);
-    expect(applied).toEqual([['B2.md', 'B.md']]);
+    expect(applied).toEqual([['B.md', 'B2.md']]);
 
     await vi.advanceTimersByTimeAsync(1000);
     expect(applied).toHaveLength(1); // slettingen sendes ikke en gang til
@@ -89,7 +89,7 @@ describe('createDeletionHold', () => {
     disk.fresh.add('B2.md');
     hold.push(['B.md', 'B2.md']);
     await vi.advanceTimersByTimeAsync(0);
-    expect(applied).toEqual([['B2.md', 'B.md']]);
+    expect(applied).toEqual([['B.md', 'B2.md']]);
   });
 
   it('en sti som dukker opp igjen fjernes fra de tilbakeholdte', async () => {

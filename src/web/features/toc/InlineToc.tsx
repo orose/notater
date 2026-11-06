@@ -8,14 +8,17 @@ export function InlineToc({ entries }: { readonly entries: readonly TocEntry[] }
   const visible = visibleToc(entries);
   if (visible.length === 0) return null;
   return (
-    <details className="toc-inline">
-      <summary>
-        <span className="label">Innhold</span>
-        <Icon name="chev" className="chev" />
-      </summary>
-      <nav className="toc" aria-label="Innhold (kompakt)">
-        <TocList nodes={tocTree(visible)} activeId={null} />
-      </nav>
-    </details>
+    // Landemerket omslutter hele den sammenleggbare listen, også «Innhold»-knappen (summary).
+    <nav className="toc-inline" aria-label="Innhold (kompakt)">
+      <details>
+        <summary>
+          <span className="label">Innhold</span>
+          <Icon name="chev" className="chev" />
+        </summary>
+        <div className="toc">
+          <TocList nodes={tocTree(visible)} activeId={null} />
+        </div>
+      </details>
+    </nav>
   );
 }
