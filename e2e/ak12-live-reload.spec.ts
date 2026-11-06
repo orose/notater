@@ -24,31 +24,6 @@ function ledigPort(): Promise<number> {
 const status = async (base: string, docPath: string): Promise<number> =>
   (await fetch(`${base}/api/vaults/test/document?path=${encodeURIComponent(docPath)}`)).status;
 
-/**
- * Serveren melder «ready» før chokidar er ferdig med første skanning (BUG-012): en fil som skrives i det
- * vinduet regnes som «initial» og går tapt. Vi skriver derfor nye probe-filer til én blir indeksert
- * (= overvåkeren er klar), og sletter dem igjen før testen starter.
- */
-async function ventPåOvervåker(vault: string, base: string): Promise<void> {
-  const prober: string[] = [];
-  const start = Date.now();
-  for (let i = 0; ; i++) {
-    const navn = `zz-probe-${i}`;
-    writeFileSync(join(vault, `${navn}.md`), '# Probe\n');
-    prober.push(navn);
-    const frist = Date.now() + 1000;
-    let sett = false;
-    while (!sett && Date.now() < frist) {
-      sett = (await status(base, navn)) === 200;
-      if (!sett) await new Promise((r) => setTimeout(r, 50));
-    }
-    if (sett) break;
-    if (Date.now() - start > 20_000) throw new Error('Fil-overvåkeren ble ikke klar innen 20 s');
-  }
-  for (const navn of prober) rmSync(join(vault, `${navn}.md`), { force: true });
-  await expect.poll(async () => Promise.all(prober.map((n) => status(base, n))), { timeout: 10_000 }).toEqual(prober.map(() => 404));
-}
-
 interface Live {
   /** Vault-kopien bare denne testen bruker. */
   readonly vault: string;
@@ -74,7 +49,6 @@ const test = base.extend<{ live: Live }>({
       }
     }
     const baseUrl = `http://127.0.0.1:${server.port}`;
-    await ventPåOvervåker(vault, baseUrl);
     await use({ vault, base: baseUrl });
     await page.goto('about:blank');
     await server.stop();
@@ -230,4 +204,10 @@ test('omdøping/flytting sender «renamed» med from/to, og åpent notat peker t
   await page.locator('main').getByRole('link', { name: 'Helt nytt navn' }).click();
   await expect(page).toHaveURL(/arkiv\/flyttet\/Helt%20nytt%20navn$/);
   await expect(page.locator('main article')).toContainText('Skal flyttes');
+});
+
+test('fil skrevet rett etter «ready» blir indeksert (BUG-012)', async ({ live: { vault, base } }) => {
+  // Fixturen har nettopp sett `status: ready`; ingen venting her. Før rettingen gikk fila tapt for godt.
+  writeFileSync(join(vault, 'domene/Rett etter ready.md'), '# Rett etter ready\n\nLenker til [[avtale]].\n');
+  await expect.poll(() => status(base, 'domene/Rett etter ready'), { timeout: 5000 }).toBe(200);
 });

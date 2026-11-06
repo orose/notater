@@ -154,12 +154,30 @@ Reproduksjon generelt: `E2E_PORT=4418 npx playwright test` (porten kan velges fr
 - **Retting:** `e2e/support/real-server.ts` sjekker at porten er ledig før start og ber om `E2E_PORT=<port>`.
   README (Utvikling) viser `E2E_PORT=4418 npm run test:e2e` og hvordan ytelsestesten kjøres.
 
-## BUG-012 – endringer rett etter oppstart går tapt – ÅPEN
+## BUG-012 – endringer rett etter oppstart går tapt – RETTET
 
 - **Alvorlighet:** Middels · **AK:** AK12 (live reload) · **Eier:** backend
 - **Funn (PO-76):** `vault-runtime.ts` setter status `ready` og starter chokidar (`ignoreInitial: true`) uten å vente på
   `watcher.ready`. En fil som opprettes i vinduet mellom «ready» og chokidars første skanning, regnes som «initial»
   og blir **aldri** indeksert (verifisert: 404 også etter 10 s). Det samme gjelder endringer i det vinduet.
 - **Forslag:** sett `ready` først etter `watcher.ready`, eller kjør en ny skanning/diff når overvåkeren er klar.
-- **Test:** `ak12-live-reload` venter i sin fixture til en probe-fil blir indeksert. Når feilen er rettet, kan
-  proben fjernes og en egen test legges til («fil skrevet rett etter ready blir indeksert»).
+- **Retting (backend, 9302a58):** vaultet meldes klart først når overvåkeren er klar.
+- **Test:** proben i `ak12-live-reload` er fjernet; ny test «fil skrevet rett etter «ready» blir indeksert (BUG-012)».
+
+## BUG-013 – omdøping delt over to SSE-batcher (PO-78) – RETTET
+
+- **Alvorlighet:** Middels · **AK:** AK12, PO-49 · **Eier:** backend
+- **Funn (PO-76):** under parallell last kom en flytting som `removed` (revisjon n) og `added` (revisjon n+1) i to
+  batcher i stedet for én `renamed`; klienten viste da ikke «Notatet er flyttet til …».
+- **Retting (backend, 9302a58):** omdøping kobles også over batch-grensen.
+- **Test:** `ak12-live-reload` › «omdøping/flytting sender renamed …» (uendret), grønn med `--repeat-each=3`.
+
+## BUG-014 – varsler legger seg oppå hverandre (toast, zen-hint, which-key) – ÅPEN
+
+- **Alvorlighet:** Lav (kosmetisk, ikke funksjonelt) · **AK:** AK-1.1-05/AK5 · **Eier:** frontend/UX
+- **Funn (akseptansetest v1.1, manuell skjermbildegjennomgang):** når to varsler vises samtidig, f.eks.
+  `Space z` (zen-hint nederst) rett etterfulgt av `Space w` (toast «Full bredde»), tegnes de på samme sted.
+  På 360 px dekker toasten zen-hintet så teksten («Trykk × øverst til høyre for å gå tilbake») ikke kan leses;
+  which-key-panelet blir også delvis dekket av en toast som fortsatt vises. Skjermbilder:
+  `desktop-*-06-zen-full-bredde.png`, `desktop-*-09-which-key.png`, `mobil-*-06-zen-full-bredde.png`.
+- **Forslag:** stable varslene (én kø eller vertikal stabel), eller la en ny toast erstatte zen-hintet.

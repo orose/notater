@@ -135,7 +135,10 @@ mock-tester (`e2e/ui.spec.ts`) kjører i `mock-desktop`/`mock-mobil`. Kjente bug
 
 Testplan, sporbarhet AK-1.1-01..12 → TC-…, kanttilfeller og selektorkontrakt: `docs/test/testplan-v1.1.md`.
 Fasit: `README-QA.md` §19 og `docs/test/v1.1-fasit.json`. Tester: `e2e/v1.1-*.spec.ts` (TDD, `test.fixme`
-fjernes av frontend når en funksjon leveres). AK-1.1-08 kjøres allerede mot registeret (`catalogBindings()`).
+fjernes av frontend når en funksjon leveres). AK-1.1-08 kjøres mot registeret (`catalogBindings()`).
+**Avsluttende akseptansetest v1.1, 2026-11-06:** alle AK-1.1-01..12 bestått, ingen `fixme` igjen; rapport
+`docs/test/akseptanserapport-v1.1.md`. Nye filer: `v1.1-ak11-12-axe-matrise.spec.ts` (24 temakombinasjoner med
+v1.1-kontrollene) og `v1.1-folding-perf.spec.ts` (perf-prosjektet).
 
 ## 4. Definition of Done per slice
 

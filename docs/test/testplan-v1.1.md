@@ -47,6 +47,14 @@ eller endrer søkefasiten.
 | AK-1.1-11 Regresjon | hele suiten | Se §5 | |
 | AK-1.1-12 a11y | `v1.1-ak10-12-p1-a11y.spec.ts` | TC-12-01 axe lys/mørk: Utseende, diskré rapport, foldet notat, zen; -02 palett `:`, oversikt, which-key; -03 fold-knapp (rolle, `aria-expanded`, fokus beholdes); -04 tastatur til nye kontroller + synlig fokus (radiogruppen «Lesebredde»: ett tab-stopp, piltaster flytter og velger, PO-80); -05 toast `role=status` uten fokus; -06 zen beholder `main` og hopp-lenke | Manuell VoiceOver-stikkprøve (nivåer i diskré modus, fold-knapp) |
 
+### 3.1 Tillegg ved akseptansetesten
+
+| Fil | Innhold |
+|---|---|
+| `v1.1-ak11-12-axe-matrise.spec.ts` | Axe (wcag2a/2aa/21aa) i 3 typesett × 4 paletter × lys/mørk med diskré + foldet, zen + full bredde, palett `:` og `?`-kortet |
+| `v1.1-folding-perf.spec.ts` | Folding i langt notat (300 seksjoner): enkeltfold p95, `zM`, `zR` < 200 ms (perf-prosjektet) |
+| `ak12-live-reload.spec.ts` | Én vault-kopi og én server per test (PO-76); «fil skrevet rett etter ready blir indeksert» (BUG-012) |
+
 ## 4. Kanttilfeller
 
 | Kanttilfelle | Forventet | Test |
