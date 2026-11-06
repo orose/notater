@@ -1,9 +1,11 @@
 import { createHash } from 'node:crypto';
 import type { DocPath, FileChange, FilePath } from '../../../shared/api-types';
+import { canReadImageSize, readImageSizeFromFile } from '../image-size';
+import type { ImageSize } from '../image-size';
 import { splitFrontmatter } from '../markdown-syntax';
 import type { MetaExtractor } from './meta-extractor';
 import type { NoteMeta } from './note-meta';
-import { mapWithConcurrency, readVaultText, scanVault, statVaultFile } from './scan-vault';
+import { mapWithConcurrency, readVaultText, resolveInsideVault, scanVault, statVaultFile } from './scan-vault';
 import type { ScannedFile } from './scan-vault';
 import { describeVaultPath, isIgnoredPath, normalizeVaultPath } from './vault-paths';
 import type { VaultPathInfo } from './vault-paths';
@@ -18,6 +20,11 @@ export interface VaultFile extends VaultPathInfo {
   readonly ino?: number;
   /** SHA-1 av innholdet for tekstfiler (.md/.base) – kjenner igjen «slett + ny fil med samme innhold». */
   readonly contentHash?: string;
+  /**
+   * Bildedimensjoner fra filheaderen (PO-71), kun for bildevedlegg vi kan lese (png, jpg, gif, webp, svg).
+   * `null` = ukjent/ødelagt. Leses ved indeksering og på nytt når fila endres (ny mtime/størrelse).
+   */
+  readonly imageSize?: ImageSize | null;
 }
 
 export interface IndexedNote {
@@ -50,7 +57,12 @@ export async function buildSnapshot(
     files.set(file.filePath, file);
   }
   const textFiles = [...files.values()].filter((f) => f.ext === 'md' || f.kind === 'base');
-  const texts = await mapWithConcurrency(textFiles, READ_CONCURRENCY, (f) => readVaultText(root, f.diskPath));
+  const imageFiles = [...files.values()].filter(hasReadableImageSize);
+  const [texts, imageSizes] = await Promise.all([
+    mapWithConcurrency(textFiles, READ_CONCURRENCY, (f) => readVaultText(root, f.diskPath)),
+    mapWithConcurrency(imageFiles, READ_CONCURRENCY, (f) => readImageSize(root, f)),
+  ]);
+  imageFiles.forEach((file, i) => files.set(file.filePath, { ...file, imageSize: imageSizes[i]! }));
   textFiles.forEach((file, i) => {
     const withHash = { ...file, contentHash: hashText(texts[i]!) };
     files.set(file.filePath, withHash);
@@ -122,6 +134,8 @@ export async function updateSnapshot(
     }
     let file = toVaultFile(scanned);
     if (existing && existing.mtimeMs === file.mtimeMs && existing.size === file.size) continue;
+    // PO-71: dimensjonene caches på VaultFile og leses på nytt bare når fila faktisk er endret.
+    if (hasReadableImageSize(file)) file = { ...file, imageSize: await readImageSize(root, file) };
     files.set(file.filePath, file);
     if (file.ext === 'md' || file.kind === 'base') {
       const text = await readVaultText(root, file.diskPath);
@@ -147,6 +161,18 @@ export async function updateSnapshot(
 export function findByDocPath(snapshot: VaultSnapshot, docPath: DocPath): VaultFile | null {
   const key = docPath.normalize('NFC');
   return snapshot.files.get(key) ?? snapshot.files.get(`${key}.md`) ?? null;
+}
+
+function hasReadableImageSize(file: VaultFile): boolean {
+  return file.kind === 'asset' && canReadImageSize(file.ext);
+}
+
+function readImageSize(root: string, file: VaultFile): Promise<ImageSize | null> {
+  try {
+    return readImageSizeFromFile(resolveInsideVault(root, file.diskPath), file.ext);
+  } catch {
+    return Promise.resolve(null);
+  }
 }
 
 function hashText(text: string): string {

@@ -12,6 +12,7 @@ import type {
 import { isImageExtension } from '../assets';
 import type { BaseEvaluator } from '../bases';
 import type { RenderedNote } from '../embeds';
+import { fitImageSize } from '../image-size';
 import { unresolvedTargetKey } from '../links';
 import type { BacklinkEntry } from '../links';
 import { parseWikiLinkInner } from '../markdown-syntax';
@@ -100,7 +101,7 @@ function renderCached(state: VaultState, file: VaultFile): RenderedNote {
 /** Innhold for filer som ikke er markdown: bilder vises, alt annet er «ikke støttet». */
 function staticContent(state: VaultState, file: VaultFile): Root {
   if (file.kind === 'asset' && isImageExtension(file.ext)) {
-    return { type: 'root', children: [h('img', { src: state.renderer.assetUrl(file.docPath), alt: file.name })] };
+    return { type: 'root', children: [h('img', { src: state.renderer.assetUrl(file.docPath), alt: file.name, ...fitImageSize(file.imageSize ?? null) })] };
   }
   const kind = file.kind === 'unsupported' ? (file.unsupportedKind ?? 'other') : 'other';
   return { type: 'root', children: [h('vr-unsupported', { dataKind: kind, dataTarget: file.docPath, dataSource: file.docPath })] };

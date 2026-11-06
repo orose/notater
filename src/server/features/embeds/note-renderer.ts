@@ -8,6 +8,7 @@ import type { DocPath, FilePath, TocEntry } from '../../../shared/api-types';
 import { isImageExtension } from '../assets';
 import type { BaseRequest } from '../bases';
 import type { CodeHighlighter } from '../code-highlight';
+import { fitImageSize } from '../image-size';
 import { resolveAnchor } from '../links';
 import type { LinkResolver } from '../links';
 import { h, renderMarkdown } from '../markdown';
@@ -97,17 +98,18 @@ export function createNoteRenderer(deps: NoteRendererDeps): NoteRenderer {
           if (!isImageExtension(target.ext)) {
             return [h('vr-unsupported', { dataKind: 'other', dataTarget: target.docPath, dataSource: target.docPath })];
           }
-          const size = request.syntax === 'wiki' ? parseImageAlias(request.alias) : { alt: request.alias, width: null, height: null };
-          const width = size.width ?? request.width ?? null;
-          const height = size.height ?? request.height ?? null;
-          return [
-            h('img', {
-              src: assetUrl(target.docPath),
-              alt: size.alt ?? target.name,
-              ...(width ? { width } : {}),
-              ...(height ? { height } : {}),
-            }),
-          ];
+          // `![[x|300]]`, `![[x|alt|300x200]]` og `![alt|300](x)` (Obsidian); ren alt-tekst ellers.
+          const size =
+            request.syntax === 'wiki' || request.alias?.includes('|')
+              ? parseImageAlias(request.alias)
+              : { alt: request.alias, width: null, height: null };
+          const hasSyntaxSize = size.width !== null || size.height !== null;
+          // PO-71: `width`/`height` fra filheaderen (cachet i indeksen), skalert med sideforholdet bevart.
+          const attributes = fitImageSize(target.imageSize ?? null, {
+            width: hasSyntaxSize ? size.width : (request.width ?? null),
+            height: hasSyntaxSize ? size.height : (request.height ?? null),
+          });
+          return [h('img', { src: assetUrl(target.docPath), alt: size.alt ?? target.name, ...attributes })];
         }
         if (target.kind === 'base') {
           const view = request.anchor?.trim() || null;
