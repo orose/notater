@@ -1771,6 +1771,11 @@ html .embed.is-diskret > h2:first-child ~ .embed-src { top: auto; }
 .embed-body .embed-title { margin: var(--space-4) 0 var(--space-2); font-family: var(--font-display); font-size: var(--step-1); font-weight: var(--weight-h3); font-style: var(--style-h3); line-height: 1.2; }
 .embed-body > .embed-title:first-child { margin-top: 0; }
 
+/* PO-74: .page har tabindex="-1" (mål for rutebytte/hopplenke). Et museklikk i teksten gir den fokus, og neste
+   tastetrykk (Space w) får nettleseren til å regne fokuset som :focus-visible → 2 px fokusring rundt hele
+   spalten; siden er høyere enn vinduet, så bare de loddrette kantene synes. Programmatiske fokusmål skal ikke ha ring. */
+.page:focus, .page:focus-visible { outline: none; }
+
 </style>
 </head>
 <body>

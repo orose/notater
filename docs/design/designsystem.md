@@ -608,6 +608,15 @@ Skjermbilder: `01-bredde-optimal-…`, `01-bredde-full-tidsskrift-…`, `01-bred
 - **Indikator:** statuslinjeflagget `[full]` i sidepanelets bunn (mono, dempet, klammer som vims `[+]`). Det er en knapp
   som bytter tilbake (`title="Full bredde er på – Space w bytter"`). Leseoptimalisert er standard og har derfor ikke noe flagg.
 - Bytte gir toast «Full bredde» / «Leseoptimalisert bredde» med tasttegn `Space w`.
+- **Fokusmål uten ring (PO-74, kundefunn).** `main.page` har `tabindex="-1"` fordi den er mål for rutebytte og
+  hopplenke. Et museklikk i teksten gir da elementet fokus. Det neste tastetrykket (`Space w`) får nettleseren til å
+  regne fokuset som `:focus-visible` (heuristikken: «tastaturbruk mens et element har fokus»), og den globale
+  `:focus-visible`-ringen tegnes rundt hele `.page`. Siden er høyere enn vinduet, så bare de to **loddrette** kantene
+  synes: én ved venstre kant av lesespalten og én til høyre før innholdsfortegnelsen. Det så ut som en rest av breddebyttet.
+  Prototypen manglet regelen; appen har den allerede (`global.css`: `.page:focus { outline: none; }`, som vinner over
+  `:focus-visible` på spesifisitet). **Regel:** alle programmatiske fokusmål (`tabindex="-1"` på store beholdere) skal ha
+  `:focus, :focus-visible { outline: none }`. Det gjelder ikke elementer med `tabindex="0"` (kode-`pre`, `.table-wrap`):
+  de er rullbare områder som skal ha ring. Skjermbilder etter veksling: `09-bredde-*` (1440 og 2000 px).
 
 ### 11.4 F2 Diskré embedding
 
@@ -831,6 +840,7 @@ brytere og radioknapper.
 - [ ] Zen: View Transitions med reservevalg, `.zen-exit` i hjørnet og hint de tre første gangene.
 - [ ] Palett: prompt utenfor feltet, `⌫` på tom linje, `⇥` fullfører, deaktiverte rader kan velges, underlister.
 - [ ] Which-key pauser sekvens-tidsavbruddet. showcmd.
+- [ ] `.page` (og andre `tabindex="-1"`-mål) får aldri fokusring – test: klikk i teksten, trykk `Space w` to ganger (PO-74).
 - [ ] Alle tidskonstanter leses fra tokens (`--leader-delay`, `--sequence-timeout`, `--hint-linger`).
 
 ### 11.11 Åpne spørsmål (v1.1)
@@ -844,7 +854,6 @@ brytere og radioknapper.
    Vi trenger en bekreftelse.
 4. **Which-key og sekvens-tidsavbrudd:** designet pauser tidsavbruddet mens hintet vises. Arkitekten må bekrefte at
    tastaturmotoren støtter det.
-5. **Fold-pilen på Tidsskrift h2 bytter ut «§»** ved hover og når seksjonen er foldet. Er det greit for kunden at
-   §-tegnet midlertidig blir et håndtak?
+5. ~~Fold-pilen bytter ut «§»~~ – **godkjent (PO-73)**.
 6. **Statuslinjeflagg** finnes bare i sidepanelet. På mobil (< 860 px) er Utseende eneste sted man ser at full bredde
    eller diskré er på. Skal topplinjen få et lite flagg?
