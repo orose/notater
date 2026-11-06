@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 
 interface ModalProps {
   readonly open: boolean;
@@ -7,6 +7,8 @@ interface ModalProps {
   readonly label?: string;
   readonly labelledBy?: string;
   readonly className?: string;
+  /** Dialogens egne taster (f.eks. `?` lukker hurtigtastoversikten). */
+  readonly onKeyDown?: (event: KeyboardEvent<HTMLDialogElement>) => void;
   readonly children: ReactNode;
 }
 
@@ -14,7 +16,7 @@ interface ModalProps {
  * Native `<dialog>` med `showModal()`: fokusfelle, Esc lukker, bakteppe-klikk lukker,
  * fokus returneres til elementet som åpnet dialogen.
  */
-export function Modal({ open, onClose, label, labelledBy, className, children }: ModalProps) {
+export function Modal({ open, onClose, label, labelledBy, className, onKeyDown, children }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
@@ -52,6 +54,7 @@ export function Modal({ open, onClose, label, labelledBy, className, children }:
       className={className}
       aria-label={label}
       aria-labelledby={labelledBy}
+      onKeyDown={onKeyDown}
       onClick={(event) => {
         // Klikk på selve <dialog> utenfor boksen = bakteppet (padding inne i boksen teller ikke).
         if (event.target !== event.currentTarget) return;

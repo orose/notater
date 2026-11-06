@@ -34,3 +34,8 @@ export function shortcutLabel(key: string): string {
 export function isModifierPressed(event: { readonly metaKey: boolean; readonly ctrlKey: boolean }): boolean {
   return event.metaKey || event.ctrlKey;
 }
+
+/** Sann på macOS/iOS (visning av ⌘ i stedet for Ctrl, PO-36). */
+export function isApple(): boolean {
+  return isApplePlatform(currentPlatform());
+}

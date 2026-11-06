@@ -2,7 +2,7 @@ import './theme.css';
 import { useId } from 'react';
 import { Icon } from '../../shared/ui/Icon';
 import { Modal } from '../../shared/ui/Modal';
-import { PALETTES, PALETTE_INFO, type ThemeModePreference, type ThemeType } from './theme-state';
+import { PALETTES, PALETTE_INFO, TYPES, TYPE_INFO, type ThemeModePreference, type ThemeType } from './theme-state';
 import { useTheme } from './use-theme';
 import { modifierLabel } from '../../shared/ui/shortcuts';
 
@@ -12,27 +12,29 @@ const MODE_LABELS: ReadonlyArray<readonly [ThemeModePreference, string]> = [
   ['system', 'System'],
 ];
 
-const TYPE_OPTIONS: ReadonlyArray<{ readonly id: ThemeType; readonly name: string; readonly desc: string }> = [
-  { id: 'tidsskrift', name: 'Tidsskrift', desc: 'Seriff, marginalia, figurer' },
-  { id: 'terminal', name: 'Terminal', desc: 'Grotesk + mono, tett' },
-  { id: 'klartekst', name: 'Klartekst', desc: 'Lettlest, romslig' },
-];
+const TYPE_OPTIONS: ReadonlyArray<{ readonly id: ThemeType; readonly name: string; readonly desc: string }> = TYPES.map((id) => ({
+  id,
+  name: TYPE_INFO[id].name,
+  desc: TYPE_INFO[id].description,
+}));
 
 interface ThemePickerProps {
   readonly open: boolean;
   readonly onClose: () => void;
+  /** Åpner hurtigtastoversikten (F6). Dialogen lukkes først, så modalene ikke stables. */
+  readonly onOpenShortcuts?: () => void;
 }
 
-export function ThemePicker({ open, onClose }: ThemePickerProps) {
+export function ThemePicker({ open, onClose, onOpenShortcuts }: ThemePickerProps) {
   const headingId = useId();
   return (
     <Modal open={open} onClose={onClose} labelledBy={headingId} className="theme-panel">
-      <ThemePickerBody headingId={headingId} />
+      <ThemePickerBody headingId={headingId} onOpenShortcuts={onOpenShortcuts} />
     </Modal>
   );
 }
 
-function ThemePickerBody({ headingId }: { readonly headingId: string }) {
+function ThemePickerBody({ headingId, onOpenShortcuts }: { readonly headingId: string; readonly onOpenShortcuts?: (() => void) | undefined }) {
   const { preferences, resolvedMode, setPreferences } = useTheme();
   const name = useId();
 
@@ -148,8 +150,21 @@ function ThemePickerBody({ headingId }: { readonly headingId: string }) {
         </label>
 
         <p className="theme-hint">
-          Valget lagres i denne nettleseren. <kbd>{modifierLabel()}</kbd> <kbd>.</kbd> bytter lys/mørk.
+          Valget lagres i denne nettleseren. <kbd>{modifierLabel()}</kbd> <kbd>.</kbd> eller <kbd>Space</kbd> <kbd>m</kbd>{' '}
+          bytter lys/mørk.
         </p>
+        {onOpenShortcuts ? (
+          <button
+            type="button"
+            className="btn theme-shortcuts"
+            onClick={(event) => {
+              event.currentTarget.closest('dialog')?.close();
+              requestAnimationFrame(() => onOpenShortcuts());
+            }}
+          >
+            Hurtigtaster
+          </button>
+        ) : null}
       </form>
     </>
   );

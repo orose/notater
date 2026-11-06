@@ -1767,6 +1767,9 @@ html .embed.is-diskret > h2:first-child ~ .embed-src { top: auto; }
 .wk-grid li > span:not(.arrow):not(.wk-st) { white-space: nowrap; }
 .wk-st { margin-left: auto; padding-left: 0.5em; white-space: nowrap; }
 .opts-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tag-cloud b { opacity: 1; }
+.embed-body .embed-title { margin: var(--space-4) 0 var(--space-2); font-family: var(--font-display); font-size: var(--step-1); font-weight: var(--weight-h3); font-style: var(--style-h3); line-height: 1.2; }
+.embed-body > .embed-title:first-child { margin-top: 0; }
 
 </style>
 </head>
@@ -2157,7 +2160,7 @@ html .embed.is-diskret > h2:first-child ~ .embed-src { top: auto; }
   }
   function embedHTML(id, ctxLevel, discreet, depth) {
     const e = EMBEDS[id];
-    const label = e.kind === 'section' ? `${e.target} › ${e.anchor}` : e.kind === 'block' ? `${e.target} <span style="opacity:.8">${e.anchor}</span>` : e.target;
+    const label = e.kind === 'section' ? `${e.target} › ${e.anchor}` : e.kind === 'block' ? `${e.target} ${e.anchor}` : e.target;
     if (e.kind === 'missing') {
       return `<div class="mini-state embed-state" role="note"><svg class="i"><use href="#i-block"/></svg><div><span class="label">Innebygd notat</span><strong>Fant ikke «${esc(e.target)}»</strong>Notatet finnes ikke i vaultet ennå, så <code>![[${esc(e.target)}]]</code> kan ikke vises. Når du oppretter det i Obsidian, dukker innholdet opp her.</div></div>`;
     }
@@ -2167,7 +2170,7 @@ html .embed.is-diskret > h2:first-child ~ .embed-src { top: auto; }
     const titleText = e.kind === 'note' ? e.target : e.kind === 'section' ? e.anchor : null;
     const parts = [];
     const hTag = (lv, text) => {
-      if (!discreet) return `<h4>${text}</h4>`;
+      if (!discreet) return `<p class="embed-title">${text}</p>`;   // v1-degradering: overskrift-STIL, ikke overskrift (unngår brudd på heading-order)
       const n = Math.min(6, lv);
       return `<h${n} id="${slug(text)}">${text}</h${n}>`;
     };
@@ -2608,7 +2611,7 @@ html .embed.is-diskret > h2:first-child ~ .embed-src { top: auto; }
       if (!v.trim() && x.c.g !== lastG) { html += `<li class="grp label" role="presentation">${GROUPS[x.c.g]}</li>`; lastG = x.c.g; }
       const why = x.c.avail && x.c.avail();
       const st = x.c.state ? `<span class="st">${x.c.arg ? '' : 'nå: '}${esc(x.c.state())}</span>` : '';
-      const exTxt = ':' + mark(x.alias, x.idx) + (x.c.arg ? ' <span style="opacity:.75">‹' + (x.c.arg === 'tema' ? 'typesett' : 'navn') + '›</span>' : '');
+      const exTxt = ':' + mark(x.alias, x.idx) + (x.c.arg ? ' ‹' + (x.c.arg === 'tema' ? 'typesett' : 'navn') + '›' : '');
       html += `<li class="res cmd" role="option" id="po${i}"${why ? ' aria-disabled="true"' : ''}><span class="cmd-ex">${exTxt}</span><span class="cmd-name">${esc(x.c.name)}${st}</span><span class="cmd-keys">${x.c.keys.length ? keysHTML(x.c.keys) : ''}</span>${why ? `<span class="cmd-why">${esc(why)}</span>` : ''}</li>`;
       P.items.push({ disabled: !!why, why, complete: ':' + x.alias + (x.c.arg ? ' ' : ''), run: () => { if (x.c.arg) { pin.value = x.alias + ' '; P.sel = 0; renderPalette(); return; } pal.close(); run(x.c); } });
       i++;

@@ -27,6 +27,13 @@ export const MODES: readonly ThemeModePreference[] = ['light', 'dark', 'system']
 export const TYPES: readonly ThemeType[] = ['tidsskrift', 'terminal', 'klartekst'];
 export const PALETTES: readonly ThemePalette[] = ['papir', 'cyanotypi', 'fosfor', 'signal'];
 
+/** Navn og kort beskrivelse per typesett (temavelgeren og `:tema`). */
+export const TYPE_INFO: Readonly<Record<ThemeType, { readonly name: string; readonly description: string }>> = {
+  tidsskrift: { name: 'Tidsskrift', description: 'Seriff, marginalia, figurer' },
+  terminal: { name: 'Terminal', description: 'Grotesk + mono, tett' },
+  klartekst: { name: 'Klartekst', description: 'Lettlest, romslig' },
+};
+
 interface Swatch {
   readonly bg: string;
   readonly text: string;

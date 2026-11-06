@@ -1,0 +1,45 @@
+/* Hurtigtastoversikt (F6), which-key (F7) og palettens kommandomodus (F5). v1-stil; UX-design: designsystem v1.1. */
+
+/* ---------- ?-oversikten ---------- */
+.shortcut-help {
+  width: min(46rem, calc(100vw - 2rem)); max-width: calc(100vw - 2rem); max-height: min(85vh, 48rem); margin: 8vh auto auto; padding: 0;
+  background: var(--color-bg); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-l);
+  box-shadow: 0 1px 0 var(--color-rule), 0 24px 48px -24px color-mix(in oklab, #000 45%, transparent);
+}
+[data-type="terminal"] .shortcut-help { box-shadow: 6px 6px 0 0 var(--color-rule-strong); }
+[data-type="tidsskrift"] .shortcut-help { border-radius: 0; border-top: 3px solid var(--color-text); }
+.shortcut-help h2 {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin: 0;
+  padding: var(--space-4) var(--space-4) var(--space-3); font-size: var(--step-1); border-bottom: 1px solid var(--color-rule);
+}
+.shortcut-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: var(--space-4) var(--space-6); padding: var(--space-4); }
+.shortcut-group h3 { margin: 0 0 var(--space-2); }
+.shortcut-group ul { list-style: none; margin: 0; padding: 0; }
+.shortcut-row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding: 0.3rem 0; border-bottom: 1px dotted var(--color-rule); font-size: var(--step-n1); }
+.shortcut-row:last-child { border-bottom: 0; }
+.shortcut-row.hint .name { color: var(--color-muted); }
+.shortcut-row .bindings { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.3rem 0.5rem; flex-shrink: 0; }
+.shortcut-row .binding { display: inline-flex; align-items: baseline; gap: 0.2rem; white-space: nowrap; }
+.shortcut-row .or { color: var(--color-muted); font-size: 0.85em; margin-right: 0.2rem; }
+.shortcut-foot { margin: 0; padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-rule); font-size: 0.75rem; color: var(--color-muted); }
+
+/* ---------- which-key ---------- */
+.which-key {
+  position: fixed; left: 50%; bottom: var(--space-5); transform: translateX(-50%); z-index: var(--z-popover);
+  display: flex; align-items: baseline; gap: var(--space-3); max-width: calc(100vw - 2rem);
+  padding: var(--space-2) var(--space-4); font-family: var(--font-ui); font-size: var(--step-n1);
+  color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-m);
+}
+.which-key-lead { display: inline-flex; gap: 0.2rem; color: var(--color-muted); }
+.which-key ul { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin: 0; padding: 0; list-style: none; }
+.which-key li { display: inline-flex; align-items: baseline; gap: 0.35rem; }
+.which-key li.off .hint { color: var(--color-muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+
+/* ---------- palett: kommandomodus ---------- */
+.res.cmd { grid-template-columns: 1fr auto; }
+.res.cmd .keys { display: inline-flex; gap: 0.2rem; align-self: center; }
+.res.cmd .cur { font-weight: 400; color: var(--color-muted); font-size: 0.88em; }
+.res.cmd .x { white-space: normal; }
+.res.cmd[aria-disabled="true"] { cursor: default; }
+.res.cmd[aria-disabled="true"] .t { color: var(--color-muted); font-weight: 400; }
+.res.cmd .why { font-style: italic; }

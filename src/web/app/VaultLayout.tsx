@@ -4,6 +4,7 @@ import { docPathFromPathname, docUrl, useVaults } from '../shared/api';
 import { LiveReloadProvider } from '../features/live-reload';
 import { Sidebar, Topbar } from '../features/navigation';
 import { DocumentPage } from '../features/note-view';
+import { CommandProvider, useCommands } from '../features/commands';
 import { SearchProvider } from '../features/search';
 import { ThemePicker } from '../features/theme';
 import { VaultHome } from './VaultHome';
@@ -31,6 +32,8 @@ export function VaultLayout() {
     if (!drawerOpen) return undefined;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        // Konsumert her: system.escape (f.eks. avslutt zen) skal ikke også kjøre (ADR-007 §6).
+        event.preventDefault();
         setDrawerOpen(false);
         menuRef.current?.focus();
       }
@@ -75,6 +78,7 @@ export function VaultLayout() {
 
   return (
     <SearchProvider vaultId={vaultId}>
+      <CommandProvider vaultId={vaultId} docPath={docPath} onOpenAppearance={() => setThemeOpen(true)}>
       <LiveReloadProvider vaultId={vaultId}>
         <a className="skip-link" href="#innhold">
           Hopp til innhold
@@ -98,8 +102,15 @@ export function VaultLayout() {
           />
           <div className="main">{docPath ? <DocumentPage /> : <VaultHome vaultId={vaultId} />}</div>
         </div>
-        <ThemePicker open={themeOpen} onClose={() => setThemeOpen(false)} />
+        <AppearanceDialog open={themeOpen} onClose={() => setThemeOpen(false)} />
       </LiveReloadProvider>
+      </CommandProvider>
     </SearchProvider>
   );
+}
+
+/** Utseende med knapp til hurtigtastoversikten (F6), som eies av kommandoregisteret. */
+function AppearanceDialog({ open, onClose }: { readonly open: boolean; readonly onClose: () => void }) {
+  const { openShortcuts } = useCommands();
+  return <ThemePicker open={open} onClose={onClose} onOpenShortcuts={openShortcuts} />;
 }

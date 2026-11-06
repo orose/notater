@@ -7,19 +7,38 @@ import { Icon } from '../../shared/ui/Icon';
 import { Modal } from '../../shared/ui/Modal';
 import { useRecentDocs } from '../recent';
 import { isModifierPressed, modifierLabel } from '../../shared/ui/shortcuts';
+import type { PaletteCommandItem, PaletteCommandSource } from './search-context';
 
 interface CommandPaletteProps {
   readonly vaultId: VaultId;
   readonly open: boolean;
   readonly initialQuery: string;
+  /** Kommandomodus (`:`). Uten kilde finnes bare søk. */
+  readonly commands: PaletteCommandSource | null;
   readonly onClose: () => void;
 }
 
-export function CommandPalette({ vaultId, open, initialQuery, onClose }: CommandPaletteProps) {
+/** Én palett for søk og kommandoer (F5): inndata som starter med `:` gir kommandomodus (ADR-007 §4). */
+export function CommandPalette({ vaultId, open, initialQuery, commands, onClose }: CommandPaletteProps) {
   return (
     <Modal open={open} onClose={onClose} label="Hurtigsøk" className="palette">
-      <PaletteBody vaultId={vaultId} initialQuery={initialQuery} />
+      <PaletteBody vaultId={vaultId} initialQuery={initialQuery} commands={commands} />
     </Modal>
+  );
+}
+
+function closePalette(from: Element | null): void {
+  (from?.closest('dialog') ?? document.querySelector<HTMLDialogElement>('dialog.palette[open]'))?.close();
+}
+
+/** Hurtigtasten til høyre: én `<kbd>` per akkord. */
+function ShortcutKeys({ chords }: { readonly chords: readonly string[] }) {
+  return (
+    <span className="keys">
+      {chords.map((chord, i) => (
+        <kbd key={i}>{chord}</kbd>
+      ))}
+    </span>
   );
 }
 
@@ -101,8 +120,199 @@ function hitToOption(hit: SearchHit, query: string, prefix: string): Option {
   };
 }
 
-function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; readonly initialQuery: string }) {
+interface PaletteBodyProps {
+  readonly vaultId: VaultId;
+  readonly initialQuery: string;
+  readonly commands: PaletteCommandSource | null;
+}
+
+function PaletteBody({ vaultId, initialQuery, commands }: PaletteBodyProps) {
   const [query, setQuery] = useState(initialQuery);
+  const commandMode = commands !== null && query.startsWith(':');
+  return commandMode ? (
+    <CommandList query={query} setQuery={setQuery} source={commands} />
+  ) : (
+    <SearchList vaultId={vaultId} query={query} setQuery={setQuery} />
+  );
+}
+
+interface ListProps {
+  readonly query: string;
+  readonly setQuery: (query: string) => void;
+}
+
+/** Felles inndatafelt (combobox) for begge modi, slik at fokus og markør beholdes ved modusbytte. */
+function PaletteInput({
+  query,
+  setQuery,
+  listId,
+  activeId,
+  expanded,
+  onKeyDown,
+  onChange,
+}: ListProps & {
+  readonly listId: string;
+  readonly activeId: string | undefined;
+  readonly expanded: boolean;
+  readonly onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
+  readonly onChange: () => void;
+}) {
+  return (
+    <div className="palette-input">
+      <Icon name="search" />
+      <input
+        type="search"
+        role="combobox"
+        aria-label="Søk i titler, aliaser og innhold"
+        placeholder="Søk i titler, aliaser og innhold"
+        aria-expanded={expanded}
+        aria-controls={listId}
+        aria-autocomplete="list"
+        aria-activedescendant={activeId}
+        aria-describedby={`${listId}-mode`}
+        autoComplete="off"
+        spellCheck={false}
+        value={query}
+        autoFocus
+        onFocus={(event) => {
+          // `:` forhåndsutfylt: markøren etter kolonet.
+          const end = event.currentTarget.value.length;
+          event.currentTarget.setSelectionRange(end, end);
+        }}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          onChange();
+        }}
+        onKeyDown={(event) => {
+          if (isModifierPressed(event) && event.key.toLowerCase() === 'k') {
+            // ⌘K veksler: paletten lukker selv (motoren er inaktiv bak modal, ADR-007 §6).
+            event.preventDefault();
+            closePalette(event.currentTarget);
+            return;
+          }
+          if (event.key === 'Escape') {
+            // Chrome tømmer ellers bare søkefeltet på første Esc.
+            event.preventDefault();
+            closePalette(event.currentTarget);
+            return;
+          }
+          onKeyDown(event);
+        }}
+      />
+      <kbd>esc</kbd>
+    </div>
+  );
+}
+
+function CommandList({ query, setQuery, source }: ListProps & { readonly source: PaletteCommandSource }) {
+  const listId = useId();
+  const [selected, setSelected] = useState(0);
+  const items = useMemo(() => source.options(query.slice(1)), [source, query]);
+  const current = Math.min(selected, Math.max(0, items.length - 1));
+  const optionId = (i: number) => `${listId}-c-${i}`;
+
+  const choose = (item: PaletteCommandItem | undefined, from: Element | null) => {
+    if (!item || !item.enabled) return;
+    if (item.completion !== null) {
+      setQuery(`:${item.completion}`);
+      setSelected(0);
+      return;
+    }
+    // Lukk først (fokus tilbake), kjør i neste ramme: ingen stablede modaler (AR-1.1-12).
+    closePalette(from);
+    requestAnimationFrame(() => source.run(item));
+  };
+
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (items.length === 0) return;
+      const delta = event.key === 'ArrowDown' ? 1 : -1;
+      setSelected((current + delta + items.length) % items.length);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      choose(items[current], event.currentTarget);
+    }
+  };
+
+  useEffect(() => {
+    document.getElementById(optionId(current))?.scrollIntoView({ block: 'nearest' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- optionId er avledet av listId
+  }, [current, items]);
+
+  const trimmed = query.slice(1).trim();
+  return (
+    <>
+      <PaletteInput
+        query={query}
+        setQuery={setQuery}
+        listId={listId}
+        activeId={items.length > 0 ? optionId(current) : undefined}
+        expanded={items.length > 0}
+        onKeyDown={onKeyDown}
+        onChange={() => setSelected(0)}
+      />
+      <span id={`${listId}-mode`} className="sr-only">
+        Kommandomodus. Slett kolonet for å søke i notater.
+      </span>
+      <ul className="results commands" id={listId} role="listbox" aria-label="Kommandoer">
+        {items.map((item, i) => {
+          const header =
+            item.group !== null && (i === 0 || items[i - 1]?.group !== item.group) ? (
+              <li className="grp label" role="presentation" key={`g-${item.group}`}>
+                {item.group}
+              </li>
+            ) : null;
+          return [
+            header,
+            <li
+              key={item.key}
+              id={optionId(i)}
+              className="res cmd"
+              role="option"
+              aria-selected={i === current}
+              aria-disabled={item.enabled ? undefined : true}
+              data-command-id={item.commandId}
+              data-current={item.current || undefined}
+              onMouseMove={() => i !== current && setSelected(i)}
+              onClick={(event) => choose(item, event.currentTarget)}
+            >
+              <span className="t">
+                {markRanges(item.label, item.highlights)}
+                {item.current ? <span className="cur"> (valgt)</span> : null}
+              </span>
+              {item.shortcut ? <ShortcutKeys chords={item.shortcut} /> : null}
+              {item.enabled ? (
+                item.detail ? <span className="x">{item.detail}</span> : null
+              ) : (
+                <span className="x why">{item.reason}</span>
+              )}
+            </li>,
+          ];
+        })}
+      </ul>
+      {items.length === 0 ? (
+        <div className="palette-empty mini-state">
+          <strong>Ingen kommando for «{trimmed}»</strong>
+          Prøv et kortere ord, eller slett kolonet for å søke i notater.
+        </div>
+      ) : null}
+      <div className="palette-foot">
+        <span>
+          <kbd>↑</kbd> <kbd>↓</kbd> velg
+        </span>
+        <span>
+          <kbd>↵</kbd> kjør
+        </span>
+        <span>
+          <kbd>⌫</kbd> over <kbd>:</kbd> søk i notater
+        </span>
+      </div>
+    </>
+  );
+}
+
+function SearchList({ vaultId, query, setQuery }: ListProps & { readonly vaultId: VaultId }) {
   const debounced = useDebounced(query, 120);
   const search = useSearch(vaultId, debounced, 30);
   const vaults = useVaults();
@@ -147,10 +357,6 @@ function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; rea
       if (options.length === 0) return;
       const delta = event.key === 'ArrowDown' ? 1 : -1;
       setSelected((current + delta + options.length) % options.length);
-    } else if (event.key === 'Escape') {
-      // Chrome tømmer ellers bare søkefeltet på første Esc.
-      event.preventDefault();
-      event.currentTarget.closest('dialog')?.close();
     } else if (event.key === 'Enter') {
       event.preventDefault();
       openOption(options[current], isModifierPressed(event));
@@ -175,29 +381,18 @@ function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; rea
 
   return (
     <>
-      <div className="palette-input">
-        <Icon name="search" />
-        <input
-          type="search"
-          role="combobox"
-          aria-label="Søk i titler, aliaser og innhold"
-          placeholder="Søk i titler, aliaser og innhold"
-          aria-expanded={options.length > 0}
-          aria-controls={listId}
-          aria-autocomplete="list"
-          aria-activedescendant={options[current]?.id}
-          autoComplete="off"
-          spellCheck={false}
-          value={query}
-          autoFocus
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setSelected(0);
-          }}
-          onKeyDown={onKeyDown}
-        />
-        <kbd>esc</kbd>
-      </div>
+      <PaletteInput
+        query={query}
+        setQuery={setQuery}
+        listId={listId}
+        activeId={options[current]?.id}
+        expanded={options.length > 0}
+        onKeyDown={onKeyDown}
+        onChange={() => setSelected(0)}
+      />
+      <span id={`${listId}-mode`} className="sr-only">
+        Skriv : for kommandoer.
+      </span>
       <ul className="results" id={listId} role="listbox" aria-label="Søkeresultater">
         {options.map((option, i) => {
           const header =
@@ -231,7 +426,9 @@ function PaletteBody({ vaultId, initialQuery }: { readonly vaultId: VaultId; rea
         </div>
       ) : null}
       {!trimmed && options.length === 0 ? (
-        <p className="palette-hint">Skriv for å søke i titler, aliaser og innhold. Start med # for tagger.</p>
+        <p className="palette-hint">
+          Skriv for å søke i titler, aliaser og innhold. Start med <kbd>#</kbd> for tagger, <kbd>:</kbd> for kommandoer.
+        </p>
       ) : null}
       <div className="palette-foot">
         <span>

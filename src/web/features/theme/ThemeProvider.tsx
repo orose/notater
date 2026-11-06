@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { ThemeContext, type ThemeContextValue } from './theme-context';
-import { isModifierPressed } from '../../shared/ui/shortcuts';
 import {
   DARK_QUERY,
   applyTheme,
@@ -58,16 +57,7 @@ export function ThemeProvider({ children }: { readonly children: ReactNode }) {
     setPreferences({ mode: resolvedMode === 'dark' ? 'light' : 'dark' });
   }, [resolvedMode, setPreferences]);
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (isModifierPressed(event) && event.key === '.') {
-        event.preventDefault();
-        toggleMode();
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [toggleMode]);
+  // ⌘. / Space m ligger i kommandoregisteret (theme.toggleMode, ADR-007 §6).
 
   const value = useMemo<ThemeContextValue>(
     () => ({ preferences, resolvedMode, setPreferences, toggleMode }),

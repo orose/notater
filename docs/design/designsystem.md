@@ -10,7 +10,9 @@ Eier: UX/webdesign. Bindende grunnlag: `docs/produkt/brief.md` (særlig B9, B10,
 | `tokens.css` | **Kanonisk kilde** for alle CSS custom properties (generert, kontrastverifisert). Importeres som den er. |
 | `shiki-tema.ts` | Shiki-tema der alle farger er `var(--shiki-*)` – ett tema for alle paletter |
 | `prototype.html` | Selvstendig referanse (fonter innebygd som base64, ingen nettverkskall). Åpne direkte i nettleser. |
-| `skjermbilder/` | Skjermbilder 1440 px og 390 px i flere kombinasjoner |
+| `skjermbilder/` | Skjermbilder 1440 px og 390 px i flere kombinasjoner (v1.1 i `skjermbilder/v1.1/`) |
+| `prototype-v1.1.html` | **v1.1** (§11): lesebredde, diskré embedding, folding, zen, `:`-palett, `?`-oppslagskort, which-key. Selvstendig, interaktiv. |
+| `kontrast-v1.1.mjs` | Kontrollskript for v1.1-fargene: `node docs/design/kontrast-v1.1.mjs` (exit 1 ved brudd, `--json` for QA) |
 
 Prototypen kan styres med URL-parametre: `prototype.html?type=terminal&palette=fosfor&mode=dark`, og har tre «sider»: `#notat` (standard), `#komponenter` (alle callouts, lenketyper, tomtilstander/feil) og `#ukjent` (ukjent notat). `⌘K`/`Ctrl+K` åpner søk, `⌘.` bytter lys/mørk.
 
@@ -519,3 +521,330 @@ Lite og funksjonelt: farge/understrek på hover (`--dur-fast`), skuff inn/ut og 
 4. **Ingress fra frontmatter:** hvilket felt brukes i vaultet – `description`, `summary` eller ingen? Hvis ingen, vises ikke ingress.
 5. **Hvilke properties skal skjules** i notat-headeren utover `tags/aliases/title/description/cssclasses`?
 6. **Lesetid** («6 min lesing») – ønsket, eller støy for tekniske notater?
+
+---
+
+## 11. v1.1 – Lesekomfort og tastaturstyring
+
+Bindende grunnlag: `docs/produkt/v1.1-spesifikasjon.md` (F1–F7, P1–P7) og PO-53 til PO-61 i `docs/beslutninger.md`.
+Referanse: **`prototype-v1.1.html`** (selvstendig, alle tre typesett, alle paletter, lys/mørk). Skjermbilder i `skjermbilder/v1.1/`
+(1440 px og 390 px; filnavnene sier funksjon, typesett, palett og modus).
+
+**Prototypen styres med URL-parametre** (i tillegg til `type`, `palette`, `mode` fra v1):
+`width=full`, `diskret=1`, `zen=1` (+ `hint=1&hold=1` for å vise hintet), `fold=alle` eller `fold=id1,id2`,
+`open=palette|cmd|refcard|theme|whichkey|toast`, `q=` (forhåndsutfylt tekst, f.eks. `q=tema%20`), `side=base`
+(kontekst der kommandoer er deaktivert), `os=pc` (viser Ctrl i stedet for ⌘). Alle tastene i spesifikasjonen virker.
+
+### 11.1 Prinsipper for v1.1
+
+1. **Vim i ånden, ikke i pynten.** Vi låner vims *ordforråd*, som foldcolumn (`−`/`+`), foldtekst (`+-- 86 ord ····`),
+   `-- KOMMANDO --`, `showcmd`, `E492` og which-key. Lånet er sterkest i Terminal og oversettes til typografi i Tidsskrift
+   (`§`, `⋯`, småkapitéler) og til klartekst i Klartekst. Ingen «hacker-estetikk» med grønn-på-svart utenfor Fosfor.
+2. **Moduser skal være synlige, men stille.** Hver tilstand som endrer hva brukeren ser, har en diskré indikator:
+   statuslinjeflagg `[full]` og `[diskré]`, `zen · Esc` i hjørnet, og `-- KOMMANDO --` i paletten. Ingen bannere.
+3. **Én DOM, CSS bestemmer plasseringen.** Kildelenken, sidenotene og fold-pilen har ett element hver. Media- og
+   attributtregler flytter dem (marg, i flyt eller ved linjeslutt). Frontend bygger én gang.
+4. **Touch er ikke en ettertanke.** Alt som vises «ved hover», er alltid synlig og dempet når `(hover: none)` gjelder,
+   med trykkflate på minst 44 × 44 px.
+5. **Ingen ny farge uten avledning.** Alle nye farger er avledet av palett-tokens og kontrollert med skript (§11.9).
+
+### 11.2 Nye tilstander og tokens
+
+| Tilstand | Settes | Huskes |
+|---|---|---|
+| `html[data-width="optimal\|full"]` | Utseende, `Space w`, `:bredde` | `localStorage['vault-leser.bredde']`. Settes i tema-init-scriptet før første maling (ingen hopp). |
+| `.page[data-embeds="diskret\|vanlig"]` | Utseende, `Space d`, `:diskret` | `localStorage['vault-leser.diskret:<vault-id>:<notatsti>']` |
+| `html[data-zen]` | Utseende, `Space z`, `:zen`; avsluttes også med `Esc` | Aldri (F4) |
+| Foldet seksjon | pil, `za`, `zM`, `zR` | Aldri (F3). Overskriften får `data-folded`, skjulte blokker får `data-folded-by="<id>"`. |
+
+Nye tokens (se `tokens.css`, blokken «v1.1»):
+
+| Token | Verdi | Bruk |
+|---|---|---|
+| `--leader-delay` | 400ms | which-key vises etter `Space` + så lenge uten neste tast. JS leser den med `getComputedStyle`. |
+| `--sequence-timeout` | 1000ms | `gg`, `za`, `Space w` … avbrytes etter dette (**pauses mens which-key vises**, §11.8) |
+| `--hint-linger` | 4000ms | zen-hint |
+| `--fold-col` | 1.1rem | fold-kolonnens avstand fra tekstkanten (= §-avstanden i v1) |
+| `--embed-bracket` | −1rem | x-posisjon for hover-klammen på diskré embed (til **høyre** for spalten) |
+| `--refcard-w` / `--whichkey-w` | 54rem / 34rem | |
+| `--z-hint` | 45 | which-key, showcmd, zen-hint, zen-utgang (over skuffen, under popover og toast) |
+| `[data-width="full"]` | `--measure: none; --code-wide: 0` | |
+| `--leading-body` i full bredde | A 1.68 · C 1.62 · K 1.74 | Lange linjer trenger mer luft for at øyet skal finne neste linje. |
+| `--color-kbd-bg` | `color-mix(in oklab, sunken 55%, surface)` | tasttegn |
+| `--color-kbd-fg` / `--color-kbd-edge` | text / rule-strong | |
+| `--color-kbd-edge-active` | muted | tasttegnkant i **valgt** rad (rule-strong gir bare 2,5:1 der) |
+| `--color-row-active` | = tag-bg | valgt rad i palett og underliste |
+| `--color-cmd` | = accent | `:`-prompt, kommandomodus-strek, leder-tast |
+| `--color-disabled` | = muted (≥ 4,5) | deaktiverte kommandoer – **aldri** grå under AA |
+| `--color-fold-leader` | = faint | prikkede ledere i fold-linjen – kun dekor |
+| `--color-src-rule` | = rule-strong | hover-klammen |
+| `--color-veil` | bg 92 % | bak zen-utgangen på touch |
+
+**Tasttegn (`.k`).** Én kbd per *tastetrykk*. En akkord er ett tegn (`⌘K`, `Ctrl d`, `⌘.`), og en sekvens er flere
+tegn tett etter hverandre (`g` `g`, `Space` `w`). Alternativer skilles med en dempet `/`. `Space` (lederen) tegnes alltid
+med `--color-cmd`, slik at alle leder-kombinasjoner gjenkjennes på et blikk. På macOS viser vi `⌘`, ellers `Ctrl`.
+Tasttegnet har 2 px underkant (tastaturfølelse) og radius `--radius-m` (Tidsskrift: `--radius-l`).
+
+### 11.3 F1 Lesebredde
+
+Skjermbilder: `01-bredde-optimal-…`, `01-bredde-full-tidsskrift-…`, `01-bredde-full-terminal-…`, `01-bredde-full-klartekst-…`.
+
+- `.col { max-width: none }`. Ved ≥ 1380 px fjernes også den reserverte sidenotekolonnen (`margin-right: 0`).
+  Ved 1440 px vokser brødtekstspalten fra ≈ 607 px (33em) til ≈ 832 px. **Uten** dette ville full bredde gitt *null*
+  gevinst i Tidsskrift ved 1440 px, fordi lesespalten + margkolonnen allerede fyller rommet mellom panelene.
+- **Sidenoter har tre plasseringer, én DOM:**
+  1. *Marg*: leseoptimalisert ≥ 1380 px (som v1), og i zen ≥ 1100 px (panelene er borte, så margen finnes).
+  2. *Innfelt marginalia*: full bredde ≥ 1100 px i Tidsskrift og Terminal. Noten flyter til høyre **inne i** spalten
+     (`float: right; width: var(--sidenote-w)`), med 1 px venstrestrek, og teksten løper rundt den. Typografien er den
+     samme som i margen (A kursiv, C mono), så marginalia beholder identiteten sin. Figurer, tabeller, callouts,
+     innrammede embeds, blokksitat, h2/h3 og fotnotelisten får `clear: right`, så de aldri presses smale ved siden av en note.
+  3. *Fotnoteliste nederst* (PO-20): alle andre tilfeller, **og alltid i Klartekst i full bredde**. Tekst som løper
+     rundt flytere, er dårlig for lesbarheten, og det er hele poenget med Klartekst.
+- **Kodefigurer:** `--code-wide` blir 0 (det finnes ingen marg å stikke ut i). Tidsskrift beholder −1rem til venstre,
+  slik at koden flukter optisk. Kode med intern scroll som før.
+- **Initial og småkapitél-linje:** uendret. En hel småkapitél-linje på ≈ 90 tegn er tradisjonell tidsskriftsats og tåles fint.
+- **Ingress** (`.dek`) og **properties** beholder lesevennlig bredde (34em), fordi de er «tittelside», ikke brødtekst.
+- **§-nummer og hengende tegn:** uendret.
+- **Indikator:** statuslinjeflagget `[full]` i sidepanelets bunn (mono, dempet, klammer som vims `[+]`). Det er en knapp
+  som bytter tilbake (`title="Full bredde er på – Space w bytter"`). Leseoptimalisert er standard og har derfor ikke noe flagg.
+- Bytte gir toast «Full bredde» / «Leseoptimalisert bredde» med tasttegn `Space w`.
+
+### 11.4 F2 Diskré embedding
+
+Skjermbilder: `02-embed-vanlig-…` (referanse, uendret v1), `02-embed-diskret-hover-tidsskrift-…` (margvariant),
+`02-embed-diskret-hover-terminal-…` (full bredde, variant under innholdet), `02-embed-diskret-feilkort-…`, `m-notat-touch-…`.
+
+**Anatomi**
+
+```html
+<div class="embed is-diskret">            <!-- ingen landemerke/rolle: teksten skal leses som én -->
+  <h2 id="leveransegarantier">Leveransegarantier</h2>   <!-- ekte nivå, jf. under -->
+  <p>…</p> <ul>…</ul>
+  <div class="embed is-diskret">…</div>    <!-- nestet arver -->
+  <a class="embed-src" href="…" aria-label="Kilde: Leveransegarantier – åpne notatet">
+    <span class="src-k">fra</span><span class="t">Leveransegarantier</span></a>   <!-- SISTE barn: leses som sitatkilde -->
+</div>
+```
+
+- Ingen ramme, bakgrunn, etikett eller knapp. Blokkene får samme `--space-flow` som brødteksten. Skriftstørrelsen er 1em,
+  ikke 0,94em som i vanlig embed.
+- **Overskriftsnivå:** notattittelen = nærmeste foregående overskrift i *vertsnotatet* + 1 (h1-tittelen teller som nivå 1,
+  maks h6). Notatets egne overskrifter forskyves med samme avstand: tittelnivå − 1. Seksjonsembed: seksjonens overskrift får
+  samme regel, og underoverskriftene forskyves med (nytt nivå − kildenivå). Blokkembed: ingen overskrift. (Forskyvningen
+  av underoverskrifter er en presisering, se åpne spørsmål.)
+- **§-nummer og TOC:** en diskré h2 er en vanlig h2. Selektoren for nummerering må derfor nå gjennom diskré omslag:
+  `.prose > h2, .prose .embed.is-diskret > h2` (ikke `.prose > h2` alene). Overskrifter i *innrammede* embeds nummereres
+  ikke og kan ikke foldes (PO-54). I v1.1 rendres tittelen der som `<p class="embed-title">` med h4-stil i stedet for en
+  `<h4>`. Det fjerner axe-bruddet `heading-order` som v1 hadde når en embed sto rett under h1.
+- **Hover-klammen:** `::before` på omslaget, 1 px `--color-src-rule` **til høyre for spalten** (`right: var(--embed-bracket)`),
+  og i Tidsskrift som dobbel hårstrek, et «spøkelse» av den vanlige embed-streken. Den står på høyre side fordi venstre marg
+  allerede bærer §-nummer, fold-kolonne og hengende listestreker (en venstreklamme krysset dem i første utkast), og fordi
+  den da peker mot kildelenken i margen. Opasitet 0 → 1 på `:hover`/`:focus-within`, `--dur-fast`. Klammen starter ved
+  første tekstlinje, ikke i luften over en h2.
+- **Kildelenken, tre plasseringer:**
+  1. *Margen* (pekeenhet, ≥ 1380 px leseoptimalisert, eller zen ≥ 1100 px): absolutt i margkolonnen, på høyde med første
+     tekstlinje, og ser ut som en sidenote. A: «FRA» i småkapitéler + kursiv tittel. C: `↳ fra Tittel` i mono.
+     K: «fra Tittel» i mono.
+  2. *Under innholdet* (pekeenhet uten marg, også full bredde): absolutt, høyrestilt i luften under siste blokk. Den
+     tar ikke plass, så det blir null layoutskift når den vises.
+  3. *Touch* (`hover: none`, PO-60): alltid synlig, dempet (`--color-muted`), i flyt og høyrestilt. Klammen er alltid
+     synlig i `--color-rule`.
+  Lenketeksten: notat → «Tittel», seksjon → «Tittel › Seksjon», blokk → «Tittel ^id». Hover gir lenkefarge og hel understrek.
+  Tastatur: lenken er et vanlig tab-stopp. Fokus inni omslaget (også på lenker og fold-piler) viser klamme og lenke.
+- **Nestet:** arver diskré. Den indre klammen ligger 0,4rem innenfor den ytre, og den indre kildelenken står alltid
+  under sitt eget innhold (aldri to lenker i margen).
+- **Feilkort (alltid synlige):** `mini-state` med stiplet ramme, blokk-ikon, etiketten «Innebygd notat», fet
+  «Fant ikke «Outbox-mønster»» og én setning. De er *identiske* i begge moduser, fordi kortet må skille seg ut nettopp når
+  resten glir inn.
+- **Indikator:** statuslinjeflagget `[diskré]` (bare på notatet det gjelder). Toast ved bytte (PO-59):
+  «Diskré embedding **på**/**av** for dette notatet» + `Space d`.
+- Baser og bilder er uendret.
+
+### 11.5 F3 Folding
+
+Skjermbilder: `03-fold-hover-tidsskrift-…` (pil ved hover, foldet §2), `03-fold-alle-terminal-…`, `03-fold-alle-tidsskrift-papir-dark`,
+`m-fold-touch-terminal-…`.
+
+**Fold-pilen** er en `<button class="fold" aria-expanded aria-controls aria-label="Fold sammen «X»" title="Fold sammen (za)">`
+som *siste barn* av overskriften. Hover på knappen er da også hover på overskriften.
+
+| | Pekeenhet ≥ 860 px | Smal skjerm eller touch |
+|---|---|---|
+| Plassering | **Fold-kolonnen** i venstre marg: `right: calc(100% + var(--fold-col))`, vertikalt sentrert på overskriftens første linje | Slutten av overskriftens første linje (`padding-right: 2.25rem` på overskriften), trykkflate 44 × 44 px |
+| Synlig | ved `:hover`/`:focus-within` på overskriften, eller når foldet | alltid (`hover: none`): dempet (`--color-muted`), foldet = aksent |
+| Tidsskrift h2 | **Chevronen tar §-tegnets plass, og nummeret blir stående:** «§ 1» → «⌄ 1» (h2::before tones ut, og knappen tegner chevron + `counter(sec)` på samme sted). Ingen kollisjon i den smale margen (≈ 52 px), og «§» blir selve håndtaket. | § står over overskriften som i v1. Pilen står ved linjeslutt. |
+| Terminal | vims foldcolumn: `−` åpen, `+` foldet, i mono. h2: på linjen med «01 /» | samme tegn, ved linjeslutt |
+| Klartekst | chevron 1,2rem, strek 2 | chevron |
+| Ornamentikk av (PO-19) | bare chevron (ingen nummer) | |
+
+Pilen roterer 90° → 0° (`--dur-fast`). Fargen er dempet i hvile, aksent ved hover, og aksent når seksjonen er foldet.
+
+**Fold-linjen** (indikator for skjult innhold) settes inn rett etter den foldede overskriften. Den har `aria-hidden="true"`
+(knappen bærer tilstanden) og kan klikkes for å utfolde:
+
+| Typesett | Utseende |
+|---|---|
+| Tidsskrift | `⋯` (aksent) · *86 ord · 1 figur* (kursiv) · prikket leder · UTFOLD (småkapitéler) |
+| Terminal | `+-- 86 ord · 1 figur · · · · · · · · · za` (vims foldtext, med mono og prikker i `--color-fold-leader`) |
+| Klartekst | `▸ 86 ord · 1 figur` … «Vis innholdet» (understreket) |
+
+Tellingen gjelder ord og figurer (kode, diagram, tabell) i den skjulte delen.
+
+**Seksjonsgrenser:** en seksjon løper til neste overskrift på samme eller høyere nivå i *lesefølge*, der diskré
+embed-omslag er gjennomsiktige (én sammenhengende tekst). Fotnotelisten er aldri del av en seksjon. En diskré embed der
+alt er foldet bort, skjuler også kildelenken sin.
+
+**Animasjon:** folding går umiddelbart, og fold-linjen tones inn (`--dur-base`). Ved utfolding får de avdekkede blokkene
+`opacity 0 → 1` og `translateY(−0.35rem → 0)` (`--dur-base`, `--ease-out`). Vi animerer **ikke** høyde, av samme grunn
+som for callouts: det gir layouthopp, og Safari mangler `interpolate-size`. Under `prefers-reduced-motion` er alt 0 ms.
+**Leseposisjonen holdes:** overskriften som foldes, står stille i viewporten (scroll-kompensasjon), også når innhold over
+leselinjen forsvinner.
+
+**`za`:** bruker samme leselinje som TOC, 30 % ned i viewporten (PO-53), eller fokusert overskrift. Overskriften blinker
+kort (`--color-mark`, 0,9 s) og fokus flyttes til pilen. `zM` folder alle nivåer (og vi står da øverst), og `zR`
+utfolder alt. Begge gir en kort toast med motsatt tast.
+
+### 11.6 F4 Zen
+
+Skjermbilder: `04-zen-tidsskrift-papir-dark` (med førstegangshint), `04-zen-full-terminal-fosfor-light`, `m-zen-terminal-fosfor-dark`.
+
+- `html[data-zen]`: sidepanel, høyre marg, topplinje, statuslinje og innebygd TOC skjules. `.app` og `.main` får én kolonne,
+  og `.col` sentreres (`margin-inline: auto`). Ekstra luft øverst (`clamp(2.5rem, 1rem + 6vw, 7rem)`). Tittel og
+  properties beholdes.
+- **Tidsskrift i zen = Tufte-oppslag:** *tekstspalten* sentreres optisk, og marginalia henger fritt til høyre. Sidenoter
+  og kildelenker går i margen allerede fra 1100 px, fordi panelene er borte.
+- **Zen + full bredde:** `padding-inline: clamp(1rem, 7vw, 8rem)`, sidenoter innfelt (§11.3).
+- **Overgang:** View Transitions API. `.col` (`view-transition-name: lesekolonne`) glir til midten (`--dur-slow`,
+  `--ease-in-out`), og panelene tones ut og inn (`--dur-base`). Uten API-støtte eller med reduced motion: umiddelbart.
+- **Avslutt zen (PO-61):** knappen `.zen-exit` er fast i øvre høyre hjørne og viser «zen [Esc]». På desktop er den usynlig
+  i hvile og vises ved musebevegelse (i 1,8 s), hover eller fokus. Den er også et vanlig tab-stopp. På touch er den alltid
+  synlig: et 44 px «✕» på `--color-veil`. Knappen er samtidig modusindikatoren.
+- **Førstegangshint:** de tre første gangene (`localStorage['vault-leser.hint.zen']`) vises et kort nederst i midten:
+  «**Zen** Panelene er skjult – tastene virker som før. [Esc] eller [Space][z] tar deg tilbake.» Det forsvinner etter
+  `--hint-linger`. Touch-tekst: «Trykk ✕ øverst til høyre for å gå tilbake.» Det er `role="status"`, så skjermlesere får det.
+- Zen kan også slås på fra Utseende (lenkerad nederst i panelet). Navigasjon mellom notater beholder zen. `Esc` går ut
+  når ingen dialog er åpen og ingen sekvens er påbegynt.
+
+### 11.7 F5 Kommandopalett med `:`
+
+Skjermbilder: `05-palett-kommando-…`, `05-palett-kommando-sok-…` (fuzzy), `05-palett-tema-…`, `05-palett-palett-…`,
+`05-palett-deaktivert-base-…`, `05-palett-feil-…`, `m-palett-kommando-…`.
+
+**Moduser i samme dialog** (samme størrelse og plassering, så det aldri hopper):
+
+| | Søk (`⌘K`, `/`) | Kommando (`:`) |
+|---|---|---|
+| Ikonfelt | forstørrelsesglass | **`:`-prompt** i mono, `--color-cmd` |
+| Felt | `--step-1`, kursiv i A | mono, ikke kursiv, 0,86 × `--step-1`, aksentfarget markør |
+| Kant | A: 3 px tekstfarge øverst | A: øverste strek blir `--color-cmd`. C: 3 px aksentstrek til venstre i feltraden. K: hele rammen i aksent |
+| Bunnlinje | `søk` · ↑↓ velg · ↵ åpne · ⌘↵ ny fane · `:` kommandoer · 2 041 notater | `-- KOMMANDO --` (C, med vims streker) / *kommando* (A, småkapitéler) · ↑↓ velg · ⇥ fullfør · ↵ kjør · ⌫ på tom linje: tilbake til søk |
+
+**Prompten står utenfor feltet** (vim-oppførsel): `:` som første tegn i søk bytter modus og blir prompt, og `⌫` på tom
+linje går tilbake til søk. Feltets tilgjengelige navn bytter mellom «Søk i notater» og «Kommando». Se åpne spørsmål
+(spesifikasjonen sier «forhåndsutfylt med `:`»).
+
+**Kommandorad:** rutenett `[:alias] [navn + nå-tilstand] [taster]`.
+- `:bredde` i mono, dempet. Fuzzy-treff i `--color-cmd`, halvfet og understreket. Argumentkommandoer viser `:tema ‹typesett›`.
+- Navnet i UI-fonten, med nå-tilstanden etter i dempet mono («nå: full», «nå: av»). Det gjør veksle-kommandoer forutsigbare.
+- Hurtigtaster helt til høyre som tasttegn. `Space` i aksent.
+- **Deaktivert:** `aria-disabled="true"`, hele raden i `--color-disabled` (fortsatt ≥ 4,5:1), og en forklaringslinje under
+  navnet («Gjelder bare notater med innebygde notater – dette er en .base-side»). Raden kan velges med piltaster, slik at
+  skjermlesere leser forklaringen. `↵` gir bare forklaringen som toast.
+- Tom linje: alle kommandoer gruppert som **Visning, Lesing, Søk og kommandoer, Navigasjon** (mest brukt først). Med tekst:
+  sortert etter treff, uten grupper.
+
+**Underlister** (`:tema `, `:palett `): `↵` eller `⇥` på en argumentkommando fyller ut `tema ` og viser verdiene.
+Overskriftsraden er `:tema` + «VELG TYPESETT». Tema-rader har typografisk prøve («Aa», «Aa», «Il1» i egen font), navn og
+én linje beskrivelse. Palett-rader har firefelts stripe (bg · tekst · aksent · aksent2) **i gjeldende modus** og
+«anbefalt for …». Gjeldende verdi er merket «● NÅ». Det kan filtreres videre: `:tema ter`.
+
+**Feil:** ukjent kommando gir et stiplet kort «**E492** Ingen kommando heter «wq». Prøv `:hjelp` …». Ugyldig argument gir
+«**E475** Ugyldig argument …». Feilkodene er vims egne, et lite nikk til kunden. De står i mono, `--hue-red`, foran en
+vanlig norsk setning, så de ikke er til hinder for andre.
+
+Ekstra taster i paletten: `Ctrl n`/`Ctrl p` er alternativer til ↓/↑ (vim). `⌘K` lukker.
+
+### 11.8 F6 Hurtigtastoversikten (`?`) og F7 which-key
+
+**Oppslagskortet** (`06-taster-…`, `m-taster-…`) er en modal `<dialog class="refcard">`, 54rem, og lukkes med `Esc` eller `?`.
+- Hode: «Hurtigtaster» i display-fonten, under det «Normal-modus · leder er [Space]». **Terminal** får en man-side-topp:
+  `VAULT-LESER(1)    Normal-modus    VAULT-LESER(1)`.
+- To spalter (`columns: 2 21rem`, grupper brytes ikke), og én spalte under ca. 760 px. På mobil er kortet et fullskjermark.
+- Grupper i spesifikasjonens rekkefølge: Navigasjon, Lesing, Visning, Søk og kommandoer. Gruppehoder: A småkapitéler med
+  kraftig strek over (booktabs). C mono-versaler i aksent med strek som løper ut. K sperrede versaler med 2 px strek.
+- Rader: `[taster 8.75rem] [beskrivelse]`, med valgfri dempet underlinje (A kursiv). Par slås sammen («`j` / `k` Rull ned / opp»),
+  styrt av registeret (`pair`). Hårstreker mellom rader i A og K, luft i C.
+- Under Visning: «Bare som kommando: `:tema` `:palett` `:lys` `:mørk`». Bunn: «Esc eller ? lukker · :hjelp åpner også
+  dette kortet» og «Reservert for redigering senere: i a o e I A O s c d x p y u r». Det siste er ærlig om P4, og en
+  vim-bruker vil lure på hvorfor `i` ikke gjør noe.
+- **Alt genereres fra registeret** (prototypen gjør det samme: `REG` → kort, palett og which-key).
+
+**Which-key** (`07-whichkey-…`):
+- Plassering: fast, nederst i midten (`bottom: var(--space-5)`), 34rem. Den legger seg *over* teksten der leseren
+  allerede ser, ikke i et hjørne.
+- Innhold: hode `[Space] LEDER … Esc avbryter`, og et rutenett med `[w] lesebredde full`, `[d] diskré embedding av`,
+  `[z] zen`, `[m] lys / mørk`, `[t] utseende`. Tasten står i `--color-cmd`, og nå-tilstanden helt til høyre i dempet mono.
+  C: `w → lesebredde` i mono. A: kursiv.
+- Flate: `--color-surface`, 1 px rule-strong. A: 2 px tekstfarget strek øverst, ingen radius. C: hard 4 px skygge.
+- **Timing:** vises etter `--leader-delay` (400 ms) uten neste tast. Raske brukere ser den aldri. Toning og 0,35rem løft
+  (`--dur-fast`). **Mens den vises, er sekvens-tidsavbruddet satt på pause.** Den lukkes på neste tast, `Esc`, klikk
+  utenfor eller tap av vindusfokus. Ellers ville hintet forsvunnet etter 600 ms (1 s − 400 ms), før man rakk å lese det.
+- `role="status"`, `aria-live="polite"`.
+
+**showcmd** (vim): en liten mono-boks nederst til høyre som viser påbegynte sekvenser (`g`, `z`, `␣`) med en gang. Den
+gir trygghet ved `gg`/`za` og forklarer hvorfor neste tast «ble spist». Den er `aria-hidden` og forsvinner når sekvensen
+fullføres eller avbrytes.
+
+**`Space` på fokusert knapp** beholder vanlig funksjon (PO-56). Prototypen gjør dette for knapper, lenker, summary,
+brytere og radioknapper.
+
+### 11.9 Utseende og kontrast
+
+**Utseende** (`08-utseende-…`): ny gruppe **Lesing** mellom Modus og Typografi:
+- segmentkontroll «Leseoptimalisert | Full bredde» med små spalte-ikoner (`#w-narrow` / `#w-full`)
+- bryter «Diskré embedding», med beskrivelse «Bare dette notatet · innebygde notater glir inn i teksten».
+  På en .base-side: deaktivert (stiplet), med beskrivelsen «Ikke tilgjengelig – .base-sider har ingen innebygde notater».
+- Lenkerad nederst: «Zen [Space][z]» og «Alle hurtigtaster [?]» (F6, PO-61).
+
+**Kontrast** (§4.5-regelen gjelder fortsatt):
+- `node docs/design/kontrast-v1.1.mjs` leser palettene fra `tokens.css`, regner ut de avledede fargene med samme
+  `color-mix(in oklab)` som CSS og sjekker 28 nye kombinasjoner × 24 (3 typesett × 4 paletter × 2 moduser) = **672
+  kontroller, 0 brudd**. Laveste verdier: treff i aksent på valgt rad 4,86 (Signal lys), deaktivert på valgt rad 5,14
+  (Cyanotypi lys), tasttegnkant 3,02–3,04 (krav 3). Første kjøring fant ett reelt brudd: tasttegnkanten på valgt rad var
+  2,49. Det løste vi med `--color-kbd-edge-active`.
+- **axe-core 4 i nettleser** på `prototype-v1.1.html`: alle 24 kombinasjoner × 8 tilstander (fold med hover, `:`-liste,
+  `:tema`-underliste, oppslagskort, which-key, zen + full + hint, deaktiverte kommandoer på base, Utseende) =
+  192 kjøringer, **0 brudd**. Underveis fant vi og rettet: tag-tellere med `opacity .8` (arv fra v1-prototypen),
+  `heading-order` for innrammet embed rett under h1 (se §11.4) og to dempede spenn med opasitet.
+- **Regel:** ingen `opacity` på tekst for å «dempe». Bruk `--color-muted` eller `--color-disabled`.
+
+### 11.10 Sjekkliste for frontend og QA (v1.1)
+
+- [ ] `data-width` settes i tema-init-scriptet (ingen hopp ved oppstart). Ingen horisontal sidescroll ved 360 px i noen
+      tilstand (prototypen er målt til 0 px overflyt i 31 skjermbilder).
+- [ ] Sidenoter: tre plasseringer etter §11.3. `clear: right` på blokkelementene i full bredde.
+- [ ] §-telleren og TOC tar med `.embed.is-diskret > h2`. Innrammede embeds bruker `.embed-title`, ikke `<h4>`.
+- [ ] Kildelenken er siste barn, får fokus med Tab og er synlig på touch.
+- [ ] Fold-knappen er siste barn av overskriften, med `aria-expanded`, `aria-controls` og et dynamisk `aria-label`.
+      Fold-linjen har `aria-hidden`.
+- [ ] Scroll-kompensasjon ved folding. `za` bruker 30 %-linjen. Blink og fokus på pilen.
+- [ ] Zen: View Transitions med reservevalg, `.zen-exit` i hjørnet og hint de tre første gangene.
+- [ ] Palett: prompt utenfor feltet, `⌫` på tom linje, `⇥` fullfører, deaktiverte rader kan velges, underlister.
+- [ ] Which-key pauser sekvens-tidsavbruddet. showcmd.
+- [ ] Alle tidskonstanter leses fra tokens (`--leader-delay`, `--sequence-timeout`, `--hint-linger`).
+
+### 11.11 Åpne spørsmål (v1.1)
+
+1. **`:` forhåndsutfylt vs. prompt.** Designet viser `:` som prompt utenfor feltet (vim-oppførsel, `⌫` på tom linje går
+   tilbake til søk). Spesifikasjonen sier «forhåndsutfylt med `:`». Hvis tester sjekker `input.value === ':'`, kan
+   frontend beholde `:` i verdien og bare *tegne* den som prompt (første tegn skjult med innrykk). Visuelt blir det likt.
+2. **Taklengde i full bredde.** Spesifikasjonen sier at teksten flyter over all tilgjengelig bredde. På 2560 px-skjermer gir
+   det ≈ 200 tegn per linje. Vil kunden ha et tak (for eksempel 120ch), eller er «full» bokstavelig?
+3. **Underoverskrifter i diskré notatembed** forskyves med (tittelnivå − 1). Spesifikasjonen sier bare noe om tittelen.
+   Vi trenger en bekreftelse.
+4. **Which-key og sekvens-tidsavbrudd:** designet pauser tidsavbruddet mens hintet vises. Arkitekten må bekrefte at
+   tastaturmotoren støtter det.
+5. **Fold-pilen på Tidsskrift h2 bytter ut «§»** ved hover og når seksjonen er foldet. Er det greit for kunden at
+   §-tegnet midlertidig blir et håndtak?
+6. **Statuslinjeflagg** finnes bare i sidepanelet. På mobil (< 860 px) er Utseende eneste sted man ser at full bredde
+   eller diskré er på. Skal topplinjen få et lite flagg?

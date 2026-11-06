@@ -249,3 +249,14 @@ Alle QAs forslag i testplan-v1.1 (Q-01–Q-12) er **godkjent**, med disse presis
 - **PO-60 (Q-05)** Kildelenke på touch: alltid synlig, dempet.
 - **PO-61 (Q-06/Q-07)** Zen kan slås på fra Utseende. I zen vises en diskré, alltid tilgjengelig «Avslutt zen»-knapp (på touch alltid synlig; på desktop synlig ved hover/fokus i øvre hjørne).
 - **PO-62 (Q-09/Q-11)** Full bredde på `.base`-sider: ingen synlig endring, ingen feil. `zM` som skjuler fokusert element flytter fokus til ytterste foldede overskrift.
+
+## PO-avgjørelser etter UX-rapport v1.1
+
+Designet (prototype-v1.1.html, designsystem §11) er **godkjent** som referanse.
+- **PO-63** `:` beholdes i feltets verdi, men tegnes som prompt (visuelt som design; testene som sjekker `value === ':'` holder).
+- **PO-64** Ingen tak på full bredde – kunden har eksplisitt akseptert lange linjer.
+- **PO-65** Underoverskrifter i diskré notatembed forskyves med samme nivåforskyvning som tittelen (maks H6).
+- **PO-66** Sekvenstidsavbrudd pauses mens which-key vises (samsvarer med ADR-007).
+- **PO-67** Ingen flagg i mobil-topplinjen; Utseende viser tilstanden.
+- **PO-68** Innrammet embed-tittel som `<p class="embed-title">` (ikke `<h4>`) for å unngå heading-order-brudd. Ny regel: ingen `opacity` på tekst.
+- «§ → ⌄» ved hover på fold-håndtak: forelagt kunden.

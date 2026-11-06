@@ -27,7 +27,7 @@ describe('ThemePicker', () => {
 
   it('hintet viser Ctrl . utenfor macOS (PO-36)', () => {
     const { dialog } = renderPicker();
-    expect(within(dialog).getByText(/bytter lys\/mørk/)).toHaveTextContent('Ctrl . bytter lys/mørk');
+    expect(within(dialog).getByText(/bytter lys\/mørk/)).toHaveTextContent('Ctrl . eller Space m bytter lys/mørk');
   });
 
   it('tre typesett, inkludert Klartekst (PO-18)', () => {

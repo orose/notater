@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SearchResponse } from '../../../shared/api-types';
 import { mockApi } from '../../test-support/mock-api';
 import { renderWithProviders } from '../../test-support/render-with-providers';
+import { CommandProvider } from '../commands';
 import { pushRecent } from '../recent';
 import { SearchProvider } from './SearchProvider';
 import { useOpenSearch } from './use-open-search';
@@ -43,8 +44,11 @@ function setup(query?: string) {
     '/api/vaults': { vaults: [{ id: 'test', name: 'Test', status: 'ready', noteCount: 80, revision: 1 }], defaultVaultId: 'test' },
   });
   return renderWithProviders(
+    // ⌘K ligger i kommandoregisteret (ADR-007 §6), så paletten testes med CommandProvider.
     <SearchProvider vaultId="test">
-      <Opener query={query} />
+      <CommandProvider vaultId="test" docPath="Velkommen" onOpenAppearance={() => {}}>
+        <Opener query={query} />
+      </CommandProvider>
     </SearchProvider>,
     { route: '/v/test/Velkommen' },
   );
@@ -122,7 +126,7 @@ describe('CommandPalette', () => {
         <Opener />
       </SearchProvider>,
     );
-    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    fireEvent.click(screen.getByRole('button', { name: 'Søk' }));
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'zookeper' } });
     expect(await screen.findByText('Ingen treff for «zookeper»')).toBeInTheDocument();
   });
@@ -133,5 +137,47 @@ describe('CommandPalette', () => {
     const dialog = screen.getByRole('dialog', { name: 'Hurtigsøk' }) as HTMLDialogElement;
     act(() => dialog.close());
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('⌘K i åpen palett lukker (dialogens egen tast)', () => {
+    setup();
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    const input = screen.getByRole('combobox');
+    fireEvent.keyDown(input, { key: 'k', metaKey: true });
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  });
+
+  it(':-modus: kommandoer med hurtigtast, deaktiverte med begrunnelse, Backspace over : gir søk', () => {
+    setup();
+    fireEvent.keyDown(document, { key: ':', shiftKey: true });
+    const input = screen.getByRole('combobox');
+    expect(input).toHaveValue(':');
+    expect(screen.getByRole('listbox', { name: 'Kommandoer' })).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: ':bredde' } });
+    const width = screen.getAllByRole('option')[0] as HTMLElement;
+    expect(width).toHaveAttribute('data-command-id', 'view.toggleWidth');
+    expect(width).toHaveAttribute('aria-disabled', 'true');
+    expect(width).toHaveTextContent('Kommer snart');
+    expect([...width.querySelectorAll('kbd')].map((k) => k.textContent)).toEqual(['Space', 'w']);
+    fireEvent.change(input, { target: { value: '' } });
+    expect(screen.getByRole('listbox', { name: 'Søkeresultater' })).toBeInTheDocument();
+  });
+
+  it(':tema gir underliste; Enter på verdi lukker paletten og kjører kommandoen', async () => {
+    setup();
+    fireEvent.keyDown(document, { key: ':', shiftKey: true });
+    const input = screen.getByRole('combobox');
+    fireEvent.change(input, { target: { value: ':tem' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(input).toHaveValue(':tema ');
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
+      expect.stringMatching(/^Tidsskrift/),
+      expect.stringMatching(/^Terminal/),
+      expect.stringMatching(/^Klartekst/),
+    ]);
+    fireEvent.change(input, { target: { value: ':tema kla' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    await waitFor(() => expect(document.documentElement.dataset.type).toBe('klartekst'));
   });
 });

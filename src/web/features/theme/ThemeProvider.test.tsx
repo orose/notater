@@ -5,13 +5,16 @@ import { ThemeProvider } from './ThemeProvider';
 import { useTheme } from './use-theme';
 
 function Probe() {
-  const { preferences, resolvedMode, setPreferences } = useTheme();
+  const { preferences, resolvedMode, setPreferences, toggleMode } = useTheme();
   return (
     <div>
       <output data-testid="mode">{resolvedMode}</output>
       <output data-testid="pref">{preferences.mode}</output>
       <button type="button" onClick={() => setPreferences({ palette: 'fosfor' })}>
         fosfor
+      </button>
+      <button type="button" onClick={toggleMode}>
+        veksle
       </button>
     </div>
   );
@@ -64,16 +67,16 @@ describe('ThemeProvider', () => {
     expect(JSON.parse(localStorage.getItem('vault-leser.tema') ?? '{}')).toMatchObject({ palette: 'fosfor' });
   });
 
-  it('⌘. / Ctrl+. bytter mellom lys og mørk', () => {
+  it('toggleMode bytter mellom lys og mørk (⌘./Space m: se commands, ADR-007 §6)', () => {
     render(
       <ThemeProvider>
         <Probe />
       </ThemeProvider>,
     );
-    fireEvent.keyDown(document, { key: '.', metaKey: true });
+    fireEvent.click(screen.getByRole('button', { name: 'veksle' }));
     expect(root.dataset.mode).toBe('dark');
     expect(screen.getByTestId('pref')).toHaveTextContent('dark');
-    fireEvent.keyDown(document, { key: '.', ctrlKey: true });
+    fireEvent.click(screen.getByRole('button', { name: 'veksle' }));
     expect(root.dataset.mode).toBe('light');
   });
 });

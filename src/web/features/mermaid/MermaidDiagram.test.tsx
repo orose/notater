@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ThemeProvider } from '../theme';
+import { ThemeProvider, useTheme } from '../theme';
 import { MermaidDiagram } from './MermaidDiagram';
 import { mermaidCaption, mermaidConfig } from './mermaid-config';
 import { renderMermaid } from './mermaid-loader';
@@ -9,8 +9,22 @@ import { renderMermaid } from './mermaid-loader';
 vi.mock('./mermaid-loader', () => ({ renderMermaid: vi.fn() }));
 const renderMock = vi.mocked(renderMermaid);
 
+function ToggleMode() {
+  const { toggleMode } = useTheme();
+  return (
+    <button type="button" onClick={toggleMode}>
+      veksle
+    </button>
+  );
+}
+
 function wrap(node: ReactNode) {
-  return render(<ThemeProvider>{node}</ThemeProvider>);
+  return render(
+    <ThemeProvider>
+      {node}
+      <ToggleMode />
+    </ThemeProvider>,
+  );
 }
 
 beforeEach(() => {
@@ -38,7 +52,7 @@ describe('MermaidDiagram', () => {
     wrap(<MermaidDiagram data-source="pie\n a: 1" />);
     await waitFor(() => expect(renderMock).toHaveBeenCalledTimes(1));
     act(() => {
-      fireEvent.keyDown(document, { key: '.', metaKey: true });
+      fireEvent.click(screen.getByRole('button', { name: 'veksle' }));
     });
     await waitFor(() => expect(renderMock).toHaveBeenCalledTimes(2));
   });

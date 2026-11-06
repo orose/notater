@@ -19,10 +19,6 @@ export function normalizeForSearch(text: string): string {
 
 const WORD_BREAK = /[\s\-/–(),.:]/;
 
-function isWordStart(text: string, i: number): boolean {
-  return i === 0 || WORD_BREAK.test(text[i - 1] as string);
-}
-
 function merge(indices: readonly number[]): Array<[number, number]> {
   const out: Array<[number, number]> = [];
   for (const i of indices) {

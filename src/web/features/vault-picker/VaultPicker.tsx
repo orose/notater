@@ -21,6 +21,8 @@ export function VaultPicker({ vaultId }: { readonly vaultId: VaultId }) {
     };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        // Konsumert her: system.escape skal ikke også kjøre (ADR-007 §6).
+        event.preventDefault();
         setOpen(false);
         buttonRef.current?.focus();
       }
