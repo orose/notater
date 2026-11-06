@@ -1,7 +1,7 @@
 import './outline.css';
 import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigationType } from 'react-router';
-import { hiddenBlocks, type Outline } from './build-outline';
+import type { Outline } from './build-outline';
 import { FoldingContext, OutlineHostContext, type FoldingValue, type OutlineControl } from './folding-context';
 import { headingAtReadingPosition, isRendered } from './reading-position';
 
@@ -126,7 +126,7 @@ export function FoldingProvider({ outline, docKey, children }: { readonly outlin
   );
 
   const foldable = useMemo(() => new Set(outline.headings.filter((h) => h.foldable).map((h) => h.id)), [outline]);
-  const hidden = useMemo(() => hiddenBlocks(outline, folded), [outline, folded]);
+  const content = useMemo(() => outline.applyFolds(folded), [outline, folded]);
 
   const value = useMemo<FoldingValue>(
     () => ({
@@ -134,9 +134,10 @@ export function FoldingProvider({ outline, docKey, children }: { readonly outlin
       isFolded: (id) => folded.has(id),
       toggle,
       stats: (id) => outline.stats(id),
-      hidden,
+      base: outline.content,
+      content,
     }),
-    [foldable, folded, toggle, outline, hidden],
+    [foldable, folded, toggle, outline, content],
   );
 
   const control = useMemo<OutlineControl>(

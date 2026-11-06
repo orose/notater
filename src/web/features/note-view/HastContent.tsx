@@ -23,7 +23,7 @@ import {
   Sidenote,
   Unsupported,
 } from './content-elements';
-import { useHiddenBlocks } from '../outline';
+import { useFoldedContent } from '../outline';
 import { prepareContent } from './prepare-content';
 
 interface HastContentProps {
@@ -86,38 +86,22 @@ const OPTIONS = {
 } as const;
 
 /**
- * Én toppnivåblokk, memoisert på node-identitet (ADR-009 §5): en fold rendrer bare blokkene som endret seg
- * (AK17). En skjult blokk pakkes i `div[hidden]` (komponenter som kodeblokk og embed tar ikke `hidden`).
+ * Én toppnivåblokk, memoisert på node-identitet (ADR-009 §5): en fold gir nye noder bare langs stiene som
+ * endret seg, så bare de blokkene rendres på nytt (AK17).
  */
-const Block = memo(function Block({
-  node,
-  index,
-  hidden,
-  components,
-}: {
-  readonly node: RootContent;
-  readonly index: number;
-  readonly hidden: boolean;
-  readonly components: Partial<Components>;
-}) {
-  const rendered = toJsxRuntime({ type: 'root', children: [node] }, { ...OPTIONS, components }) as ReactNode;
-  if (!hidden) return rendered;
-  return (
-    <div hidden className="folded-block" data-folded-block={index}>
-      {rendered}
-    </div>
-  );
+const Block = memo(function Block({ node, components }: { readonly node: RootContent; readonly components: Partial<Components> }) {
+  return toJsxRuntime({ type: 'root', children: [node] }, { ...OPTIONS, components }) as ReactNode;
 });
 
 /** Rendrer sanitert HAST fra serveren til React – aldri innerHTML (ADR-002). */
 export const HastContent = memo(function HastContent({ vaultId, content, bases, prepared = false }: HastContentProps) {
   const ready = useMemo(() => (prepared ? content : prepareContent(content)), [content, prepared]);
   const components = useMemo(() => createComponents(vaultId, bases), [vaultId, bases]);
-  const hidden = useHiddenBlocks();
+  const shown = useFoldedContent(ready);
   return (
     <>
-      {ready.children.map((node, index) => (
-        <Block key={index} node={node} index={index} hidden={hidden.has(index)} components={components} />
+      {shown.children.map((node, index) => (
+        <Block key={index} node={node} components={components} />
       ))}
     </>
   );

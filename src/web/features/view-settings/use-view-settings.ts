@@ -9,6 +9,9 @@ const FALLBACK: ViewSettingsValue = {
   setZen: () => {},
   zenHint: false,
   dismissZenHint: () => {},
+  isDiscreet: () => false,
+  toggleDiscreet: () => false,
+  moveDiscreet: () => {},
 };
 
 export function useViewSettings(): ViewSettingsValue {

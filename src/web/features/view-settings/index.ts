@@ -1,4 +1,5 @@
 export { ViewSettingsProvider } from './ViewSettingsProvider';
+export { DiscreetMoveSync } from './DiscreetMoveSync';
 export { ViewFlags } from './ViewFlags';
 export { ZenChrome } from './ZenChrome';
 export { useViewSettings } from './use-view-settings';

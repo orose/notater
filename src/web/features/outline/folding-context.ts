@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import type { Root } from 'hast';
 import type { SectionStats } from './build-outline';
 
 /** Det overskriftskomponentene trenger for pilen og fold-linjen. */
@@ -7,8 +8,9 @@ export interface FoldingValue {
   readonly isFolded: (id: string) => boolean;
   readonly toggle: (id: string) => void;
   readonly stats: (id: string) => SectionStats;
-  /** Toppnivåblokkene (`content.children`-indekser) som er skjult nå. */
-  readonly hidden: ReadonlySet<number>;
+  /** Disposisjonens innhold (`outline.content`) og samme innhold med foldede seksjoner skjult. */
+  readonly base: Root;
+  readonly content: Root;
 }
 
 export const FoldingContext = createContext<FoldingValue | null>(null);

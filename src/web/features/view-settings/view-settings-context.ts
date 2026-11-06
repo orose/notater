@@ -11,6 +11,12 @@ export interface ViewSettingsValue {
   /** Førstegangshintet for zen skal vises (de tre første gangene, designsystem §11.6). */
   readonly zenHint: boolean;
   readonly dismissZenHint: () => void;
+  /** Diskré embedding (F2): per vault + notat, huskes. */
+  readonly isDiscreet: (vaultId: string, docPath: string) => boolean;
+  /** Veksler og returnerer ny verdi (til toast). */
+  readonly toggleDiscreet: (vaultId: string, docPath: string) => boolean;
+  /** Omdøping (PO-49): valget følger notatet. */
+  readonly moveDiscreet: (vaultId: string, from: string, to: string) => void;
 }
 
 export const ViewSettingsContext = createContext<ViewSettingsValue | null>(null);

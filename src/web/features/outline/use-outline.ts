@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import { FoldingContext, OutlineHostContext, type FoldingValue, type OutlineControl } from './folding-context';
+import type { Root } from 'hast';
 import type { SectionStats } from './build-outline';
 
 /** Kontrollen for notatet som vises nå, eller null (ingen notatside). */
@@ -20,9 +21,11 @@ export function useHeadingFold(id: string | undefined): HeadingFold | null {
   return { folded: folding.isFolded(id), toggle: () => folding.toggle(id), stats: folding.stats(id) };
 }
 
-const NO_HIDDEN: ReadonlySet<number> = new Set();
-
-/** Skjulte toppnivåblokker (til `HastContent`). */
-export function useHiddenBlocks(): ReadonlySet<number> {
-  return useContext(FoldingContext)?.hidden ?? NO_HIDDEN;
+/**
+ * Innholdet med foldede seksjoner skjult (`div[hidden]`, ADR-009 §5), når `content` er disposisjonen som
+ * folding gjelder for; ellers uendret.
+ */
+export function useFoldedContent(content: Root): Root {
+  const folding = useContext(FoldingContext);
+  return folding && folding.base === content ? folding.content : content;
 }
