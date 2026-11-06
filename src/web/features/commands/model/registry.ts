@@ -11,6 +11,7 @@ export type CommandHandlers = { readonly [K in CommandId]: CommandHandler };
 export interface Command extends CommandSpecBody {
   readonly id: CommandId;
   isEnabled(ctx: CommandContext): Availability;
+  state(ctx: CommandContext): string | null;
   argumentValues(ctx: CommandContext, name: string): readonly ArgumentValue[];
   run(ctx: CommandContext, args: Readonly<Record<string, string>>): void | Promise<void>;
 }
@@ -41,6 +42,7 @@ export function createCommandRegistry(handlers: CommandHandlers): CommandRegistr
       ...spec,
       id,
       isEnabled: (ctx) => handler.isEnabled?.(ctx) ?? ENABLED,
+      state: (ctx) => handler.state?.(ctx) ?? null,
       argumentValues: (ctx, name) => handler.argumentValues?.(ctx, name) ?? [],
       run: (ctx, args) => handler.run(ctx, args),
     };

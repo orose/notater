@@ -81,17 +81,45 @@ VAULT_READER_PORT=4400 npm start
 
 ### Tastatursnarveier
 
-På macOS brukes `⌘`, ellers `Ctrl`. Begge virker overalt.
+Leseren styres med tastene under (vim-inspirert, normal-modus). På macOS vises `⌘`, ellers `Ctrl`; begge virker
+overalt. `Space` er leder: trykk og vent litt, så viser et hint fortsettelsene. Tastene virker ikke mens du skriver
+i et felt eller har en dialog åpen. `?` viser den samme oversikten i appen, og `:` åpner paletten i kommandomodus,
+der alle kommandoene kan kjøres (også de uten taster, som `:tema terminal`, `:palett fosfor`, `:lys` og `:mørk`).
 
-| Snarvei | Hva |
-|---|---|
-| `⌘K` / `Ctrl K` | Søk i notater, aliaser og tagger (`#tag` søker på tagg). |
-| `↑` `↓`, `↵` | Velg og åpne treff i søket. |
-| `⌘ ↵` / `Ctrl ↵` | Åpne treffet i ny fane. |
-| `⌘ .` / `Ctrl .` | Bytt mellom lys og mørk modus. |
-| `←` `→`, `Home` `End` | Bytt fane (view) i en base når fanene har fokus. |
-| `Esc` | Lukk søk, dialoger, forstørret diagram og mobilmenyen. |
-| `Tab` | Første trykk gir «Hopp til innhold». |
+Tabellen genereres fra kommandoregisteret med `npm run docs:shortcuts`. Ikke rediger den for hånd.
+
+<!-- hurtigtaster:start -->
+| Gruppe | Taster | Kommando |
+|---|---|---|
+| Navigasjon | `j` | Rull ned |
+|  | `k` | Rull opp |
+|  | `Ctrl d` | Halv side ned |
+|  | `Ctrl u` | Halv side opp |
+|  | `gg` | Til toppen |
+|  | `G` | Til bunnen |
+|  | `H` | Tilbake |
+|  | `L` | Frem |
+| Lesing | `za` | Fold/utfold seksjonen |
+|  | `zM` | Fold alle |
+|  | `zR` | Utfold alle |
+| Visning | `Space w` | Bytt lesebredde |
+|  | `Space d` | Diskré embedding – dette notatet |
+|  | `Space z` | Zen-modus |
+|  | `Space m`, `⌘.` / `Ctrl .` | Bytt lys/mørk |
+|  | `Space t` | Åpne Utseende |
+| Søk og kommandoer | `⌘K` / `Ctrl K`, `/` | Søk i notater |
+|  | `:` | Kommandoer |
+|  | `?` | Hurtigtastoversikt |
+|  | `Esc` | Lukk / avbryt |
+
+Taster i paletten, base-fanene og hopp-lenken (håndteres av komponentene selv):
+
+- `←`, `→`, `Home`, `End`: Bytt fane (view) i en base når fanene har fokus.
+- `Tab`: Første trykk gir «Hopp til innhold».
+- `↑`, `↓`: Velg treff eller kommando i paletten.
+- `↵`: Åpne treffet / kjør kommandoen.
+- `⌘↵` / `Ctrl ↵`: Åpne treffet i ny fane.
+<!-- hurtigtaster:end -->
 
 ### Temaer
 
@@ -172,6 +200,7 @@ E2E_PORT=4418 npm run test:e2e   # samme, på en annen port hvis 4318 er opptatt
 npm run lint        # ESLint
 npm run build       # typesjekk + produksjonsbygg
 npm run check:deps  # alle versjoner i lockfila er minst 21 dager gamle (ADR-006)
+npm run docs:shortcuts  # skriver hurtigtast-tabellen i README fra kommandoregisteret
 ```
 
 Avhengigheter oppdateres med `npm install --before=<dato for 21 dager siden>`, se

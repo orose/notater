@@ -1,5 +1,7 @@
 // Rulle-porten (F7, ADR-007 §2): `j`/`k` = 3 × brødtekstens linjehøyde, `Ctrl d/u` = halv vindushøyde,
-// `gg`/`G` = topp/bunn. Myk rulling bare når `prefers-reduced-motion` ikke er satt.
+// `gg`/`G` = topp/bunn. `j`/`k`/`Ctrl d/u` ruller mykt når `prefers-reduced-motion` ikke er satt;
+// `gg`/`G` hopper alltid (som i vim): en animasjon over hele dokumentet gir bare ventetid, og posisjonen
+// må være endelig med en gang (sidenoter, scroll-spy og `g Esc g` måles mot den).
 
 import type { CommandPorts } from './model/command-context';
 
@@ -32,10 +34,10 @@ export function createScrollPort(): CommandPorts['scroll'] {
   let target: number | null = null;
   let targetAt = 0;
 
-  const scrollTo = (top: number, chain: boolean) => {
+  const scrollTo = (top: number, smoothAllowed: boolean) => {
     const clamped = Math.max(0, Math.min(maxScroll(), Math.round(top)));
-    const smooth = !reducedMotion();
-    target = chain && smooth ? clamped : null;
+    const smooth = smoothAllowed && !reducedMotion();
+    target = smooth ? clamped : null;
     targetAt = Date.now();
     window.scrollTo({ top: clamped, behavior: smooth ? 'smooth' : 'auto' });
   };
@@ -45,6 +47,10 @@ export function createScrollPort(): CommandPorts['scroll'] {
     by: (lines) => scrollTo(base() + lines * lineHeight(), true),
     halfPage: (direction) => scrollTo(base() + (direction * window.innerHeight) / 2, true),
     toTop: () => scrollTo(0, false),
-    toBottom: () => scrollTo(maxScroll(), false),
+    toBottom: () => {
+      target = null;
+      // Uten klemming mot en målt høyde: nettleseren stopper selv ved bunnen.
+      window.scrollTo({ top: (document.scrollingElement ?? document.documentElement).scrollHeight, behavior: 'auto' });
+    },
   };
 }

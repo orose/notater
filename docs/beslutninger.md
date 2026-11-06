@@ -260,3 +260,10 @@ Designet (prototype-v1.1.html, designsystem §11) er **godkjent** som referanse.
 - **PO-67** Ingen flagg i mobil-topplinjen; Utseende viser tilstanden.
 - **PO-68** Innrammet embed-tittel som `<p class="embed-title">` (ikke `<h4>`) for å unngå heading-order-brudd. Ny regel: ingen `opacity` på tekst.
 - «§ → ⌄» ved hover på fold-håndtak: forelagt kunden.
+
+## PO-avgjørelser etter slice 1.1-a
+
+- **PO-69** `?`-kortet bruker **par-rader** slik designet viser (f.eks. «`j` / `k` Rull ned / opp»), med `data-command-id` per kommando inne i raden. Paletten viser kun primær hurtigtast. QA justerer TC-07-07/08 og TC-06-09. README-tabellen kan følge par-radene.
+- **PO-70** `gg`/`G` hopper uten animasjon (som vim). ADR-007 oppdateres.
+- **PO-71** Lokale bilder skal ha reservert høyde (ingen layout-hopp): serveren setter `width`/`height` på `<img>` for lokale vedlegg (lest fra filheader, uten ny avhengighet). Testen TC-F7-12 venter i tillegg på at bilder er lastet.
+- **PO-72** QA-filen `e2e/support/keymap-rules.ts` peker på `commands/model/index.ts` – godkjent.

@@ -58,14 +58,14 @@ describe('CommandPalette', () => {
   it('bunnlinjen viser Ctrl ↵ utenfor macOS (PO-36)', () => {
     setup();
     fireEvent.keyDown(document, { key: 'k', ctrlKey: true });
-    expect(screen.getByText(/åpne i ny fane/)).toHaveTextContent('Ctrl ↵ åpne i ny fane');
+    expect(screen.getByText(/ny fane/)).toHaveTextContent('Ctrl ↵ ny fane');
   });
 
   it('bunnlinjen viser ⌘ ↵ på macOS (PO-36)', () => {
     vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel');
     setup();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
-    expect(screen.getByText(/åpne i ny fane/)).toHaveTextContent('⌘ ↵ åpne i ny fane');
+    expect(screen.getByText(/ny fane/)).toHaveTextContent('⌘ ↵ ny fane');
     vi.restoreAllMocks();
   });
 
@@ -171,13 +171,36 @@ describe('CommandPalette', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(input).toHaveValue(':tema ');
     expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
-      expect.stringMatching(/^Tidsskrift/),
-      expect.stringMatching(/^Terminal/),
-      expect.stringMatching(/^Klartekst/),
+      expect.stringMatching(/^AaTidsskrift/),
+      expect.stringMatching(/^AaTerminal/),
+      expect.stringMatching(/^Il1Klartekst/),
     ]);
     fireEvent.change(input, { target: { value: ':tema kla' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     await waitFor(() => expect(document.documentElement.dataset.type).toBe('klartekst'));
+  });
+
+  it('kommandomodus: feltet heter «Kommando», ⇥ fullfører, Ctrl n/p flytter, E492 og E475 ved ingen treff', () => {
+    setup();
+    fireEvent.keyDown(document, { key: ':', shiftKey: true });
+    const input = screen.getByRole('combobox', { name: 'Kommando' });
+    fireEvent.change(input, { target: { value: ':bre' } });
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(input).toHaveValue(':bredde');
+    fireEvent.change(input, { target: { value: ':' } });
+    const first = screen.getAllByRole('option')[0];
+    expect(first).toHaveAttribute('aria-selected', 'true');
+    fireEvent.keyDown(input, { key: 'n', ctrlKey: true });
+    expect(screen.getAllByRole('option')[1]).toHaveAttribute('aria-selected', 'true');
+    fireEvent.keyDown(input, { key: 'p', ctrlKey: true });
+    expect(screen.getAllByRole('option')[0]).toHaveAttribute('aria-selected', 'true');
+    fireEvent.change(input, { target: { value: ':wq' } });
+    expect(screen.getByText('E492')).toBeInTheDocument();
+    expect(screen.getByText('Ingen kommando heter «wq».')).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: ':tema xyz' } });
+    expect(screen.getByText('E475')).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: '' } });
+    expect(screen.getByRole('combobox', { name: 'Søk i notater' })).toBe(input);
   });
 });

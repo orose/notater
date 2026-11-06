@@ -115,7 +115,7 @@ test.describe('AK-1.1-08 registeret (P2, P4, P5)', () => {
 test.describe('AK-1.1-08 det brukeren ser i ?-oversikten', () => {
   test.skip(({ isMobile }) => isMobile, 'Tastatur testes på desktop');
 
-  test.fixme('TC-08-10 ingen viste bindinger bruker reserverte taster eller ⌥', async ({ page }) => {
+  test('TC-08-10 ingen viste bindinger bruker reserverte taster eller ⌥', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await fokusPåInnhold(page);
     await page.keyboard.press('Shift+Slash');

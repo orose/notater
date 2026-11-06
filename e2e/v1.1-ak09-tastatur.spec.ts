@@ -33,7 +33,7 @@ async function forventIngenHurtigtast(page: Page, før: { y: number; bredde: num
 }
 
 test.describe('AK-1.1-09 inaktive i tekstfelt og bak modal dialog (P7)', () => {
-  test.fixme('TC-09-01 i palettens søkefelt havner tastene i feltet', async ({ page }) => {
+  test('TC-09-01 i palettens søkefelt havner tastene i feltet', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     await page.keyboard.press('ControlOrMeta+k');
@@ -53,7 +53,7 @@ test.describe('AK-1.1-09 inaktive i tekstfelt og bak modal dialog (P7)', () => {
     ['contenteditable', '<div data-testid="testfelt" contenteditable="true" style="min-height:1em"></div>'],
     ['select', '<select data-testid="testfelt"><option>j</option><option>k</option></select>'],
   ] as const) {
-    test.fixme(`TC-09-02 generelt tekstfelt (${type}) i siden: j, k, G, Space w, ?, : virker ikke`, async ({ page }) => {
+    test(`TC-09-02 generelt tekstfelt (${type}) i siden: j, k, G, Space w, ?, : virker ikke`, async ({ page }) => {
       await openNote(page, LANG);
       await page.evaluate((h) => document.querySelector('main article')?.insertAdjacentHTML('afterbegin', h), html);
       const før = { y: await scrollY(page), bredde: await brødtekstBredde(page) };
@@ -64,7 +64,7 @@ test.describe('AK-1.1-09 inaktive i tekstfelt og bak modal dialog (P7)', () => {
     });
   }
 
-  test.fixme('TC-09-03 bak Utseende (modal): j, Space w, ? og : virker ikke; Esc lukker dialogen', async ({ page }) => {
+  test('TC-09-03 bak Utseende (modal): j, Space w, ? og : virker ikke; Esc lukker dialogen', async ({ page }) => {
     await openNote(page, LANG);
     const før = { y: await scrollY(page), bredde: await brødtekstBredde(page) };
     await åpneUtseende(page);
@@ -77,7 +77,7 @@ test.describe('AK-1.1-09 inaktive i tekstfelt og bak modal dialog (P7)', () => {
     expect(await brødtekstBredde(page)).toBeCloseTo(før.bredde, 0);
   });
 
-  test.fixme('TC-09-04 bak hurtigtastoversikten: : og j virker ikke; ? og Esc lukker (dialogens egne taster)', async ({ page }) => {
+  test('TC-09-04 bak hurtigtastoversikten: : og j virker ikke; ? og Esc lukker (dialogens egne taster)', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     const y = await scrollY(page);
@@ -91,7 +91,7 @@ test.describe('AK-1.1-09 inaktive i tekstfelt og bak modal dialog (P7)', () => {
     await expect(hurtigtastoversikt(page)).toBeHidden();
   });
 
-  test.fixme('TC-09-05 bak mermaid-zoom (eksisterende modal): j og Space z virker ikke', async ({ page }) => {
+  test('TC-09-05 bak mermaid-zoom (eksisterende modal): j og Space z virker ikke', async ({ page }) => {
     await openNote(page, 'teknisk/Mermaid-galleri');
     const forstørr = page.getByRole('button', { name: /Forstørr/ }).first();
     await forstørr.click();
@@ -111,7 +111,7 @@ test.describe('AK-1.1-09 inaktive i tekstfelt og bak modal dialog (P7)', () => {
     await expect(leaderHint(page)).toBeHidden();
   });
 
-  test.fixme('TC-09-07 modifikatorer: Ctrl+j, Meta+g og Alt+w utløser ikke j, g eller Space w', async ({ page }) => {
+  test('TC-09-07 modifikatorer: Ctrl+j, Meta+g og Alt+w utløser ikke j, g eller Space w', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     const før = { y: await scrollY(page), bredde: await brødtekstBredde(page) };
@@ -121,7 +121,7 @@ test.describe('AK-1.1-09 inaktive i tekstfelt og bak modal dialog (P7)', () => {
 });
 
 test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)', () => {
-  test.fixme('TC-F7-01 j/k ruller ca. 3 linjer ned/opp', async ({ page }) => {
+  test('TC-F7-01 j/k ruller ca. 3 linjer ned/opp', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     await page.keyboard.press('j');
@@ -132,7 +132,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     await expect.poll(() => scrollY(page)).toBeLessThan(y);
   });
 
-  test.fixme('TC-F7-02 Ctrl d / Ctrl u ruller en halv side', async ({ page }) => {
+  test('TC-F7-02 Ctrl d / Ctrl u ruller en halv side', async ({ page }) => {
     await openNote(page, fasit.rapport.sti);
     await fokusPåInnhold(page);
     const høyde = await page.evaluate(() => window.innerHeight);
@@ -143,7 +143,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     await expect.poll(() => scrollY(page)).toBeLessThan(10);
   });
 
-  test.fixme('TC-F7-03 G til bunnen, gg til toppen', async ({ page }) => {
+  test('TC-F7-03 G til bunnen, gg til toppen', async ({ page }) => {
     await openNote(page, fasit.rapport.sti);
     await fokusPåInnhold(page);
     await page.keyboard.press('Shift+G');
@@ -154,7 +154,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     await expect.poll(() => scrollY(page)).toBe(0);
   });
 
-  test.fixme('TC-F7-04 H/L går tilbake/frem i historikken', async ({ page }) => {
+  test('TC-F7-04 H/L går tilbake/frem i historikken', async ({ page }) => {
     await openNote(page, LANG);
     await page.getByRole('main').getByRole('link', { name: 'Dyp struktur' }).click();
     await expect(page.getByRole('heading', { level: 1 }).first()).toHaveText(fasit.dypStruktur.tittel);
@@ -166,7 +166,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     await expect(page.getByRole('heading', { level: 1 }).first()).toHaveText(fasit.dypStruktur.tittel);
   });
 
-  test.fixme('TC-F7-05 Space alene ruller ikke siden lenger', async ({ page }) => {
+  test('TC-F7-05 Space alene ruller ikke siden lenger', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     await page.keyboard.press('Space');
@@ -174,7 +174,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     expect(await scrollY(page)).toBe(0);
   });
 
-  test.fixme('TC-F7-06 Space-hint («which-key») vises etter ~400 ms med leader-kommandoene, og Esc skjuler det', async ({ page }) => {
+  test('TC-F7-06 Space-hint («which-key») vises etter ~400 ms med leader-kommandoene, og Esc skjuler det', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     await page.keyboard.press('Space');
@@ -201,7 +201,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     await expect(leaderHint(page)).toBeHidden();
   });
 
-  test.fixme('TC-F7-08 Esc avbryter en påbegynt sekvens (g Esc g går ikke til toppen)', async ({ page }) => {
+  test('TC-F7-08 Esc avbryter en påbegynt sekvens (g Esc g går ikke til toppen)', async ({ page }) => {
     await openNote(page, fasit.rapport.sti);
     await fokusPåInnhold(page);
     await page.keyboard.press('Shift+G');
@@ -212,7 +212,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     expect(await scrollY(page)).toBe(y);
   });
 
-  test.fixme('TC-F7-09 sekvens får tidsavbrudd etter ~1 s (g … 1,5 s … g går ikke til toppen)', async ({ page }) => {
+  test('TC-F7-09 sekvens får tidsavbrudd etter ~1 s (g … 1,5 s … g går ikke til toppen)', async ({ page }) => {
     await openNote(page, fasit.rapport.sti);
     await fokusPåInnhold(page);
     await page.keyboard.press('Shift+G');
@@ -225,7 +225,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     expect(await scrollY(page)).toBe(y);
   });
 
-  test.fixme('TC-F7-10 ukjent fortsettelse (z x, g q) gjør ingenting og gir ingen feil', async ({ page }) => {
+  test('TC-F7-10 ukjent fortsettelse (z x, g q) gjør ingenting og gir ingen feil', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     const før = { y: await scrollY(page), bredde: await brødtekstBredde(page) };
@@ -233,7 +233,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     await forventIngenHurtigtast(page, før);
   });
 
-  test.fixme('TC-F7-11 reserverte taster (i a o e s c d x p y u r) gjør ingenting i normal-modus', async ({ page }) => {
+  test('TC-F7-11 reserverte taster (i a o e s c d x p y u r) gjør ingenting i normal-modus', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     const før = { y: await scrollY(page), bredde: await brødtekstBredde(page) };
@@ -242,7 +242,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     await expect(page.getByRole('heading', { level: 1 }).first()).toHaveText(fasit.langBrodtekst.tittel);
   });
 
-  test.fixme('TC-F7-12 rulling respekterer prefers-reduced-motion (G hopper umiddelbart)', async ({ page }) => {
+  test('TC-F7-12 rulling respekterer prefers-reduced-motion (G hopper umiddelbart)', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openNote(page, fasit.rapport.sti);
     await fokusPåInnhold(page);
@@ -252,7 +252,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     expect(y).toBeGreaterThan(maks - 4);
   });
 
-  test.fixme('TC-F7-13 ⌘./Ctrl+. og Space m bytter lys/mørk', async ({ page }) => {
+  test('TC-F7-13 ⌘./Ctrl+. og Space m bytter lys/mørk', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await openNote(page, LANG);
     await fokusPåInnhold(page);
@@ -262,7 +262,7 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'light');
   });
 
-  test.fixme('TC-F7-14 Space t åpner Utseende', async ({ page }) => {
+  test('TC-F7-14 Space t åpner Utseende', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     await trykkSekvens(page, ['Space', 't']);
@@ -273,21 +273,21 @@ test.describe('F7 vim-navigasjon (AK-1.1-06/07: registrerte kommandoer virker)',
 test.describe('P5 norsk tastatur (ekte tastehendelser med norsk code + Shift)', () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'CDP-tastehendelser (Chromium)');
 
-  test.fixme('TC-09-08 «:» = Shift + «.» åpner kommandomodus', async ({ page }) => {
+  test('TC-09-08 «:» = Shift + «.» åpner kommandomodus', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     await trykkNorsk(page, ':');
     await expect(palettInput(page)).toHaveValue(':');
   });
 
-  test.fixme('TC-09-09 «?» = Shift + «+» åpner hurtigtastoversikten', async ({ page }) => {
+  test('TC-09-09 «?» = Shift + «+» åpner hurtigtastoversikten', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     await trykkNorsk(page, '?');
     await expect(hurtigtastoversikt(page)).toBeVisible();
   });
 
-  test.fixme('TC-09-10 «/» = Shift + 7 åpner notatsøk', async ({ page }) => {
+  test('TC-09-10 «/» = Shift + 7 åpner notatsøk', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     await trykkNorsk(page, '/');
@@ -295,7 +295,7 @@ test.describe('P5 norsk tastatur (ekte tastehendelser med norsk code + Shift)', 
     await expect(palettInput(page)).toBeFocused();
   });
 
-  test.fixme('TC-09-11 Shift+«.» utløser ikke «.»-bindinger, og «;» (Shift + ,) gjør ingenting', async ({ page }) => {
+  test('TC-09-11 Shift+«.» utløser ikke «.»-bindinger, og «;» (Shift + ,) gjør ingenting', async ({ page }) => {
     await openNote(page, LANG);
     await fokusPåInnhold(page);
     await trykkNorsk(page, ';');

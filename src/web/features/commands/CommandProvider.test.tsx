@@ -35,7 +35,7 @@ function setup(docPath = 'Velkommen') {
   );
 }
 
-const key = (k: string, init: KeyboardEventInit = {}, target: EventTarget = document.body) => {
+const key = (k: string, init: KeyboardEventInit = {}, target: Element | Document = document.body) => {
   act(() => {
     fireEvent.keyDown(target, { key: k, ...init });
   });
@@ -52,14 +52,14 @@ afterEach(() => {
 });
 
 describe('CommandProvider: tastatur → kommandoer', () => {
-  it('j ruller ned (myk), G til bunnen og gg til toppen', () => {
+  it('j ruller ned (myk); G og gg hopper til bunnen/toppen', () => {
     setup();
     key('j');
     expect(scrollTo).toHaveBeenLastCalledWith({ top: expect.any(Number), behavior: 'smooth' });
     key('G', { shiftKey: true });
     key('g');
     key('g');
-    expect(scrollTo).toHaveBeenLastCalledWith({ top: 0, behavior: 'smooth' });
+    expect(scrollTo).toHaveBeenLastCalledWith({ top: 0, behavior: 'auto' });
   });
 
   it('prefers-reduced-motion: rulling uten animasjon', () => {

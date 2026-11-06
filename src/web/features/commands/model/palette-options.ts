@@ -2,7 +2,7 @@
 
 import { formatKeySequence, parseKeySequence, type LabelPlatform } from '../../keyboard';
 import type { CommandContext } from './command-context';
-import type { ArgumentSpec } from './command-types';
+import { PALETTE_GROUP_ORDER, type ArgumentSpec } from './command-types';
 import { fuzzyMatch, normalizeForSearch } from './fuzzy';
 import type { PaletteArgumentOption, PaletteCommandOption, PaletteOption } from './palette-types';
 import type { Command } from './registry';
@@ -43,6 +43,12 @@ function argumentTarget(commands: readonly Command[], query: string): ArgumentTa
   return best;
 }
 
+/** Underlistens overskrift når inndata er en argumentkommando (`tema …`), ellers null. */
+export function paletteArgumentHeading(commands: readonly Command[], query: string): { readonly ex: string; readonly label: string } | null {
+  const target = argumentTarget(commands, query);
+  return target ? { ex: target.command.aliases[0] ?? target.command.name, label: target.argument.label } : null;
+}
+
 function argumentOptions(target: ArgumentTarget, ctx: CommandContext): PaletteArgumentOption[] {
   const { command, argument, rest } = target;
   const availability = command.isEnabled(ctx);
@@ -56,7 +62,9 @@ function argumentOptions(target: ArgumentTarget, ctx: CommandContext): PaletteAr
       kind: 'argument',
       commandId: command.id,
       commandName: command.name,
+      ex: command.aliases[0] ?? command.name,
       argument: argument.name,
+      argumentLabel: argument.label,
       value,
       current: value.current ?? false,
       enabled: availability.enabled,
@@ -69,7 +77,8 @@ function argumentOptions(target: ArgumentTarget, ctx: CommandContext): PaletteAr
 }
 
 /**
- * Kommandoene som passer `query` (inndata uten `:`), best først; tom spørring gir katalogrekkefølge.
+ * Kommandoene som passer `query` (inndata uten `:`), best først. Tom spørring gir alle, gruppert i
+ * `PALETTE_GROUP_ORDER` (katalogrekkefølge innen gruppe).
  * `tema …` (et ord for en argumentkommando + mellomrom) gir argumentets verdier som underliste.
  */
 export function commandPaletteOptions(
@@ -81,15 +90,25 @@ export function commandPaletteOptions(
   const target = argumentTarget(commands, query);
   if (target) return argumentOptions(target, ctx);
 
+  const empty = query.trim() === '';
   const scored = commands.flatMap((command, index) => {
     if (command.inPalette === false) return [];
     const nameMatch = fuzzyMatch(query, command.name);
     // Eksakt alias slår alt (`:fold` → «Fold/utfold seksjonen», ikke «Fold alle»).
-    const aliasScores = command.aliases.map((alias) => {
+    let ex = command.aliases[0] ?? command.name;
+    let exHighlights: PaletteCommandOption['exHighlights'] = [];
+    let aliasScore = -1;
+    for (const alias of command.aliases) {
       const m = fuzzyMatch(query, alias);
-      return m ? m.score + (m.score === 1000 ? 1 : 0) : -1;
-    });
-    const score = Math.max(nameMatch?.score ?? -1, ...aliasScores);
+      if (!m) continue;
+      const score = m.score + (m.score === 1000 ? 1 : 0);
+      if (score > aliasScore) {
+        aliasScore = score;
+        ex = alias;
+        exHighlights = m.ranges;
+      }
+    }
+    const score = Math.max(nameMatch?.score ?? -1, aliasScore);
     if (score < 0) return [];
     const availability = command.isEnabled(ctx);
     const argument = command.args?.[0];
@@ -99,6 +118,10 @@ export function commandPaletteOptions(
       name: command.name,
       description: command.description,
       group: command.group,
+      ex,
+      exHighlights: empty ? [] : exHighlights,
+      argumentLabel: argument ? argument.label.toLowerCase() : null,
+      state: command.state(ctx),
       shortcut: shortcutChords(command, platform),
       enabled: availability.enabled,
       reason: availability.enabled ? null : availability.reason,
@@ -106,7 +129,8 @@ export function commandPaletteOptions(
       completion: argument !== undefined ? `${command.aliases[0] ?? command.name} ` : null,
       highlights: nameMatch?.ranges ?? [],
     };
-    return [{ option, score, index }];
+    const order = empty ? PALETTE_GROUP_ORDER.indexOf(command.group) * 1000 + index : index;
+    return [{ option, score, order }];
   });
-  return scored.sort((a, b) => b.score - a.score || a.index - b.index).map((s) => s.option);
+  return scored.sort((a, b) => b.score - a.score || a.order - b.order).map((s) => s.option);
 }

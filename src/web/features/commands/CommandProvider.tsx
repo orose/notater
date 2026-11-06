@@ -6,6 +6,8 @@ import { isImagePath } from '../../shared/api';
 import { isApple } from '../../shared/ui/shortcuts';
 import {
   LEADER_KEY,
+  SEQUENCE_TIMEOUT_MS,
+  WHICH_KEY_DELAY_MS,
   chordCandidates,
   createKeyEngine,
   formatKeySequence,
@@ -23,7 +25,7 @@ import { createCommandHandlers } from './handlers';
 import { COMMAND_CATALOG, type CommandId } from './model/catalog';
 import type { CommandContext, CommandPorts, CommandRoute, ViewSnapshot } from './model/command-context';
 import { GROUP_LABELS, type CommandSpecBody } from './model/command-types';
-import { commandPaletteOptions } from './model/palette-options';
+import { commandPaletteOptions, paletteArgumentHeading } from './model/palette-options';
 import { createCommandRegistry } from './model/registry';
 import { createScrollPort } from './scroll';
 import { ShortcutHelp } from './ShortcutHelp';
@@ -42,6 +44,17 @@ interface CommandProviderProps {
 const DEFAULT_VIEW: ViewSnapshot = { width: 'readable', discreet: false, zen: false, noteEmbeds: 0, foldableHeadings: 0 };
 
 const TOAST_MS = 4000;
+
+/** Tidskonstanter leses fra tokens (`--leader-delay`, `--sequence-timeout`, designsystem §11.2). */
+function cssMs(name: string, fallback: number): number {
+  try {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const value = raw.endsWith('ms') ? parseFloat(raw) : raw.endsWith('s') ? parseFloat(raw) * 1000 : NaN;
+    return Number.isFinite(value) && value > 0 ? value : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 function routeOf(vaultId: VaultId, docPath: string): CommandRoute {
   const kind = docPath === '' ? 'home' : docPath.toLowerCase().endsWith('.base') ? 'base' : isImagePath(docPath) || /\.pdf$/i.test(docPath) ? 'asset' : 'note';
@@ -75,7 +88,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
     return () => clearTimeout(timer);
   }, [toast]);
 
-  const { setPreferences, toggleMode, preferences } = theme;
+  const { setPreferences, toggleMode, preferences, resolvedMode } = theme;
   const ports = useMemo<CommandPorts>(
     () => ({
       scroll,
@@ -84,6 +97,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
       help: { openShortcuts: () => setHelpOpen(true) },
       appearance: { open: onOpenAppearance },
       theme: {
+        resolvedMode,
         toggleMode,
         setMode: (mode) => setPreferences({ mode }),
         setType: (type) => {
@@ -94,19 +108,31 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
           const match = PALETTES.find((p) => p === value);
           if (match) setPreferences({ palette: match });
         },
-        types: TYPES.map((t) => ({ value: t, label: TYPE_INFO[t].name, description: TYPE_INFO[t].description, current: preferences.type === t })),
-        palettes: PALETTES.map((p) => ({
-          value: p,
-          label: PALETTE_INFO[p].name,
-          description: PALETTE_INFO[p].description,
-          current: preferences.palette === p,
+        types: TYPES.map((t) => ({
+          value: t,
+          label: TYPE_INFO[t].name,
+          description: TYPE_INFO[t].description,
+          current: preferences.type === t,
+          visual: { specimen: t === 'klartekst' ? 'Il1' : 'Aa' },
         })),
+        palettes: PALETTES.map((p) => {
+          const info = PALETTE_INFO[p];
+          const swatch = info[resolvedMode];
+          const recommended = info.recommendedFor === preferences.type ? ` · anbefalt for ${TYPE_INFO[info.recommendedFor].name}` : '';
+          return {
+            value: p,
+            label: info.name,
+            description: `${info.description}${recommended}`,
+            current: preferences.palette === p,
+            visual: { swatch: [swatch.bg, swatch.text, swatch.accent, swatch.accent2] },
+          };
+        }),
       },
       view: { toggleWidth: noop, toggleDiscreet: noop, toggleZen: noop, exitZen: () => false },
       outline: { toggleAtReadingPosition: noop, foldAll: noop, unfoldAll: noop },
       toast: showToast,
     }),
-    [scroll, navigate, palette.openSearch, palette.openCommands, onOpenAppearance, toggleMode, setPreferences, preferences.type, preferences.palette, showToast],
+    [scroll, navigate, palette.openSearch, palette.openCommands, onOpenAppearance, resolvedMode, toggleMode, setPreferences, preferences.type, preferences.palette, showToast],
   );
 
   const ctx = useMemo<CommandContext>(() => ({ mode: 'normal', route: routeOf(vaultId, docPath), view: DEFAULT_VIEW, ports }), [vaultId, docPath, ports]);
@@ -138,6 +164,8 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
       timers: { setTimeout: (cb, ms) => window.setTimeout(cb, ms), clearTimeout: (h) => window.clearTimeout(h as number) },
       onCommand: (id) => execute(id as CommandId),
       onStateChange: (state) => setPending(state.pending),
+      sequenceTimeoutMs: cssMs('--sequence-timeout', SEQUENCE_TIMEOUT_MS),
+      whichKeyDelayMs: cssMs('--leader-delay', WHICH_KEY_DELAY_MS),
     });
     engineRef.current = engine;
 
@@ -192,6 +220,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
         chord: formatKeySequence([parseChord(chord)], platform),
         hint: spec.hint ?? spec.aliases[0] ?? spec.name,
         name: spec.name,
+        state: registry.get(commandId as CommandId).state(ctx),
         enabled: availability.enabled,
         reason: availability.enabled ? null : availability.reason,
       };
@@ -201,9 +230,10 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
   // ---------------------------------------------------------------- kommandomodus i paletten
   const source = useMemo<PaletteCommandSource>(
     () => ({
+      count: registry.commands.filter((c) => c.inPalette !== false).length,
       options: (query) => {
         const grouped = query.trim() === '';
-        return commandPaletteOptions(registry.commands, ctxRef.current, query, platform).map<PaletteCommandItem>((option) =>
+        const items = commandPaletteOptions(registry.commands, ctxRef.current, query, platform).map<PaletteCommandItem>((option) =>
           option.kind === 'command'
             ? {
                 key: option.commandId,
@@ -211,13 +241,19 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
                 kind: 'command',
                 label: option.name,
                 highlights: option.highlights,
+                ex: option.ex,
+                exHighlights: option.exHighlights,
+                argumentLabel: option.argumentLabel,
+                state: option.state,
                 detail: option.description,
+                visual: null,
                 shortcut: option.shortcut,
                 enabled: option.enabled,
                 reason: option.reason,
                 current: false,
                 group: grouped ? GROUP_LABELS[option.group] : null,
                 completion: option.completion,
+                fill: option.completion ?? option.ex,
                 args: {},
               }
             : {
@@ -226,16 +262,23 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
                 kind: 'argument',
                 label: option.value.label,
                 highlights: option.highlights,
+                ex: option.ex,
+                exHighlights: [],
+                argumentLabel: option.argumentLabel,
+                state: null,
                 detail: option.value.description ?? null,
+                visual: option.value.visual ?? null,
                 shortcut: null,
                 enabled: option.enabled,
                 reason: option.reason,
                 current: option.current,
                 group: option.commandName,
                 completion: null,
+                fill: `${option.ex} ${option.value.value}`,
                 args: { [option.argument]: option.value.value },
               },
         );
+        return { items, argument: paletteArgumentHeading(registry.commands, query) };
       },
       run: (item) => execute(item.commandId as CommandId, item.args),
     }),
@@ -255,6 +298,12 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
       {children}
       <ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} platform={platform} />
       {showHints ? <WhichKey leader={formatKeySequence([parseChord(LEADER_KEY)], platform)} items={whichKeyItems} /> : null}
+      {pending ? (
+        // showcmd (vim): påbegynt sekvens vises med en gang; kun visuelt.
+        <div className="showcmd" aria-hidden="true">
+          {pending.chords.map((chord) => (chord === LEADER_KEY ? '␣' : formatKeySequence([parseChord(chord)], platform))).join('')}
+        </div>
+      ) : null}
       <div className="command-toast" role="status" aria-live="polite">
         {toast ? (
           <div className="toast" key={toast.id}>

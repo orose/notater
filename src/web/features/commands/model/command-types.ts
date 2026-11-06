@@ -8,6 +8,9 @@ import type { CommandContext } from './command-context';
 export const COMMAND_GROUPS = ['navigasjon', 'lesing', 'visning', 'sok'] as const;
 export type CommandGroup = (typeof COMMAND_GROUPS)[number];
 
+/** Gruppeorden i paletten med tom `:`-linje: mest brukt først (designsystem §11.7). */
+export const PALETTE_GROUP_ORDER: readonly CommandGroup[] = ['visning', 'lesing', 'sok', 'navigasjon'];
+
 export const GROUP_LABELS: Readonly<Record<CommandGroup, string>> = {
   navigasjon: 'Navigasjon',
   lesing: 'Lesing',
@@ -41,6 +44,10 @@ export interface ArgumentValue {
   readonly description?: string;
   /** Gjeldende verdi (markeres i underlisten). */
   readonly current?: boolean;
+  /** Visuell prøve i underlisten: typografisk prøve (`Aa` i typesettets font) eller fargestripe. */
+  readonly visual?: { readonly specimen?: string; readonly swatch?: readonly string[] };
+  /** Ekstra merknad etter beskrivelsen (f.eks. «anbefalt for Terminal»). */
+  readonly note?: string;
 }
 
 /** Statisk del av en kommando: alt som trengs for palett, `?`-oversikt, README og tastaturkart. */
@@ -71,6 +78,8 @@ export const ENABLED: Availability = { enabled: true };
 export interface CommandHandler {
   /** Standard: alltid tilgjengelig. Kalles ved hvert palettsøk og før hver tastekjøring. */
   readonly isEnabled?: (ctx: CommandContext) => Availability;
+  /** Nå-tilstand vist i paletten og which-key («full», «av», «lys»). Standard: ingen. */
+  readonly state?: (ctx: CommandContext) => string | null;
   /** Lovlige verdier for argumentet `name` (tema, palett …). */
   readonly argumentValues?: (ctx: CommandContext, name: string) => readonly ArgumentValue[];
   /**

@@ -26,14 +26,14 @@ export const COMMAND_CATALOG = {
   },
   'scroll.halfPageDown': {
     name: 'Halv side ned',
-    aliases: [],
+    aliases: ['halv ned'],
     group: 'navigasjon',
     description: 'Ruller en halv skjermhøyde ned.',
     bindings: { normal: [{ keys: 'Ctrl+d', repeat: true }] },
   },
   'scroll.halfPageUp': {
     name: 'Halv side opp',
-    aliases: [],
+    aliases: ['halv opp'],
     group: 'navigasjon',
     description: 'Ruller en halv skjermhøyde opp.',
     bindings: { normal: [{ keys: 'Ctrl+u', repeat: true }] },
@@ -66,14 +66,6 @@ export const COMMAND_CATALOG = {
     description: 'Går frem i nettleserhistorikken.',
     bindings: { normal: [{ keys: 'L' }] },
   },
-  'system.escape': {
-    name: 'Lukk / avbryt',
-    aliases: [],
-    group: 'navigasjon',
-    description: 'Lukker palett, dialog og oversikt, avbryter en påbegynt tastesekvens og går ut av zen.',
-    bindings: { normal: [{ keys: 'Escape' }] },
-  },
-
   // ---------------------------------------------------------------- Lesing
   'outline.toggleSection': {
     name: 'Fold/utfold seksjonen',
@@ -190,6 +182,13 @@ export const COMMAND_CATALOG = {
     group: 'sok',
     description: 'Viser alle hurtigtaster, gruppert.',
     bindings: { normal: [{ keys: '?' }] },
+  },
+  'system.escape': {
+    name: 'Lukk / avbryt',
+    aliases: ['lukk'],
+    group: 'sok',
+    description: 'Lukker palett, dialog og oversikt, avbryter en påbegynt tastesekvens og går ut av zen.',
+    bindings: { normal: [{ keys: 'Escape' }] },
   },
 } as const satisfies Readonly<Record<string, CommandSpecBody>>;
 

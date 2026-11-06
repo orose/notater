@@ -27,9 +27,19 @@ const ctx = {
 const options = (q: string) => commandPaletteOptions(registry().commands, ctx, q, 'other');
 
 describe('commandPaletteOptions', () => {
-  it('tom spørring gir alle kommandoer i katalogrekkefølge', () => {
+  it('tom spørring gir alle kommandoer gruppert: Visning, Lesing, Søk og kommandoer, Navigasjon', () => {
     const all = options('');
-    expect(all.map((o) => o.commandId)).toEqual(COMMAND_IDS);
+    expect([...all.map((o) => o.commandId)].sort()).toEqual([...COMMAND_IDS].sort());
+    const groups = all.map((o) => (o.kind === 'command' ? o.group : null));
+    expect([...new Set(groups)]).toEqual(['visning', 'lesing', 'sok', 'navigasjon']);
+    expect(all[0]?.commandId).toBe('view.toggleWidth');
+  });
+
+  it('viser best treffende alias som :-ord med utheving, og argumentets plassholder', () => {
+    const fold = options('utf')[0];
+    expect(fold).toMatchObject({ kind: 'command', commandId: 'outline.unfoldAll', ex: 'utfold', exHighlights: [[0, 3]] });
+    const tema = options('').find((o) => o.commandId === 'theme.setType');
+    expect(tema).toMatchObject({ ex: 'tema', argumentLabel: 'typesett' });
   });
 
   it('viser første hurtigtast per akkord og plattform', () => {

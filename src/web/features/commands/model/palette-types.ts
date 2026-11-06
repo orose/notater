@@ -19,6 +19,14 @@ export interface PaletteCommandOption {
   readonly name: string;
   readonly description: string;
   readonly group: CommandGroup;
+  /** `:`-ordet som vises foran navnet (best treffende alias), f.eks. `bredde`. */
+  readonly ex: string;
+  /** Treffposisjoner i `ex`. */
+  readonly exHighlights: Highlights;
+  /** Argumentets plassholder (`typesett`) for argumentkommandoer, ellers null. */
+  readonly argumentLabel: string | null;
+  /** Nå-tilstand («full», «av», «Tidsskrift»), eller null. */
+  readonly state: string | null;
   /** Første binding, én etikett per akkord (`['Space', 'w']`, `['⌘K']`), eller null. Vises til høyre. */
   readonly shortcut: readonly string[] | null;
   readonly enabled: boolean;
@@ -37,7 +45,11 @@ export interface PaletteArgumentOption {
   readonly commandId: CommandId;
   /** Kommandoens navn (vises som kontekst, f.eks. «Typesett»). */
   readonly commandName: string;
+  /** Kommandoens `:`-ord (`tema`). */
+  readonly ex: string;
   readonly argument: string;
+  /** Argumentets etikett (`Typesett`). */
+  readonly argumentLabel: string;
   readonly value: ArgumentValue;
   /** Gjeldende verdi markeres (f.eks. aktivt typesett). */
   readonly current: boolean;

@@ -15,12 +15,16 @@ export interface ShortcutRow {
   /** Samme varianter, én etikett per akkord (`[['Space', 'w']]`), til én `<kbd>` per tast. */
   readonly chords: ReadonlyArray<readonly string[]>;
   readonly label: string;
+  /** Én setning om hva som skjer (kommandoens beskrivelse); tom for tastehint. */
+  readonly description: string;
 }
 
 export interface ShortcutGroup {
   readonly group: CommandGroup;
   readonly label: string;
   readonly rows: readonly ShortcutRow[];
+  /** `:`-ord for kommandoene i gruppen som ikke har taster («Bare som kommando: :tema …»). */
+  readonly commandOnly: readonly string[];
 }
 
 function variant(keys: string, platform: LabelPlatform): { keys: string; chords: string[] } {
@@ -33,18 +37,30 @@ export function shortcutGroups(platform: LabelPlatform): ShortcutGroup[] {
   const bindings = catalogBindings().filter((b) => b.mode === 'normal');
   return COMMAND_GROUPS.map((group) => {
     const rows: ShortcutRow[] = [];
+    const commandOnly: string[] = [];
     for (const [id, raw] of Object.entries(COMMAND_CATALOG)) {
       const spec: CommandSpecBody = raw;
       if (spec.group !== group) continue;
       const variants = bindings.filter((b) => b.commandId === id).map((b) => variant(b.keys, platform));
-      if (variants.length > 0) rows.push({ id, kind: 'command', keys: variants.map((v) => v.keys), chords: variants.map((v) => v.chords), label: spec.name });
+      if (variants.length > 0) {
+        rows.push({
+          id,
+          kind: 'command',
+          keys: variants.map((v) => v.keys),
+          chords: variants.map((v) => v.chords),
+          label: spec.name,
+          description: spec.description,
+        });
+      } else {
+        commandOnly.push(spec.aliases[0] ?? spec.name);
+      }
     }
     for (const hint of KEY_HINTS) {
       if (hint.group !== group) continue;
       const variants = hint.keys.map((k) => variant(k, platform));
-      rows.push({ id: hint.id, kind: 'hint', keys: variants.map((v) => v.keys), chords: variants.map((v) => v.chords), label: hint.description });
+      rows.push({ id: hint.id, kind: 'hint', keys: variants.map((v) => v.keys), chords: variants.map((v) => v.chords), label: hint.description, description: '' });
     }
-    return { group, label: GROUP_LABELS[group], rows };
+    return { group, label: GROUP_LABELS[group], rows, commandOnly };
   }).filter((g) => g.rows.length > 0);
 }
 

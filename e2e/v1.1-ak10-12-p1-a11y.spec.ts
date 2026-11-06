@@ -113,7 +113,7 @@ test.describe('AK-1.1-12 tilgjengelighet (axe 0 brudd, lys og mørk)', () => {
       await axe(page, 'zen');
     });
 
-    test.fixme(`TC-12-02 ${mode}: palett i kommandomodus, hurtigtastoversikt og leader-hint`, async ({ page, isMobile }) => {
+    test(`TC-12-02 ${mode}: palett i kommandomodus, hurtigtastoversikt og leader-hint`, async ({ page, isMobile }) => {
       test.skip(isMobile, 'Tastatur');
       await page.emulateMedia({ colorScheme: mode, reducedMotion: 'reduce' });
       await openNote(page, 'Velkommen');

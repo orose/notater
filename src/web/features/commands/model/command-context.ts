@@ -42,6 +42,8 @@ export interface CommandPorts {
   readonly help: { openShortcuts(): void };
   readonly appearance: { open(): void };
   readonly theme: {
+    /** Modusen som vises nå (system løst opp). */
+    readonly resolvedMode: 'light' | 'dark';
     toggleMode(): void;
     setMode(mode: 'light' | 'dark' | 'system'): void;
     setType(type: string): void;

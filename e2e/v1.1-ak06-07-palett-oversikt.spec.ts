@@ -52,7 +52,7 @@ async function åpneOversikt(page: Page): Promise<Locator> {
 test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
   test.skip(({ isMobile }) => isMobile, 'Tastatur testes på desktop; mus/touch i TC-06-11');
 
-  test.fixme('TC-06-01 ⌘K/Ctrl K gir tomt notatsøk', async ({ page }) => {
+  test('TC-06-01 ⌘K/Ctrl K gir tomt notatsøk', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await fokusPåInnhold(page);
     await page.keyboard.press('ControlOrMeta+k');
@@ -62,7 +62,7 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     await expect(palett(page).getByRole('option').first()).toContainText('Kafka-grunnleggende');
   });
 
-  test.fixme('TC-06-02 / gir tomt notatsøk (uten at «/» havner i feltet)', async ({ page }) => {
+  test('TC-06-02 / gir tomt notatsøk (uten at «/» havner i feltet)', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await fokusPåInnhold(page);
     await page.keyboard.press('/');
@@ -70,7 +70,7 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     await expect(palettInput(page)).toHaveValue('');
   });
 
-  test.fixme('TC-06-03 : gir kommandomodus, forhåndsutfylt med «:», og kommandoene viser hurtigtasten sin', async ({ page }) => {
+  test('TC-06-03 : gir kommandomodus, forhåndsutfylt med «:», og kommandoene viser hurtigtasten sin', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await fokusPåInnhold(page);
     await page.keyboard.press(':');
@@ -82,7 +82,7 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     expect(normaliserVisning(await valg.first().locator('kbd').allInnerTexts().then((t) => t.join(' ')))).toBe('␣w');
   });
 
-  test.fixme('TC-06-04 Backspace over «:» går tilbake til notatsøk', async ({ page }) => {
+  test('TC-06-04 Backspace over «:» går tilbake til notatsøk', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await fokusPåInnhold(page);
     await page.keyboard.press(':');
@@ -103,8 +103,10 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     ['hjelp', 'Velkommen', async (page) => expect(hurtigtastoversikt(page)).toBeVisible()],
     ['taster', 'Velkommen', async (page) => expect(hurtigtastoversikt(page)).toBeVisible()],
   ];
+  // Slice 1.1-a: tema, palett, modus og hjelp. Zen/bredde (1.1-b), folding (1.1-c) og diskré (1.1-d) kommer.
+  const levert = new Set(['tema terminal', 'palett fosfor', 'mørk', 'hjelp', 'taster']);
   for (const [søk, sti, forvent] of effekter) {
-    test.fixme(`TC-06-05 :${søk} kjører kommandoen`, async ({ page }) => {
+    (levert.has(søk) ? test : test.fixme)(`TC-06-05 :${søk} kjører kommandoen`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: 'light' });
       await openNote(page, sti);
       await kjørKommando(page, søk);
@@ -112,14 +114,14 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     });
   }
 
-  test.fixme('TC-06-06 :lys etter :mørk gir lys modus', async ({ page }) => {
+  test('TC-06-06 :lys etter :mørk gir lys modus', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await openNote(page, 'Velkommen');
     await kjørKommando(page, 'lys');
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'light');
   });
 
-  test.fixme('TC-06-07 kommandoer med argument tilbyr verdiene som underliste (:tema)', async ({ page }) => {
+  test('TC-06-07 kommandoer med argument tilbyr verdiene som underliste (:tema)', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await fokusPåInnhold(page);
     await page.keyboard.press(':');
@@ -130,7 +132,7 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     await expect(page.locator('html')).toHaveAttribute('data-type', 'klartekst');
   });
 
-  test.fixme('TC-06-08 kontekstløse kommandoer er deaktivert med forklaring (:diskret på .base)', async ({ page }) => {
+  test('TC-06-08 kontekstløse kommandoer er deaktivert med forklaring (:diskret på .base)', async ({ page }) => {
     await openNote(page, 'Oppgaver.base');
     await fokusPåInnhold(page);
     await page.keyboard.press(':');
@@ -140,7 +142,7 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     await expect(valg).toContainText(/ikke tilgjengelig|bare|kun/i);
   });
 
-  test.fixme('TC-06-09 alle kommandoer i oversikten finnes i paletten med samme hurtigtast', async ({ page }) => {
+  test('TC-06-09 alle kommandoer i oversikten finnes i paletten med samme hurtigtast', async ({ page }) => {
     await openNote(page, 'lesekomfort/Kvartalsrapport');
     await åpneOversikt(page);
     const rader = await raderIOversikt(page);
@@ -159,7 +161,7 @@ test.describe('AK-1.1-06 én palett for søk og kommandoer', () => {
     }
   });
 
-  test.fixme('TC-06-10 Esc lukker paletten og returnerer fokus', async ({ page }) => {
+  test('TC-06-10 Esc lukker paletten og returnerer fokus', async ({ page }) => {
     await openNote(page, 'Velkommen');
     const knapp = page.getByRole('button', { name: 'Søk i notater' });
     await knapp.focus();
@@ -187,13 +189,13 @@ test.describe('AK-1.1-06 palett med mus/touch (P6)', () => {
 test.describe('AK-1.1-07 hurtigtastoversikt', () => {
   test.skip(({ isMobile }) => isMobile, 'Tastatur testes på desktop');
 
-  test.fixme('TC-07-01 ? åpner oversikten, gruppert i riktig rekkefølge', async ({ page }) => {
+  test('TC-07-01 ? åpner oversikten, gruppert i riktig rekkefølge', async ({ page }) => {
     await openNote(page, 'Velkommen');
     const dialog = await åpneOversikt(page);
     await expect(dialog.getByRole('heading')).toHaveText([/Hurtigtaster/, ...fasit.tastaturkart.grupper]);
   });
 
-  test.fixme('TC-07-02 alle bindinger fra tastaturkartet i spesifikasjonen er med', async ({ page }) => {
+  test('TC-07-02 alle bindinger fra tastaturkartet i spesifikasjonen er med', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await åpneOversikt(page);
     const vist = new Set((await raderIOversikt(page)).flatMap((r) => r.taster.map(normaliserVisning)));
@@ -201,7 +203,7 @@ test.describe('AK-1.1-07 hurtigtastoversikt', () => {
     expect(mangler).toEqual([]);
   });
 
-  test.fixme('TC-07-03 lukkes med Esc og med ?', async ({ page }) => {
+  test('TC-07-03 lukkes med Esc og med ?', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await åpneOversikt(page);
     await page.keyboard.press('Escape');
@@ -211,28 +213,28 @@ test.describe('AK-1.1-07 hurtigtastoversikt', () => {
     await expect(hurtigtastoversikt(page)).toBeHidden();
   });
 
-  test.fixme('TC-07-04 ? på norsk tastatur (Shift + «+»-tasten) åpner oversikten', async ({ page }) => {
+  test('TC-07-04 ? på norsk tastatur (Shift + «+»-tasten) åpner oversikten', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await fokusPåInnhold(page);
     await trykkNorsk(page, '?');
     await expect(hurtigtastoversikt(page)).toBeVisible();
   });
 
-  test.fixme('TC-07-05 tilgjengelig fra Utseende', async ({ page }) => {
+  test('TC-07-05 tilgjengelig fra Utseende', async ({ page }) => {
     await openNote(page, 'Velkommen');
     const dialog = await åpneUtseende(page);
     await dialog.getByRole('button', { name: 'Hurtigtaster' }).click();
     await expect(hurtigtastoversikt(page)).toBeVisible();
   });
 
-  test.fixme('TC-07-06 snarveier vises plattformriktig (PO-36): «Ctrl K» utenfor macOS, aldri ⌘', async ({ page }) => {
+  test('TC-07-06 snarveier vises plattformriktig (PO-36): «Ctrl K» utenfor macOS, aldri ⌘', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await åpneOversikt(page);
     await expect(hurtigtastoversikt(page)).not.toContainText('⌘');
     await expect(hurtigtastoversikt(page)).toContainText(/Ctrl\s*K/);
   });
 
-  test.fixme('TC-07-07 innholdet er identisk med registeret', async ({ page }) => {
+  test('TC-07-07 innholdet er identisk med registeret', async ({ page }) => {
     const register = await lastRegister();
     await openNote(page, 'Velkommen');
     await åpneOversikt(page);
@@ -242,7 +244,7 @@ test.describe('AK-1.1-07 hurtigtastoversikt', () => {
     for (const k of medTaster) expect(rader.find((r) => r.id === k.id)?.navn, k.id).toBe(k.name);
   });
 
-  test.fixme('TC-07-08 README-tabellen er generert og i sync med oversikten', async ({ page }) => {
+  test('TC-07-08 README-tabellen er generert og i sync med oversikten', async ({ page }) => {
     const readme = readFileSync(join(REPO, 'README.md'), 'utf8');
     const m = /<!-- hurtigtaster:start -->([\s\S]*?)<!-- hurtigtaster:end -->/.exec(readme);
     expect(m, 'README har markørene <!-- hurtigtaster:start/end --> (npm run docs:shortcuts)').not.toBeNull();

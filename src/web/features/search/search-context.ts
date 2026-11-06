@@ -2,17 +2,29 @@ import { createContext } from 'react';
 
 export type OpenSearch = (query?: string) => void;
 
+type Ranges = ReadonlyArray<readonly [number, number]>;
+
 /** Et kommandovalg slik paletten ser det. Kommer fra `commands` via `PaletteCommandSource` (ingen import av commands). */
 export interface PaletteCommandItem {
   /** Unik nøkkel i listen. */
   readonly key: string;
   readonly commandId: string;
   readonly kind: 'command' | 'argument';
+  /** Navn (kommando) eller verdi (argument). */
   readonly label: string;
   /** Treffområder i `label` til utheving. */
-  readonly highlights: ReadonlyArray<readonly [number, number]>;
-  /** Undertekst: beskrivelse (kommando) eller forklaring (verdi). */
+  readonly highlights: Ranges;
+  /** `:`-ordet foran navnet (`bredde`) og treffområdene i det. */
+  readonly ex: string;
+  readonly exHighlights: Ranges;
+  /** Argumentets plassholder (`typesett`) for argumentkommandoer. */
+  readonly argumentLabel: string | null;
+  /** Nå-tilstand («full», «av», «Tidsskrift»). */
+  readonly state: string | null;
+  /** Undertekst: beskrivelse av verdien (underliste). */
   readonly detail: string | null;
+  /** Typografisk prøve eller fargestripe i underlisten. */
+  readonly visual: { readonly specimen?: string; readonly swatch?: readonly string[] } | null;
   /** Hurtigtast, én etikett per akkord. */
   readonly shortcut: readonly string[] | null;
   readonly enabled: boolean;
@@ -24,15 +36,25 @@ export interface PaletteCommandItem {
   readonly group: string | null;
   /** Sett: Enter fyller inn `:` + dette (argumentliste) i stedet for å kjøre. */
   readonly completion: string | null;
+  /** ⇥ fyller inn `:` + dette. */
+  readonly fill: string;
   /** Argumentene kommandoen kjøres med (`{ type: 'terminal' }`). */
   readonly args: Readonly<Record<string, string>>;
 }
 
+export interface PaletteCommandList {
+  readonly items: readonly PaletteCommandItem[];
+  /** Satt når inndata er en argumentkommando (`tema …`): underlistens overskrift. */
+  readonly argument: { readonly ex: string; readonly label: string } | null;
+}
+
 /** Kommandomodus i paletten (F5). Leveres av `CommandProvider`. */
 export interface PaletteCommandSource {
+  /** Antall kommandoer (bunnlinjen). */
+  readonly count: number;
   /** Valgene for inndata etter `:`. */
-  options(query: string): readonly PaletteCommandItem[];
-  /** Kjører valget. Kalles etter at paletten er lukket (ADR-007 §4). */
+  options(query: string): PaletteCommandList;
+  /** Kjører valget (deaktivert ⇒ begrunnelsen som toast). Kalles etter at paletten er lukket (ADR-007 §4). */
   run(item: PaletteCommandItem): void;
 }
 

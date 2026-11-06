@@ -11,11 +11,12 @@ function fakePorts() {
     help: { openShortcuts: fn() },
     appearance: { open: fn() },
     theme: {
+      resolvedMode: 'light' as const,
       toggleMode: fn(),
       setMode: fn(),
       setType: fn(),
       setPalette: fn(),
-      types: [{ value: 'terminal', label: 'Terminal' }],
+      types: [{ value: 'terminal', label: 'Terminal', current: true }],
       palettes: [{ value: 'fosfor', label: 'Fosfor' }],
     },
     view: { toggleWidth: fn(), toggleDiscreet: fn(), toggleZen: fn(), exitZen: vi.fn(() => false) },
@@ -70,7 +71,7 @@ describe('kommandohandlere', () => {
   it('argumentkommandoer: verdier fra temaet, kjøring med og uten argument', () => {
     const { ctx, ports } = context();
     const type = registry.get('theme.setType');
-    expect(type.argumentValues(ctx, 'type')).toEqual([{ value: 'terminal', label: 'Terminal' }]);
+    expect(type.argumentValues(ctx, 'type')).toEqual([{ value: 'terminal', label: 'Terminal', current: true }]);
     void type.run(ctx, { type: 'terminal' });
     expect(ports.theme.setType).toHaveBeenCalledWith('terminal');
     void type.run(ctx, {});
@@ -104,5 +105,16 @@ describe('kommandohandlere', () => {
     expect(delivered.get('outline.foldAll').isEnabled(context('note', 2).ctx)).toEqual({ enabled: true });
     void delivered.get('view.toggleZen').run(ctx, {});
     expect(ports.view.toggleZen).toHaveBeenCalled();
+  });
+
+  it('nå-tilstand til paletten og which-key', () => {
+    const { ctx } = context();
+    expect(registry.get('view.toggleWidth').state(ctx)).toBe('optimal');
+    expect(registry.get('view.toggleZen').state(ctx)).toBe('av');
+    expect(registry.get('view.toggleDiscreet').state(ctx)).toBe('av');
+    expect(registry.get('view.toggleDiscreet').state(context('base').ctx)).toBeNull();
+    expect(registry.get('theme.toggleMode').state(ctx)).toBe('lys');
+    expect(registry.get('theme.setType').state(ctx)).toBe('Terminal');
+    expect(registry.get('scroll.down').state(ctx)).toBeNull();
   });
 });

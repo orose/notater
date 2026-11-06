@@ -17,6 +17,8 @@ export const COMING_SOON = 'Kommer snart';
 export const NOTES_ONLY = 'Gjelder bare notater';
 export const NO_HEADINGS = 'Notatet har ingen overskrifter';
 
+const onOff = (on: boolean) => (on ? 'på' : 'av');
+
 const coming: Availability = { enabled: false, reason: COMING_SOON };
 const notesOnly: Availability = { enabled: false, reason: NOTES_ONLY };
 
@@ -62,14 +64,26 @@ export function createCommandHandlers({ pending = PENDING_FEATURES }: HandlerOpt
     'outline.foldAll': folding(({ ports }) => ports.outline.foldAll()),
     'outline.unfoldAll': folding(({ ports }) => ports.outline.unfoldAll()),
 
-    'view.toggleWidth': { isEnabled: gate('width'), run: ({ ports }) => ports.view.toggleWidth() },
-    'view.toggleDiscreet': { isEnabled: gate('discreet', onNote), run: ({ ports }) => ports.view.toggleDiscreet() },
-    'view.toggleZen': { isEnabled: gate('zen'), run: ({ ports }) => ports.view.toggleZen() },
+    'view.toggleWidth': {
+      isEnabled: gate('width'),
+      state: ({ view }) => (view.width === 'full' ? 'full' : 'optimal'),
+      run: ({ ports }) => ports.view.toggleWidth(),
+    },
+    'view.toggleDiscreet': {
+      isEnabled: gate('discreet', onNote),
+      state: ({ view, route }) => (route.kind === 'note' ? onOff(view.discreet) : null),
+      run: ({ ports }) => ports.view.toggleDiscreet(),
+    },
+    'view.toggleZen': { isEnabled: gate('zen'), state: ({ view }) => onOff(view.zen), run: ({ ports }) => ports.view.toggleZen() },
 
-    'theme.toggleMode': { run: ({ ports }) => ports.theme.toggleMode() },
+    'theme.toggleMode': {
+      state: ({ ports }) => (ports.theme.resolvedMode === 'dark' ? 'mørk' : 'lys'),
+      run: ({ ports }) => ports.theme.toggleMode(),
+    },
     'theme.light': { run: ({ ports }) => ports.theme.setMode('light') },
     'theme.dark': { run: ({ ports }) => ports.theme.setMode('dark') },
     'theme.setType': {
+      state: ({ ports }) => ports.theme.types.find((t) => t.current)?.label ?? null,
       argumentValues: ({ ports }, name) => (name === 'type' ? ports.theme.types : []),
       run: ({ ports }, args) => {
         if (args.type) ports.theme.setType(args.type);
@@ -77,6 +91,7 @@ export function createCommandHandlers({ pending = PENDING_FEATURES }: HandlerOpt
       },
     },
     'theme.setPalette': {
+      state: ({ ports }) => ports.theme.palettes.find((p) => p.current)?.label ?? null,
       argumentValues: ({ ports }, name) => (name === 'palette' ? ports.theme.palettes : []),
       run: ({ ports }, args) => {
         if (args.palette) ports.theme.setPalette(args.palette);
