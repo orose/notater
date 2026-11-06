@@ -1,7 +1,7 @@
 import './bases.css';
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import { Link } from 'react-router';
-import type { BaseResult, BaseView, DocPath, VaultId } from '../../../shared/api-types';
+import type { BaseResult, BaseView, BaseWarning, DocPath, VaultId } from '../../../shared/api-types';
 import { baseName, docUrl } from '../../shared/api';
 import { Icon } from '../../shared/ui/Icon';
 import { BaseKanban } from './BaseKanban';
@@ -31,6 +31,44 @@ function ViewBody({ vaultId, view }: { readonly vaultId: VaultId; readonly view:
   );
 }
 
+/** Advarsler som gjør at basen ikke kan vises, og som derfor vises som kort i stedet for diskret linje. */
+const BLOCKING = new Set(['unknown-view', 'invalid-yaml']);
+
+function BlockingCard({ vaultId, warning, sourcePath }: { readonly vaultId: VaultId; readonly warning: BaseWarning; readonly sourcePath?: DocPath }) {
+  if (warning.code === 'unknown-view') {
+    const views = warning.availableViews ?? [];
+    return (
+      <div className="mini-state base-error" role="note">
+        <strong>Viewet «{warning.source ?? ''}» finnes ikke</strong>
+        {views.length > 0 ? (
+          <>
+            Tilgjengelige views:
+            <ul className="base-views">
+              {views.map((name) => (
+                <li key={name}>{sourcePath ? <Link to={docUrl(vaultId, sourcePath)}>{name}</Link> : name}</li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          'Basen har ingen views.'
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className="mini-state base-error" role="note">
+      <strong>{warning.message}</strong>
+      Rett definisjonen i Obsidian; resten av notatet vises som vanlig.
+      {warning.source ? (
+        <details>
+          <summary>Detaljer</summary>
+          <pre>{warning.source}</pre>
+        </details>
+      ) : null}
+    </div>
+  );
+}
+
 /** `vr-base` og `.base`-dokumenter (designsystem §7.9–7.10). */
 export function BaseBlock({ vaultId, result, sourcePath, viewName }: BaseBlockProps) {
   const id = useId();
@@ -41,7 +79,8 @@ export function BaseBlock({ vaultId, result, sourcePath, viewName }: BaseBlockPr
   const [active, setActive] = useState(0);
   const current = views[Math.min(active, views.length - 1)];
   const title = sourcePath ? baseName(sourcePath).replace(/\.base$/i, '') : null;
-  const warnings = [...(result?.warnings ?? []), ...(current?.warnings ?? [])];
+  const blocking = result?.warnings.find((w) => BLOCKING.has(w.code));
+  const warnings = [...(result?.warnings ?? []), ...(current?.warnings ?? [])].filter((w) => !BLOCKING.has(w.code));
   const count = current ? viewCount(current) : null;
 
   const select = (index: number) => {
@@ -106,6 +145,8 @@ export function BaseBlock({ vaultId, result, sourcePath, viewName }: BaseBlockPr
       >
         {current ? (
           <ViewBody vaultId={vaultId} view={current} />
+        ) : blocking ? (
+          <BlockingCard vaultId={vaultId} warning={blocking} sourcePath={sourcePath} />
         ) : (
           <div className="mini-state">
             <strong>Basen kunne ikke vises.</strong>
