@@ -217,8 +217,30 @@ describe('getDocument – andre filtyper', () => {
     expect(findAll(note('edge/Skisse.excalidraw').content, byTag('vr-unsupported'))[0]!.properties.dataKind).toBe('excalidraw');
   });
 
-  it('bilde gir img via vedleggsruten', () => {
-    expect(findAll(note('attachments/logo.svg').content, byTag('img'))[0]!.properties.src).toBe('/api/vaults/test/assets?path=attachments%2Flogo.svg');
+  it('bilde gir img via vedleggsruten, med dimensjoner fra filheaderen (PO-71)', () => {
+    expect(findAll(note('attachments/logo.svg').content, byTag('img'))[0]!.properties).toMatchObject({
+      src: '/api/vaults/test/assets?path=attachments%2Flogo.svg',
+      width: 120,
+      height: 120,
+    });
+    expect(findAll(note('attachments/bred.png').content, byTag('img'))[0]!.properties).toMatchObject({ width: 2400, height: 40 });
+  });
+
+  it('lokale bilder i notater får width/height (PO-71, QA-IMG-01–07)', () => {
+    const sizes = findAll(note('lenker/Bilder').content, byTag('img')).map((img) => [img.properties.alt, img.properties.width, img.properties.height]);
+    expect(sizes).toEqual([
+      ['arkitektur.png', 320, 180],
+      ['arkitektur.png', 160, 90],
+      ['Arkitekturskisse', 200, 113],
+      ['logo.svg', 120, 120],
+      ['diagram med mellomrom.png', 64, 64],
+      ['bred.png', 2400, 40],
+      ['Arkitektur, relativ sti', 320, 180],
+      ['Logo fra vault-roten', 120, 120],
+      ['Sjakkbrett', 64, 64],
+      ['Sjakkbrett URL-kodet', 64, 64],
+      ['domenemodell.svg', 240, 80],
+    ]);
   });
 
   it('render-cache gjenbrukes innen samme revisjon', () => {

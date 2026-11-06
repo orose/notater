@@ -1,0 +1,103 @@
+/* v1.1 F1 lesebredde og F4 zen (designsystem §11.3, §11.6). Tokens: docs/design/tokens.css (v1.1-blokken).
+   Ingen opacity på tekst (PO-68); zen-knappen er usynlig i hvile med opacity på hele knappen, ikke for å dempe tekst. */
+
+/* ---------- F1 Full bredde ---------- */
+[data-width="full"] .col { max-width: none; }
+@media (min-width: 1380px) { [data-width="full"] .col { margin-right: 0; } }
+/* Ingress og properties beholder lesevennlig bredde – de er «tittelside», ikke brødtekst. */
+[data-width="full"] .dek, [data-width="full"] .props { max-width: 34em; }
+
+/* ---------- Sidenoter: tre plasseringer, én DOM ----------
+   1 Marg: leseoptimalisert ≥ 1380 px (v1, note-view.css), og i zen ≥ 1100 px.
+   2 Innfelt marginalia: full bredde ≥ 1100 px i Tidsskrift og Terminal.
+   3 Fotnoteliste nederst: ellers, og alltid i Klartekst i full bredde. */
+@media (min-width: 1380px) {
+  html[data-width="full"] .sidenote { display: none; }
+  html[data-width="full"] .footnotes { display: block; }
+  html[data-width="full"] .sn-ref-sup a { pointer-events: auto; }
+}
+@media (min-width: 1100px) {
+  html[data-zen]:not([data-width="full"]) .sidenote {
+    display: block; float: right; clear: right; width: var(--sidenote-w);
+    margin: 0.3em calc(-1 * (var(--sidenote-w) + 2rem)) var(--space-3) 0;
+    font-size: var(--step-n1); line-height: 1.45; color: var(--color-muted); text-indent: 0;
+  }
+  html[data-zen]:not([data-width="full"]) .footnotes { display: none; }
+  html[data-zen]:not([data-width="full"]) .sn-ref-sup a { pointer-events: none; }
+
+  html[data-width="full"]:not([data-type="klartekst"]) .sidenote {
+    display: block; float: right; clear: right; width: var(--sidenote-w);
+    margin: 0.35em 0 var(--space-3) var(--space-5); padding: 0.1em 0 0.2em var(--space-3); border-left: 1px solid var(--color-rule);
+    font-size: var(--step-n1); line-height: 1.45; color: var(--color-muted); text-indent: 0;
+  }
+  html[data-width="full"]:not([data-type="klartekst"]) .footnotes { display: none; }
+  html[data-width="full"]:not([data-type="klartekst"]) .sn-ref-sup a { pointer-events: none; }
+  /* Blokker som ikke skal presses smale ved siden av en innfelt note. */
+  html[data-width="full"]:not([data-type="klartekst"]) .prose > :is(h2, h3, figure, .code-block, .table-wrap, .diagram, .callout, .embed, vr-embed, blockquote, .footnotes, .base) { clear: right; }
+  html[data-zen][data-type="tidsskrift"] .sidenote, html[data-width="full"][data-type="tidsskrift"] .sidenote { font-style: italic; }
+  html[data-zen][data-type="terminal"] .sidenote, html[data-width="full"][data-type="terminal"] .sidenote { font-family: var(--font-mono); font-size: 0.74rem; line-height: 1.55; }
+  html[data-zen] .sidenote a, html[data-width="full"] .sidenote a { color: inherit; }
+}
+
+/* ---------- PO-74: programmatiske fokusmål (tabindex=-1) får aldri fokusring ----------
+   Rullbare områder med tabindex=0 (kode, tabeller) beholder ringen. */
+[tabindex="-1"]:focus, [tabindex="-1"]:focus-visible { outline: none; }
+
+/* ---------- F4 Zen ---------- */
+[data-zen] .sidebar, [data-zen] .rail, [data-zen] .topbar, [data-zen] .toc-inline { display: none !important; }
+[data-zen] .app { grid-template-columns: minmax(0, 1fr); }
+[data-zen] .main { grid-template-columns: minmax(0, 1fr); padding-inline: var(--gutter); }
+[data-zen] .col { margin-inline: auto !important; }
+[data-zen] .page { padding-top: clamp(2.5rem, 1rem + 6vw, 7rem); }
+[data-zen][data-width="full"] .main { padding-inline: clamp(1rem, 7vw, 8rem); }
+@media (max-width: 859px) { [data-zen] html { scroll-padding-top: 1rem; } }
+
+.col { view-transition-name: lesekolonne; }
+.sidebar { view-transition-name: sidepanel; }
+.rail { view-transition-name: hoyremarg; }
+::view-transition-group(lesekolonne) { animation-duration: var(--dur-slow); animation-timing-function: var(--ease-in-out); }
+::view-transition-old(sidepanel), ::view-transition-old(hoyremarg) { animation: vr-fade-out var(--dur-base) var(--ease-out) both; }
+::view-transition-new(sidepanel), ::view-transition-new(hoyremarg) { animation: vr-fade-in var(--dur-base) var(--ease-out) both; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--dur-base); }
+@keyframes vr-fade-out { to { opacity: 0; } }
+@keyframes vr-fade-in { from { opacity: 0; } }
+
+.zen-exit {
+  position: fixed; top: var(--space-3); right: var(--space-3); z-index: var(--z-hint); display: inline-flex;
+  align-items: center; gap: 0.5em; padding: 0.35em 0.45em 0.35em 0.7em; min-height: 2.75rem;
+  font-family: var(--font-meta); font-size: 0.72rem; color: var(--color-muted);
+  background: var(--color-surface); border: 1px solid var(--color-rule); border-radius: var(--radius-m);
+  opacity: 0; transition: opacity var(--dur-base) var(--ease-out), border-color var(--dur-fast);
+}
+.zen-exit:is(:hover, :focus-visible, [data-awake]) { opacity: 1; }
+.zen-exit:hover { border-color: var(--color-rule-strong); color: var(--color-text); }
+.zen-exit .x { display: none; }
+@media (hover: none) {
+  .zen-exit { opacity: 1; padding: 0; width: 2.75rem; justify-content: center; background: var(--color-veil); }
+  .zen-exit .t, .zen-exit .k { display: none; }
+  .zen-exit .x { display: block; }
+}
+
+.hint-card {
+  position: fixed; left: 50%; bottom: var(--space-5); translate: -50% 0; z-index: var(--z-hint);
+  display: flex; align-items: center; flex-wrap: wrap; gap: 0.35em 0.5em; max-width: calc(100vw - 2rem);
+  padding: var(--space-3) var(--space-4); font-family: var(--font-ui); font-size: var(--step-n1); color: var(--color-muted);
+  background: var(--color-surface); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-m);
+  animation: vr-rise var(--dur-base) var(--ease-out);
+}
+.hint-card[hidden] { display: none; }
+.hint-card strong { color: var(--color-text); font-weight: var(--weight-strong); }
+[data-type="tidsskrift"] .hint-card { border-radius: 0; font-style: italic; }
+[data-type="tidsskrift"] .hint-card strong { font-style: normal; font-family: var(--font-sc); text-transform: lowercase; letter-spacing: var(--tracking-sc); font-weight: 500; }
+
+/* ---------- Statuslinjeflagg ---------- */
+.flags { display: flex; gap: 0.25rem; width: 100%; }
+.flag {
+  font-family: var(--font-meta); font-size: 0.7rem; letter-spacing: var(--tracking-meta); color: var(--color-muted);
+  padding: 0.15em 0.35em; border-radius: var(--radius-s); line-height: 1.2; font-style: normal;
+}
+.flag::before { content: "["; }
+.flag::after { content: "]"; }
+.flag:hover { color: var(--color-accent); background: var(--color-hover); }
+
+@media print { .zen-exit, .hint-card, .flags { display: none !important; } }

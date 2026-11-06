@@ -179,10 +179,14 @@ async function exifOrientation(reader: ByteReader, start: number, length: number
 /** Rot-taggen må ligge innenfor de første 64 KiB (etter XML-deklarasjon, kommentarer og DOCTYPE). */
 const SVG_READ_BYTES = 64 * 1024;
 
+/** Første forsøk: rot-taggen ligger nesten alltid i de første 4 KiB (allerede lest av fil-leseren). */
+const SVG_FIRST_READ_BYTES = 4096;
+
 async function svgSize(reader: ByteReader): Promise<ImageSize | null> {
-  const bytes = await reader.read(0, SVG_READ_BYTES);
-  const text = new TextDecoder('utf-8', { fatal: false }).decode(bytes).replace(/^﻿/, '');
-  const attrs = rootSvgAttributes(text);
+  const decode = (bytes: Uint8Array): string => new TextDecoder('utf-8', { fatal: false }).decode(bytes).replace(/^\uFEFF/, '');
+  const first = await reader.read(0, SVG_FIRST_READ_BYTES);
+  let attrs = rootSvgAttributes(decode(first));
+  if (!attrs && first.length === SVG_FIRST_READ_BYTES) attrs = rootSvgAttributes(decode(await reader.read(0, SVG_READ_BYTES)));
   if (!attrs) return null;
   const width = attrs.width === undefined ? null : parseLength(attrs.width);
   const height = attrs.height === undefined ? null : parseLength(attrs.height);

@@ -137,10 +137,5 @@ export function preferencesFromSearch(search: string, base: ThemePreferences): T
   });
 }
 
-export function safeLocalStorage(): Storage | undefined {
-  try {
-    return window.localStorage;
-  } catch {
-    return undefined;
-  }
+export { safeLocalStorage } from '../../shared/storage';
 }

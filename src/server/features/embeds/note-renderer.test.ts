@@ -29,8 +29,26 @@ const SOURCES: Record<string, string> = {
   'Bilder.md': '![[logo.svg|Logo|120]]\n\n![Rel](attachments/logo.svg)\n\n![[mangler.png]]\n\n![[Oppgaver.base#Kanban]]\n\n![[Tegning.canvas]]\n\n```base\nviews: []\n```',
   'Garanti.md': '## Vert\n\n![[Kafka]]\n\n![[Kafka#Partisjoner]]\n\n![[Kafka#^offset-def]]',
   'Lenker.md': '[[Kafka#Offset]] [[Apache Kafka]] [[Finnes ikke]] [[#Annen]]\n\n## Annen',
+  'Størrelser.md': [
+    '![[foto.jpg]]',
+    '![[foto.jpg|300]]',
+    '![[foto.jpg|300x300]]',
+    '![[foto.jpg|Ferie|600x100]]',
+    '![Ferie](attachments/foto.jpg)',
+    '![Ferie|150](attachments/foto.jpg)',
+    '<img src="attachments/foto.jpg" alt="Html" width="240">',
+    '<img src="attachments/foto.jpg" alt="Html" height="40">',
+    '![[ukjent.png]]',
+    '![[ukjent.png|50]]',
+    '![[ukjent.png|50x60]]',
+  ].join('\n\n'),
 };
-const OTHER = ['attachments/logo.svg', 'Oppgaver.base', 'Tegning.canvas'];
+const OTHER = ['attachments/logo.svg', 'Oppgaver.base', 'Tegning.canvas', 'attachments/foto.jpg', 'attachments/ukjent.png'];
+/** Dimensjoner slik indeksen har lest dem fra filheaderen (PO-71); `null` = ukjent/ødelagt. */
+const IMAGE_SIZES: Record<string, { width: number; height: number } | null> = {
+  'attachments/foto.jpg': { width: 1200, height: 800 },
+  'attachments/ukjent.png': null,
+};
 const splitBody = (source: string): string => splitFrontmatter(source).body;
 
 function buildVault() {
@@ -41,7 +59,10 @@ function buildVault() {
     files.push(file);
     notes.set(path, { file, meta: extractNoteMeta(source), body: splitBody(source) });
   }
-  for (const path of OTHER) files.push({ ...describeVaultPath(path), diskPath: path, size: 0, mtimeMs: 0, ctimeMs: 0 });
+  for (const path of OTHER) {
+    const imageSize = IMAGE_SIZES[path];
+    files.push({ ...describeVaultPath(path), diskPath: path, size: 0, mtimeMs: 0, ctimeMs: 0, ...(imageSize !== undefined ? { imageSize } : {}) });
+  }
   const aliases = new Map([...notes].map(([p, n]) => [p, n.meta.aliases]));
   const renderer = createNoteRenderer({
     vaultId: 'test',
@@ -99,6 +120,26 @@ describe('createNoteRenderer – embeds', () => {
     const { renderer, file } = buildVault();
     const all = embeds(renderer.renderNote(file('Dyp 1.md')).content);
     expect(all.map((e) => e.properties.dataStatus)).toEqual(['ok', 'ok', 'ok', 'ok', 'ok', 'depth-limit']);
+  });
+
+  it('bilder får width/height fra indeksen, med Obsidians størrelsessyntaks og bevart sideforhold (PO-71)', () => {
+    const { renderer, file } = buildVault();
+    const imgs = findAll(renderer.renderNote(file('Størrelser.md')).content, byTag('img'));
+    const sizes = imgs.map((img) => [img.properties.alt, img.properties.width, img.properties.height]);
+    expect(sizes).toEqual([
+      ['foto.jpg', 1200, 800], // ![[foto.jpg]]: egen størrelse
+      ['foto.jpg', 300, 200], // |300: høyden følger
+      ['foto.jpg', 300, 200], // |300x300: passer inni boksen
+      ['Ferie', 150, 100], // |alt|600x100
+      ['Ferie', 1200, 800], // ![alt](sti)
+      ['Ferie', 150, 100], // ![alt|150](sti)
+      ['Html', 240, 160], // <img width>
+      ['Html', 60, 40], // <img height>
+      ['ukjent.png', undefined, undefined], // ukjent størrelse: ingen attributter
+      ['ukjent.png', 50, undefined],
+      ['ukjent.png', 50, 60],
+    ]);
+    expect(imgs[0]!.properties.src).toBe('/api/vaults/test/assets?path=attachments%2Ffoto.jpg');
   });
 
   it('bilder, base, canvas og inline-base', () => {

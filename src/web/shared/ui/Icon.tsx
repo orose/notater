@@ -63,6 +63,13 @@ const ICONS = {
   down: <path d="M6 9l6 6 6-6" />,
   expand: <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />,
   close: <path d="M6 6l12 12M18 6 6 18" />,
+  keys: (
+    <>
+      <rect x="2.5" y="6" width="19" height="12" rx="2" />
+      <path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M7 14h10" />
+    </>
+  ),
+  zen: <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />,
   base: (
     <>
       <rect x="3.5" y="4.5" width="17" height="15" rx="1.5" />
