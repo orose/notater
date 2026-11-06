@@ -1,10 +1,11 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { baseDocFixture, noteFixture, vaultsFixture } from '../../test-support/fixtures';
 import { h, root } from '../../test-support/hast';
 import { mockApi } from '../../test-support/mock-api';
 import { renderWithProviders } from '../../test-support/render-with-providers';
+import { INITIAL_LIVE_STATE, LiveContext } from '../live-reload/live-context';
 import { readRecent } from '../recent';
 import { SearchProvider } from '../search';
 import { DocumentPage } from './DocumentPage';
@@ -170,6 +171,37 @@ describe('DocumentPage – notat', () => {
     renderAt('/v/test/Finnes%20ikke');
     const region = await screen.findByRole('region', { name: 'Lenket fra' });
     expect(within(region).getAllByRole('link').map((a) => a.textContent)).toEqual(['Lenketest', 'Frontmatter-typer']);
+  });
+
+  it('åpent notat som slettes går over til «ikke skrevet ennå» (BUG-006)', async () => {
+    let exists = true;
+    mockApi({
+      '/api/vaults': vaultsFixture,
+      '/api/vaults/test/document?path=domene/Ordre': () =>
+        exists ? noteFixture() : new Response(JSON.stringify({ error: { code: 'DOCUMENT_NOT_FOUND', message: 'Finnes ikke' } }), { status: 404 }),
+    });
+    const { client } = renderAt('/v/test/domene/Ordre');
+    await screen.findByRole('heading', { level: 1, name: 'Ordre' });
+    exists = false;
+    await act(() => client.invalidateQueries({ queryKey: ['vault', 'test'] }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Dette notatet er ikke skrevet ennå' })).toBeInTheDocument();
+    expect(screen.getByText('Notatet ble slettet eller flyttet mens det var åpent.')).toBeInTheDocument();
+  });
+
+  it('omdøpt notat viser lenke til nytt navn (BUG-006)', async () => {
+    mockApi({ '/api/vaults': vaultsFixture });
+    renderWithProviders(
+      <LiveContext.Provider value={{ ...INITIAL_LIVE_STATE, moved: { 'domene/Lager': 'domene/Lagerstyring' } }}>
+        <SearchProvider vaultId="test">
+          <Routes>
+            <Route path="/v/:vaultId/*" element={<DocumentPage />} />
+          </Routes>
+        </SearchProvider>
+      </LiveContext.Provider>,
+      { route: '/v/test/domene/Lager' },
+    );
+    expect(await screen.findByRole('link', { name: 'Lagerstyring' })).toHaveAttribute('href', '/v/test/domene/Lagerstyring');
+    expect(screen.getByText(/Notatet er flyttet til/)).toBeInTheDocument();
   });
 
   it('viser ikke-støttet-filer (canvas) via innholdet', async () => {

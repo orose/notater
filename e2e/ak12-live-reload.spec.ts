@@ -93,7 +93,6 @@ test('mange raske endringer debounces og siste versjon vises', async ({ page }) 
 });
 
 test('slettet notat som er åpent → «ikke skrevet ennå» uten refresh', async ({ page, guards }) => {
-  test.fail(true, 'BUG-006: åpent notat blir stående (utdatert) når fila slettes/omdøpes; refetch med 404 viser ikke «ikke skrevet ennå»');
   guards.allowConsole.push(/status of 404/);
   writeFileSync(join(vault, 'domene/Live slett.md'), '# Live slett\n\nLenker til [[avtale]].\n');
   await page.goto(url('domene/Live slett'));
@@ -132,7 +131,6 @@ test('omdøpt notat: ny sti virker, gammel gir «ikke skrevet ennå»', async ({
 });
 
 test('endring mellom første lasting og SSE-tilkobling går ikke tapt', async ({ page }) => {
-  test.fail(true, 'BUG-007: klienten ignorerer revisjonsavvik i første «ready»-hendelse, så endringer før SSE-tilkobling går tapt');
   // Hold igjen SSE-tilkoblingen til endringen er indeksert, slik at den kommer «mellom» lasting og tilkobling.
   let release: () => void = () => undefined;
   const gate = new Promise<void>((r) => (release = r));

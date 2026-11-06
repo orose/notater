@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LiveReloadProvider } from './LiveReloadProvider';
+import { detectMoves } from './live-context';
 import { LiveStatus } from './LiveStatus';
 
 class FakeEventSource {
@@ -70,6 +71,20 @@ describe('live reload (AK12)', () => {
     expect(invalidate).toHaveBeenCalledTimes(1);
   });
 
+  it('første «ready» med nyere revisjon enn data i cachen henter på nytt (BUG-007)', () => {
+    const { source, invalidate, client } = setup();
+    client.setQueryData(['vault', 'test', 'document', 'domene/avtale'], { revision: 1 });
+    act(() => source.emit('ready', { vaultId: 'test', revision: 2 }));
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['vault', 'test'] });
+  });
+
+  it('første «ready» med samme revisjon henter ikke på nytt', () => {
+    const { source, invalidate, client } = setup();
+    client.setQueryData(['vault', 'test', 'document', 'domene/avtale'], { revision: 2 });
+    act(() => source.emit('ready', { vaultId: 'test', revision: 2 }));
+    expect(invalidate).not.toHaveBeenCalled();
+  });
+
   it('viser status i bunnlinjen', () => {
     const { source } = setup();
     act(() => source.emit('ready', { vaultId: 'test', revision: 1 }));
@@ -83,5 +98,31 @@ describe('live reload (AK12)', () => {
     const { source, unmount } = setup();
     unmount();
     expect(source.closed).toBe(true);
+  });
+});
+
+describe('detectMoves (BUG-006)', () => {
+  it('én fjernet + én lagt til med samme filnavn eller i samme hendelse = flyttet', () => {
+    expect(
+      detectMoves([
+        { type: 'removed', path: 'domene/Lager' },
+        { type: 'added', path: 'domene/Lagerstyring' },
+      ]),
+    ).toEqual({ 'domene/Lager': 'domene/Lagerstyring' });
+  });
+
+  it('bare sletting gir ingen flytting', () => {
+    expect(detectMoves([{ type: 'removed', path: 'domene/Lager' }])).toEqual({});
+  });
+
+  it('flere fjernet: parer på likt filnavn', () => {
+    expect(
+      detectMoves([
+        { type: 'removed', path: 'a/X' },
+        { type: 'removed', path: 'a/Y' },
+        { type: 'added', path: 'b/X' },
+        { type: 'changed', path: 'c/Z' },
+      ]),
+    ).toEqual({ 'a/X': 'b/X' });
   });
 });

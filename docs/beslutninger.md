@@ -168,3 +168,9 @@ Frontendens avvik 1–8 er **godkjent** (temascript som ekstern fil pga. CSP; br
 - **PO-44 Ingen duplikat-tilbakelenker** Tilbakelenker med kontekst nederst i notatet er primærvisningen. Høyre marg viser i stedet en kompakt lenke «Tilbakelenker (n) ↓» som hopper ned.
 - **PO-45** Uthevingen i tilbakelenke-kontekst skal dekke hele lenketeksten (`Oppgaver.base`, ikke bare `Oppgaver`).
 - **PO-46** Frontend-forslag 1–3 fra backend godkjent: `unknown-view` → «Viewet «X» finnes ikke» + `availableViews`; `invalid-yaml` inne i kortet; e2e setter `timezoneId: 'Europe/Oslo'`.
+
+## PO-avgjørelser etter frontend runde 3
+
+- **PO-47** Kanban-kolonnebredde min 168 px (10.5rem) godkjent – målet om 6 kolonner uten scroll ved 1440 px veier tyngst.
+- **PO-48** Bred base-blokk i notat vs. sticky høyre marg: TOC/marg tones ut (opacity 0, ikke klikkbar, `aria-hidden` uendret – fortsatt tilgjengelig via tastatur/skjermleser) mens en bred blokk overlapper margsonen, og kommer tilbake når blokken er passert.
+- **PO-49** SSE får eksplisitt `type: 'renamed'` med `from`/`to` (backend), klienten bruker den når den finnes.

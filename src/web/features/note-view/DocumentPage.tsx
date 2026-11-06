@@ -56,11 +56,12 @@ export function DocumentView({ vaultId, docPath }: DocumentViewProps) {
   let body;
   if (image) {
     body = <AssetPage vaultId={vaultId} docPath={docPath} />;
-  } else if (query.isError && !doc) {
+  } else if (query.isError && (!doc || isNotFound(query.error))) {
+    // BUG-006: også når en refetch gir 404 (fila slettet/omdøpt mens notatet var åpent) – ikke vis gammel data.
     body = isNotFound(query.error) ? (
       <main className="page" id="innhold" tabIndex={-1}>
         <div className="col">
-          <MissingNotePage vaultId={vaultId} docPath={docPath} />
+          <MissingNotePage vaultId={vaultId} docPath={docPath} wasOpen={!!doc && doc.path === docPath} />
         </div>
       </main>
     ) : (
