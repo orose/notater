@@ -76,8 +76,13 @@ export interface WatcherHandle {
 }
 
 const DEFAULT_PRERENDER_COUNT = 100;
-/** PO-78: slettinger holdes tilbake så lenge for å kunne pares med en ny fil i neste bunt. */
-const DEFAULT_RENAME_WINDOW_MS = 300;
+/**
+ * PO-78: øvre grense for hvor lenge en umatchet sletting holdes tilbake. En sletting som matcher en ny fil
+ * (inode + størrelse eller innholdshash) slippes straks sammen med den. 300 ms var for kort: `add` venter på
+ * awaitWriteFinish (100 ms) + debounce (150 ms), og i en nyopprettet mappe må chokidar først oppdage mappa,
+ * så under last (e2e med 4 workere) kom `added` mer enn 300 ms etter `removed`.
+ */
+const DEFAULT_RENAME_WINDOW_MS = 1000;
 /** Maks antall lenkemål som forhåndsrendres per åpnet notat. */
 const MAX_PREFETCH_LINKS = 40;
 /** Åpning av kodeblokk med språk: ```java / ~~~ts. */
@@ -101,7 +106,7 @@ export interface VaultRuntimeDeps {
   readonly prerenderCount?: number;
   /**
    * PO-78: hvor lenge en sletting fra overvåkeren holdes tilbake før `removed` sendes, slik at en
-   * omdøping som deles over to debounce-bunter likevel gir `renamed`. Standard 300 ms; 0 = av.
+   * omdøping som deles over to debounce-bunter likevel gir `renamed`. Standard 1000 ms; 0 = av.
    */
   readonly renameWindowMs?: number;
   readonly log?: (message: string) => void;

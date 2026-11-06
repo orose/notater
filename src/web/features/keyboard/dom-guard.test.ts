@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasOpenModal, isSpaceActivationTarget, isTextEntryTarget } from './dom-guard';
+import { effectiveKeyTarget, hasOpenModal, isSpaceActivationTarget, isTextEntryTarget } from './dom-guard';
 
 function el(html: string): Element {
   const host = document.createElement('div');
@@ -31,6 +31,21 @@ describe('dom-guard (P7)', () => {
     dialog.setAttribute('open', '');
     document.body.append(dialog);
     expect(hasOpenModal(document)).toBe(true);
+    dialog.remove();
+  });
+
+  it('PO-81: fokus i en dialog som akkurat er lukket regnes som dokumentet', () => {
+    const dialog = document.createElement('dialog');
+    dialog.innerHTML = '<input type="search">';
+    document.body.append(dialog);
+    const input = dialog.querySelector('input') as HTMLInputElement;
+    dialog.setAttribute('open', '');
+    expect(effectiveKeyTarget(input)).toBe(input);
+    dialog.removeAttribute('open');
+    expect(effectiveKeyTarget(input)).toBe(document.body);
+    expect(isTextEntryTarget(effectiveKeyTarget(input))).toBe(false);
+    const outside = document.createElement('input');
+    expect(effectiveKeyTarget(outside)).toBe(outside);
     dialog.remove();
   });
 });

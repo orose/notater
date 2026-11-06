@@ -37,4 +37,4 @@ export {
   type KeyResult,
   type PendingSequence,
 } from './key-engine';
-export { hasOpenModal, isSpaceActivationTarget, isTextEntryTarget } from './dom-guard';
+export { effectiveKeyTarget, hasOpenModal, isSpaceActivationTarget, isTextEntryTarget } from './dom-guard';

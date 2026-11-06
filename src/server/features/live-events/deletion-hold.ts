@@ -1,4 +1,3 @@
-import { appendFileSync } from 'node:fs';
 /** Klassifisering av én bunt vault-relative disk-stier (gjøres mot disk og gjeldende snapshot). */
 export interface BatchClassification {
   /** Stier som ikke lenger finnes på disk (slettede filer eller mapper). */
@@ -13,7 +12,7 @@ export interface BatchClassification {
 }
 
 export interface DeletionHoldOptions {
-  /** Hvor lenge en sletting holdes tilbake (PO-78: 300 ms). 0 = av. */
+  /** Hvor lenge en umatchet sletting holdes tilbake (PO-78; runtime bruker 1000 ms). 0 = av. */
   readonly windowMs: number;
   /** `held` = slettinger som allerede holdes tilbake (før denne bunten). */
   readonly classify: (paths: readonly string[], held: readonly string[]) => Promise<BatchClassification>;
@@ -70,7 +69,6 @@ export function createDeletionHold(options: DeletionHoldOptions): DeletionHold {
       schedule(async () => {
         if (closed) return;
         const { deleted, present, release: matched } = await options.classify(paths, [...held]);
-        appendFileSync('/tmp/claude-0/-home-user-notater/42d2d3a4-f504-5d51-84b3-820da0930dd8/scratchpad/batches.log', `${process.pid} ${Date.now()} ${JSON.stringify({ deleted, present, matched, held: [...held] })}\n`);
         if (closed) return;
         // En sti som finnes igjen (f.eks. atomisk lagring) er ikke lenger slettet.
         for (const path of present) held.delete(path);

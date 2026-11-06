@@ -10,6 +10,7 @@ import {
   WHICH_KEY_DELAY_MS,
   chordCandidates,
   createKeyEngine,
+  effectiveKeyTarget,
   formatKeySequence,
   hasOpenModal,
   isSpaceActivationTarget,
@@ -220,8 +221,10 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
       }
       const candidates = chordCandidates(event);
       if (candidates.length === 0) return;
-      const typing = isTextEntryTarget(event.target);
-      if (!typing && candidates[0] === LEADER_KEY && isSpaceActivationTarget(event.target)) {
+      // PO-81: tast rett etter at en dialog er lukket med Esc virker med en gang (fokus kan henge igjen i den).
+      const target = effectiveKeyTarget(event.target);
+      const typing = isTextEntryTarget(target);
+      if (!typing && candidates[0] === LEADER_KEY && isSpaceActivationTarget(target)) {
         engine.cancel();
         return;
       }

@@ -163,18 +163,19 @@ streng `Content-Security-Policy: sandbox; default-src 'none'; img-src 'self'; st
 I tillegg `: ping` (kommentar) hvert **15.** s (PO-31). `changes[].path` er `DocPath`.
 
 **Omdøping/flytting (PO-49, tillegg):** når en fil forsvinner og en ny dukker opp i samme debounce-vindu
-(150 ms) – eller i en senere bunt innen **300 ms** etter slettingen (PO-78, se under) – og de er samme fil – samme inode (vanlig `rename`/flytting) eller identisk innhold (SHA-1, f.eks. kopi +
+(150 ms) – eller i en senere bunt innen **1 s** etter slettingen (PO-78, se under) – og de er samme fil – samme inode (vanlig `rename`/flytting) eller identisk innhold (SHA-1, f.eks. kopi +
 sletting fra et synkverktøy) – sendes som før `removed` (gammel sti) og `added` (ny sti), og **i tillegg**
 `{ type: 'renamed', path: <ny>, from: <gammel>, to: <ny> }`. Eldre klienter kan ignorere `renamed`. Hver fil
 inngår i høyst ett par. Eksempel: `[{removed, "domene/Kunde"}, {added, "kunder/Kunde"}, {renamed, path:"kunder/Kunde", from:"domene/Kunde", to:"kunder/Kunde"}]`. Klienten: ved `changed` → `invalidateQueries(['vault', vaultId])`.
 Ved `ready` med `revision` ≠ sist kjente → samme invalidering.
 
 **Slettinger holdes tilbake (PO-78):** chokidar melder `unlink` straks, mens `add` venter på at skrivingen
-er ferdig, så en omdøping kan havne i to påfølgende bunter. Serveren holder derfor en sletting tilbake i
-inntil 300 ms. Kommer det en bunt med en ny fil i mellomtiden, sendes slettingen i **samme** `changed`-hendelse
-(samme revisjon) som den nye fila, og paringen over gjelder. Ellers sendes `removed` alene når vinduet går ut.
-Konsekvens for klienter: `removed` uten tilhørende ny fil kommer inntil ~300 ms senere enn før. `added` og
-`changed` forsinkes ikke.
+er ferdig, så en omdøping kan havne i to påfølgende bunter. Serveren holder derfor en sletting tilbake. Så
+snart det kommer en ny fil som er samme fil (samme inode og størrelse, eller samme innhold), sendes slettingen
+i **samme** `changed`-hendelse (samme revisjon) som den nye fila, og paringen over gjelder. Andre nye filer i
+mellomtiden slipper den ikke løs. Kommer det ingen slik fil innen **1 s** (vinduet starter på nytt ved hver
+bunt med nye slettinger), sendes `removed` alene. Konsekvens for klienter: en ren sletting kommer inntil ~1 s
+senere enn før. `added` og `changed` forsinkes ikke.
 
 **Oppstart (BUG-012):** `ready` (og vaultets status `ready`) kommer først når både indekseringen og
 filovervåkerens første skanning er ferdige, og endringer gjort i mellomtiden er tatt med i revisjon 1.

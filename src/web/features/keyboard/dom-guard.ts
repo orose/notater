@@ -35,3 +35,15 @@ export function isSpaceActivationTarget(target: EventTarget | null): boolean {
 export function hasOpenModal(doc: Document): boolean {
   return doc.querySelector('dialog[open], [aria-modal="true"]') !== null;
 }
+
+/**
+ * Målet tastetrykket skal vurderes mot (PO-81). Når en dialog lukkes med Esc, kan fokus et øyeblikk bli
+ * liggende på et element i den lukkede dialogen (f.eks. palettens søkefelt) til `close`-hendelsen har gitt
+ * fokus tilbake. Et slikt mål regnes som dokumentet, så neste tast (vim: Esc + j i én bevegelse) virker
+ * med en gang i stedet for å bli tolket som skriving i et usynlig tekstfelt.
+ */
+export function effectiveKeyTarget(target: EventTarget | null, doc: Document = document): EventTarget | null {
+  const element = asElement(target);
+  if (element?.closest('dialog:not([open])')) return doc.body;
+  return target;
+}

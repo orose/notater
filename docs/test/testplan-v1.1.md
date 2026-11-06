@@ -45,7 +45,7 @@ eller endrer søkefasiten.
 | F7 (AK-06/07) | samme | TC-F7-01 `j/k`; -02 `Ctrl d/u`; -03 `G`/`gg`; -04 `H/L`; -05 Space ruller ikke; -06 which-key etter ~400 ms + Esc; -07 rask `Space w` uten hint; -08 `g Esc g`; -09 tidsavbrudd; -10 ukjent fortsettelse; -11 reserverte taster gjør ingenting; -12 redusert bevegelse; -13 `⌘.`/`Space m`; -14 `Space t` | |
 | AK-1.1-10 P1 | `v1.1-ak10-12-p1-a11y.spec.ts` | TC-10-01 frontmatter-feller ignoreres (aktiv); -02 alt i bruk → sjekksum av `lesekomfort/` + mtime uendret, bare GET/HEAD; -03 valg kun i `localStorage`, ikke URL | |
 | AK-1.1-11 Regresjon | hele suiten | Se §5 | |
-| AK-1.1-12 a11y | `v1.1-ak10-12-p1-a11y.spec.ts` | TC-12-01 axe lys/mørk: Utseende, diskré rapport, foldet notat, zen; -02 palett `:`, oversikt, which-key; -03 fold-knapp (rolle, `aria-expanded`, fokus beholdes); -04 Tab til nye kontroller + synlig fokus; -05 toast `role=status` uten fokus; -06 zen beholder `main` og hopp-lenke | Manuell VoiceOver-stikkprøve (nivåer i diskré modus, fold-knapp) |
+| AK-1.1-12 a11y | `v1.1-ak10-12-p1-a11y.spec.ts` | TC-12-01 axe lys/mørk: Utseende, diskré rapport, foldet notat, zen; -02 palett `:`, oversikt, which-key; -03 fold-knapp (rolle, `aria-expanded`, fokus beholdes); -04 tastatur til nye kontroller + synlig fokus (radiogruppen «Lesebredde»: ett tab-stopp, piltaster flytter og velger, PO-80); -05 toast `role=status` uten fokus; -06 zen beholder `main` og hopp-lenke | Manuell VoiceOver-stikkprøve (nivåer i diskré modus, fold-knapp) |
 
 ## 4. Kanttilfeller
 

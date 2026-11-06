@@ -118,6 +118,21 @@ describe('CommandProvider: tastatur → kommandoer', () => {
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
+  it('PO-81: Esc lukker paletten, og neste tast virker med en gang – også før fokus er gitt tilbake', () => {
+    setup();
+    key(':', { shiftKey: true });
+    const input = screen.getByRole('combobox');
+    const dialog = input.closest('dialog') as HTMLDialogElement;
+    // Esc-standardhandlingen lukker dialogen synkront; `close`-hendelsen (som gir fokus tilbake) kommer senere.
+    dialog.removeAttribute('open');
+    const event = new KeyboardEvent('keydown', { key: 'j', bubbles: true, cancelable: true });
+    act(() => {
+      input.dispatchEvent(event);
+    });
+    expect(scrollTo).toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
   it('Space på en knapp beholder sin vanlige funksjon (ikke leader); på en lenke er den leader', () => {
     setup();
     const button = screen.getByRole('button', { name: 'Knapp' });

@@ -6,7 +6,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, openNote, test } from './support/guards';
 import {
   artikkel,
@@ -143,22 +143,45 @@ test.describe('AK-1.1-12 tilgjengelighet (axe 0 brudd, lys og mørk)', () => {
     await expect(knapp).toBeFocused();
   });
 
-  test('TC-12-04 nye kontroller i Utseende er nåbare med Tab og har synlig fokus', async ({ page, isMobile }) => {
+  test('TC-12-04 nye kontroller i Utseende er nåbare med tastatur og har synlig fokus (radiogruppe: Tab + piltaster, PO-80)', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur');
     await openNote(page, fasit.rapport.sti);
     const dialog = await åpneUtseende(page);
-    const mål = [dialog.getByRole('radio', { name: 'Full bredde' }), dialog.getByLabel('Diskré embedding – dette notatet'), dialog.getByRole('button', { name: 'Hurtigtaster' })];
-    for (const m of mål) {
-      let funnet = false;
+    const harFokus = (m: Locator) => m.evaluate((el) => el === document.activeElement || el.contains(document.activeElement));
+    const synligFokus = async (hva: string) => {
+      const outline = await page.evaluate(() => getComputedStyle(document.activeElement as Element).outlineStyle);
+      expect(outline, `synlig fokus: ${hva}`).not.toBe('none');
+    };
+    /** Tab fremover til `m` har fokus (maks 40 trykk). */
+    const tabTil = async (m: Locator, hva: string) => {
+      let funnet = await harFokus(m);
       for (let i = 0; i < 40 && !funnet; i++) {
         await page.keyboard.press('Tab');
-        funnet = await m.evaluate((el) => el === document.activeElement || el.contains(document.activeElement));
+        funnet = await harFokus(m);
       }
-      expect(funnet, await m.evaluate((el) => el.outerHTML.slice(0, 80))).toBe(true);
-      const outline = await page.evaluate(() => getComputedStyle(document.activeElement as Element).outlineStyle);
-      expect(outline).not.toBe('none');
-      await page.keyboard.press('Shift+Tab'); // start søket på nytt fra et kjent sted
-    }
+      expect(funnet, `nåbar med Tab: ${hva}`).toBe(true);
+      await synligFokus(hva);
+    };
+
+    // Radiogruppen har ett tab-stopp (den valgte knappen); piltaster flytter og velger innen gruppen.
+    const gruppe = dialog.getByRole('group', { name: 'Lesebredde' });
+    const lese = gruppe.getByRole('radio', { name: 'Leseoptimalisert' });
+    const full = gruppe.getByRole('radio', { name: 'Full bredde' });
+    await expect(lese).toBeChecked();
+    await tabTil(lese, 'Leseoptimalisert (valgt radio = gruppens tab-stopp)');
+    await page.keyboard.press('ArrowDown');
+    await expect(full).toBeFocused();
+    await expect(full).toBeChecked();
+    await synligFokus('Full bredde');
+    await page.keyboard.press('ArrowUp');
+    await expect(lese).toBeFocused();
+    await expect(lese).toBeChecked();
+    // Tab fra gruppen hopper over den ikke-valgte radioknappen.
+    await page.keyboard.press('Tab');
+    await expect(full).not.toBeFocused();
+
+    await tabTil(dialog.getByLabel('Diskré embedding – dette notatet'), 'Diskré embedding');
+    await tabTil(dialog.getByRole('button', { name: 'Hurtigtaster' }), 'Hurtigtaster');
   });
 
   test('TC-12-05 toast ved diskré-bytte annonseres (role=status) og stjeler ikke fokus', async ({ page, isMobile }) => {
