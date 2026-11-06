@@ -76,4 +76,12 @@ describe('Embed', () => {
     expect(source).toHaveAttribute('href', '/v/test/lesekomfort/kilder/Driftsstatus#%5Eoppetid');
     expect(container.querySelector('.embed.is-diskret')?.lastElementChild).toBe(source);
   });
+
+  it('PO-79: feilkort har blokk-ikon, etiketten «Innebygd notat» og rollen note', () => {
+    wrap(<Embed vaultId="test" data-status="missing" data-raw="![[Finnes ikke]]" />);
+    const card = screen.getByRole('note');
+    expect(card).toHaveClass('embed-state');
+    expect(card.querySelector('svg')).not.toBeNull();
+    expect(card).toHaveTextContent(/^Innebygd notatFant ikke «Finnes ikke»/);
+  });
 });

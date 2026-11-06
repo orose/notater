@@ -3,6 +3,7 @@ import { Children, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { VaultId } from '../../../shared/api-types';
 import { docUrl } from '../../shared/api';
+import { Icon } from '../../shared/ui/Icon';
 
 interface EmbedProps {
   readonly vaultId: VaultId;
@@ -80,35 +81,44 @@ export function Embed(props: EmbedProps) {
 
   if (status === 'cycle') {
     return (
-      <div className="mini-state embed-state">
-        <strong>Innbygging stoppet: syklus</strong>
+      <EmbedState title="Innbygging stoppet: syklus">
         {link ? <>Notatet {link} bygger inn seg selv. Det vises som lenke i stedet.</> : 'Notatet vises som lenke i stedet.'}
-      </div>
+      </EmbedState>
     );
   }
 
   if (status === 'depth-limit') {
-    return (
-      <div className="mini-state embed-state">
-        <strong>Innbygging stoppet: for mange nivåer</strong>
-        {link ? <>Åpne {link} for å lese videre.</> : null}
-      </div>
-    );
+    return <EmbedState title="Innbygging stoppet: for mange nivåer">{link ? <>Åpne {link} for å lese videre.</> : null}</EmbedState>;
   }
 
   const missing = embedTargetText(props['data-raw'] ?? title);
   if (IMAGE.test(missing.split('#')[0] ?? '')) {
     return (
-      <div className="mini-state embed-state">
-        <strong>Bildet finnes ikke: {missing}</strong>
+      <EmbedState label="Innebygd bilde" title={`Bildet finnes ikke: ${missing}`}>
         Sjekk filnavnet og at bildet ligger i vaultet.
-      </div>
+      </EmbedState>
     );
   }
   return (
-    <div className="mini-state embed-state">
-      <strong>Fant ikke «{missing}»</strong>
-      Notatet eller seksjonen finnes ikke i vaultet.
+    <EmbedState title={`Fant ikke «${missing}»`}>
+      Notatet eller seksjonen finnes ikke i vaultet. Når du oppretter det i Obsidian, dukker innholdet opp her.
+    </EmbedState>
+  );
+}
+
+/**
+ * Feilkort for embeds (designsystem §11.4, PO-79): blokk-ikon, etiketten «Innebygd notat», fet tittel og én
+ * setning. Identisk i rammet og diskré modus – kortet skal skille seg ut nettopp når resten glir inn.
+ */
+function EmbedState({ label = 'Innebygd notat', title, children }: { readonly label?: string; readonly title: string; readonly children?: ReactNode }) {
+  return (
+    <div className="mini-state embed-state" role="note">
+      <Icon name="block" />
+      <div>
+        <span className="label">{label}</span>
+        <strong>{title}</strong>
+        {children}
+      </div>
     </div>
   );
 }

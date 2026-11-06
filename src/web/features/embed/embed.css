@@ -19,6 +19,12 @@
 [data-type="tidsskrift"] .embed { border-radius: 0; background: transparent; border: 0; border-left: 1px solid var(--color-rule-strong); box-shadow: inset 3px 0 0 var(--color-bg), inset 4px 0 0 var(--color-rule-strong); padding-left: var(--space-5); }
 [data-type="tidsskrift"] .embed-head { border-bottom: 0; padding-bottom: 0; }
 .embed-state { margin-block: var(--space-5) !important; }
+/* PO-79: feilkort med ikon og etikett (designsystem §11.4). Alltid synlig, også i diskré modus. */
+.embed-state { display: grid; grid-template-columns: auto 1fr; gap: 0.15rem var(--space-3); align-items: start; }
+.embed-state > svg { margin-top: 0.2em; color: var(--color-muted); }
+.embed-state strong { margin: 0 0 0.2em !important; }
+.embed-state .label { display: block; margin-bottom: 0.15rem; }
+.embed-state code { font-family: var(--font-mono); font-size: 0.92em; }
 
 /* ---------- v1.1 F2 Diskré embedding (designsystem §11.4, prototype-v1.1.html) ----------
    Ingen ramme, etikett eller knapp; innholdet glir inn i brødteksten. Klamme og kildelenke ved hover/fokus. */
