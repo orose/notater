@@ -1,0 +1,14 @@
+filters:
+  and:
+    - file.inFolder("domene")
+    - file.ext == "md"
+    - file.name != "_MOC"
+    - '!file.hasTag("kafka-topic")'
+views:
+  - type: table
+    name: Domene
+    order:
+      - file.name
+    sort:
+      - property: file.name
+        direction: ASC

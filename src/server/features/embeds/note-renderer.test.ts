@@ -1,0 +1,216 @@
+import type { Element, Root } from 'hast';
+import { beforeAll, describe, expect, it } from 'vitest';
+import type { CodeHighlighter } from '../code-highlight';
+import { createLinkResolver } from '../links';
+import { byTag, findAll, testHighlighter, textOf } from '../../test-support/render-fixtures';
+import { splitFrontmatter } from '../markdown-syntax';
+import { describeVaultPath, extractNoteMeta } from '../vault-index';
+import type { IndexedNote, VaultFile } from '../vault-index';
+import { createNoteRenderer } from './note-renderer';
+
+let highlighter: CodeHighlighter;
+beforeAll(async () => {
+  highlighter = await testHighlighter();
+}, 30_000);
+
+const SOURCES: Record<string, string> = {
+  'Embed-test.md': '![[Syklus A]]\n\n![[Kafka#Partisjoner]]\n\n![[Kafka#^offset-def]]\n\n![[Finnes ikke]]\n\n![[Kafka#Finnes ikke]]',
+  'Syklus A.md': 'Jeg er A\n\n![[Syklus B]]',
+  'Syklus B.md': 'Jeg er B\n\n![[Syklus A]]',
+  'Kafka.md': '---\naliases: [Apache Kafka]\n---\n# Kafka\n## Partisjoner\nDel.\n### Antall\nSeks.\n## Offset\nEn offset. ^offset-def',
+  'Selv.md': '![[Selv]]\n\n![[#Annen]]\n\n## Annen\nAndre.',
+  'Dyp 1.md': '![[Dyp 2]]',
+  'Dyp 2.md': '![[Dyp 3]]',
+  'Dyp 3.md': '![[Dyp 4]]',
+  'Dyp 4.md': '![[Dyp 5]]',
+  'Dyp 5.md': '![[Dyp 6]]',
+  'Dyp 6.md': '![[Dyp 7]]',
+  'Dyp 7.md': 'Bunn',
+  'Bilder.md': '![[logo.svg|Logo|120]]\n\n![Rel](attachments/logo.svg)\n\n![[mangler.png]]\n\n![[Oppgaver.base#Kanban]]\n\n![[Tegning.canvas]]\n\n```base\nviews: []\n```',
+  'Garanti.md': '## Vert\n\n![[Kafka]]\n\n![[Kafka#Partisjoner]]\n\n![[Kafka#^offset-def]]',
+  'Lenker.md': '[[Kafka#Offset]] [[Apache Kafka]] [[Finnes ikke]] [[#Annen]]\n\n## Annen',
+  'Størrelser.md': [
+    '![[foto.jpg]]',
+    '![[foto.jpg|300]]',
+    '![[foto.jpg|300x300]]',
+    '![[foto.jpg|Ferie|600x100]]',
+    '![Ferie](attachments/foto.jpg)',
+    '![Ferie|150](attachments/foto.jpg)',
+    '<img src="attachments/foto.jpg" alt="Html" width="240">',
+    '<img src="attachments/foto.jpg" alt="Html" height="40">',
+    '![[ukjent.png]]',
+    '![[ukjent.png|50]]',
+    '![[ukjent.png|50x60]]',
+  ].join('\n\n'),
+};
+const OTHER = ['attachments/logo.svg', 'Oppgaver.base', 'Tegning.canvas', 'attachments/foto.jpg', 'attachments/ukjent.png'];
+/** Dimensjoner slik indeksen har lest dem fra filheaderen (PO-71); `null` = ukjent/ødelagt. */
+const IMAGE_SIZES: Record<string, { width: number; height: number } | null> = {
+  'attachments/foto.jpg': { width: 1200, height: 800 },
+  'attachments/ukjent.png': null,
+};
+const splitBody = (source: string): string => splitFrontmatter(source).body;
+
+function buildVault() {
+  const notes = new Map<string, IndexedNote>();
+  const files: VaultFile[] = [];
+  for (const [path, source] of Object.entries(SOURCES)) {
+    const file = { ...describeVaultPath(path), diskPath: path, size: 0, mtimeMs: 0, ctimeMs: 0 };
+    files.push(file);
+    notes.set(path, { file, meta: extractNoteMeta(source), body: splitBody(source) });
+  }
+  for (const path of OTHER) {
+    const imageSize = IMAGE_SIZES[path];
+    files.push({ ...describeVaultPath(path), diskPath: path, size: 0, mtimeMs: 0, ctimeMs: 0, ...(imageSize !== undefined ? { imageSize } : {}) });
+  }
+  const aliases = new Map([...notes].map(([p, n]) => [p, n.meta.aliases]));
+  const renderer = createNoteRenderer({
+    vaultId: 'test',
+    highlighter,
+    links: createLinkResolver(files, aliases),
+    getNote: (filePath) => notes.get(filePath) ?? null,
+  });
+  return { renderer, file: (p: string) => files.find((f) => f.filePath === p)! };
+}
+
+const embeds = (root: Root): Element[] => findAll(root, byTag('vr-embed'));
+
+describe('createNoteRenderer – embeds', () => {
+  it('syklus A → B → A stoppes (QA-EMB-05)', () => {
+    const { renderer, file } = buildVault();
+    const all = embeds(renderer.renderNote(file('Syklus A.md')).content);
+    expect(all.map((e) => e.properties.dataStatus)).toEqual(['ok', 'cycle']);
+    expect(all[0]!.properties).toMatchObject({ dataTarget: 'Syklus B', dataTitle: 'Syklus B' });
+  });
+
+  it('fra Embed-test: A → B → stopp', () => {
+    const { renderer, file } = buildVault();
+    const all = embeds(renderer.renderNote(file('Embed-test.md')).content);
+    expect(all.slice(0, 3).map((e) => [e.properties.dataTarget, e.properties.dataStatus])).toEqual([
+      ['Syklus A', 'ok'],
+      ['Syklus B', 'ok'],
+      ['Syklus A', 'cycle'],
+    ]);
+  });
+
+  it('seksjon og blokk (QA-EMB-02/03)', () => {
+    const { renderer, file } = buildVault();
+    const all = embeds(renderer.renderNote(file('Embed-test.md')).content);
+    const section = all.find((e) => e.properties.dataAnchor === 'partisjoner')!;
+    expect(section.properties.dataTitle).toBe('Kafka › Partisjoner');
+    expect(textOf(section)).toContain('Seks.');
+    expect(textOf(section)).not.toContain('offset');
+    const block = all.find((e) => e.properties.dataAnchor === '^offset-def')!;
+    expect(textOf(block).trim()).toBe('En offset.');
+  });
+
+  it('manglende notat og manglende seksjon gir missing (QA-EMB-08)', () => {
+    const { renderer, file } = buildVault();
+    const missing = embeds(renderer.renderNote(file('Embed-test.md')).content).filter((e) => e.properties.dataStatus === 'missing');
+    expect(missing.map((e) => e.properties.dataRaw)).toEqual(['![[Finnes ikke]]', '![[Kafka#Finnes ikke]]']);
+  });
+
+  it('selv-embed er syklus, annen seksjon i samme notat er lov (QA-EMB-06)', () => {
+    const { renderer, file } = buildVault();
+    const all = embeds(renderer.renderNote(file('Selv.md')).content);
+    expect(all.map((e) => e.properties.dataStatus)).toEqual(['cycle', 'ok']);
+  });
+
+  it('maks dybde 5 (PO-15)', () => {
+    const { renderer, file } = buildVault();
+    const all = embeds(renderer.renderNote(file('Dyp 1.md')).content);
+    expect(all.map((e) => e.properties.dataStatus)).toEqual(['ok', 'ok', 'ok', 'ok', 'ok', 'depth-limit']);
+  });
+
+  it('bilder får width/height fra indeksen, med Obsidians størrelsessyntaks og bevart sideforhold (PO-71)', () => {
+    const { renderer, file } = buildVault();
+    const imgs = findAll(renderer.renderNote(file('Størrelser.md')).content, byTag('img'));
+    const sizes = imgs.map((img) => [img.properties.alt, img.properties.width, img.properties.height]);
+    expect(sizes).toEqual([
+      ['foto.jpg', 1200, 800], // ![[foto.jpg]]: egen størrelse
+      ['foto.jpg', 300, 200], // |300: høyden følger
+      ['foto.jpg', 300, 200], // |300x300: passer inni boksen
+      ['Ferie', 150, 100], // |alt|600x100
+      ['Ferie', 1200, 800], // ![alt](sti)
+      ['Ferie', 150, 100], // ![alt|150](sti)
+      ['Html', 240, 160], // <img width>
+      ['Html', 60, 40], // <img height>
+      ['ukjent.png', undefined, undefined], // ukjent størrelse: ingen attributter
+      ['ukjent.png', 50, undefined],
+      ['ukjent.png', 50, 60],
+    ]);
+    expect(imgs[0]!.properties.src).toBe('/api/vaults/test/assets?path=attachments%2Ffoto.jpg');
+  });
+
+  it('bilder, base, canvas og inline-base', () => {
+    const { renderer, file } = buildVault();
+    const result = renderer.renderNote(file('Bilder.md'));
+    const imgs = findAll(result.content, byTag('img'));
+    expect(imgs[0]!.properties).toMatchObject({
+      src: '/api/vaults/test/assets?path=attachments%2Flogo.svg',
+      alt: 'Logo',
+      width: 120,
+    });
+    expect(imgs[1]!.properties).toMatchObject({ alt: 'Rel' });
+    expect(embeds(result.content)[0]!.properties).toMatchObject({ dataStatus: 'missing', dataRaw: '![[mangler.png]]' });
+    const bases = findAll(result.content, byTag('vr-base'));
+    expect(bases.map((b) => b.properties)).toEqual([
+      { dataBaseId: 'base-1', dataSourcePath: 'Oppgaver.base', dataView: 'Kanban' },
+      { dataBaseId: 'base-2' },
+    ]);
+    expect(result.bases).toEqual({
+      'base-1': { kind: 'file', filePath: 'Oppgaver.base', view: 'Kanban' },
+      'base-2': { kind: 'inline', source: 'views: []', hostFilePath: 'Bilder.md' },
+    });
+    expect(findAll(result.content, byTag('vr-unsupported'))[0]!.properties).toMatchObject({ dataKind: 'canvas', dataTarget: 'Tegning.canvas' });
+  });
+});
+
+describe('createNoteRenderer – lenker', () => {
+  it('ankre, aliasforslag og lokale lenker', () => {
+    const { renderer, file } = buildVault();
+    const links = findAll(renderer.renderNote(file('Lenker.md')).content, byTag('a'));
+    expect(links[0]!.properties).toMatchObject({ dataVrLink: 'internal', dataVrTarget: 'Kafka', dataVrAnchor: 'offset', href: '/v/test/Kafka#offset' });
+    expect(links[1]!.properties).toMatchObject({ dataVrLink: 'unresolved', dataVrSuggest: 'Kafka' });
+    expect(links[2]!.properties).toMatchObject({ dataVrLink: 'unresolved' });
+    expect(links[2]!.properties.dataVrSuggest).toBeUndefined();
+    expect(links[3]!.properties).toMatchObject({ dataVrTarget: 'Lenker', dataVrAnchor: 'annen', href: '/v/test/Lenker#annen' });
+  });
+
+  it('blokkanker beholder ^ i href', () => {
+    const { renderer } = buildVault();
+    expect(renderer.documentUrl('a b/Kafka', '^offset-def')).toBe('/v/test/a%20b/Kafka#^offset-def');
+  });
+});
+
+describe('createNoteRenderer – garantier for innebygd innhold (api.md, ADR-009)', () => {
+  const isHeading = (el: Element) => /^h[1-6]$/.test(el.tagName);
+  const firstElement = (el: Element) => el.children.find((c): c is Element => c.type === 'element');
+
+  it('notat-, seksjons- og blokkembed kan skilles og har kildens overskriftsnivåer uten id', () => {
+    const { renderer, file } = buildVault();
+    const result = renderer.renderNote(file('Garanti.md'));
+    const [note, section, block] = embeds(result.content);
+    expect(note!.properties.dataAnchor).toBeUndefined();
+    expect(note!.properties.dataTitle).toBe('Kafka');
+    expect(findAll(note!, isHeading).map((h) => [h.tagName, h.properties.id])).toEqual([
+      ['h1', undefined],
+      ['h2', undefined],
+      ['h3', undefined],
+      ['h2', undefined],
+    ]);
+    expect(section!.properties.dataAnchor).toBe('partisjoner');
+    expect(firstElement(section!)?.tagName).toBe('h2');
+    expect(textOf(firstElement(section!)!)).toBe('Partisjoner');
+    expect(String(block!.properties.dataAnchor)).toMatch(/^\^/);
+    expect(findAll(block!, isHeading)).toEqual([]);
+  });
+
+  it('toc har bare vertens overskrifter, og ingen id starter med ~', () => {
+    const { renderer, file } = buildVault();
+    const result = renderer.renderNote(file('Garanti.md'));
+    expect(result.toc.map((t) => t.text)).toEqual(['Vert']);
+    const ids = findAll(result.content, (el) => typeof el.properties.id === 'string').map((el) => String(el.properties.id));
+    expect(ids.some((id) => id.startsWith('~'))).toBe(false);
+  });
+});

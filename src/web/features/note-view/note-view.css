@@ -1,0 +1,224 @@
+/* Notat-header, brødtekst-typografi, lenker, sidenoter, tabeller (designsystem §7.2–7.4, §7.8). */
+
+/* ---------- Notat-header ---------- */
+.note-head { margin-bottom: var(--space-7); }
+.crumbs { display: flex; flex-wrap: wrap; gap: 0.35em; align-items: baseline; margin: 0 0 var(--space-4); }
+.crumbs .crumb { display: inline-flex; gap: 0.35em; }
+.crumbs .sep { color: var(--color-rule-strong); }
+[data-type="tidsskrift"] .crumbs, [data-type="tidsskrift"] .crumbs.label { color: var(--color-accent); }
+[data-type="terminal"] .crumbs { font-family: var(--font-mono); font-size: 0.78rem; color: var(--color-muted); }
+[data-type="terminal"] .crumbs::before { content: "~/"; color: var(--color-accent); margin-right: -0.35em; }
+
+h1.title {
+  font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--step-5);
+  line-height: var(--leading-tight); letter-spacing: var(--tracking-display);
+  margin: 0 0 var(--space-4); text-wrap: balance; font-optical-sizing: auto; overflow-wrap: break-word;
+}
+[data-type="terminal"] h1.title { letter-spacing: -0.032em; }
+.dek { font-size: var(--step-1); line-height: 1.35; color: var(--color-muted); margin: 0 0 var(--space-6); max-width: 30em; text-wrap: pretty; }
+[data-type="tidsskrift"] .dek { font-style: italic; font-weight: 300; }
+[data-type="terminal"] .dek { font-weight: 400; letter-spacing: -0.01em; }
+
+.head-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3) var(--space-5); margin-top: var(--space-4); }
+.tags { display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; margin: 0; padding: 0; list-style: none; }
+.tag { font-family: var(--font-meta); font-size: 0.78rem; text-decoration: none; color: var(--color-accent); line-height: 1.2; }
+button.tag:hover { text-decoration: underline; }
+[data-type="tidsskrift"] .tag { font-family: var(--font-body); font-style: italic; font-size: 0.95rem; }
+[data-type="terminal"] .tag { background: var(--color-tag-bg); padding: 0.25em 0.5em; border-radius: var(--radius-s); }
+.meta { font-family: var(--font-meta); font-size: 0.75rem; letter-spacing: var(--tracking-meta); color: var(--color-muted); margin: 0; font-variant-numeric: tabular-nums; }
+
+/* ---------- Brødtekst ---------- */
+.prose { counter-reset: fig; hanging-punctuation: first allow-end last; overflow-wrap: break-word; }
+.prose > * + * { margin-top: var(--space-flow); }
+.prose > :first-child { margin-top: 0; }
+.prose p, .callout-body, .embed-body { text-wrap: pretty; hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 8 4 3; -webkit-hyphenate-limit-before: 4; -webkit-hyphenate-limit-after: 3; }
+.prose p { margin: 0; }
+.prose a, .prose code, .prose .callout-sub, .prose button { hyphens: manual; -webkit-hyphens: manual; }
+.prose strong { font-weight: var(--weight-strong); }
+.prose h1, .prose h4, .prose h5, .prose h6 { font-family: var(--font-display); line-height: var(--leading-heading); margin: var(--space-6) 0 var(--space-3); }
+.prose h1 { font-size: var(--step-3); font-weight: var(--weight-h2); }
+.prose h4 { font-size: var(--step-0); font-weight: var(--weight-strong); }
+.prose h5, .prose h6 { font-size: var(--step-0); font-weight: var(--weight-strong); color: var(--color-muted); }
+.prose h2 {
+  position: relative;
+  font-family: var(--font-display); font-weight: var(--weight-h2); font-size: var(--step-3);
+  line-height: var(--leading-heading); letter-spacing: calc(var(--tracking-display) * 0.6);
+  margin: var(--space-section) 0 var(--space-4); text-wrap: balance;
+}
+.prose h3 {
+  font-family: var(--font-display); font-weight: var(--weight-h3); font-style: var(--style-h3); font-size: var(--step-1);
+  line-height: var(--leading-heading); margin: var(--space-6) 0 var(--space-3);
+}
+.prose h2 + *, .prose h3 + *, .prose h4 + * { margin-top: 0; }
+.prose > h2:first-child { margin-top: 0; }
+/* §-nummer beregnes av buildOutline (data-vr-sec, AR-1.1-19); CSS-telleren er fjernet. */
+[data-type="tidsskrift"] .prose h2[data-vr-sec]::before {
+  content: "§\2009" attr(data-vr-sec); position: absolute; right: calc(100% + 1.1rem); top: 0.5em;
+  font-family: var(--font-body); font-style: italic; font-size: 1.05rem; font-weight: 400; letter-spacing: 0; color: var(--color-accent); white-space: nowrap;
+}
+[data-type="terminal"] .prose > h2 { padding-top: var(--space-4); border-top: 1px solid var(--color-rule); }
+[data-type="terminal"] .prose h2[data-vr-sec]::before {
+  content: attr(data-vr-sec-pad) " /"; display: block; margin-bottom: var(--space-2);
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; color: var(--color-accent);
+}
+.heading-anchor { opacity: 0; margin-left: 0.3em; color: var(--color-muted) !important; text-decoration: underline dotted !important; text-decoration-thickness: 1px !important; text-underline-offset: 0.15em; font-weight: 400; font-style: normal; transition: opacity var(--dur-fast); }
+h2:hover .heading-anchor, h3:hover .heading-anchor, .heading-anchor:focus-visible { opacity: 1; }
+
+/* Ingress: førstelinje i småkapitéler + initial (kun Tidsskrift) */
+[data-type="tidsskrift"] .prose > p.lede::first-line { font-family: var(--font-sc); letter-spacing: 0.035em; }
+[data-type="tidsskrift"] .prose > p.lede::first-letter {
+  -webkit-initial-letter: var(--dropcap); initial-letter: var(--dropcap);
+  font-family: var(--font-display); font-weight: 300; color: var(--color-accent); margin-right: 0.12em;
+}
+[data-type="terminal"] .prose > p.lede { font-size: var(--step-1); line-height: 1.45; letter-spacing: -0.008em; }
+
+/* PO-19: «Ornamentikk» av = ingen initial, småkapitél-linje eller seksjonsnummer. */
+[data-ornaments="off"] .prose > p.lede::first-line { font-family: inherit; letter-spacing: inherit; }
+[data-ornaments="off"] .prose > p.lede::first-letter { -webkit-initial-letter: normal; initial-letter: normal; font-family: inherit; font-weight: inherit; color: inherit; margin: 0; }
+[data-ornaments="off"] .prose h2[data-vr-sec]::before { content: none !important; }
+[data-ornaments="off"] .toc a::before { content: none !important; }
+
+/* Lister */
+.prose ul, .prose ol { padding-left: 1.4em; }
+.prose li + li { margin-top: 0.35em; }
+.prose li > ul, .prose li > ol { margin-top: 0.35em; }
+.prose li::marker { color: var(--color-accent); }
+[data-type="tidsskrift"] .prose ul { list-style: "–\2002"; }
+@media (min-width: 860px) { [data-type="tidsskrift"] .prose > ul, [data-type="tidsskrift"] .prose > ol { padding-left: 0; } }
+[data-type="terminal"] .prose ul { list-style: square; }
+.prose .contains-task-list { list-style: none; padding-left: 0; }
+.prose .task-list-item { list-style: none; }
+.prose .task-list-item::marker { content: none; }
+.prose .task-list-item > input { accent-color: var(--color-accent); margin: 0 0.6em 0 0; transform: translateY(0.1em); }
+.prose .task-list-item:has(> input:checked) { color: var(--color-muted); text-decoration: line-through; text-decoration-color: var(--color-rule-strong); }
+/* QA-MD-04: [/] «delvis» er ikke ferdig – ingen gjennomstreking, dempet avkrysning. [-] «kansellert» beholder strek. */
+.prose .task-list-item[data-task="/"] { color: inherit; text-decoration: none; }
+.prose .task-list-item[data-task="/"] > input { opacity: 0.45; }
+.prose .contains-task-list .contains-task-list { padding-left: 1.6em; }
+
+/* Lenker */
+.prose a, .link {
+  color: var(--color-link); text-decoration-line: underline; text-decoration-thickness: var(--link-underline);
+  text-underline-offset: var(--link-underline-offset); text-decoration-skip-ink: auto;
+  text-decoration-color: color-mix(in oklab, var(--color-link) 45%, transparent);
+  transition: text-decoration-color var(--dur-fast), background-color var(--dur-fast);
+}
+.prose a:hover, .link:hover { text-decoration-color: currentColor; text-decoration-thickness: 2px; }
+[data-type="tidsskrift"] .prose a.wikilink, [data-type="tidsskrift"] .link.wikilink { color: var(--color-text); text-decoration-color: var(--color-accent); }
+[data-type="tidsskrift"] .prose a.wikilink:hover, [data-type="tidsskrift"] .link.wikilink:hover { color: var(--color-accent); }
+[data-type="terminal"] .prose a.wikilink:hover { background: var(--color-tag-bg); }
+a.external::after { content: "\2009↗"; font-size: 0.8em; color: var(--color-muted); }
+/* PO-8: tvetydig lenke – diskret markør; forklaringen ligger i title. */
+a.wikilink.ambiguous::after { content: "\2009≈"; font-family: var(--font-meta); font-size: 0.72em; vertical-align: super; line-height: 0; color: var(--color-muted); }
+a.wikilink.anchor-missing { text-decoration-style: dashed; }
+
+.wikilink.broken {
+  display: inline; font: inherit; line-height: inherit; padding: 0; margin: 0;
+  color: var(--color-link-broken); cursor: help;
+  text-decoration-line: underline; text-decoration-style: dotted; text-decoration-color: var(--color-link-broken);
+  text-decoration-thickness: 1.5px; text-underline-offset: var(--link-underline-offset);
+}
+.wikilink.broken::after { content: "\2009?"; font-family: var(--font-meta); font-size: 0.72em; vertical-align: super; line-height: 0; }
+.wikilink.broken:hover, .wikilink.broken[aria-expanded="true"] { background: color-mix(in oklab, var(--color-link-broken) 12%, transparent); }
+.broken-wrap { position: relative; }
+.broken-pop {
+  position: absolute; left: 0; top: calc(100% + 0.4rem); z-index: var(--z-popover);
+  display: grid; gap: var(--space-2); justify-items: start; width: max-content; max-width: min(22rem, 80vw);
+  padding: var(--space-3) var(--space-4); font-family: var(--font-ui); font-size: var(--step-n1); font-style: normal; font-weight: 400;
+  line-height: 1.45; letter-spacing: 0; text-transform: none; color: var(--color-text);
+  background: var(--color-bg); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-m);
+  box-shadow: 0 12px 24px -16px color-mix(in oklab, #000 45%, transparent);
+}
+[data-type="terminal"] .broken-pop { box-shadow: 4px 4px 0 0 var(--color-rule-strong); }
+.broken-search { font-family: var(--font-meta); font-size: 0.75rem; color: var(--color-muted); text-decoration: underline; text-underline-offset: 0.2em; }
+.broken-search:hover { color: var(--color-text); }
+
+.inline-tag { font-size: 0.86em; }
+.prose mark { background: var(--color-mark); color: inherit; padding: 0.05em 0.15em; border-radius: var(--radius-s); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.prose :not(pre) > code {
+  font-family: var(--font-mono); font-size: var(--code-size); font-feature-settings: var(--mono-ligatures);
+  background: var(--color-sunken); padding: 0.1em 0.32em; border-radius: var(--radius-s); overflow-wrap: anywhere;
+}
+[data-type="tidsskrift"] .prose :not(pre) > code { background: transparent; padding: 0; color: var(--color-text); font-size: 0.82em; }
+.prose hr { border: 0; text-align: center; margin-block: var(--space-7); }
+.prose hr::after { content: "⁂"; color: var(--color-muted); letter-spacing: 0.5em; }
+.prose kbd { font-size: 0.8em; }
+.prose details:not(.callout) > summary { cursor: pointer; }
+
+/* Blokksitat med hengende anførselstegn */
+.prose blockquote { position: relative; margin: var(--space-6) 0; padding: 0; font-style: italic; font-size: var(--step-1); line-height: 1.4; }
+.prose blockquote > p::before { content: "«"; position: absolute; right: calc(100% + 0.08em); color: var(--color-accent); }
+.prose blockquote > p::after { content: "»"; color: var(--color-accent); }
+.prose blockquote > p + p::before { content: none; }
+[data-type="terminal"] .prose blockquote { font-style: normal; font-weight: 600; letter-spacing: -0.015em; border-left: 3px solid var(--color-accent); padding-left: var(--space-5); }
+[data-type="terminal"] .prose blockquote > p::before { position: static; }
+
+/* Bilder */
+.prose img { max-width: 100%; height: auto; border-radius: var(--radius-m); vertical-align: middle; }
+.img-placeholder {
+  display: inline-flex; align-items: center; gap: 0.5em; padding: 0.35em 0.7em; max-width: 100%;
+  border: 1px dashed var(--color-rule-strong); border-radius: var(--radius-m);
+  font-family: var(--font-meta); font-size: 0.75rem; color: var(--color-muted); vertical-align: middle;
+}
+.img-placeholder code { background: transparent !important; padding: 0 !important; font-size: 1em !important; color: var(--color-muted) !important; }
+.asset-figure { margin: 0; }
+.asset-figure img { max-width: 100%; height: auto; border-radius: var(--radius-m); border: 1px solid var(--color-rule); background: var(--color-surface); }
+
+.empty-note { color: var(--color-muted); font-style: italic; }
+
+/* Kort markering av mål for #anker (ingen ved reduced motion) */
+.target-flash { animation: vr-flash 1.2s var(--ease-out) 1; border-radius: var(--radius-s); }
+@keyframes vr-flash { from { background-color: var(--color-mark); } to { background-color: transparent; } }
+
+/* ---------- Sidenoter (PO-20) ---------- */
+.sn-ref-sup { line-height: 0; }
+.sn-ref-sup a { font-family: var(--font-meta); font-size: 0.68em; color: var(--color-accent); text-decoration: none; padding: 0 0.1em; font-variant-numeric: tabular-nums; }
+.sidenote { display: none; }
+.sidenote .n { font-family: var(--font-meta); font-style: normal; color: var(--color-accent); margin-right: 0.35em; font-size: 0.85em; }
+.footnotes { margin-top: var(--space-7) !important; padding-top: var(--space-3); border-top: 1px solid var(--color-rule); font-size: var(--step-n1); color: var(--color-muted); }
+.footnotes ol { margin: var(--space-2) 0 0; padding-left: 1.4em; }
+.footnotes li + li { margin-top: 0.4em; }
+.footnotes li::marker { font-family: var(--font-meta); color: var(--color-accent); }
+[data-type="tidsskrift"] .footnotes li { font-style: italic; }
+[data-type="terminal"] .footnotes { font-family: var(--font-mono); font-size: 0.78rem; }
+@media (min-width: 1380px) {
+  .sidenote {
+    display: block; float: right; clear: right; width: var(--sidenote-w);
+    margin: 0.3em calc(-1 * (var(--sidenote-w) + 2rem)) var(--space-3) 0;
+    font-size: var(--step-n1); line-height: 1.45; color: var(--color-muted); text-indent: 0;
+  }
+  [data-type="tidsskrift"] .sidenote { font-style: italic; }
+  [data-type="terminal"] .sidenote { font-family: var(--font-mono); font-size: 0.74rem; line-height: 1.55; }
+  .sidenote a { color: inherit; }
+  .footnotes { display: none; }
+  .sn-ref-sup a { pointer-events: none; }
+}
+
+/* ---------- Tabeller (booktabs) ---------- */
+.table-wrap { overflow-x: auto; margin-block: var(--space-6) !important; scrollbar-width: thin; }
+.table-wrap:focus-visible { outline-offset: 4px; }
+.prose table, .base table { border-collapse: collapse; width: 100%; font-size: 0.86em; line-height: 1.4; font-variant-numeric: tabular-nums lining-nums; }
+.prose th, .prose td { text-align: left; vertical-align: top; padding: 0.55em 1em 0.55em 0; }
+.prose th:last-child, .prose td:last-child { padding-right: 0; }
+.prose thead th { font-weight: 500; border-bottom: 1px solid var(--color-text); }
+.prose tbody tr + tr td { border-top: 1px solid var(--color-rule); }
+.prose table { border-top: var(--rule-heavy) solid var(--color-text); border-bottom: var(--rule-heavy) solid var(--color-text); }
+.prose td code { overflow-wrap: normal; }
+.prose th[align="center"], .prose td[align="center"] { text-align: center; }
+.prose th[align="right"], .prose td[align="right"] { text-align: right; }
+[data-type="tidsskrift"] .prose thead th { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: 0.05em; font-size: 1.05em; }
+[data-type="terminal"] .prose table { border: 1px solid var(--color-rule); font-size: 0.84em; }
+[data-type="terminal"] .prose thead th { font-family: var(--font-mono); text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.08em; color: var(--color-muted); background: var(--color-surface); border-bottom: 1px solid var(--color-rule-strong); }
+[data-type="terminal"] .prose th, [data-type="terminal"] .prose td { padding: 0.5em 0.85em; }
+[data-type="terminal"] .prose tbody tr:nth-child(even) td { background: color-mix(in oklab, var(--color-surface) 70%, transparent); }
+[data-type="terminal"] .prose tbody tr + tr td { border-top: 0; }
+
+@media (max-width: 859px) {
+  [data-type="tidsskrift"] .prose h2[data-vr-sec]::before { position: static; display: block; margin-bottom: var(--space-1); }
+  .prose blockquote { padding-left: 0.6em; }
+  .broken-pop { position: fixed; left: var(--space-4); right: var(--space-4); top: auto; bottom: var(--space-4); width: auto; max-width: none; }
+}
+
+/* PO-27: diskret advarsel i notat-headeren (f.eks. ugyldig frontmatter). */
+.note-warn { display: flex; gap: 0.5em; align-items: baseline; margin: var(--space-3) 0 0; font-family: var(--font-meta); font-size: 0.75rem; color: var(--color-muted); }
+.note-warn svg { color: var(--hue-amber); flex: none; }

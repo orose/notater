@@ -1,0 +1,53 @@
+/* Kodeblokk = «figur» (designsystem §5.2). */
+figure { margin: 0; }
+.code {
+  position: relative; margin-block: var(--space-6) !important;
+  background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius-l);
+  font-size: var(--step-n1);
+}
+.code-head {
+  display: flex; align-items: center; gap: var(--space-3); min-height: 2.4rem;
+  padding: 0 var(--space-2) 0 var(--space-4); font-family: var(--font-meta); font-size: 0.75rem; color: var(--color-muted);
+  border-bottom: 1px solid var(--color-rule);
+}
+.code-head .file { color: var(--code-fg); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.code-head .lang { margin-left: auto; text-transform: lowercase; }
+.copy {
+  display: inline-flex; align-items: center; gap: 0.35em; padding: 0.35em 0.6em; border-radius: var(--radius-m);
+  font-family: var(--font-meta); font-size: 0.72rem; color: var(--color-muted);
+}
+.code-head .copy:first-child, .code-head .lang + .copy { margin-left: 0; }
+.code-head > .copy:not(.lang + .copy) { margin-left: auto; }
+.copy:hover { color: var(--code-fg); background: var(--color-hover); }
+.copy[data-state="copied"] { color: var(--hue-green); }
+.code pre {
+  margin: 0; padding: var(--space-4); overflow-x: auto; background: transparent !important;
+  font-family: var(--font-mono); font-size: 0.86rem; line-height: var(--leading-code); tab-size: 4;
+  font-feature-settings: var(--mono-ligatures); scrollbar-width: thin; scrollbar-color: var(--color-rule-strong) transparent;
+}
+.code pre code { display: block; width: max-content; min-width: 100%; font-family: inherit; background: none; padding: 0; }
+[data-type="tidsskrift"] .code {
+  counter-increment: fig; border-radius: 0;
+  border-top: var(--rule-heavy) solid var(--color-text); border-bottom: 1px solid var(--color-rule-strong);
+  margin-left: -1rem; margin-right: calc(-1 * var(--code-wide));
+}
+[data-type="tidsskrift"] .code-head { padding-left: 1rem; }
+[data-type="tidsskrift"] .code-head::before { content: "Fig.\00a0" counter(fig); font-family: var(--font-sc); font-size: 0.95rem; letter-spacing: 0.04em; color: var(--color-accent); flex: none; }
+[data-type="tidsskrift"] .code pre { padding-left: 1rem; }
+[data-type="terminal"] .code { border: 1px solid var(--color-rule); }
+[data-type="terminal"] .code-head { background: color-mix(in oklab, var(--code-bg) 60%, var(--color-surface)); border-radius: var(--radius-l) var(--radius-l) 0 0; }
+[data-type="terminal"] .code-head::before { content: ""; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--color-accent); flex: none; }
+[data-type="terminal"] .code pre code { counter-reset: ln; }
+[data-type="terminal"] .code pre .line::before {
+  counter-increment: ln; content: counter(ln); display: inline-block; min-width: 2ch; margin-right: 1.4ch; text-align: right;
+  color: var(--color-muted); user-select: none;
+}
+/* Inne i callouts og embeds skal figuren ikke stikke ut over rammens høyrekant. */
+[data-type="tidsskrift"] :is(.callout, .embed) .code { margin-right: 0; }
+@media (max-width: 1099px) { [data-type="tidsskrift"] .code { margin-right: 0; } }
+@media (max-width: 859px) {
+  .code { margin-inline: calc(-1 * var(--gutter)) !important; border-radius: 0 !important; border-inline: 0 !important; }
+  .code-head { padding-left: var(--gutter) !important; }
+  .code pre { padding-inline: var(--gutter) !important; }
+  .callout .code, .embed .code { margin-inline: 0 !important; }
+}

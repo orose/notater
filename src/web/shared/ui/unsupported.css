@@ -1,0 +1,14 @@
+/* «Ikke støttet»-kort (designsystem §7.13). */
+.unsupported {
+  margin-block: var(--space-5) !important; display: grid; grid-template-columns: auto 1fr; gap: 0.2rem var(--space-3); align-items: start;
+  padding: var(--space-3) var(--space-4); border: 1px dashed var(--color-rule-strong); border-radius: var(--radius-m);
+  font-size: var(--step-n1); color: var(--color-muted); line-height: 1.45; font-family: var(--font-ui);
+}
+.unsupported svg { margin-top: 0.15em; }
+.unsupported strong { color: var(--color-text); font-weight: var(--weight-strong); }
+.unsupported p { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.unsupported details { grid-column: 2; min-width: 0; }
+.unsupported summary { cursor: pointer; font-family: var(--font-meta); font-size: 0.72rem; width: max-content; }
+.unsupported summary:hover { color: var(--color-text); }
+.unsupported pre { margin: var(--space-2) 0 0; font-family: var(--font-mono); font-size: 0.78rem; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--color-text); background: var(--color-sunken); padding: var(--space-2) var(--space-3); border-radius: var(--radius-s); }
+.latex-inline { color: var(--color-muted); }

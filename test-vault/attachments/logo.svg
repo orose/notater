@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="t">
+  <title id="t">Testlogo – tre noder i en hendelseskjede</title>
+  <rect width="120" height="120" rx="16" fill="#1f2a37"/>
+  <circle cx="30" cy="60" r="12" fill="#e8b04a"/>
+  <circle cx="60" cy="60" r="12" fill="#e8b04a"/>
+  <circle cx="90" cy="60" r="12" fill="#e8b04a"/>
+  <path d="M42 60h6M72 60h6" stroke="#f4efe6" stroke-width="4" stroke-linecap="round"/>
+</svg>

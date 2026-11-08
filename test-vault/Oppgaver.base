@@ -1,0 +1,52 @@
+filters:
+  and:
+    - file.hasTag("task")
+    - file.folder != "templates"
+formulas:
+  team: if(file.hasTag("team"), "Testgjengen", "Mine oppgaver")
+views:
+  - type: table
+    name: Huskeliste
+    filters:
+      and:
+        - status != "done"
+    groupBy:
+      property: formula.team
+      direction: ASC
+    order:
+      - file.name
+      - status
+      - due
+    sort:
+      - property: priority
+        direction: ASC
+      - property: due
+        direction: ASC
+    columnSize:
+      file.name: 553
+      note.status: 101
+  - type: kanban
+    name: Kanban
+    groupBy:
+      property: status
+      direction: ASC
+    groupOrder:
+      - todo
+      - doing
+      - done
+    order:
+      - file.name
+      - file.tags
+  - type: table
+    name: Arkiv
+    filters:
+      and:
+        - status == "done"
+    order:
+      - file.name
+      - status
+      - file.mtime
+    sort:
+      - property: file.mtime
+        direction: ASC
+    indentProperties: false

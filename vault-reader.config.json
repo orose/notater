@@ -1,0 +1,12 @@
+{
+  "$comment": "Lokal overstyring: lag vault-reader.config.local.json (git-ignorert) med samme format.",
+  "port": 4317,
+  "defaultVault": "test",
+  "vaults": [
+    {
+      "id": "test",
+      "name": "Testvault",
+      "path": "./test-vault"
+    }
+  ]
+}

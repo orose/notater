@@ -1,0 +1,113 @@
+/* ==========================================================================
+   Global grunnmur og app-layout. Portert fra docs/design/prototype.html (visuell fasit).
+   Tokens kommer fra docs/design/tokens.css.
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 1.5rem; background: var(--color-bg); }
+body {
+  margin: 0; min-height: 100vh;
+  background: var(--color-bg); color: var(--color-text);
+  font-family: var(--font-body); font-weight: var(--weight-body);
+  font-size: var(--step-0); line-height: var(--leading-body);
+  font-kerning: normal; font-variant-ligatures: common-ligatures;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+}
+::selection { background: var(--color-selection); color: var(--color-text); }
+:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); border-radius: var(--radius-s); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
+button:disabled { cursor: default; opacity: 0.55; }
+svg.i { width: 1.1em; height: 1.1em; flex: none; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.18em; }
+.sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+kbd {
+  font-family: var(--font-meta); font-size: 0.78em; font-weight: 500; line-height: 1;
+  padding: 0.18em 0.4em; border: 1px solid var(--color-rule-strong); border-bottom-width: 2px;
+  border-radius: var(--radius-m); color: var(--color-muted); background: var(--color-surface); white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after { animation-duration: 0ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* «Etikett» – småkapitéler i Tidsskrift, mono-versaler i Terminal */
+.label {
+  font-family: var(--font-sc); font-size: var(--step-n1); letter-spacing: var(--tracking-sc);
+  text-transform: lowercase; font-weight: 500; color: var(--color-muted); line-height: 1.3;
+}
+[data-type="terminal"] .label { text-transform: uppercase; font-size: 0.72rem; font-weight: 500; }
+/* PO-18 Klartekst: etiketter er sperrede versaler i samme font (ingen småkapitéler). */
+[data-type="klartekst"] .label { text-transform: uppercase; font-size: 0.75rem; font-weight: 700; }
+
+.skip-link {
+  position: absolute; left: var(--space-3); top: -10rem; z-index: var(--z-modal);
+  padding: var(--space-2) var(--space-4); background: var(--color-text); color: var(--color-bg);
+  border-radius: var(--radius-m); font-family: var(--font-ui); text-decoration: none;
+}
+.skip-link:focus { top: var(--space-3); }
+
+/* ---------- App-layout ---------- */
+.app { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); min-height: 100vh; }
+.main { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) var(--rail-w); gap: 2.5rem; padding: 0 var(--gutter) 0 calc(var(--gutter) + 1rem); }
+.page { min-width: 0; padding-block: clamp(2rem, 1rem + 4vw, 4.5rem) var(--space-8); font-size: var(--step-0); }
+.page:focus { outline: none; }
+.page.standalone { max-width: 40rem; margin: 0 auto; padding-inline: var(--gutter); }
+.col { max-width: var(--measure); }
+.col-wide { max-width: none; }
+/* PO-43: .base-sider bruker ikke høyre marg – siden tar begge kolonnene. */
+.page-wide { grid-column: 1 / -1; }
+/* PO-43: base-blokker måler seg mot sidekolonnen (100cqw). Bare fra 860 px: containment gjør .page til
+   inneholdende blokk for position: fixed, og mobilens popover for brutte lenker er fixed. */
+@media (min-width: 860px) { .page { container-type: inline-size; } }
+@media (min-width: 1380px) { .col { margin-right: calc(var(--sidenote-w) + 2rem); } .col-wide { margin-right: 0; } }
+
+/* ---------- Knapper, tilstander ---------- */
+.icon-btn { display: inline-flex; align-items: center; gap: 0.4em; padding: 0.4em 0.55em; border-radius: var(--radius-m); color: var(--color-muted); font-size: 0.85rem; font-family: var(--font-ui); }
+.icon-btn:hover { color: var(--color-text); background: var(--color-hover); }
+.btn { display: inline-flex; align-items: center; gap: 0.45em; padding: 0.5em 0.9em; border: 1px solid var(--color-rule-strong); border-radius: var(--radius-m); font-size: 0.88rem; font-family: var(--font-ui); text-decoration: none; color: var(--color-text); background: var(--color-bg); }
+.btn:hover { border-color: var(--color-text); }
+.btn.primary { background: var(--color-text); color: var(--color-bg); border-color: var(--color-text); }
+
+.state { display: grid; gap: var(--space-3); justify-items: start; padding: var(--space-6) 0; }
+.state .glyph { font-family: var(--font-display); font-size: var(--step-5); line-height: 1; color: var(--color-accent); font-weight: 300; }
+[data-type="terminal"] .state .glyph { font-family: var(--font-mono); font-size: var(--step-3); font-weight: 500; }
+.state .state-title { margin: 0; font-size: var(--step-4); font-family: var(--font-display); font-weight: var(--weight-display); line-height: 1.1; letter-spacing: var(--tracking-display); text-wrap: balance; }
+.state p { margin: 0; color: var(--color-muted); max-width: 32em; }
+.state .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.vault-list { margin: 0; padding-left: 1.2em; }
+.vault-list a { color: var(--color-link); }
+
+.mini-state { border: 1px dashed var(--color-rule-strong); border-radius: var(--radius-m); padding: var(--space-4); font-size: var(--step-n1); color: var(--color-muted); line-height: 1.5; }
+.mini-state strong { color: var(--color-text); display: block; margin-bottom: 0.2em; font-weight: var(--weight-strong); }
+.mini-state a { color: var(--color-link); }
+.error-state { border-style: solid; border-color: var(--hue-red); }
+.error-state .btn { margin-top: var(--space-3); }
+
+.toast {
+  position: fixed; left: 50%; bottom: var(--space-5); transform: translateX(-50%); z-index: var(--z-popover);
+  display: flex; align-items: center; gap: var(--space-3); max-width: calc(100vw - 2rem);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4); font-family: var(--font-ui); font-size: var(--step-n1);
+  color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-m);
+}
+
+/* ---------- Dialoger (felles) ---------- */
+dialog { color: var(--color-text); font-family: var(--font-ui); }
+dialog::backdrop { background: color-mix(in oklab, var(--color-bg) 55%, transparent); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+
+/* ---------- Responsivt ---------- */
+@media (max-width: 1099px) {
+  .main { grid-template-columns: minmax(0, 1fr); }
+  .rail { display: none; }
+  .toc-inline { display: block; }
+  .col { margin-inline: auto; }
+}
+@media (max-width: 859px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .main { padding: 0 var(--gutter); }
+  html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
+  .page { padding-top: var(--space-6); }
+}
+@media print {
+  .sidebar, .rail, .topbar, .copy, .skip-link, .toast { display: none !important; }
+  .app, .main { display: block; }
+}

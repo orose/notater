@@ -1,0 +1,104 @@
+/* ⌘K-palett (designsystem §7.11). */
+.palette {
+  width: min(40rem, calc(100vw - 2rem)); max-width: calc(100vw - 2rem); margin: 12vh auto auto; padding: 0;
+  background: var(--color-bg); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-l);
+  box-shadow: 0 1px 0 var(--color-rule), 0 24px 48px -24px color-mix(in oklab, #000 45%, transparent);
+}
+[data-type="terminal"] .palette { box-shadow: 6px 6px 0 0 var(--color-rule-strong); }
+[data-type="tidsskrift"] .palette { border-radius: 0; border-top: 3px solid var(--color-text); }
+.palette-input { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border-bottom: 1px solid var(--color-rule); }
+.palette-input svg { color: var(--color-muted); width: 1.25em; height: 1.25em; }
+.palette-input input { flex: 1; min-width: 0; font: inherit; font-size: var(--step-1); color: var(--color-text); background: transparent; border: 0; outline: 0; }
+[data-type="tidsskrift"] .palette-input input { font-style: italic; }
+.palette-input input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.palette-input input::placeholder { color: var(--color-muted); }
+.palette-input:focus-within { box-shadow: inset 0 -2px 0 var(--color-focus); }
+.results { max-height: min(55vh, 28rem); overflow-y: auto; padding: var(--space-2); margin: 0; list-style: none; }
+.results:empty { display: none; }
+.results .grp { padding: var(--space-3) var(--space-3) var(--space-1); }
+.res { display: grid; grid-template-columns: 1fr auto; gap: 0.1rem var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-m); cursor: pointer; }
+.res .t { font-weight: var(--weight-strong); min-width: 0; }
+.res .t mark, .res .x mark { background: transparent; color: var(--color-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.15em; }
+.res .p { font-family: var(--font-meta); font-size: 0.7rem; color: var(--color-muted); align-self: center; }
+.res .x { grid-column: 1 / -1; font-size: 0.85rem; color: var(--color-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.res .alias { font-weight: 400; font-style: italic; color: var(--color-muted); font-size: 0.88em; }
+.res[aria-selected="true"] { background: var(--color-tag-bg); box-shadow: inset 2px 0 0 var(--color-accent); }
+.palette-empty { margin: var(--space-3); }
+.palette-hint { margin: 0; padding: var(--space-4); color: var(--color-muted); font-size: var(--step-n1); }
+.palette-foot { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-rule); font-size: 0.75rem; color: var(--color-muted); }
+.palette-foot .count { margin-left: auto; }
+
+/* Mobil/berøring: tastatur-hint gir ingen mening uten tastatur – vis bare antallet. */
+@media (hover: none) and (pointer: coarse) {
+  .palette-foot > span:not(.count) { display: none; }
+  .palette-foot .count { margin-left: 0; }
+}
+
+/* ---------- v1.1: «:»-kommandomodus (designsystem §11.7, prototype-v1.1.html) ---------- */
+.palette-field { position: relative; flex: 1; min-width: 0; display: flex; }
+.palette-field input { flex: 1; min-width: 0; }
+.palette-input .prompt { flex: none; width: 1.25em; text-align: center; font-family: var(--font-mono); font-size: var(--step-1); font-weight: 600; line-height: 1; color: var(--color-cmd); }
+/* PO-63: kolonet står i verdien, men tegnes som prompt. Feltet er mono i kommandomodus, så 1ch = «:». */
+.palette-input.is-cmd input {
+  font-family: var(--font-mono); font-style: normal; font-size: calc(var(--step-1) * 0.86); letter-spacing: 0;
+  font-feature-settings: var(--mono-ligatures); caret-color: var(--color-cmd); padding-inline: 0; text-indent: -1ch;
+}
+[data-type="tidsskrift"] .palette-input.is-cmd input { font-style: normal; }
+.cmd-placeholder {
+  position: absolute; inset: 0 auto 0 0; display: flex; align-items: center; pointer-events: none;
+  font-family: var(--font-mono); font-size: calc(var(--step-1) * 0.86); color: var(--color-muted); white-space: nowrap;
+}
+[data-type="tidsskrift"] .palette:has(.palette-input.is-cmd) { border-top-color: var(--color-cmd); }
+[data-type="terminal"] .palette-input.is-cmd { box-shadow: inset 3px 0 0 var(--color-cmd); }
+[data-type="klartekst"] .palette:has(.palette-input.is-cmd) { border-color: var(--color-cmd); }
+[data-type="klartekst"] .palette { border-width: 2px; }
+.palette-input .esc { flex: none; }
+
+.res.cmd { grid-template-columns: minmax(6.5rem, max-content) minmax(0, 1fr) auto; align-items: baseline; gap: 0.1rem var(--space-4); }
+.cmd-ex { font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-muted); font-feature-settings: var(--mono-ligatures); white-space: nowrap; }
+.cmd-ex b { font-weight: 600; color: var(--color-cmd); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.cmd-name { min-width: 0; }
+.cmd-name mark { background: transparent; color: inherit; }
+.cmd-name .st { margin-left: 0.5em; font-family: var(--font-meta); font-size: 0.7rem; color: var(--color-muted); white-space: nowrap; }
+.cmd-keys { justify-self: end; display: inline-flex; align-items: center; gap: 0.2em; white-space: nowrap; }
+.cmd-why { grid-column: 2 / -1; font-size: 0.8rem; color: var(--color-disabled); font-style: italic; }
+[data-type="terminal"] .cmd-why { font-style: normal; }
+.res.cmd[aria-disabled="true"] { color: var(--color-disabled); cursor: not-allowed; }
+.res.cmd[aria-disabled="true"] .cmd-name { color: var(--color-disabled); }
+.res.cmd[aria-disabled="true"] .k { color: var(--color-disabled); }
+.res[aria-selected="true"] .k { border-color: var(--color-kbd-edge-active); }
+.res.arg { grid-template-columns: 2.6rem minmax(0, 1fr) auto; align-items: center; gap: 0 var(--space-3); }
+.arg-spec { font-size: 1.5rem; line-height: 1; text-align: center; }
+.arg-spec-tidsskrift { font-family: "Spectral", Georgia, serif; font-weight: 300; }
+.arg-spec-terminal { font-family: "Schibsted Grotesk Variable", sans-serif; font-weight: 800; letter-spacing: -0.04em; }
+.arg-spec-klartekst { font-family: "Atkinson Hyperlegible Next Variable", Verdana, sans-serif; font-weight: 700; }
+.arg-sw { display: flex; height: 1.4rem; border: 1px solid var(--color-rule); border-radius: var(--radius-s); overflow: hidden; }
+.arg-sw i { flex: 1; }
+.arg-sw i:first-child { flex: 2; }
+.arg-name { font-weight: var(--weight-strong); }
+.arg-name mark { background: transparent; color: var(--color-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.15em; }
+.arg-desc { display: block; font-size: 0.8rem; color: var(--color-muted); }
+.arg-now { font-family: var(--font-meta); font-size: 0.68rem; color: var(--color-accent); letter-spacing: 0.04em; }
+.cmd-crumb { display: flex; align-items: baseline; gap: 0.5em; padding: var(--space-3) var(--space-3) var(--space-1); }
+.cmd-crumb code { font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-cmd); }
+.cmd-err { margin: var(--space-3); padding: var(--space-3) var(--space-4); border: 1px dashed var(--color-rule-strong); border-radius: var(--radius-m); font-size: var(--step-n1); color: var(--color-muted); }
+.cmd-err .code { font-family: var(--font-mono); font-size: 0.78rem; color: var(--hue-red); margin-right: 0.5em; }
+.cmd-err strong { color: var(--color-text); font-weight: var(--weight-strong); }
+.cmd-err code { font-family: var(--font-mono); color: var(--color-text); }
+.palette-foot { align-items: center; }
+.palette-foot .hint { display: inline-flex; align-items: center; gap: 0.35em; }
+.palette-foot .k { font-size: 0.66rem; min-width: 1.5em; padding: 0.15em 0.35em; }
+.mode-tag { font-family: var(--font-sc); font-size: 0.8rem; letter-spacing: var(--tracking-sc); text-transform: lowercase; color: var(--color-muted); }
+.palette-input.is-cmd ~ .palette-foot .mode-tag, .palette:has(.is-cmd) .mode-tag { color: var(--color-cmd); }
+[data-type="terminal"] .mode-tag { font-family: var(--font-mono); text-transform: uppercase; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04em; }
+[data-type="terminal"] .palette:has(.is-cmd) .mode-tag::before { content: "-- "; }
+[data-type="terminal"] .palette:has(.is-cmd) .mode-tag::after { content: " --"; }
+[data-type="klartekst"] .mode-tag { text-transform: uppercase; font-size: 0.72rem; font-weight: 700; }
+@media (max-width: 600px) {
+  .res.cmd { grid-template-columns: minmax(0, 1fr) auto; }
+  .res.cmd .cmd-ex { grid-column: 1; grid-row: 2; }
+  .res.cmd .cmd-name { grid-column: 1; grid-row: 1; }
+  .res.cmd .cmd-keys { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+  .cmd-why { grid-column: 1 / -1; }
+  .palette-foot .hint-opt { display: none; }
+}

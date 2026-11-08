@@ -1,0 +1,9 @@
+{
+  "nodes": [
+    {"id": "a1", "type": "text", "text": "Canvas er ikke i scope", "x": 0, "y": 0, "width": 250, "height": 60},
+    {"id": "a2", "type": "file", "file": "domene/Ordre.md", "x": 300, "y": 0, "width": 400, "height": 300}
+  ],
+  "edges": [
+    {"id": "e1", "fromNode": "a1", "fromSide": "right", "toNode": "a2", "toSide": "left"}
+  ]
+}

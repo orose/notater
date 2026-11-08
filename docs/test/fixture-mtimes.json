@@ -1,0 +1,10 @@
+{
+  "beskrivelse": "Deterministiske mtimes for test-vault/. Git bevarer ikke mtime, så Arkiv-viewet (sort file.mtime ASC) er bare deterministisk etter at disse er satt. Brukes av test-vault-tools/sett-fixture-mtimes.mjs på en KOPI av test-vault/.",
+  "standard": "2026-11-01T12:00:00Z",
+  "filer": {
+    "oppgaver/Oppdater README.md": "2026-09-15T08:00:00Z",
+    "oppgaver/Fiks flaky test i BetalingServiceTest.md": "2026-10-02T09:30:00Z",
+    "oppgaver/Gjennomgå ADR-er.md": "2026-10-10T14:00:00Z",
+    "oppgaver/Dokumenter retry-strategi.md": "2026-10-28T11:15:00Z"
+  }
+}
