@@ -1,6 +1,6 @@
 # v2 – Presentasjonsmodus
 
-Status: **Til godkjenning hos kunden**. Eier: PO. Bygger på v1 og v1.1.
+Status: **Godkjent av kunden 2026-11-08**. Eier: PO. Bygger på v1 og v1.1.
 
 ## Formål
 
