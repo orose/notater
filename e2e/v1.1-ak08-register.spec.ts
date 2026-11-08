@@ -17,6 +17,7 @@ import {
   type Binding,
 } from './support/keymap-rules';
 import { fasit, fokusPåInnhold, hurtigtastoversikt } from './support/v11';
+import { fasit2 } from './support/v2';
 
 const b = (raw: string, id = 'x', name = 'X', mode = 'normal'): Binding => ({ commandId: id, commandName: name, mode, raw, steps: parseBinding(raw) });
 
@@ -104,10 +105,13 @@ test.describe('AK-1.1-08 registeret (P2, P4, P5)', () => {
     const alle = new Set(kommandoer.flatMap((k) => k.bindings.filter((x) => x.mode === 'normal').map((x) => visTrinn(x.steps))));
     const forventet = fasit.tastaturkart.bindinger.map((raw) => visTrinn(parseBinding(raw)));
     expect(forventet.filter((f) => !alle.has(f))).toEqual([]);
-    // P3: i v1.1 finnes bare normal-modus.
-    expect([...new Set(kommandoer.flatMap((k) => k.bindings.map((x) => x.mode)))]).toEqual(['normal']);
-    // P2: hver kommando har id, navn og gruppe fra oversiktens grupper.
-    for (const k of kommandoer) expect(fasit.tastaturkart.grupper, `${k.id}.group`).toContain(k.group);
+    // P3: v1.1 har normal-modus; v2 legger til present-modus (docs/test/testplan-v2.md §5). Ingen andre modi.
+    const modi = [...new Set(kommandoer.flatMap((k) => k.bindings.map((x) => x.mode)))];
+    expect(modi).toContain('normal');
+    expect(modi.filter((m) => m !== 'normal' && m !== fasit2.taster.presentModus)).toEqual([]);
+    // P2: hver kommando har id, navn og gruppe fra oversiktens grupper (v2: + «Presentasjon»).
+    const grupper = [...fasit.tastaturkart.grupper, ...fasit2.taster.nyeGrupper];
+    for (const k of kommandoer) expect(grupper, `${k.id}.group`).toContain(k.group);
     expect(new Set(kommandoer.map((k) => k.id)).size, 'unike id-er').toBe(kommandoer.length);
   });
 });

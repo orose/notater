@@ -7,7 +7,7 @@ Eier: QA. Dette er **fasiten** utviklerne tester mot. Hvert kanttilfelle har en 
 
 Endrer du et notat i `test-vault/`, oppdater fasiten her og i `docs/test/bases-fasit.md` i samme endring.
 
-Alle tidligere **(PO?)**-punkter er avgjort (PO-1 til PO-38 i `docs/beslutninger.md`). Der en PO-avgjørelse har endret fasiten, står PO-nummeret i raden. Endringslogg for fasiten står i §18. Fasit for v1.1 (lesekomfort og tastatur) står i §19.
+Alle tidligere **(PO?)**-punkter er avgjort (PO-1 til PO-38 i `docs/beslutninger.md`). Der en PO-avgjørelse har endret fasiten, står PO-nummeret i raden. Endringslogg for fasiten står i §18. Fasit for v1.1 (lesekomfort og tastatur) står i §19, for v2 (presentasjonsmodus) i §20.
 
 ---
 
@@ -15,7 +15,7 @@ Alle tidligere **(PO?)**-punkter er avgjort (PO-1 til PO-38 i `docs/beslutninger
 
 | ID | Hva | Forventet |
 |----|-----|-----------|
-| QA-IDX-01 | Antall notater | **91** `.md`-filer indekseres (90 testnotater + denne fila). 11 av dem ligger i `lesekomfort/` (v1.1, §19). |
+| QA-IDX-01 | Antall notater | **105** `.md`-filer indekseres (104 testnotater + denne fila). 11 av dem ligger i `lesekomfort/` (v1.1, §19), 14 i `presentasjon/` (v2, §20). |
 | QA-IDX-02 | Andre filer | 9 ikke-md-filer er synlige for lenker, embeds og Bases: `Domene.base`, `Oppgaver.base`, `Tegning.canvas`, `attachments/arkitektur.png`, `attachments/bred.png`, `attachments/diagram med mellomrom.png`, `attachments/logo.svg`, `attachments/ondsinnet.svg`, `domene/domenemodell.svg`. |
 | QA-IDX-03 | `.obsidian/` | Ignoreres helt. `.obsidian/plugins/dataview/README.md` (som inneholder `#task`) skal **ikke** finnes i fil-tre, søk, lenkeoppløsning eller baser. |
 | QA-IDX-04 | `.trash/` | Ignoreres helt. `.trash/Slettet notat.md` (tagget `task`) skal ikke vises noe sted. Lenken `[[Slettet notat]]` er brutt. Generelt: alle mapper/filer som starter med `.` ignoreres. |
@@ -387,6 +387,7 @@ Alle forslag i tabellen er **godkjent** av PO slik de står (PO-7 til PO-17), me
 | 2026-11-05 | QA-SOK-09: snarvei vises som `⌘K` (macOS) / `Ctrl K` (ellers). | PO-36 |
 | 2026-11-05 | Alias-hint (PO-7/PO-25), tvetydighetsindikator (PO-8/PO-26), property-backlinks (PO-9), tagger case-insensitive (PO-10), norske callout-titler og `<br>` (PO-14), embed-dybde 5 og TOC ≥ 3 (PO-15), CSP (PO-16), ingress/skjulte properties/lesetid (PO-21–23, PO-29), tags-endepunkt og 404 for ukjent API-rute (PO-24), `frontmatterError` (PO-27, ny QA-FM-04), «Lenket fra» på manglende notat (PO-28), «Fotnoter»/sidenoter (PO-20, PO-30). Alle **(PO?)**-merker fjernet. | PO-1–PO-31 |
 | 2026-11-06 | Ny mappe `lesekomfort/` (11 notater) og §19 for v1.1: diskré embedding, folding, bredde, zen. QA-IDX-01: 80 → 91. Ingen tagger, ingen lenker til notater med fasit for tilbakelenker, ingen påvirkning på baser eller søkefasit. | v1.1, PO-53/54 |
+| 2026-11-08 | Ny mappe `presentasjon/` (10 notater + 4 kilder) og §20 for v2: presentasjonsmodus. QA-IDX-01: 91 → 105. Ingen tagger, ingen lenker ut av mappa, ingen embed av `.base`-filer (kanban er en inline `base`-blokk), så tilbakelenke-, base- og søkefasiten er uendret. | v2 |
 
 ## 19. v1.1 – lesekomfort og tastatur
 
@@ -443,3 +444,51 @@ Regel: tittelnivå `T = min(6, forrige + 1)`, der `forrige` er effektivt nivå p
 | QA-V11-40 | Åpnes leseoptimalisert og uten zen, selv om frontmatter sier `lesebredde: full` og `zen: true` (P1). Egenskapene vises som data. |
 | QA-V11-41 | Full bredde ved 1440 px: avsnittene er minst 100 px bredere enn leseoptimalisert; panelene beholdes. 360 px: ingen horisontal sidescroll i noen tilstand (også med det lange ordet). |
 | QA-V11-42 | Zen: tittel og egenskaper beholdes, paneler og krom skjules; lenken til `Dyp struktur` beholder zen. |
+
+## 20. v2 – presentasjonsmodus
+
+Testplan: `docs/test/testplan-v2.md`. Maskinlesbar fasit: `docs/test/v2-fasit.json` (testene leser den; TC-2-02-00 sjekker at fasiten stemmer med notatene). Notatene i `presentasjon/` har ingen tagger og lenker/embedder bare hverandre. Kanbantavlen i statusmøtet er en **inline** `base`-blokk med samme utvalg som Kanban-viewet i `Oppgaver.base` (17 kort i 6 kolonner, se `bases-fasit.md`), slik at tilbakelenkene til `Oppgaver.base` fortsatt er 6. Hvert lysbilde har en markør («Markør STATUS-A.» …) som testene leter etter.
+
+Lysbildenotasjon under: **T** tittel · **A** agenda · **O(x)** overgang til agendapunkt x · **x [p/n]** innholdslysbilde med overskrift x og progresjon p/n innen agendapunktet. Standard lysbildenivå er H3 (agendanivå H2). Punkter merket (Q-nn) er QAs forslag til svar på åpne spørsmål i testplanen §8.
+
+| Notat | Formål |
+|-------|--------|
+| `presentasjon/Statusmøte uke 45.md` | Eksempelnotatet fra spesifikasjonen: agendapunktene «Siden sist», «Jobbes med nå», «Relativt nær framtid»; lysbilder (H3) med liste, kode, kanban (inline base), Mermaid, tabell og fotnote. Frontmatter: `description` (ingress), properties, skjult `cssclasses` og **P1-feller**: `lysbildeniva: h4`, `agenda: av`, `presenter: { niva: 2, overganger: false }` – data, ikke visning. |
+| `presentasjon/Månedsrapport oktober.md` + `presentasjon/kilder/*` | Rapport bygget av diskré embeds (S1): to agendapunkter er hele innebygde notater (`Siden sist`, `Jobbes med nå`, uten H1 → tittelen blir H2), ett er vertens egen H2 med to seksjonsembeds fra `Plan neste kvartal`. Nestet embed (`Leveranse søk`, H4) ligger inne i lysbildet «Leveranser». Seksjonen «Utenfor rapporten» skal aldri vises. P1-felle: `lysbildeniva: h4`. |
+| `presentasjon/Delte lysbilder.md` | S5: `---` og `***` innen et lysbilde, `---` i en YAML-kodeblokk (deler ikke), `---` sist i en seksjon og to `---` på rad (ingen tomme lysbilder), agendaseksjon uten H3 delt med `---`. |
+| `presentasjon/Mye innhold.md` | A2: «Lang gjennomgang» har 18 lange avsnitt og en liste med 20 punkter → krympes og fortsetter med «(forts.)». «Kort oppsummering» er kort. |
+| `presentasjon/Stor kodeblokk.md` | A2 siste utvei: hvert lysbilde er én blokk som er for stor alene – kode (120 linjer), høyt Mermaid-diagram (25 steg), tabell (12 × 40). |
+| `presentasjon/Uten overskrifter.md` | S7: ingen overskrifter, tre deler skilt med `---`. |
+| `presentasjon/Innhold før agenda.md` | S6: kort avsnitt før første agendaoverskrift (får plass på tittellysbildet) + `description`. |
+| `presentasjon/Langt innhold før agenda.md` | S6: fem lange avsnitt før første agendaoverskrift (eget lysbilde før agendaen); «Andre punkt» uten H3 (S3: ett lysbilde). |
+| `presentasjon/Mange agendapunkter.md` | 8 agendapunkter med lange navn: avkortet agendalinje ved 1280×720. |
+| `presentasjon/Lysbildenivå.md` | S4: H2/H3/H4 – testes med standard (h3), `:presenter h4` og `:presenter h2`; ugyldige og tomme nivåer. |
+
+### 20.1 Lysbilderekkefølge
+
+| ID | Notat | Forventet rekkefølge |
+|----|-------|----------------------|
+| QA-V2-01 | Statusmøte uke 45 | T · A · O(Siden sist) · Leveranse A – lesekomfort [1/2] · Leveranse B – tastaturmotor [2/2] · O(Jobbes med nå) · Oppgaver [1/2] · Flyt i presentasjonen [2/2] · O(Relativt nær framtid) · Plan Q1 [1/1] = **10** |
+| QA-V2-02 | Månedsrapport oktober | T · A · O(Siden sist) · Driftsstabilitet [1/2] · Leveranser [2/2] · O(Jobbes med nå) · Jobbes med nå [1/3] (innledningen, Q-01) · Ytelse [2/3] · Presentasjonsmodus [3/3] · O(Relativt nær framtid) · Milepæler [1/2] · Risiko og tiltak [2/2] = **12** |
+| QA-V2-03 | Delte lysbilder | T · A · O(Del én) · Arkitektur [1/4] · Arkitektur (forts.) [2/4] · Arkitektur (forts.) [3/4] · Grensesnitt [4/4] · O(Del to) · Del to [1/2] · Del to (forts.) [2/2] = **10** («(forts.)» teller i progresjonen, Q-02) |
+| QA-V2-04 | Mye innhold | T · A · O(Bakgrunn) · Lang gjennomgang · Lang gjennomgang (forts.) × ≥ 1 · Kort oppsummering [N/N]. Antall deler avhenger av layout; alle markører `MYE-01..18`, `MYE-L01..20`, `MYE-SLUTT` nøyaktig én gang, i rekkefølge; ingen listepunkt delt. |
+| QA-V2-05 | Stor kodeblokk | T · A · O(Enkeltblokker) · Lang kode [1/3] · Høyt diagram [2/3] · Bred tabell [3/3] = **6**. Ingen «(forts.)». Kode og tabell: minimumsskrift + intern rulling; diagrammet skaleres ned. |
+| QA-V2-06 | Uten overskrifter | T · (UTEN-1) · (UTEN-2) · (UTEN-3) = **4**. Ingen agenda, ingen overganger, ingen agendalinje, innholdslysbildene uten overskrift (Q-03). |
+| QA-V2-07 | Innhold før agenda | T (med ingress og FØR-KORT) · A · O(Første punkt) · Lysbilde én [1/1] · O(Andre punkt) · Lysbilde to [1/1] = **6** |
+| QA-V2-08 | Langt innhold før agenda | T · (LANGFØR-1..5, eget lysbilde uten agendalinje, Q-03) · A · O(Første punkt) · Lysbilde én [1/1] · O(Andre punkt) · Andre punkt [1/1] = **7** |
+| QA-V2-09 | Mange agendapunkter | T · A (alle 8) · 8 × (O(punkt) · Status n [1/1]) = **18** |
+| QA-V2-10 | Lysbildenivå, h3 | T · A · O(Område A) · Tema A1 [1/2] (med Detalj A1a/A1b som innhold) · Tema A2 [2/2] · O(Område B) · Tema B1 [1/1] = **7** |
+| QA-V2-11 | Lysbildenivå, `:presenter h4` | T · A (Tema A1, Tema A2, Tema B1) · O(Tema A1) · Tema A1 [1/3] (innledningen, Q-01) · Detalj A1a [2/3] · Detalj A1b [3/3] · O(Tema A2) · Detalj A2a [1/1] · O(Tema B1) · Detalj B1a [1/1] = **10**. «Område A/B» (over agendanivået) blir ikke lysbilder (Q-05). |
+| QA-V2-12 | Lysbildenivå, `:presenter h2` | T · Område A · Område B = **3**. Agendanivået ville vært H1, som ikke finnes i brødteksten → ingen agenda (Q-04). |
+| QA-V2-13 | Lysbildenivå, ugyldig/tomt | `h1`, `h7`, `hx`, `4` → feilkode (E…) + norsk forklaring, ingen presentasjon. `h5`, `h6` (finnes ikke i notatet) og `h4` i statusmøtet → feilkode «tomt nivå». Et feilet valg huskes ikke. |
+
+### 20.2 Tittel, agenda, agendalinje og live
+
+| ID | Forventet |
+|----|-----------|
+| QA-V2-20 | Tittellysbildet i statusmøtet: «Statusmøte uke 45», ingressen «Status for leseren og presentasjonsmodus, uke 45.», properties (`møteleder`: Kari Nordmann, `dato`, `deltakere`, P1-fellene som data), **ikke** `cssclasses`, endringsdato 2026-11-01 (fixture-mtime). Ingen agendalinje. |
+| QA-V2-21 | Agendalinjen på innholdslysbildene i statusmøtet viser alle tre punkter, gjeldende uthevet, med progresjon (`1/2`, `2/2`, `1/2`, `2/2`, `1/1`). Skjult på T, A og O. |
+| QA-V2-22 | «Mange agendapunkter» ved 1280×720: Status 1 → Økonomi og budsjettoppfølging · Rekruttering og bemanning …; Status 5 → … Sikkerhet og personvern · **Arkitektur og teknisk gjeld** · Kundetilbakemeldinger og support …; Status 8 → … Leverandører og avtaler · **Opplæring og kompetanseheving**. |
+| QA-V2-23 | `:agenda av` i statusmøtet: de 3 overgangene forsvinner (7 lysbilder), gjeldende lysbilde beholdes. Ny presentasjon (og reload, Q-09) har overgangene igjen. |
+| QA-V2-24 | Live (i en vault-kopi): `## Jobbes med nå` → `## Pågår nå` mens «Oppgaver» (7) vises → agendalinjen viser «Pågår nå», fortsatt lysbilde 7. Sletting av «Leveranse B» mens den vises → «Leveranse A – lesekomfort» (forrige gjenværende, Q-06), 4 / 9. `oppgaver/Refaktorer logging.md` `status: todo` → `doing` → kortet flytter kolonne på «Oppgaver». |
+| QA-V2-25 | Start fra leseposisjon i statusmøtet: toppen → 1, «Jobbes med nå» → 6 (overgangen), «Oppgaver» → 7, «Plan Q1» → 10. |
