@@ -1,0 +1,1003 @@
+{
+ "$kommentar": "Fasit for v2 (presentasjonsmodus). Speiler test-vault/README-QA.md §20 og docs/test/testplan-v2.md. Testene leser denne fila (e2e/support/v2.ts). Endres et notat i test-vault/presentasjon/, endres fasiten i samme commit. Lysbilder er 1-baserte i rekkefølge. 'progresjon' = posisjon/antall innholdslysbilder innen agendapunktet, inkludert «(forts.)» (Q-02). 'inneholder' = markører (tekst) som skal stå på lysbildet. Felter merket 'avklaring' avhenger av et åpent spørsmål i testplanen §8; verdien er QAs forslag.",
+ "forts": " (forts.)",
+ "statusmote": {
+  "sti": "presentasjon/Statusmøte uke 45",
+  "tittel": "Statusmøte uke 45",
+  "agenda": [
+   "Siden sist",
+   "Jobbes med nå",
+   "Relativt nær framtid"
+  ],
+  "tittellysbilde": {
+   "ingress": "Status for leseren og presentasjonsmodus, uke 45.",
+   "properties": [
+    "møteleder",
+    "Kari Nordmann",
+    "deltakere"
+   ],
+   "skjult": [
+    "cssclasses"
+   ],
+   "endret": "2026-11-01"
+  },
+  "p1Feller": {
+   "lysbildeniva": "h4",
+   "agenda": "av",
+   "presenter.niva": 2,
+   "presenter.overganger": false
+  },
+  "lysbilder": [
+   {
+    "type": "tittel",
+    "overskrift": "Statusmøte uke 45"
+   },
+   {
+    "type": "agenda",
+    "overskrift": null
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Siden sist"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Leveranse A – lesekomfort",
+    "agendapunkt": "Siden sist",
+    "progresjon": "1/2",
+    "inneholder": [
+     "STATUS-A"
+    ]
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Leveranse B – tastaturmotor",
+    "agendapunkt": "Siden sist",
+    "progresjon": "2/2",
+    "inneholder": [
+     "STATUS-B"
+    ],
+    "kode": true
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Jobbes med nå"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Oppgaver",
+    "agendapunkt": "Jobbes med nå",
+    "progresjon": "1/2",
+    "base": {
+     "type": "kanban",
+     "kort": 17,
+     "kolonner": 6,
+     "liveKort": "Refaktorer logging",
+     "liveFil": "oppgaver/Refaktorer logging.md",
+     "fra": "todo",
+     "til": "doing"
+    }
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Flyt i presentasjonen",
+    "agendapunkt": "Jobbes med nå",
+    "progresjon": "2/2",
+    "inneholder": [
+     "STATUS-FLYT"
+    ],
+    "mermaid": true
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Relativt nær framtid"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Plan Q1",
+    "agendapunkt": "Relativt nær framtid",
+    "progresjon": "1/1",
+    "inneholder": [
+     "STATUS-PLAN"
+    ],
+    "tabell": true,
+    "fotnote": "Avhenger av kapasitet i plattformteamet."
+   }
+  ],
+  "startFraSeksjon": {
+   "Oppgaver": 7,
+   "Jobbes med nå": 6,
+   "Statusmøte uke 45": 1,
+   "Plan Q1": 10
+  },
+  "live": {
+   "agendaFra": "## Jobbes med nå",
+   "agendaTil": "## Pågår nå",
+   "slettSeksjon": "### Leveranse B – tastaturmotor",
+   "etterSletting": "Leveranse A – lesekomfort",
+   "avklaring": "Q-06 (nærmeste = forrige gjenværende lysbilde)"
+  }
+ },
+ "rapport": {
+  "sti": "presentasjon/Månedsrapport oktober",
+  "tittel": "Månedsrapport oktober",
+  "agenda": [
+   "Siden sist",
+   "Jobbes med nå",
+   "Relativt nær framtid"
+  ],
+  "lysbilder": [
+   {
+    "type": "tittel",
+    "overskrift": "Månedsrapport oktober"
+   },
+   {
+    "type": "agenda",
+    "overskrift": null
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Siden sist"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Driftsstabilitet",
+    "agendapunkt": "Siden sist",
+    "progresjon": "1/2",
+    "inneholder": [
+     "RAPPORT-DRIFT"
+    ]
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Leveranser",
+    "agendapunkt": "Siden sist",
+    "progresjon": "2/2",
+    "inneholder": [
+     "RAPPORT-LEVERANSER",
+     "RAPPORT-SØK"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Jobbes med nå"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Jobbes med nå",
+    "agendapunkt": "Jobbes med nå",
+    "progresjon": "1/3",
+    "inneholder": [
+     "RAPPORT-INTRO"
+    ],
+    "avklaring": "Q-01 (innhold mellom agendaoverskrift og første lysbildeoverskrift = eget innholdslysbilde med agendapunktets navn)"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Ytelse",
+    "agendapunkt": "Jobbes med nå",
+    "progresjon": "2/3",
+    "inneholder": [
+     "RAPPORT-YTELSE"
+    ]
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Presentasjonsmodus",
+    "agendapunkt": "Jobbes med nå",
+    "progresjon": "3/3",
+    "inneholder": [
+     "RAPPORT-PRESENTASJON"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Relativt nær framtid"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Milepæler",
+    "agendapunkt": "Relativt nær framtid",
+    "progresjon": "1/2",
+    "inneholder": [
+     "RAPPORT-MILEPÆLER"
+    ],
+    "tabell": true
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Risiko og tiltak",
+    "agendapunkt": "Relativt nær framtid",
+    "progresjon": "2/2",
+    "inneholder": [
+     "RAPPORT-RISIKO"
+    ]
+   }
+  ],
+  "aldriSynlig": [
+   "RAPPORT-UTENFOR"
+  ],
+  "p1Feller": {
+   "lysbildeniva": "h4",
+   "diskret-embedding": false
+  }
+ },
+ "delte": {
+  "sti": "presentasjon/Delte lysbilder",
+  "agenda": [
+   "Del én",
+   "Del to"
+  ],
+  "lysbilder": [
+   {
+    "type": "tittel",
+    "overskrift": "Delte lysbilder"
+   },
+   {
+    "type": "agenda",
+    "overskrift": null
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Del én"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Arkitektur",
+    "agendapunkt": "Del én",
+    "progresjon": "1/4",
+    "inneholder": [
+     "DELT-1"
+    ]
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Arkitektur (forts.)",
+    "agendapunkt": "Del én",
+    "progresjon": "2/4",
+    "inneholder": [
+     "DELT-2"
+    ]
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Arkitektur (forts.)",
+    "agendapunkt": "Del én",
+    "progresjon": "3/4",
+    "inneholder": [
+     "DELT-3"
+    ]
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Grensesnitt",
+    "agendapunkt": "Del én",
+    "progresjon": "4/4",
+    "inneholder": [
+     "DELT-4",
+     "tittel: eksempel"
+    ],
+    "kode": true
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Del to"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Del to",
+    "agendapunkt": "Del to",
+    "progresjon": "1/2",
+    "inneholder": [
+     "DELT-5"
+    ]
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Del to (forts.)",
+    "agendapunkt": "Del to",
+    "progresjon": "2/2",
+    "inneholder": [
+     "DELT-6"
+    ]
+   }
+  ]
+ },
+ "mye": {
+  "sti": "presentasjon/Mye innhold",
+  "agenda": [
+   "Bakgrunn"
+  ],
+  "overskrift": "Lang gjennomgang",
+  "minstDeler": 2,
+  "markorer": [
+   "MYE-01",
+   "MYE-02",
+   "MYE-03",
+   "MYE-04",
+   "MYE-05",
+   "MYE-06",
+   "MYE-07",
+   "MYE-08",
+   "MYE-09",
+   "MYE-10",
+   "MYE-11",
+   "MYE-12",
+   "MYE-13",
+   "MYE-14",
+   "MYE-15",
+   "MYE-16",
+   "MYE-17",
+   "MYE-18",
+   "MYE-L01",
+   "MYE-L02",
+   "MYE-L03",
+   "MYE-L04",
+   "MYE-L05",
+   "MYE-L06",
+   "MYE-L07",
+   "MYE-L08",
+   "MYE-L09",
+   "MYE-L10",
+   "MYE-L11",
+   "MYE-L12",
+   "MYE-L13",
+   "MYE-L14",
+   "MYE-L15",
+   "MYE-L16",
+   "MYE-L17",
+   "MYE-L18",
+   "MYE-L19",
+   "MYE-L20",
+   "MYE-SLUTT"
+  ],
+  "listepunktPrefiks": "Punkt MYE-L",
+  "sisteLysbilde": {
+   "type": "innhold",
+   "overskrift": "Kort oppsummering",
+   "agendapunkt": "Bakgrunn",
+   "progresjon": null,
+   "inneholder": [
+    "MYE-KORT"
+   ]
+  },
+  "$kommentar": "Antall «(forts.)»-deler avhenger av layout og står ikke i fasiten; testene sjekker invariantene: minst 2 deler, alle markører nøyaktig én gang i rekkefølge, ingen avkuttet innhold, ingen listepunkt delt, skrift ≥ minimum, progresjon n/N der N = deler + 1."
+ },
+ "stor": {
+  "sti": "presentasjon/Stor kodeblokk",
+  "agenda": [
+   "Enkeltblokker"
+  ],
+  "lysbilder": [
+   {
+    "type": "tittel",
+    "overskrift": "Stor kodeblokk"
+   },
+   {
+    "type": "agenda",
+    "overskrift": null
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Enkeltblokker"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Lang kode",
+    "agendapunkt": "Enkeltblokker",
+    "progresjon": "1/3",
+    "inneholder": [
+     "STOR-KODE 001",
+     "STOR-KODE 120"
+    ],
+    "kode": true,
+    "internRulling": true
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Høyt diagram",
+    "agendapunkt": "Enkeltblokker",
+    "progresjon": "2/3",
+    "mermaid": true,
+    "skaleres": true
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Bred tabell",
+    "agendapunkt": "Enkeltblokker",
+    "progresjon": "3/3",
+    "inneholder": [
+     "R01K01",
+     "R40K12"
+    ],
+    "tabell": true,
+    "internRulling": true
+   }
+  ]
+ },
+ "uten": {
+  "sti": "presentasjon/Uten overskrifter",
+  "lysbilder": [
+   {
+    "type": "tittel",
+    "overskrift": "Uten overskrifter"
+   },
+   {
+    "type": "innhold",
+    "overskrift": null,
+    "agendapunkt": null,
+    "progresjon": null,
+    "inneholder": [
+     "UTEN-1"
+    ],
+    "avklaring": "Q-03 (innholdslysbilder uten overskrift)"
+   },
+   {
+    "type": "innhold",
+    "overskrift": null,
+    "agendapunkt": null,
+    "progresjon": null,
+    "inneholder": [
+     "UTEN-2"
+    ]
+   },
+   {
+    "type": "innhold",
+    "overskrift": null,
+    "agendapunkt": null,
+    "progresjon": null,
+    "inneholder": [
+     "UTEN-3"
+    ]
+   }
+  ]
+ },
+ "forKort": {
+  "sti": "presentasjon/Innhold før agenda",
+  "agenda": [
+   "Første punkt",
+   "Andre punkt"
+  ],
+  "lysbilder": [
+   {
+    "type": "tittel",
+    "overskrift": "Innhold før agenda",
+    "inneholder": [
+     "FØR-KORT",
+     "Ingress fra frontmatter."
+    ]
+   },
+   {
+    "type": "agenda",
+    "overskrift": null
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Første punkt"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Lysbilde én",
+    "agendapunkt": "Første punkt",
+    "progresjon": "1/1",
+    "inneholder": [
+     "FØR-1"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Andre punkt"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Lysbilde to",
+    "agendapunkt": "Andre punkt",
+    "progresjon": "1/1",
+    "inneholder": [
+     "FØR-2"
+    ]
+   }
+  ]
+ },
+ "forLang": {
+  "sti": "presentasjon/Langt innhold før agenda",
+  "agenda": [
+   "Første punkt",
+   "Andre punkt"
+  ],
+  "lysbilder": [
+   {
+    "type": "tittel",
+    "overskrift": "Langt innhold før agenda"
+   },
+   {
+    "type": "innhold",
+    "overskrift": null,
+    "agendapunkt": null,
+    "progresjon": null,
+    "inneholder": [
+     "LANGFØR-1",
+     "LANGFØR-2",
+     "LANGFØR-3",
+     "LANGFØR-4",
+     "LANGFØR-5"
+    ],
+    "avklaring": "Q-03 (eget lysbilde før agendaen uten overskrift og uten agendalinje)"
+   },
+   {
+    "type": "agenda",
+    "overskrift": null
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Første punkt"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Lysbilde én",
+    "agendapunkt": "Første punkt",
+    "progresjon": "1/1",
+    "inneholder": [
+     "LANGFØR-PUNKT"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Andre punkt"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Andre punkt",
+    "agendapunkt": "Andre punkt",
+    "progresjon": "1/1",
+    "inneholder": [
+     "LANGFØR-PUNKT2"
+    ]
+   }
+  ]
+ },
+ "mange": {
+  "sti": "presentasjon/Mange agendapunkter",
+  "agenda": [
+   "Økonomi og budsjettoppfølging",
+   "Rekruttering og bemanning",
+   "Drift og hendelseshåndtering",
+   "Sikkerhet og personvern",
+   "Arkitektur og teknisk gjeld",
+   "Kundetilbakemeldinger og support",
+   "Leverandører og avtaler",
+   "Opplæring og kompetanseheving"
+  ],
+  "lysbilder": [
+   {
+    "type": "tittel",
+    "overskrift": "Mange agendapunkter"
+   },
+   {
+    "type": "agenda",
+    "overskrift": null
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Økonomi og budsjettoppfølging"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Status 1",
+    "agendapunkt": "Økonomi og budsjettoppfølging",
+    "progresjon": "1/1",
+    "inneholder": [
+     "MANGE-1"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Rekruttering og bemanning"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Status 2",
+    "agendapunkt": "Rekruttering og bemanning",
+    "progresjon": "1/1",
+    "inneholder": [
+     "MANGE-2"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Drift og hendelseshåndtering"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Status 3",
+    "agendapunkt": "Drift og hendelseshåndtering",
+    "progresjon": "1/1",
+    "inneholder": [
+     "MANGE-3"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Sikkerhet og personvern"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Status 4",
+    "agendapunkt": "Sikkerhet og personvern",
+    "progresjon": "1/1",
+    "inneholder": [
+     "MANGE-4"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Arkitektur og teknisk gjeld"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Status 5",
+    "agendapunkt": "Arkitektur og teknisk gjeld",
+    "progresjon": "1/1",
+    "inneholder": [
+     "MANGE-5"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Kundetilbakemeldinger og support"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Status 6",
+    "agendapunkt": "Kundetilbakemeldinger og support",
+    "progresjon": "1/1",
+    "inneholder": [
+     "MANGE-6"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Leverandører og avtaler"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Status 7",
+    "agendapunkt": "Leverandører og avtaler",
+    "progresjon": "1/1",
+    "inneholder": [
+     "MANGE-7"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Opplæring og kompetanseheving"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Status 8",
+    "agendapunkt": "Opplæring og kompetanseheving",
+    "progresjon": "1/1",
+    "inneholder": [
+     "MANGE-8"
+    ]
+   }
+  ],
+  "avkortet": {
+   "Status 1": {
+    "synlige": [
+     "Økonomi og budsjettoppfølging",
+     "Rekruttering og bemanning"
+    ],
+    "før": false,
+    "etter": true
+   },
+   "Status 5": {
+    "synlige": [
+     "Sikkerhet og personvern",
+     "Arkitektur og teknisk gjeld",
+     "Kundetilbakemeldinger og support"
+    ],
+    "før": true,
+    "etter": true
+   },
+   "Status 8": {
+    "synlige": [
+     "Leverandører og avtaler",
+     "Opplæring og kompetanseheving"
+    ],
+    "før": true,
+    "etter": false
+   }
+  },
+  "avkortingViewport": {
+   "width": 1280,
+   "height": 720
+  }
+ },
+ "niva": {
+  "sti": "presentasjon/Lysbildenivå",
+  "h3": {
+   "agenda": [
+    "Område A",
+    "Område B"
+   ],
+   "lysbilder": [
+    {
+     "type": "tittel",
+     "overskrift": "Lysbildenivå"
+    },
+    {
+     "type": "agenda",
+     "overskrift": null
+    },
+    {
+     "type": "overgang",
+     "overskrift": null,
+     "agendapunkt": "Område A"
+    },
+    {
+     "type": "innhold",
+     "overskrift": "Tema A1",
+     "agendapunkt": "Område A",
+     "progresjon": "1/2",
+     "inneholder": [
+      "NIVÅ-A1",
+      "NIVÅ-A1a",
+      "NIVÅ-A1b"
+     ]
+    },
+    {
+     "type": "innhold",
+     "overskrift": "Tema A2",
+     "agendapunkt": "Område A",
+     "progresjon": "2/2",
+     "inneholder": [
+      "NIVÅ-A2a"
+     ]
+    },
+    {
+     "type": "overgang",
+     "overskrift": null,
+     "agendapunkt": "Område B"
+    },
+    {
+     "type": "innhold",
+     "overskrift": "Tema B1",
+     "agendapunkt": "Område B",
+     "progresjon": "1/1",
+     "inneholder": [
+      "NIVÅ-B1a"
+     ]
+    }
+   ]
+  },
+  "h4": {
+   "agenda": [
+    "Tema A1",
+    "Tema A2",
+    "Tema B1"
+   ],
+   "lysbilder": [
+    {
+     "type": "tittel",
+     "overskrift": "Lysbildenivå"
+    },
+    {
+     "type": "agenda",
+     "overskrift": null
+    },
+    {
+     "type": "overgang",
+     "overskrift": null,
+     "agendapunkt": "Tema A1"
+    },
+    {
+     "type": "innhold",
+     "overskrift": "Tema A1",
+     "agendapunkt": "Tema A1",
+     "progresjon": "1/3",
+     "inneholder": [
+      "NIVÅ-A1"
+     ],
+     "avklaring": "Q-01"
+    },
+    {
+     "type": "innhold",
+     "overskrift": "Detalj A1a",
+     "agendapunkt": "Tema A1",
+     "progresjon": "2/3",
+     "inneholder": [
+      "NIVÅ-A1a"
+     ]
+    },
+    {
+     "type": "innhold",
+     "overskrift": "Detalj A1b",
+     "agendapunkt": "Tema A1",
+     "progresjon": "3/3",
+     "inneholder": [
+      "NIVÅ-A1b"
+     ]
+    },
+    {
+     "type": "overgang",
+     "overskrift": null,
+     "agendapunkt": "Tema A2"
+    },
+    {
+     "type": "innhold",
+     "overskrift": "Detalj A2a",
+     "agendapunkt": "Tema A2",
+     "progresjon": "1/1",
+     "inneholder": [
+      "NIVÅ-A2a"
+     ]
+    },
+    {
+     "type": "overgang",
+     "overskrift": null,
+     "agendapunkt": "Tema B1"
+    },
+    {
+     "type": "innhold",
+     "overskrift": "Detalj B1a",
+     "agendapunkt": "Tema B1",
+     "progresjon": "1/1",
+     "inneholder": [
+      "NIVÅ-B1a"
+     ]
+    }
+   ],
+   "ikkeLysbilde": [
+    "Område A",
+    "Område B"
+   ],
+   "avklaring": "Q-05"
+  },
+  "h2": {
+   "agenda": [],
+   "lysbilder": [
+    {
+     "type": "tittel",
+     "overskrift": "Lysbildenivå"
+    },
+    {
+     "type": "innhold",
+     "overskrift": "Område A",
+     "agendapunkt": null,
+     "progresjon": null,
+     "inneholder": [
+      "NIVÅ-A1",
+      "NIVÅ-A2a"
+     ]
+    },
+    {
+     "type": "innhold",
+     "overskrift": "Område B",
+     "agendapunkt": null,
+     "progresjon": null,
+     "inneholder": [
+      "NIVÅ-B1a"
+     ]
+    }
+   ],
+   "avklaring": "Q-04 (agendanivå H1 finnes ikke i brødteksten → ingen agenda)"
+  },
+  "ugyldige": [
+   "h1",
+   "h7",
+   "hx",
+   "4"
+  ],
+  "tomme": [
+   "h5",
+   "h6"
+  ],
+  "tomIAnnetNotat": {
+   "sti": "presentasjon/Statusmøte uke 45",
+   "niva": "h4"
+  }
+ },
+ "lerret": {
+  "forhold": 1.7777777777777777,
+  "toleranse": 0.01,
+  "viewports": [
+   {
+    "width": 1280,
+    "height": 720
+   },
+   {
+    "width": 1440,
+    "height": 900
+   },
+   {
+    "width": 1920,
+    "height": 1080
+   },
+   {
+    "width": 390,
+    "height": 844
+   }
+  ],
+  "typografi": {
+   "$kommentar": "QA-forslag (Q-08), relativt til lerretets høyde: brødtekst ≈ høyde/27 (40 px ved 1080), minimum ≈ høyde/45 (24 px ved 1080).",
+   "brodtekstAndelAvHoyde": 0.037037037037037035,
+   "minimumAndelAvHoyde": 0.022222222222222223,
+   "toleransePx": 1.5
+  }
+ },
+ "taster": {
+  "start": [
+   "Space p"
+  ],
+  "neste": [
+   "j",
+   "ArrowRight",
+   "n",
+   "Space",
+   "PageDown"
+  ],
+  "forrige": [
+   "k",
+   "ArrowLeft",
+   "p",
+   "PageUp"
+  ],
+  "forste": [
+   "g g"
+  ],
+  "siste": [
+   "G"
+  ],
+  "oversikt": [
+   "o"
+  ],
+  "svart": [
+   "b",
+   "."
+  ],
+  "palett": [
+   ":"
+  ],
+  "hjelp": [
+   "?"
+  ],
+  "avslutt": [
+   "Escape"
+  ],
+  "presentModus": "present",
+  "nyeGrupper": [
+   "Presentasjon"
+  ],
+  "kommandoer": [
+   ":presenter",
+   ":presenter h<n>",
+   ":agenda av"
+  ]
+ },
+ "ytelse": {
+  "lysbildebytteP95Ms": 100,
+  "startRapport20EmbedsMs": 500
+ }
+}

@@ -75,7 +75,7 @@ describe('GET /api/vaults', () => {
   it('lister vaults uten disk-sti', async () => {
     const body = (await (await get('/api/vaults')).json()) as VaultsResponse;
     expect(body.defaultVaultId).toBe('test');
-    expect(body.vaults[0]).toMatchObject({ id: 'test', name: 'Testvault', status: 'ready', noteCount: 91, revision: 1 });
+    expect(body.vaults[0]).toMatchObject({ id: 'test', name: 'Testvault', status: 'ready', noteCount: 105, revision: 1 });
     expect(JSON.stringify(body)).not.toContain('test-vault');
   });
 });

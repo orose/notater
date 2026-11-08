@@ -75,7 +75,8 @@ Rekkefølge: Tittel → Agenda → Overgang «Siden sist» → Leveranse A → L
 | `b` / `.` | Svart skjerm av/på |
 | `:` | Kommandopalett (f.eks. `:agenda av`, `:tema`) |
 | `?` | Hurtigtaster (viser present-modusens taster) |
-| `Esc` | Lukk oversikt/palett; ellers avslutt presentasjon og gå tilbake til samme sted i notatet |
+| `Esc` | Lukk oversikt/palett; ellers avslutt presentasjon og gå til seksjonen for gjeldende lysbilde i notatet |
+| `f` | Fullskjerm av/på |
 
 - `Space`, `PageDown`/`PageUp` og `.`/`b` dekker vanlige presentasjonsklikkere.
 - **Fullskjerm:** presentasjon starter nettleserens fullskjerm (når tillatt); avslutning går ut av fullskjerm. Fungerer også uten fullskjerm (f.eks. delt vindu i Teams).

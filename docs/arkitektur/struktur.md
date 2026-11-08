@@ -141,3 +141,20 @@ src/web/features/
 Avhengighetsretning: `app` → `commands` → `keyboard`; `commands` (React-delen) → `search`, `theme`,
 `view-settings`, `outline`; `note-view` → `outline`, `view-settings`. `keyboard`, `commands/model` og
 `outline` importerer ikke `note-view`.
+
+## Tillegg v2 (arkitekt, ADR-010)
+
+Ny web-feature:
+
+```
+src/web/features/presentation/
+├── model/           ren TS: lysbildetyper, buildSlideDrafts (S1–S8), finalizeDeck (A2, nummer, progresjon),
+│                    lysbilde-id-er, resolveSlide (posisjon ved live reload). Ingen React/DOM.
+├── fit/             automatisk tilpasning (A2): logisk lerret, skalatrinn, målelerret, cache
+├── presentation-storage.ts, presentation-url.ts, fullscreen.ts, presentation-control.ts
+└── *.tsx            (2-a–2-c) PresentationProvider, PresentationLayer, Stage, SlideView, lysbildetyper, oversikt
+```
+
+Avhengighetsretning: `app` → `presentation` → `note-view` (`HastContent`), `outline`, `properties`, `shared/api`;
+`commands` → `presentation` (kun kontrollporten og typer). `presentation` importerer ikke `commands`, og
+`note-view`/`outline` importerer ikke `presentation`.

@@ -1,0 +1,36 @@
+// Ren TS-flate for lysbildemodellen (ADR-010 §1). Ingen React, DOM eller CSS.
+export {
+  AGENDA_SLIDE_ID,
+  PREAMBLE_SLIDE_ID,
+  RESERVED_SLIDE_KEYS,
+  TITLE_SLIDE_ID,
+  TRANSITION_PREFIX,
+  formatSlideId,
+  parseSlideId,
+  transitionSlideId,
+  type ParsedSlideId,
+} from './slide-id';
+export { resolveSlide, type Locatable, type ResolveReason, type ResolvedSlide } from './resolve-slide';
+export type {
+  AgendaItem,
+  BuildSlideDrafts,
+  DeckFit,
+  DraftFit,
+  FinalizeDeck,
+  FinalizeOptions,
+  FlowBlock,
+  FlowHeading,
+  HeadingLevel,
+  Slide,
+  SlideAddress,
+  SlideDeck,
+  SlideDraft,
+  SlideDraftDeck,
+  SlideFootnote,
+  SlideKind,
+  SlideOptions,
+  SlideProgress,
+  SlideSource,
+  SlideUnit,
+  UnitOverflow,
+} from './slide-types';
