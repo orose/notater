@@ -172,7 +172,7 @@ Reproduksjon generelt: `E2E_PORT=4418 npx playwright test` (porten kan velges fr
 - **Retting (backend, 9302a58):** omdøping kobles også over batch-grensen.
 - **Test:** `ak12-live-reload` › «omdøping/flytting sender renamed …» (uendret), grønn med `--repeat-each=3`.
 
-## BUG-014 – varsler legger seg oppå hverandre (toast, zen-hint, which-key) – ÅPEN
+## BUG-014 – varsler legger seg oppå hverandre (toast, zen-hint, which-key) – RETTET
 
 - **Alvorlighet:** Lav (kosmetisk, ikke funksjonelt) · **AK:** AK-1.1-05/AK5 · **Eier:** frontend/UX
 - **Funn (akseptansetest v1.1, manuell skjermbildegjennomgang):** når to varsler vises samtidig, f.eks.
