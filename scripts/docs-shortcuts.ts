@@ -5,19 +5,28 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { README_MARKERS, renderShortcutsMarkdown, shortcutGroups } from '../src/web/features/commands/model/shortcut-docs';
+import { README_MARKERS, README_PRESENT_MARKERS, renderShortcutsMarkdown, shortcutGroups } from '../src/web/features/commands/model/shortcut-docs';
 
 export const README_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', 'README.md');
 
-/** README med hurtigtast-avsnittet erstattet. Kaster hvis markørene mangler. */
-export function updateReadme(readme: string): string {
-  const start = readme.indexOf(README_MARKERS.start);
-  const end = readme.indexOf(README_MARKERS.end);
+function replaceBetween(readme: string, markers: { readonly start: string; readonly end: string }, content: string): string {
+  const start = readme.indexOf(markers.start);
+  const end = readme.indexOf(markers.end);
   if (start === -1 || end === -1 || end < start) {
-    throw new Error(`README mangler markørene ${README_MARKERS.start} og ${README_MARKERS.end}`);
+    throw new Error(`README mangler markørene ${markers.start} og ${markers.end}`);
   }
-  const table = renderShortcutsMarkdown(shortcutGroups('docs'));
-  return `${readme.slice(0, start + README_MARKERS.start.length)}\n${table}\n${readme.slice(end)}`;
+  return `${readme.slice(0, start + markers.start.length)}\n${content}\n${readme.slice(end)}`;
+}
+
+/**
+ * README med hurtigtast-avsnittene erstattet: normal-modus og «I presentasjon» (present-modus, ADR-010 §3).
+ * Avsnittet for presentasjon er valgfritt (eldre README uten markørene); normal-modus kaster hvis markørene mangler.
+ */
+export function updateReadme(readme: string): string {
+  const normal = replaceBetween(readme, README_MARKERS, renderShortcutsMarkdown(shortcutGroups('docs')));
+  if (!normal.includes(README_PRESENT_MARKERS.start)) return normal;
+  const present = renderShortcutsMarkdown(shortcutGroups('docs', 'present'), 'Taster i lysbildeoversikten (`o`) og paletten (håndteres av komponentene selv):');
+  return replaceBetween(normal, README_PRESENT_MARKERS, present);
 }
 
 function main(argv: readonly string[]): number {

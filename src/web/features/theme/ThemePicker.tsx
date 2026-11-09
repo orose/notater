@@ -29,6 +29,8 @@ interface ThemePickerProps {
   readonly onClose: () => void;
   /** Åpner hurtigtastoversikten (F6). Dialogen lukkes først, så modalene ikke stables. */
   readonly onOpenShortcuts?: () => void;
+  /** PO-99: «Presenter» (start presentasjon med mus/touch). Utelatt når presentasjon ikke er mulig. */
+  readonly onPresent?: (() => void) | undefined;
   /** Diskré embedding for notatet som er åpent (F2). Utelatt = ingen bryter. */
   readonly discreet?: DiscreetControl;
 }
@@ -40,11 +42,11 @@ export interface DiscreetControl {
   readonly onToggle: () => void;
 }
 
-export function ThemePicker({ open, onClose, onOpenShortcuts, discreet }: ThemePickerProps) {
+export function ThemePicker({ open, onClose, onOpenShortcuts, discreet, onPresent }: ThemePickerProps) {
   const headingId = useId();
   return (
     <Modal open={open} onClose={onClose} labelledBy={headingId} className="theme-panel">
-      <ThemePickerBody headingId={headingId} onOpenShortcuts={onOpenShortcuts} discreet={discreet} />
+      <ThemePickerBody headingId={headingId} onOpenShortcuts={onOpenShortcuts} discreet={discreet} onPresent={onPresent} />
     </Modal>
   );
 }
@@ -53,10 +55,12 @@ function ThemePickerBody({
   headingId,
   onOpenShortcuts,
   discreet,
+  onPresent,
 }: {
   readonly headingId: string;
   readonly onOpenShortcuts?: (() => void) | undefined;
   readonly discreet?: DiscreetControl | undefined;
+  readonly onPresent?: (() => void) | undefined;
 }) {
   const { preferences, resolvedMode, setPreferences } = useTheme();
   const { width, setWidth, setZen } = useViewSettings();
@@ -227,6 +231,22 @@ function ThemePickerBody({
               <kbd className="k">z</kbd>
             </span>
           </button>
+          {onPresent ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.currentTarget.closest('dialog')?.close();
+                requestAnimationFrame(() => onPresent());
+              }}
+            >
+              <Icon name="expand" />
+              Presenter
+              <span className="keys-inline" aria-hidden="true">
+                <kbd className="k lead">Space</kbd>
+                <kbd className="k">p</kbd>
+              </span>
+            </button>
+          ) : null}
           {onOpenShortcuts ? (
             <button
               type="button"

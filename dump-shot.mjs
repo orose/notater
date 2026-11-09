@@ -1,0 +1,12 @@
+import { chromium } from '@playwright/test';
+const [,, note, id, out, w='1920', h='1080', type='tidsskrift', palette='papir', mode='light'] = process.argv;
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: +w, height: +h } });
+await p.emulateMedia({ reducedMotion: 'reduce', colorScheme: mode });
+p.on('pageerror', (e) => console.log('PAGEERR', e.message));
+p.on('console', (m) => { if (m.type() === 'error') console.log('CONSOLE', m.text()); });
+await p.goto(`http://127.0.0.1:4731/v/test/${encodeURIComponent(note)}?type=${type}&palette=${palette}&mode=${mode}&lysbilde=${encodeURIComponent(id)}`);
+await p.waitForSelector('[data-testid="lysbilde"]:not([hidden])', { timeout: 10000 });
+await p.waitForTimeout(1200);
+await p.screenshot({ path: out });
+await b.close();

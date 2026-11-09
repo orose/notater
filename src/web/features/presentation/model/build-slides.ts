@@ -47,7 +47,10 @@ function overflowOf(node: Node): UnitOverflow {
 /** Kopi uten `id` (og referanser til id-er): lesevisningen er fortsatt montert (ADR-010 §1). */
 function stripIds<T extends Node>(node: T): T {
   if (!isElement(node)) return node;
-  const { id: _id, ariaDescribedBy: _described, ariaLabelledBy: _labelled, ...properties } = node.properties;
+  const properties = { ...node.properties };
+  delete properties.id;
+  delete properties.ariaDescribedBy;
+  delete properties.ariaLabelledBy;
   return { ...node, properties, children: node.children.map(stripIds) } as T;
 }
 
@@ -57,7 +60,8 @@ function unitsOf(node: Node, nextKey: () => string): SlideUnit[] {
     const items = node.children.filter((c): c is Element => isElement(c) && c.tagName === 'li');
     if (items.length > 1) {
       const key = nextKey();
-      const { id: _id, ...properties } = node.properties;
+      const properties = { ...node.properties };
+      delete properties.id;
       return items.map((li, index) => ({
         node: stripIds(li),
         overflow: 'flow' as const,
@@ -193,7 +197,7 @@ export const buildSlideDrafts: BuildSlideDrafts = (source, options) => {
         agenda: agendaIndex,
         slide: agendaIndex !== null ? perAgenda++ : loose++,
         // Første lysbilde i punktet dekker også agendaoverskriften (start ved leseposisjon med `:agenda av`).
-        sourceHeadingIds: first ? [agendaHeadingIds[agendaIndex as number] as string, h.id] : [h.id],
+        sourceHeadingIds: first ? [h.id, agendaHeadingIds[agendaIndex as number] as string] : [h.id],
         preamble: false,
         emptySection: false,
       });

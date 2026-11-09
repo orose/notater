@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createCommandHandlers, COMING_SOON, NOTES_ONLY, NOT_ON_BASE, NO_HEADINGS } from './handlers';
-import { COMMAND_IDS, createCommandRegistry, type CommandContext, type CommandPorts, type RouteKind } from './index';
+import { createCommandHandlers, presentLevelError, COMING_SOON, NOTES_ONLY, NOT_ON_BASE, NO_HEADINGS } from './handlers';
+import { COMMAND_IDS, NOT_WHILE_PRESENTING, ONLY_WHILE_PRESENTING, createCommandRegistry, type CommandContext, type CommandPorts, type RouteKind } from './index';
 
 function fakePorts() {
   const fn = () => vi.fn();
@@ -21,14 +21,40 @@ function fakePorts() {
     },
     view: { toggleWidth: fn(), toggleDiscreet: fn(), toggleZen: fn(), exitZen: vi.fn(() => false) },
     outline: { toggleAtReadingPosition: fn(), foldAll: fn(), unfoldAll: fn() },
+    presentation: {
+      active: false,
+      slideLevel: 3,
+      storedLevel: null,
+      transitions: true,
+      overviewOpen: false,
+      blackout: false,
+      fullscreen: false,
+      levels: () => [
+        { level: 2, agendaLevel: null, slides: 3 },
+        { level: 3, agendaLevel: 2, slides: 7 },
+        { level: 4, agendaLevel: 3, slides: 10 },
+      ],
+      start: fn(),
+      next: fn(),
+      previous: fn(),
+      first: fn(),
+      last: fn(),
+      scroll: fn(),
+      toggleOverview: fn(),
+      toggleBlackout: fn(),
+      setTransitions: fn(),
+      toggleFullscreen: fn(),
+      escape: vi.fn(() => true),
+      stop: fn(),
+    },
     toast: fn(),
   } satisfies CommandPorts;
 }
 
-function context(kind: RouteKind = 'note', foldableHeadings = 3) {
+function context(kind: RouteKind = 'note', foldableHeadings = 3, mode: CommandContext['mode'] = 'normal') {
   const ports = fakePorts();
   const ctx: CommandContext = {
-    mode: 'normal',
+    mode,
     route: { kind, vaultId: 'test', docPath: kind === 'base' ? 'Oppgaver.base' : 'Velkommen' },
     view: { width: 'readable', discreet: false, zen: false, noteEmbeds: 0, foldableHeadings },
     ports,
@@ -128,5 +154,56 @@ describe('kommandohandlere', () => {
     expect(registry.get('theme.toggleMode').state(ctx)).toBe('lys');
     expect(registry.get('theme.setType').state(ctx)).toBe('Terminal');
     expect(registry.get('scroll.down').state(ctx)).toBeNull();
+  });
+
+  it('ADR-010 §3: lese-kommandoer er av under presentasjon, present-kommandoer bare under presentasjon', () => {
+    const present = context('note', 3, 'present').ctx;
+    expect(registry.get('scroll.down').isEnabled(present)).toEqual({ enabled: false, reason: NOT_WHILE_PRESENTING });
+    expect(registry.get('view.toggleZen').isEnabled(present)).toEqual({ enabled: false, reason: NOT_WHILE_PRESENTING });
+    expect(registry.get('theme.toggleMode').isEnabled(present)).toEqual({ enabled: true });
+    expect(registry.get('present.next').isEnabled(present)).toEqual({ enabled: true });
+    expect(registry.get('present.next').isEnabled(context().ctx)).toEqual({ enabled: false, reason: ONLY_WHILE_PRESENTING });
+    expect(registry.get('present.start').isEnabled(context('base').ctx)).toEqual({ enabled: false, reason: NOTES_ONLY });
+  });
+
+  it('system.escape: under presentasjon avslutter/lukker presentasjonen, ellers zen', () => {
+    const { ctx, ports } = context('note', 3, 'present');
+    void registry.get('system.escape').run(ctx, {});
+    expect(ports.presentation.escape).toHaveBeenCalled();
+    expect(ports.view.exitZen).not.toHaveBeenCalled();
+  });
+
+  it(':presenter: argumentverdier er auto + gyldige nivåer med beskrivelse; ugyldig/tomt nivå gir E475/E486 (PO-101)', () => {
+    const { ctx, ports } = context();
+    const values = registry.get('present.start').argumentValues(ctx, 'nivå');
+    expect(values.map((v) => v.value)).toEqual(['auto', 'h2', 'h3', 'h4']);
+    expect(values[2]?.description).toBe('agenda h2 · 7 lysbilder');
+    expect(registry.get('present.start').argumentError(ctx, 'nivå', 'h9')?.code).toBe('E475');
+    expect(registry.get('present.start').argumentError(ctx, 'nivå', '4')?.code).toBe('E475');
+    expect(registry.get('present.start').argumentError(ctx, 'nivå', 'h5')).toMatchObject({ code: 'E486', title: 'Ingen overskrifter på nivå h5 i notatet.' });
+    expect(registry.get('present.start').argumentError(ctx, 'nivå', 'h5')?.detail).toContain('Gyldige nivåer: h2, h3 og h4.');
+    void registry.get('present.start').run(ctx, { nivå: 'h4' });
+    expect(ports.presentation.start).toHaveBeenCalledWith(4);
+    void registry.get('present.start').run(ctx, {});
+    expect(ports.presentation.start).toHaveBeenLastCalledWith();
+    void registry.get('present.start').run(ctx, { nivå: 'h5' });
+    expect(ports.presentation.start).toHaveBeenCalledTimes(2);
+  });
+
+  it('presentLevelError: auto og gyldige nivåer er ingen feil', () => {
+    expect(presentLevelError('auto', [2])).toBeNull();
+    expect(presentLevelError('H2', [2])).toBeNull();
+    expect(presentLevelError('h1', [2, 3])?.code).toBe('E486');
+    expect(presentLevelError('hx', [])?.detail).toContain('Notatet har ingen overskrifter.');
+  });
+
+  it(':agenda av/på/veksle', () => {
+    const { ctx, ports } = context('note', 3, 'present');
+    void registry.get('present.agenda').run(ctx, { verdi: 'av' });
+    expect(ports.presentation.setTransitions).toHaveBeenLastCalledWith(false);
+    void registry.get('present.agenda').run(ctx, {});
+    expect(ports.presentation.setTransitions).toHaveBeenLastCalledWith(false);
+    void registry.get('present.agenda').run(ctx, { verdi: 'på' });
+    expect(ports.presentation.setTransitions).toHaveBeenLastCalledWith(true);
   });
 });

@@ -21,23 +21,23 @@ const s = fasit2.statusmote;
 test.describe('P1 frontmatter er data, ikke presentasjon', () => {
   test.skip(({ isMobile }) => isMobile, 'Tastatur');
 
-  test.fixme('TC-2-P1-01 `lysbildeniva`, `agenda: av` og `presenter:` i frontmatter ignoreres (statusmøtet)', async ({ page }) => {
+  test('TC-2-P1-01 `lysbildeniva`, `agenda: av` og `presenter:` i frontmatter ignoreres (statusmøtet)', async ({ page }) => {
     await presenter(page, s.sti);
     // Lysbildenivå H3 (ikke H4 fra frontmatter) og overganger på (ikke `agenda: av`).
     expect(await lesAlleLysbilder(page)).toEqual(s.lysbilder.map(somFasit));
   });
 
-  test.fixme('TC-2-P1-02 `lysbildeniva: h4` i rapportens frontmatter ignoreres', async ({ page }) => {
+  test('TC-2-P1-02 `lysbildeniva: h4` i rapportens frontmatter ignoreres', async ({ page }) => {
     await presenter(page, fasit2.rapport.sti);
     expect(await lesAlleLysbilder(page)).toEqual(fasit2.rapport.lysbilder.map(somFasit));
   });
 
-  test.fixme('TC-2-P1-03 fellene vises som vanlige egenskaper (data) på tittellysbildet', async ({ page }) => {
+  test('TC-2-P1-03 fellene vises som vanlige egenskaper (data) på tittellysbildet', async ({ page }) => {
     await presenter(page, s.sti);
     await expect(lysbilde(page)).toContainText('lysbildeniva');
   });
 
-  test.fixme('TC-2-P1-04 alle v2-funksjoner i bruk: ingen endrede filer og bare GET/HEAD mot serveren', async ({ page, vaultDir }) => {
+  test('TC-2-P1-04 alle v2-funksjoner i bruk: ingen endrede filer og bare GET/HEAD mot serveren', async ({ page, vaultDir }) => {
     test.slow();
     const før = sjekksum(vaultDir);
     const metoder = new Set<string>();
@@ -59,7 +59,7 @@ test.describe('P1 frontmatter er data, ikke presentasjon', () => {
 test.describe('AK-2-14 lesevisningen er urørt etter presentasjon', () => {
   test.skip(({ isMobile }) => isMobile, 'Tastatur');
 
-  test.fixme('TC-2-14-01 diskré, bredde og folding beholdes etter avsluttet presentasjon (Q-13)', async ({ page }) => {
+  test('TC-2-14-01 diskré, bredde og folding beholdes etter avsluttet presentasjon (Q-13)', async ({ page }) => {
     await openNote(page, fasit2.rapport.sti);
     await settDiskret(page, false);
     await expect(artikkel(page).getByText('Innebygd fra', { exact: true }).first()).toBeVisible();
@@ -75,7 +75,7 @@ test.describe('AK-2-14 lesevisningen er urørt etter presentasjon', () => {
     await expect(artikkel(page).getByText('Innebygd fra', { exact: true }).first()).toBeVisible();
   });
 
-  test.fixme('TC-2-14-02 `?` etter presentasjon viser normal-modusens taster igjen', async ({ page }) => {
+  test('TC-2-14-02 `?` etter presentasjon viser normal-modusens taster igjen', async ({ page }) => {
     await presenter(page, s.sti);
     await avsluttPresentasjon(page);
     await fokusPåInnhold(page);
@@ -84,7 +84,7 @@ test.describe('AK-2-14 lesevisningen er urørt etter presentasjon', () => {
     await expect(hurtigtastoversikt(page)).toContainText(/Space\s*p|␣\s*p/);
   });
 
-  test.fixme('TC-2-14-03 `Space p` vises i normal-modusens oversikt og i paletten med sin primære tast (P2, PO-69)', async ({ page }) => {
+  test('TC-2-14-03 `Space p` vises i normal-modusens oversikt og i paletten med sin primære tast (P2, PO-69)', async ({ page }) => {
     await openNote(page, s.sti);
     await fokusPåInnhold(page);
     await page.keyboard.press(':');

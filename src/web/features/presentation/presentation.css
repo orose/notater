@@ -1,0 +1,390 @@
+/* v2 Presentasjon (designsystem §12, prototype-v2.html). Tokens: docs/design/tokens.css (v2-blokken).
+   Alle mål på lerretet er i lerretpiksler (lp, --lp = 100cqw / 1920). Lerretet er alltid 1920 × 1080 og skaleres med
+   transform (ADR-010 §2), så layout og tilpasning er like i alle vindusstørrelser. Innhold i lysbilder bruker em/lp,
+   aldri rem (rem følger ikke lerretet). Tittel, kolumnetittel og folio krympes aldri; bare [data-fit-box] (--slide-fit). */
+
+/* ---------- Lesevisningen bak overlegget (ADR-010 §6) ---------- */
+html[data-present="on"] { overflow: hidden; }
+html[data-present="on"] :is(.app, .topbar, .skip-link) { visibility: hidden; }
+
+/* ---------- Scene og lerret ---------- */
+.present {
+  position: fixed; inset: 0; z-index: var(--z-present); display: flex; flex-direction: column;
+  background: var(--color-letterbox); color: var(--color-text); font-family: var(--font-ui);
+}
+.present:focus, .present:focus-visible { outline: none; } /* programmatisk fokusmål (PO-74) */
+.present:not(.is-pointer) .stage { cursor: none; }
+.stage { position: relative; flex: 1 1 auto; min-height: 0; display: grid; place-items: center; overflow: hidden; touch-action: pan-y; }
+.canvas-box { position: relative; width: calc(1920px * var(--stage-scale, 1)); height: calc(1080px * var(--stage-scale, 1)); flex: none; overflow: hidden; }
+.canvas {
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform: scale(var(--stage-scale, 1)); transform-origin: 0 0;
+  container-type: size; overflow: hidden; background: var(--color-bg); color: var(--color-text);
+  font-family: var(--font-body); font-weight: var(--slide-weight-body); line-height: var(--slide-leading);
+  font-variant-ligatures: common-ligatures; text-align: left;
+}
+.slide-frame { position: absolute; inset: 0; }
+.slide-frame[hidden] { display: none; }
+.slide-frame.is-active { animation: slide-fade-in var(--slide-fade) var(--ease-in-out); }
+@keyframes slide-fade-in { from { opacity: 0; } }
+.present[data-blackout] .stage { visibility: hidden; transition: visibility 0s linear var(--slide-fade); }
+
+/* ---------- Lysbildet ---------- */
+.slide {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  padding: var(--slide-content-top) var(--slide-margin-x) var(--slide-content-bottom);
+  font-size: var(--slide-step-0);
+}
+.slide :focus-visible { outline: var(--slide-focus) solid var(--color-focus); outline-offset: calc(var(--slide-focus) * 0.5); }
+
+/* ---------- Agendalinjen = kolumnetittel (§12.5) ---------- */
+.runhead {
+  position: absolute; left: var(--slide-margin-x); right: var(--slide-margin-x); top: var(--slide-head-top); z-index: 2;
+  font-size: var(--slide-step-n2); line-height: 1.25; color: var(--color-head);
+}
+.runhead ol { display: flex; list-style: none; margin: 0; padding: 0 0 calc(16 * var(--lp)); white-space: nowrap; overflow: hidden; }
+.runhead li { flex: none; }
+.runhead li + li::before { content: "·"; margin-inline: 0.65em; color: var(--color-head); display: inline-block; }
+.runhead .t { text-underline-offset: 0.32em; text-decoration-thickness: var(--slide-rule); }
+.runhead .cur { color: var(--color-head-current); }
+.runhead .cur .t { text-decoration-line: underline; text-decoration-color: var(--color-head-mark); }
+.runhead .pos { font-family: var(--font-meta); font-size: max(calc(var(--slide-mono-min-lp) * var(--lp)), 0.9em); margin-left: 0.55em; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+[data-type="tidsskrift"] .runhead { font-family: var(--font-sc); letter-spacing: var(--tracking-sc); }
+[data-type="tidsskrift"] .runhead ol { border-bottom: var(--slide-hair) solid var(--color-rule-strong); }
+[data-type="terminal"] .runhead { font-family: var(--font-meta); letter-spacing: 0.01em; }
+[data-type="terminal"] .runhead li[data-n]::before { content: attr(data-n) "\2002"; }
+[data-type="terminal"] .runhead li + li[data-n]::before { content: "│\2003" attr(data-n) "\2002"; margin: 0; }
+[data-type="terminal"] .runhead li.ell + li[data-n]::before, [data-type="terminal"] .runhead li[data-n]:first-child::before { content: attr(data-n) "\2002"; }
+[data-type="terminal"] .runhead li + li.ell::before { content: "│"; margin-inline: 0.8em; }
+[data-type="terminal"] .runhead li.cur[data-n]::before { color: var(--color-accent); }
+[data-type="klartekst"] .runhead { font-family: var(--font-ui); }
+[data-type="klartekst"] .runhead .cur { font-weight: 700; }
+
+/* ---------- Bunn: notattittel, folio, fremdrift (§12.6) ---------- */
+.slide-foot {
+  position: absolute; left: var(--slide-margin-x); right: var(--slide-margin-x); bottom: var(--slide-foot-bottom); z-index: 2;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 2em;
+  font-size: var(--slide-step-n2); line-height: 1.1; color: var(--color-muted);
+}
+.foot-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+[data-type="tidsskrift"] .foot-title { font-style: italic; }
+[data-type="terminal"] .foot-title { font-family: var(--font-meta); }
+.folio { margin-left: auto; font-family: var(--font-meta); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: max(calc(var(--slide-mono-min-lp) * var(--lp)), 1em); }
+.folio b { font-weight: 500; color: var(--color-text); }
+.progress { position: absolute; left: 0; right: 0; bottom: 0; height: var(--slide-progress-h); display: flex; gap: calc(6 * var(--lp)); z-index: 2; }
+.progress .seg { position: relative; flex: var(--n) 1 0; background: var(--color-progress-track); overflow: hidden; }
+.progress .fill { position: absolute; inset: 0 auto 0 0; background: var(--color-progress); transition: width var(--dur-base) var(--ease-out); }
+/* PO-95: tittellysbildet har verken folio, notattittel eller fremdriftslinje (finnes for hjelpemidler). */
+.present[data-kind="title"] :is(.progress, .slide-foot) { opacity: 0; }
+
+/* ---------- Innholdslysbilde: tittel (§12.4 L4) ---------- */
+.slide-title {
+  position: relative; flex: none; margin: 0 0 calc(36 * var(--lp)); max-width: 24em;
+  font-family: var(--font-display); font-size: var(--slide-step-2); font-weight: var(--slide-weight-title);
+  line-height: 1.06; letter-spacing: var(--tracking-display); text-wrap: balance;
+}
+[data-type="tidsskrift"] .slide-title[data-sec]::before {
+  content: attr(data-sec); position: absolute; right: calc(100% + 0.42em); top: 0.42em; font-size: 0.46em; font-style: italic;
+  color: var(--color-accent); white-space: nowrap; letter-spacing: 0; font-weight: 400;
+}
+[data-type="terminal"] .slide-title[data-sec-pad]::before {
+  content: attr(data-sec-pad); display: block; margin-bottom: 0.45em; font-family: var(--font-meta); font-size: var(--slide-step-n2);
+  font-weight: 500; letter-spacing: 0.06em; color: var(--color-accent);
+}
+.forts { color: var(--color-muted); font-weight: 400; letter-spacing: 0; white-space: nowrap; }
+.forts-measure { visibility: hidden; }
+[data-type="tidsskrift"] .forts { font-style: italic; font-size: 0.6em; }
+[data-type="terminal"] .forts { font-family: var(--font-meta); font-size: 0.44em; vertical-align: 0.35em; }
+[data-type="klartekst"] .forts { font-size: 0.6em; }
+.kicker-forts { position: absolute; left: var(--slide-margin-x); top: var(--slide-head-top); margin: 0; font-size: var(--slide-step-n2); color: var(--color-muted); }
+[data-type="tidsskrift"] .kicker-forts { font-style: italic; }
+[data-type="terminal"] .kicker-forts { font-family: var(--font-meta); }
+
+/* ---------- Innholdslysbilde: kroppen (A2) ---------- */
+.slide-body {
+  --mono-floor: calc(var(--slide-mono-min-lp) * var(--lp));
+  position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--slide-flow);
+  font-size: calc(var(--slide-step-0) * var(--slide-fit, 1)); overflow: hidden;
+  /* Hengende tankestreker og «§» skal ikke klippes: kroppen strekker seg inn i margen. */
+  margin-inline: calc(-1 * var(--slide-hang)); padding-inline: var(--slide-hang);
+}
+.slide-body > *, .t-pre > * { margin: 0; flex: none; min-width: 0; }
+.slide-unit > * { margin: 0 !important; }
+.slide-body > :is(ul, ol), .slide-unit > :is(p, blockquote, .callout, h3) { max-width: var(--slide-measure); }
+.slide-content[data-kind] .slide-body p { text-wrap: pretty; }
+/* Lysbilder uten overskrift (innledning, S7) har hele flaten til brødtekst: full bredde (Q-03). */
+.slide-content.is-headless .slide-unit > :is(p, blockquote, .callout), .slide-content.is-headless .slide-body > :is(ul, ol) { max-width: none; }
+.slide :is(p, li) { margin: 0; }
+.slide strong { font-weight: var(--weight-strong); }
+.slide-sub { margin: 0; font-family: var(--font-display); font-size: 1.3em; font-weight: var(--weight-h3); font-style: var(--style-h3); line-height: 1.15; }
+.slide :is(ul, ol) { margin: 0; padding-left: 1.1em; }
+.slide li + li, .slide li > :is(ul, ol) { margin-top: 0.28em; }
+.slide li::marker { color: var(--color-accent); }
+[data-type="tidsskrift"] .slide ul { list-style: "–\2002"; }
+[data-type="terminal"] .slide ul { list-style: square; }
+.slide :not(pre) > code { font-family: var(--font-mono); font-size: calc(var(--slide-mono-ratio) * 1.04em); font-feature-settings: var(--mono-ligatures); }
+[data-type="terminal"] .slide :not(pre) > code, [data-type="klartekst"] .slide :not(pre) > code { background: var(--color-sunken); padding: 0.06em 0.28em; border-radius: var(--radius-s); }
+.slide a { color: var(--color-link); text-decoration-line: underline; text-decoration-thickness: max(1px, calc(3 * var(--lp))); text-underline-offset: 0.2em; }
+.slide mark { background: var(--color-mark); color: inherit; padding: 0 0.12em; }
+.slide blockquote { margin: 0; padding-left: 0.9em; border-left: var(--slide-rule) solid var(--color-rule-strong); color: var(--color-muted); font-style: italic; }
+.slide img { max-width: 100%; height: auto; }
+.slide .lede { font-size: 1em; }
+.slide .fn-n { font-family: var(--font-meta); font-size: 0.62em; vertical-align: super; line-height: 0; color: var(--color-accent); padding-left: 0.08em; }
+.slide .sn-ref-sup { font-size: 1em; vertical-align: baseline; }
+
+/* Fotnoter (A4): små noter nederst på lysbildet de hører til */
+.slide-notes { flex: none; margin: calc(20 * var(--lp)) 0 0; padding: 0; list-style: none; font-size: var(--slide-step-n2); line-height: 1.35; color: var(--color-muted); max-width: 52em; }
+.slide-notes::before { content: ""; display: block; width: calc(240 * var(--lp)); border-top: var(--slide-hair) solid var(--color-rule-strong); margin-bottom: 0.55em; }
+.slide-notes li { display: flex; gap: 0.5em; }
+.slide-notes .n { font-family: var(--font-meta); color: var(--color-accent); min-width: 1ch; font-style: normal; }
+[data-type="tidsskrift"] .slide-notes { font-style: italic; }
+[data-type="terminal"] .slide-notes { font-family: var(--font-meta); }
+
+/* ---------- Kodefigur ---------- */
+.slide .code { margin: 0 !important; font-size: calc(var(--slide-mono-ratio) * 1em); border-radius: var(--radius-l); min-width: 0; display: flex; flex-direction: column; }
+.slide .code-head { min-height: 0; padding: 0.5em 0.9em 0.45em; gap: 0.9em; font-size: max(var(--mono-floor), 0.8em); border-bottom: var(--slide-hair) solid var(--color-rule); }
+.slide .code-head .copy { display: none; }
+.slide .code pre { margin: 0; padding: 0.6em 0.9em 0.7em !important; font-size: 1em; line-height: 1.45; overflow: hidden; }
+.slide .code pre code { width: auto; }
+[data-type="tidsskrift"] .slide .code { margin: 0 !important; border-radius: 0; border-top: var(--slide-rule) solid var(--color-text); border-bottom: var(--slide-hair) solid var(--color-rule-strong); }
+[data-type="tidsskrift"] .slide .code-head { padding-left: 0; }
+[data-type="tidsskrift"] .slide .code-head::before { font-size: 1.12em; }
+[data-type="tidsskrift"] .slide .code pre { padding-left: 0 !important; }
+[data-type="terminal"] .slide .code { border: var(--slide-hair) solid var(--color-rule); }
+
+/* A2 siste utvei: én blokk som er for stor alene → minimum skrift + intern rulling (↑ ↓), §12.7.4 */
+.slide-unit.is-scroller { flex: 1 1 0 !important; min-height: 0; display: flex; flex-direction: column; }
+.slide-unit.is-scroller > * { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+.slide-unit.is-scroller :is(pre, .table-wrap, .tabpanel) { flex: 1 1 0; min-height: 0; overflow: auto !important; scrollbar-width: thin; scrollbar-color: var(--color-rule-strong) transparent;
+  mask-image: linear-gradient(#000 calc(100% - 3em), transparent); }
+.slide-unit.is-scroller.at-end :is(pre, .table-wrap, .tabpanel) { mask-image: none; }
+.slide-unit.is-scroller:not(:has(pre, .table-wrap, .tabpanel)) { overflow: auto; }
+.slide-unit.is-scroller[data-hint]::after {
+  content: attr(data-hint); flex: none; display: block; padding: 0.4em 0.9em 0.5em; font-family: var(--font-meta);
+  font-size: max(var(--mono-floor), 0.8em); color: var(--color-muted); border-top: var(--slide-hair) solid var(--color-rule);
+}
+
+/* ---------- Diagram (Mermaid) og bilder: skaleres til plassen som er igjen ---------- */
+.slide-unit[data-overflow="scale"] { flex: 1 1 auto; min-height: var(--slide-figure-min); display: flex; flex-direction: column; }
+.slide-unit[data-overflow="scale"] > :is(.diagram, figure, p) { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; margin: 0 !important; }
+.slide .diagram-frame { flex: 1 1 0; min-height: 0; display: flex; padding: 0.4em 0.5em; overflow: hidden; border-width: var(--slide-hair); }
+[data-type="tidsskrift"] .slide .diagram-frame { border-width: var(--slide-rule) 0 var(--slide-hair); }
+.slide .diagram-svg { flex: 1 1 0; min-height: 0; min-width: 0; display: flex; }
+.slide .diagram-svg svg { width: 100% !important; height: 100% !important; max-width: none !important; }
+.slide .diagram figcaption { flex: none; margin-top: 0.45em; font-size: var(--slide-step-n2); }
+.slide .diagram figcaption .zoom { display: none; }
+.slide .diagram-loading { min-height: 0; flex: 1; }
+.slide-unit[data-overflow="scale"] img { flex: 1 1 0; min-height: 0; width: 100%; object-fit: contain; }
+.slide-figure-placeholder { min-height: var(--slide-figure-min); }
+
+/* ---------- Tabell (booktabs) og Bases ---------- */
+.slide .table-wrap { margin: 0 !important; overflow: hidden; }
+.slide table { width: 100%; border-collapse: collapse; font-size: max(var(--mono-floor), calc(var(--slide-mono-ratio) * 1.05em)); line-height: 1.3; font-variant-numeric: tabular-nums lining-nums;
+  border-top: var(--slide-rule) solid var(--color-text); border-bottom: var(--slide-rule) solid var(--color-text); }
+.slide :is(th, td) { text-align: left; vertical-align: baseline; padding: 0.42em 1em 0.42em 0; border: 0; }
+.slide thead th { font-weight: 500; border-bottom: var(--slide-hair) solid var(--color-text); color: var(--color-muted); }
+.slide tbody tr + tr td { border-top: var(--slide-hair) solid var(--color-rule); }
+[data-type="tidsskrift"] .slide thead th { font-family: var(--font-sc); letter-spacing: 0.05em; }
+[data-type="terminal"] .slide table { border: var(--slide-hair) solid var(--color-rule); }
+[data-type="terminal"] .slide thead th { font-family: var(--font-meta); text-transform: uppercase; letter-spacing: 0.08em; background: var(--color-surface); }
+[data-type="terminal"] .slide :is(th, td) { padding: 0.42em 0.8em; }
+
+.slide .base { margin: 0 !important; border: 0; font-size: 1em; background: transparent; display: flex; flex-direction: column; gap: 0.3em; min-width: 0; }
+.slide .base-head { padding: 0; gap: 0.9em; font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.72em); color: var(--color-muted); }
+.slide .base-head .src, .slide .base-head .total { font-size: 1em; min-height: 0; }
+.slide .base-head .src { color: var(--color-text) !important; }
+.slide .tabs { padding: 0; gap: 1em; border-bottom: var(--slide-hair) solid var(--color-rule); }
+.slide .tab { font-size: max(var(--mono-floor), 0.72em); padding: 0.3em 0 0.35em; }
+.slide .tab .n { font-size: 0.9em; }
+.slide .tabpanel { padding: 0; }
+.slide .status { font-size: max(var(--mono-floor), 0.88em); }
+.slide .status::before { border-width: max(1.5px, calc(3 * var(--lp))); }
+.slide .base-warn { padding: 0; font-size: max(var(--mono-floor), 0.7em); }
+
+/* Kanban (A3): alle kolonner i repeat(n, minmax(0, 1fr)); intern rulling først når kolonnene blir for smale. */
+.slide .kanban { --lane-min: 11em; grid-template-columns: repeat(var(--lanes, 4), minmax(min(var(--lane-min), 100% / var(--lanes, 4) - 1em), 1fr)); gap: calc(24 * var(--lp));
+  font-size: calc(var(--slide-mono-ratio) * 1em); padding: 0; overflow-x: auto; mask-image: none !important; }
+.slide .lane { min-height: 0; padding: 0.4em; display: flex; flex-direction: column; gap: 0.3em; min-width: 0; border-radius: var(--radius-l); }
+.slide .lane-head { padding: 0 0.25em 0.1em; font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.8em); color: var(--color-muted); letter-spacing: 0.04em; }
+.slide .lane-head .n { font-size: 1em; }
+.slide a.card { padding: 0.25em 0.5em; line-height: 1.12; font-size: 1em; border-width: var(--slide-hair); color: var(--color-text); text-decoration: none; }
+.slide a.card * { text-decoration: none; }
+.slide .card + .card { margin-top: 0; }
+/* Kortene er kompakte på lerretet: tittel og felt i samme avsnitt (A3, alle kolonner og kort uten rulling om mulig). */
+.slide .card .t { display: inline; margin: 0; }
+.slide :is(.card-field, .card-tags) { display: inline; margin-left: 0.45em; font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.78em); color: var(--color-muted); }
+.slide .card-field .k { font-size: 1em; }
+.slide .card .tag { font-size: 1em; color: var(--color-muted); background: none; padding: 0; border: 0; }
+[data-type="tidsskrift"] .slide .lane { background: transparent; border-radius: 0; border-top: var(--slide-rule) solid var(--color-text); padding: 0.3em 0 0; gap: 0; }
+[data-type="tidsskrift"] .slide .lane-head { font-family: var(--font-sc); letter-spacing: var(--tracking-sc); padding-inline: 0; font-size: max(var(--mono-floor), 1em); }
+[data-type="tidsskrift"] .slide a.card { padding: 0.25em 0 0.3em; border-width: 0 0 var(--slide-hair); }
+
+/* ---------- Callout ---------- */
+.slide .callout { margin: 0 !important; font-size: 1em; border-left-width: var(--slide-rule-heavy); }
+.slide .callout > :is(summary, .callout-title) { padding: 0.45em 0.8em 0.2em 0.9em; gap: 0.5em; }
+.slide .callout-body { padding: 0 0.8em 0.55em 0.9em; }
+.slide .callout .callout-name { font-size: max(var(--mono-floor), 0.66em); }
+[data-type="tidsskrift"] .slide .callout { border-left-width: var(--slide-rule); }
+[data-type="tidsskrift"] .slide .callout .callout-name { font-size: 1em; }
+
+/* Andre kort (feilkort, plassholdere): skalert som kroppen */
+.slide :is(.unsupported, .img-placeholder, .embed-error, .mini-state) { font-size: max(var(--mono-floor), 0.8em); }
+
+/* ---------- L1 Tittellysbilde (§12.4) ---------- */
+.slide-title-page { padding: calc(112 * var(--lp)) var(--slide-margin-x) calc(104 * var(--lp)); }
+.t-grid {
+  position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden;
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--slide-gap);
+  grid-template-rows: auto auto auto auto 1fr auto;
+  grid-template-areas:
+    "kick kick kick kick kick kick kick kick kick kick kick kick"
+    "titl titl titl titl titl titl titl titl titl titl  .    .  "
+    "dek  dek  dek  dek  dek  dek  dek  dek   .   prop prop prop"
+    "pre  pre  pre  pre  pre  pre  pre  pre   .   prop prop prop"
+    ".    .    .    .    .    .    .    .     .   prop prop prop"
+    "foot foot foot foot foot foot foot foot foot foot foot foot";
+}
+.t-kick { grid-area: kick; font-size: var(--slide-step-n1); color: var(--color-muted); margin: 0 0 calc(28 * var(--lp)); }
+[data-type="tidsskrift"] .t-kick { font-family: var(--font-sc); letter-spacing: var(--tracking-sc); color: var(--color-accent); }
+[data-type="terminal"] .t-kick { font-family: var(--font-meta); }
+[data-type="terminal"] .t-kick::before { content: "~/"; color: var(--color-accent); }
+.t-kick .sep { color: var(--color-muted); margin-inline: 0.35em; }
+.t-title {
+  grid-area: titl; margin: 0; font-family: var(--font-display); font-size: var(--slide-step-4); font-weight: var(--slide-weight-display);
+  line-height: 0.98; letter-spacing: calc(var(--tracking-display) * 1.4); text-wrap: balance;
+}
+[data-type="terminal"] .t-title::after { content: ""; display: inline-block; width: 0.42em; height: 0.78em; margin-left: 0.12em; background: var(--color-accent); vertical-align: -0.04em; }
+.t-dek { grid-area: dek; margin: calc(44 * var(--lp)) 0 0; font-size: var(--slide-step-1); line-height: 1.3; color: var(--color-muted); text-wrap: pretty; }
+[data-type="tidsskrift"] .t-dek { font-style: italic; }
+.t-pre { grid-area: pre; margin: calc(28 * var(--lp)) 0 0; font-size: calc(var(--slide-step-n1) * var(--slide-fit, 1)); display: flex; flex-direction: column; gap: var(--slide-flow); }
+.t-props { grid-area: prop; align-self: start; margin: calc(44 * var(--lp)) 0 0; font-size: max(calc(var(--slide-step-n1) * var(--slide-fit, 1)), var(--slide-mono-min-lp) * var(--lp)); line-height: 1.3; }
+.t-props > div { display: grid; gap: 0.1em; padding: 0.55em 0; border-bottom: var(--slide-hair) solid var(--color-rule-strong); }
+.t-props > div:last-child { border-bottom: 0; }
+.t-props dt { font-size: max(0.87em, var(--slide-mono-min-lp) * var(--lp)); color: var(--color-muted); }
+.t-props dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.t-props :is(.status, .num, .tag, .link) { font-size: 1em; }
+[data-type="tidsskrift"] .t-props { border-top: var(--slide-rule-heavy) solid var(--color-text); }
+[data-type="tidsskrift"] .t-props dt { font-family: var(--font-sc); letter-spacing: var(--tracking-sc); }
+.t-foot { grid-area: foot; display: flex; align-items: baseline; gap: 2em; margin: 0; padding-top: calc(20 * var(--lp)); border-top: var(--slide-hair) solid var(--color-rule-strong); font-size: var(--slide-step-n2); color: var(--color-muted); }
+.t-foot .meta { font-family: var(--font-meta); font-variant-numeric: tabular-nums; font-size: max(calc(var(--slide-mono-min-lp) * var(--lp)), 1em); }
+[data-type="terminal"] .t-grid, [data-type="klartekst"] .t-grid {
+  grid-template-areas:
+    "kick kick kick kick kick kick kick kick kick kick kick kick"
+    "titl titl titl titl titl titl titl titl titl titl titl  .  "
+    "dek  dek  dek  dek  dek  dek  dek  dek  dek   .    .    .  "
+    "pre  pre  pre  pre  pre  pre  pre  pre  pre   .    .    .  "
+    "prop prop prop prop prop prop prop prop  .    .    .    .  "
+    "foot foot foot foot foot foot foot foot foot foot foot foot";
+}
+[data-type="terminal"] .t-props, [data-type="klartekst"] .t-props {
+  align-self: end; justify-self: start; min-width: 50%; margin: calc(28 * var(--lp)) 0 calc(40 * var(--lp)); display: grid; grid-template-columns: max-content 1fr; gap: 0.25em 1.4em;
+}
+[data-type="terminal"] .t-props { font-family: var(--font-meta); background: var(--color-surface); border: var(--slide-hair) solid var(--color-rule); border-radius: var(--radius-l); padding: 0.7em 1em; }
+[data-type="terminal"] .t-props > div, [data-type="klartekst"] .t-props > div { display: contents; }
+[data-type="terminal"] .t-props dt, [data-type="klartekst"] .t-props dt { font-size: 1em; }
+[data-type="klartekst"] .t-props dt { font-weight: 700; color: var(--color-text); }
+[data-type="klartekst"] .t-props { border-top: var(--slide-rule) solid var(--color-text); padding-top: 0.6em; }
+[data-type="terminal"] .t-foot, [data-type="klartekst"] .t-foot { border-top: 0; padding-top: 0; }
+
+/* ---------- L2 Agenda og L3 Overgang: samme oppsett, overgangen er agendaen med «du er her» ---------- */
+.ag-label { flex: none; margin: 0 0 calc(40 * var(--lp)); font-family: var(--font-display); font-size: var(--slide-step-2); font-weight: var(--slide-weight-title); line-height: 1.06; letter-spacing: var(--tracking-display); }
+[data-type="tidsskrift"] .ag-label { font-style: italic; font-weight: 300; }
+.ag-body { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; font-size: calc(var(--slide-step-3) * var(--slide-fit, 1));
+  margin-left: calc(-1 * var(--slide-margin-x)); padding-left: var(--slide-margin-x); }
+.ag-cols { display: flex; justify-content: flex-end; max-width: calc(1440 * var(--lp)); margin-bottom: 0.3em; font-size: var(--slide-step-n2); color: var(--color-muted); }
+[data-type="tidsskrift"] .ag-cols { font-family: var(--font-sc); letter-spacing: var(--tracking-sc); }
+[data-type="terminal"] .ag-cols, [data-type="klartekst"] .ag-cols { font-family: var(--font-meta); }
+.ag-list { list-style: none; margin: 0; padding: 0; max-width: calc(1440 * var(--lp)); }
+.ag-item { position: relative; display: grid; grid-template-columns: auto auto minmax(1em, 1fr) auto; align-items: baseline; line-height: 1.12; }
+.ag-item + .ag-item { margin-top: 0.22em; }
+.ag-item::before { content: attr(data-no); grid-column: 1; grid-row: 1; color: var(--color-accent); font-variant-numeric: tabular-nums; }
+.ag-item::after { content: attr(data-page); grid-column: 4; grid-row: 1; font-family: var(--font-meta); font-size: max(calc(var(--slide-mono-min-lp) * var(--lp)), 0.4em); color: var(--color-muted); font-variant-numeric: tabular-nums; padding-left: 0.5em; }
+.ag-now { display: none; }
+.ag-t { grid-column: 2; grid-row: 1; text-wrap: balance; padding-right: 0.35em; }
+.ag-lead { grid-column: 3; grid-row: 1; align-self: end; height: 0.32em; margin-bottom: 0.18em;
+  background: radial-gradient(circle, var(--lead, var(--color-rule-strong)) 0 calc(3 * var(--lp)), transparent calc(3.5 * var(--lp))) left bottom / calc(22 * var(--lp)) 100% repeat-x; }
+.ag-sub { grid-column: 2 / -1; grid-row: 2; display: block; margin: 0.3em 0 0.2em; font-size: max(var(--slide-step-n1), 0.38em); line-height: 1.35; color: var(--color-muted); }
+.ag-sub::before { content: attr(data-sub); }
+[data-type="tidsskrift"] .ag-item::before { position: absolute; right: calc(100% + 0.32em); top: 0.42em; font-size: 0.4em; font-style: italic; white-space: nowrap; }
+[data-type="tidsskrift"] .ag-item { grid-template-columns: 0 auto minmax(1em, 1fr) auto; }
+[data-type="tidsskrift"] .ag-sub { font-style: italic; }
+[data-type="terminal"] .ag-item::before { content: attr(data-no-pad); font-family: var(--font-meta); font-size: 0.5em; font-weight: 500; margin-right: 0.8em; }
+[data-type="terminal"] .ag-sub { font-family: var(--font-meta); padding-left: 1.2em; white-space: pre; }
+[data-type="terminal"] .ag-sub::before { content: attr(data-tree); }
+[data-type="klartekst"] .ag-item::before { content: attr(data-n) "."; font-weight: 700; margin-right: 0.3em; }
+/* L3 tilstander: tidligere = dempet (muted, aldri opasitet), gjeldende = form + farge (WCAG 1.4.1) */
+.ag-item[data-state="tidligere"], .ag-item[data-state="tidligere"]::before { color: var(--color-agenda-past); }
+.ag-item[data-state="nå"] { color: var(--color-agenda-current); }
+.ag-item[data-state="nå"]::after { color: var(--color-agenda-current); }
+[data-type="tidsskrift"] .ag-item[data-state="nå"] .ag-now {
+  display: block; position: absolute; left: calc(-1 * var(--slide-margin-x) + 52 * var(--lp)); top: 0.14em; height: 0.92em; width: var(--slide-rule-heavy); background: var(--color-agenda-current);
+}
+[data-type="terminal"] .ag-item[data-state="nå"] { background: var(--color-text); color: var(--color-bg); --lead: var(--color-bg); margin-inline: -0.2em; padding-inline: 0.2em; border-radius: var(--radius-s); }
+[data-type="terminal"] .ag-item[data-state="nå"]::before, [data-type="terminal"] .ag-item[data-state="nå"]::after { color: var(--color-bg); }
+[data-type="terminal"] .ag-item[data-state="nå"] .ag-sub { color: var(--color-bg); }
+[data-type="klartekst"] .ag-item[data-state="nå"] { font-weight: 700; }
+[data-type="klartekst"] .ag-item[data-state="nå"] .ag-now {
+  display: block; position: absolute; left: -0.45em; top: 0.12em; height: 0.95em; width: calc(8 * var(--lp)); background: var(--color-agenda-current); border-radius: calc(4 * var(--lp));
+}
+[data-type="klartekst"] .ag-item[data-state="nå"] .ag-t::before {
+  content: "Nå"; display: inline-block; margin-right: 0.4em; font-size: 0.42em; vertical-align: 0.4em; padding: 0.15em 0.45em;
+  border-radius: var(--radius-s); background: var(--color-agenda-current); color: var(--color-bg); font-weight: 700;
+}
+[data-type="klartekst"] .ag-sub { font-weight: 400; }
+
+/* ---------- Kontroller: mus (hjørnet) og mobil (§12.2, §12.6) ---------- */
+.p-ctrl { position: absolute; top: 12px; right: 12px; z-index: 5; display: flex; gap: 8px; opacity: 0; transition: opacity var(--dur-base) var(--ease-out); }
+.present.is-pointer .p-ctrl, .p-ctrl:focus-within { opacity: 1; }
+.present:not(.is-pointer) .p-ctrl:not(:focus-within) { pointer-events: none; }
+.p-btn { display: inline-flex; align-items: center; gap: 0.5em; min-height: 36px; padding: 0.35em 0.75em; font-family: var(--font-ui); font-size: 0.85rem; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-letterbox-edge); border-radius: var(--radius-m); }
+.p-btn:hover { border-color: var(--color-text); }
+.p-btn .k { font-size: 0.75rem; }
+.m-bar, .m-top, .m-hint { display: none; }
+@media (max-aspect-ratio: 1/1) {
+  .stage { flex: 0 0 auto; padding: 0; }
+  .present { justify-content: center; gap: 14px; padding: max(12px, env(safe-area-inset-top)) 0 max(12px, env(safe-area-inset-bottom)); }
+  .p-ctrl { display: none; }
+  .m-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; }
+  .m-top .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); font-size: 0.9rem; }
+  [data-type="tidsskrift"] .m-top .ttl { font-style: italic; }
+  .m-bar { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 8px; padding: 0 16px; }
+  .m-bar .folio-m { text-align: center; font-family: var(--font-meta); font-size: 0.9rem; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+  .m-btn { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 0.4em; padding: 0 0.8rem; color: var(--color-text); background: transparent; border: 1px solid var(--color-letterbox-edge); border-radius: var(--radius-m); font-size: 0.95rem; }
+  .m-hint { display: block; margin: 0; padding: 0 16px; text-align: center; color: var(--color-muted); font-size: 0.85rem; }
+}
+
+/* ---------- Oversikt (o), §12.8 ---------- */
+dialog.overview {
+  width: 100vw; max-width: 100vw; height: 100vh; max-height: 100vh; margin: 0; border: 0; overflow-y: auto;
+  padding: clamp(16px, 3vw, 44px) clamp(16px, 4vw, 64px) 48px; background: var(--color-overview-bg); color: var(--color-text); font-family: var(--font-ui);
+}
+dialog.overview::backdrop { background: var(--color-overview-bg); }
+dialog.overview:focus, dialog.overview:focus-visible { outline: none; }
+.ov-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.5rem; margin-bottom: clamp(16px, 2vw, 28px); }
+.ov-head h2 { margin: 0; font-family: var(--font-display); font-size: var(--step-3); font-weight: var(--weight-h2); line-height: 1.1; }
+[data-type="tidsskrift"] .ov-head h2 { font-style: italic; font-weight: 300; }
+.ov-head .sub { color: var(--color-muted); font-family: var(--font-meta); font-size: 0.8rem; }
+.ov-keys { margin-left: auto; display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; color: var(--color-muted); font-size: 0.85rem; }
+.ov-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 26px 22px; }
+.ov-item { display: block; width: 100%; padding: 0; text-align: left; cursor: pointer; min-width: 0; border: 0; background: none; color: inherit; font: inherit; border-radius: var(--radius-s); }
+.ov-item:focus { outline: none; }
+.thumb { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; overflow: hidden; background: var(--color-bg); outline: 1px solid var(--color-rule); transform: none; pointer-events: none; }
+.ov-item[aria-current="true"] .thumb { outline: 3px solid var(--color-thumb-current); }
+.ov-item:focus-visible .thumb, .ov-item:focus .thumb { box-shadow: 0 0 0 4px var(--color-overview-bg), 0 0 0 7px var(--color-thumb-cursor); }
+.cap { display: flex; align-items: baseline; gap: 0.55em; margin-top: 0.55rem; font-size: 0.9rem; line-height: 1.3; min-width: 0; }
+.cap .no { font-family: var(--font-meta); font-size: 0.8rem; color: var(--color-accent); font-variant-numeric: tabular-nums; min-width: 2ch; }
+.cap .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cap .now { margin-left: auto; flex: none; font-family: var(--font-meta); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; padding: 0.15em 0.45em; border-radius: var(--radius-s); background: var(--color-thumb-current); color: var(--color-bg); }
+@media (max-width: 640px) { .ov-grid { grid-template-columns: 1fr 1fr; gap: 18px 12px; } .ov-keys { display: none; } .cap { font-size: 0.8rem; } }
+
+/* ---------- Svart skjerm (b / .) ---------- */
+.blackout { position: fixed; inset: 0; z-index: var(--z-blackout); background: var(--color-blackout); opacity: 0; visibility: hidden; cursor: none;
+  transition: opacity var(--slide-fade) var(--ease-in-out), visibility 0s linear var(--slide-fade); }
+.blackout.is-on { opacity: 1; visibility: visible; transition: opacity var(--slide-fade) var(--ease-in-out), visibility 0s; }
+
+/* ---------- Målelerret (ADR-010 §2): skjult, logisk størrelse, uten transform ---------- */
+.measure-host { position: absolute; left: -100000px; top: 0; width: 1920px; height: 1080px; visibility: hidden; pointer-events: none; contain: strict; }
+.measure-pair, .measure-canvas { position: absolute; inset: 0; }
+.measure-canvas { transform: none; contain: strict; }
+
+/* Toast og palett over presentasjonen */
+html[data-present="on"] :is(.notice-zone, .showcmd) { z-index: var(--z-present-overlay); }

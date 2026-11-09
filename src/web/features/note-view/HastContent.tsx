@@ -26,17 +26,23 @@ import {
 import { useFoldedContent } from '../outline';
 import { prepareContent } from './prepare-content';
 
+/** Komponenter for HAST-elementer; overstyringer flettes over standard-mappingen (ADR-010 §6, AR-2-23). */
+export type ContentComponents = Partial<Components>;
+export type ComponentOverrides = (defaults: ContentComponents) => ContentComponents;
+
 interface HastContentProps {
   readonly vaultId: VaultId;
   readonly content: Root;
   readonly bases: Readonly<Record<string, BaseResult>>;
   /** Innholdet er allerede kjørt gjennom `prepareContent` (og `buildOutline`). */
   readonly prepared?: boolean;
+  /** Valgfrie overstyringer (presentasjonen: overskrifter, sidenoter, fotnotereferanser, Mermaid i måling). */
+  readonly components?: ComponentOverrides;
 }
 
 type Props = Record<string, unknown> & { children?: ReactNode };
 
-function createComponents(vaultId: VaultId, bases: Readonly<Record<string, BaseResult>>): Partial<Components> {
+function createComponents(vaultId: VaultId, bases: Readonly<Record<string, BaseResult>>): ContentComponents {
   const custom: Record<string, (props: never) => ReactNode> = {
     a: (props: Props) => <ContentLink vaultId={vaultId} {...props} />,
     h1: ContentH1,
@@ -89,14 +95,23 @@ const OPTIONS = {
  * Én toppnivåblokk, memoisert på node-identitet (ADR-009 §5): en fold gir nye noder bare langs stiene som
  * endret seg, så bare de blokkene rendres på nytt (AK17).
  */
-const Block = memo(function Block({ node, components }: { readonly node: RootContent; readonly components: Partial<Components> }) {
+export const HastBlock = memo(function HastBlock({ node, components }: { readonly node: RootContent; readonly components: ContentComponents }) {
   return toJsxRuntime({ type: 'root', children: [node] }, { ...OPTIONS, components }) as ReactNode;
 });
+const Block = HastBlock;
+
+/** Komponent-mappingen for et vault og dokumentets baser, med valgfrie overstyringer. Stabil så lenge inndata er det. */
+export function useContentComponents(vaultId: VaultId, bases: Readonly<Record<string, BaseResult>>, overrides?: ComponentOverrides): ContentComponents {
+  return useMemo(() => {
+    const defaults = createComponents(vaultId, bases);
+    return overrides ? { ...defaults, ...overrides(defaults) } : defaults;
+  }, [vaultId, bases, overrides]);
+}
 
 /** Rendrer sanitert HAST fra serveren til React – aldri innerHTML (ADR-002). */
-export const HastContent = memo(function HastContent({ vaultId, content, bases, prepared = false }: HastContentProps) {
+export const HastContent = memo(function HastContent({ vaultId, content, bases, prepared = false, components: overrides }: HastContentProps) {
   const ready = useMemo(() => (prepared ? content : prepareContent(content)), [content, prepared]);
-  const components = useMemo(() => createComponents(vaultId, bases), [vaultId, bases]);
+  const components = useContentComponents(vaultId, bases, overrides);
   const shown = useFoldedContent(ready);
   return (
     <>

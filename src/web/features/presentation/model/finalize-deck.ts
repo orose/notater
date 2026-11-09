@@ -21,7 +21,7 @@ function collectSidenotes(node: Node, into: SlideFootnote[]): void {
   for (const child of (node as Element).children) collectSidenotes(child, into);
 }
 
-function footnotesOf(units: readonly SlideUnit[]): SlideFootnote[] {
+export function footnotesOf(units: readonly SlideUnit[]): SlideFootnote[] {
   const out: SlideFootnote[] = [];
   for (const unit of units) collectSidenotes(unit.node, out);
   return out;
@@ -47,7 +47,8 @@ export const finalizeDeck: FinalizeDeck = (deck, fit, options) => {
     if (d.preamble && onTitle) continue;
     if (d.kind === 'title') {
       const pre = onTitle ? (preamble[0] as SlideDraft) : null;
-      const f = pre ? fitOf(pre) : UNMEASURED_FIT;
+      // Tittellysbildets egen tilpasning (mange egenskaper krympes), og innledningen som fikk plass på det (S6).
+      const f = fitOf(d);
       slides.push({
         id: d.baseId,
         kind: 'title',
@@ -70,7 +71,7 @@ export const finalizeDeck: FinalizeDeck = (deck, fit, options) => {
         address: { ...d.address, continuation: 1 },
         heading: d.heading,
         units: [],
-        scale: 1,
+        scale: fitOf(d).scale,
         scrollUnits: [],
         footnotes: [],
         agendaIndex: d.address.agenda,

@@ -1,6 +1,8 @@
 // Presentasjonsmodus (v2, ADR-010). Offentlig flate; andre features importerer kun herfra.
-// Skjelett: modell-typer, id-er, posisjon, lagring, URL og fullskjerm. React-delen (PresentationProvider,
-// PresentationLayer, Stage, SlideView, Overview, målelerret) kommer i slice 2-a–2-c.
+export { PresentationLayer } from './PresentationLayer';
+export { PresentationMoveSync } from './PresentationMoveSync';
+export { PresentationProvider } from './PresentationProvider';
+export { usePresentationControl } from './presentation-context';
 export {
   AGENDA_SLIDE_ID,
   PREAMBLE_SLIDE_ID,
@@ -39,5 +41,5 @@ export {
   type StoredLevels,
 } from './presentation-storage';
 export { SLIDE_PARAM, slideParam, withSlideParam } from './presentation-url';
-export { enterPresentationFullscreen, exitPresentationFullscreen, type FullscreenOutcome } from './fullscreen';
-export type { PresentationControl, PresentationStatus } from './presentation-control';
+export { enterPresentationFullscreen, exitPresentationFullscreen, isPresentationFullscreen, type FullscreenOutcome } from './fullscreen';
+export type { LevelInfo, NoticeHandler, PresentationControl, PresentationStatus } from './presentation-control';

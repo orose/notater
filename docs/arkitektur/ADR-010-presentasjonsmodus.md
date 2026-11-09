@@ -230,6 +230,7 @@ setter minstebredde), ruller basen horisontalt internt – horisontal overflyt e
   som paletten viser i stedet for den generiske E475-teksten: `E475 Ugyldig nivå «h9» – bruk auto eller h1–h6.` og
   `E475 Ingen overskrifter på nivå h5 i dette notatet. Gyldige nivåer: h2, h3, h4.` Argumentlisten viser bare gyldige
   nivåer, med f.eks. «agenda h2 · 9 lysbilder» som beskrivelse.
+  *Oppdatert etter PO-101:* `E475` brukes bare for ugyldig argument (`h9`, `hx`, `4`); et nivå uten overskrifter i notatet (`h5`, `h1`) gir `E486 Ingen overskrifter på nivå h5 i notatet. … Gyldige nivåer: h2, h3 og h4.`
 - **Oversikten (`o`)** er en modal `dialog` med rutenett (ARIA grid). Den eier selv piltaster, `hjkl`, `↵`, `o` og
   Esc (står som `KEY_HINTS` for present, AR-1.1-11). Miniatyrene er samme `SlideView` skalert ned; Mermaid i
   miniatyrer bruker allerede tegnet SVG når den finnes, ellers en plassholder.

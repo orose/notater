@@ -25,7 +25,7 @@ const s = fasit2.statusmote;
 
 test.describe('AK-2-12 lerret i fire vindusstørrelser', () => {
   for (const vp of fasit2.lerret.viewports) {
-    test.fixme(`TC-2-12-01 ${vp.width}×${vp.height}: 16:9, letterbox, ingen horisontal sidescroll på noe lysbilde`, async ({ page, isMobile }) => {
+    test(`TC-2-12-01 ${vp.width}×${vp.height}: 16:9, letterbox, ingen horisontal sidescroll på noe lysbilde`, async ({ page, isMobile }) => {
       test.skip(isMobile !== vp.width < 500, 'Desktop-størrelser i desktop-prosjektet, 390×844 i mobil-prosjektet (touch)');
       test.slow();
       await page.setViewportSize(vp);
@@ -42,7 +42,7 @@ test.describe('AK-2-12 lerret i fire vindusstørrelser', () => {
     });
   }
 
-  test.fixme('TC-2-12-02 vindusstørrelsen endres under presentasjon: lerretet tilpasses, lysbildet beholdes', async ({ page, isMobile }) => {
+  test('TC-2-12-02 vindusstørrelsen endres under presentasjon: lerretet tilpasses, lysbildet beholdes', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Desktop');
     await page.setViewportSize({ width: 1440, height: 900 });
     await presenter(page, s.sti);
@@ -56,7 +56,7 @@ test.describe('AK-2-12 lerret i fire vindusstørrelser', () => {
     }
   });
 
-  test.fixme('TC-2-12-03 typografien er skalert opp for avstand: brødtekst ≈ 40 logiske px, større enn lesevisningen ved 1920×1080', async ({ page, isMobile }) => {
+  test('TC-2-12-03 typografien er skalert opp for avstand: brødtekst ≈ 40 logiske px, større enn lesevisningen ved 1920×1080', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Desktop');
     await page.setViewportSize({ width: 1920, height: 1080 });
     await openNote(page, s.sti);
@@ -71,7 +71,7 @@ test.describe('AK-2-12 lerret i fire vindusstørrelser', () => {
     expect(fs).toBeGreaterThan(lesefont * 1.5);
   });
 
-  test.fixme('TC-2-12-04 lerretet skaleres som helhet: samme logiske skrift og samme oppdeling ved 1280×720 og 1920×1080', async ({ page, isMobile }) => {
+  test('TC-2-12-04 lerretet skaleres som helhet: samme logiske skrift og samme oppdeling ved 1280×720 og 1920×1080', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Desktop');
     const målt: { fs: number; skala: number; antall: number }[] = [];
     for (const vp of [{ width: 1280, height: 720 }, { width: 1920, height: 1080 }]) {
@@ -93,7 +93,7 @@ test.describe('AK-2-12 lerret i fire vindusstørrelser', () => {
 });
 
 test.describe('AK-2-12 tilgjengelighet', () => {
-  test.fixme('TC-2-12-10 lysbildebytte annonseres: «Lysbilde n av N: ‹overskrift›» i role=status', async ({ page, isMobile }) => {
+  test('TC-2-12-10 lysbildebytte annonseres: «Lysbilde n av N: ‹overskrift›» i role=status', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur');
     await presenter(page, s.sti);
     await expect(kunngjøring(page)).toHaveAttribute('role', 'status');
@@ -103,7 +103,7 @@ test.describe('AK-2-12 tilgjengelighet', () => {
     await expect(kunngjøring(page)).toHaveText(`Lysbilde 4 av ${s.lysbilder.length}: ${s.lysbilder[3]!.overskrift}`);
   });
 
-  test.fixme('TC-2-12-11 presentasjonen er en region med lysbildeserie-semantikk; gjeldende lysbilde er en gruppe med navn', async ({ page, isMobile }) => {
+  test('TC-2-12-11 presentasjonen er en region med lysbildeserie-semantikk; gjeldende lysbilde er en gruppe med navn', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur');
     await presenter(page, s.sti);
     await expect(presentasjon(page)).toHaveAttribute('aria-roledescription', 'lysbildeserie');
@@ -114,7 +114,7 @@ test.describe('AK-2-12 tilgjengelighet', () => {
     await expect(page.getByRole('navigation', { name: 'Vault' })).toBeHidden();
   });
 
-  test.fixme('TC-2-12-12 fokus: i presentasjonen ved start, tilbake i lesevisningen ved avslutning', async ({ page, isMobile }) => {
+  test('TC-2-12-12 fokus: i presentasjonen ved start, tilbake i lesevisningen ved avslutning', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur');
     await presenter(page, s.sti);
     expect(await page.evaluate(() => !!document.activeElement?.closest('[aria-roledescription="lysbildeserie"]'))).toBe(true);
@@ -122,7 +122,7 @@ test.describe('AK-2-12 tilgjengelighet', () => {
     expect(await page.evaluate(() => !document.activeElement?.closest('[aria-roledescription="lysbildeserie"]'))).toBe(true);
   });
 
-  test.fixme('TC-2-12-13 diskret toning ved lysbildebytte, ingen ved prefers-reduced-motion', async ({ page, isMobile }) => {
+  test('TC-2-12-13 diskret toning ved lysbildebytte, ingen ved prefers-reduced-motion', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Tastatur');
     const varighet = () =>
       lysbilde(page).evaluate((el) => {
@@ -141,7 +141,7 @@ test.describe('AK-2-12 tilgjengelighet', () => {
   });
 
   for (const mode of ['light', 'dark'] as const) {
-    test.fixme(`TC-2-12-14 axe (${mode}) ved 390×844: tittel, overgang, innhold, kanban`, async ({ page }) => {
+    test(`TC-2-12-14 axe (${mode}) ved 390×844: tittel, overgang, innhold, kanban`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: mode, reducedMotion: 'reduce' });
       await page.setViewportSize({ width: 390, height: 844 });
       await openNote(page, s.sti);

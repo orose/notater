@@ -1,8 +1,6 @@
 // Lysbildemodellen mot QAs fasit (docs/test/v2-fasit.json, AK-2-02/03/04/05). Inndata er serverens ekte HAST for
 // test-vault/presentasjon/ (fixtures/*.json, hentet med `GET /api/vaults/test/document`; regenereres med
 // `npx tsx scripts/presentation-fixtures.ts` når testvaultet endres).
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import type { Root } from 'hast';
 import { describe, expect, it } from 'vitest';
 import type { TocEntry } from '../../../../shared/api-types';
@@ -10,7 +8,8 @@ import { buildOutline } from '../../outline';
 import { prepareContent, splitLeadingTitle } from '../../note-view';
 import { buildSlideDrafts, fromOutline } from './build-slides';
 import { finalizeDeck } from './finalize-deck';
-import type { DeckFit, HeadingLevel, Slide, SlideDeck, SlideDraftDeck } from './slide-types';
+import type { DeckFit, FlowBlock, HeadingLevel, Slide, SlideDeck, SlideDraftDeck } from './slide-types';
+import fasitJson from '../../../../../docs/test/v2-fasit.json';
 
 interface FasitSlide {
   readonly type: string;
@@ -26,8 +25,7 @@ interface FasitNote {
   readonly urlIder?: Readonly<Record<string, number>>;
 }
 
-const ROOT = join(__dirname, '../../../../..');
-const fasit = JSON.parse(readFileSync(join(ROOT, 'docs/test/v2-fasit.json'), 'utf8')) as Record<string, unknown> & {
+const fasit = fasitJson as unknown as Record<string, unknown> & {
   readonly statusmote: FasitNote & { readonly startFraSeksjon: Record<string, number> };
   readonly rapport: FasitNote & { readonly aldriSynlig: readonly string[] };
   readonly delte: FasitNote;
@@ -45,9 +43,12 @@ interface Fixture {
   readonly toc: readonly TocEntry[];
 }
 
+const FIXTURES = import.meta.glob<Fixture>('./fixtures/*.json', { eager: true, import: 'default' });
+
 function load(sti: string): Fixture {
-  const name = sti.replace(/^presentasjon\//, '');
-  return JSON.parse(readFileSync(join(__dirname, 'fixtures', `${name}.json`), 'utf8')) as Fixture;
+  const fixture = FIXTURES[`./fixtures/${sti.replace(/^presentasjon\//, '')}.json`];
+  if (!fixture) throw new Error(`Mangler fixture for ${sti}`);
+  return fixture;
 }
 
 function drafts(sti: string, slideLevel: HeadingLevel | null = null): SlideDraftDeck {
@@ -236,13 +237,30 @@ describe('finalizeDeck (A2, :agenda av, progresjon, etiketter)', () => {
   });
 
   it('tom agendaseksjon: bare overgangen, med :agenda av et lysbilde med kun overskriften', () => {
-    const src = { title: 'T', flow: [
+    const flow: FlowBlock[] = [
       { node: { type: 'element', tagName: 'h2', properties: {}, children: [] }, heading: { id: 'a', level: 2, text: 'A' }, thematicBreak: false },
       { node: { type: 'element', tagName: 'h2', properties: {}, children: [] }, heading: { id: 'b', level: 2, text: 'B' }, thematicBreak: false },
       { node: { type: 'element', tagName: 'p', properties: {}, children: [{ type: 'text', value: 'x' }] }, heading: null, thematicBreak: false },
-    ] } as const;
+    ];
+    const src = { title: 'T', flow };
     const dd = buildSlideDrafts(src, { slideLevel: null });
     expect(finalizeDeck(dd, NO_FIT, { transitions: true }).slides.map((s) => s.id)).toEqual(['tittel', 'agenda', 'overgang.a', 'overgang.b', 'b']);
     expect(finalizeDeck(dd, NO_FIT, { transitions: false }).slides.map((s) => [s.id, s.heading])).toEqual([['tittel', 'T'], ['agenda', null], ['a', 'A'], ['b', 'B']]);
+  });
+});
+
+describe('agendahjelpere', () => {
+  it('delpunkter, startnummer, start ved overskrift og tilbake til overskrift', async () => {
+    const { agendaSubtitles, agendaStartNumbers, headingForSlide, slideForHeading } = await import('./agenda');
+    const d = drafts(fasit.rapport.sti);
+    expect(agendaSubtitles(d)).toEqual([['Driftsstabilitet', 'Leveranser'], ['Ytelse', 'Presentasjonsmodus'], ['Milepæler', 'Risiko og tiltak']]);
+    const deck = finalizeDeck(d, NO_FIT, { transitions: true });
+    expect(agendaStartNumbers(deck)).toEqual([3, 6, 10]);
+    expect(slideForHeading(deck, null)).toBe(0);
+    expect(slideForHeading(deck, 'finnes-ikke')).toBe(0);
+    const s = finalizeDeck(drafts(fasit.statusmote.sti), NO_FIT, { transitions: true });
+    expect(headingForSlide(s, 9)).toBe('plan-q1');
+    expect(headingForSlide(s, 0)).toBeNull();
+    expect(headingForSlide(s, 4, (id) => id !== 'leveranse-b--tastaturmotor')).toBe('leveranse-a--lesekomfort');
   });
 });

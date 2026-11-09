@@ -23,7 +23,7 @@ test.describe('AK-2-12 axe i alle 24 temakombinasjoner i presentasjonsmodus', ()
   for (const type of TYPES) {
     for (const palette of PALETTES) {
       for (const mode of MODES) {
-        test.fixme(`TC-2-12-20 ${type} × ${palette} × ${mode}`, async ({ page }) => {
+        test(`TC-2-12-20 ${type} × ${palette} × ${mode}`, async ({ page }) => {
           test.slow();
           await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: mode });
           await page.goto(`${noteUrl(s.sti)}?type=${type}&palette=${palette}&mode=${mode}`);

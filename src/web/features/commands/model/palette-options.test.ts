@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { COMMAND_IDS } from './catalog';
 import type { CommandContext, CommandPorts } from './command-context';
-import { commandPaletteOptions } from './palette-options';
+import { commandPaletteOptions, paletteArgumentError } from './palette-options';
 import { createCommandRegistry, type CommandHandlers } from './registry';
 
 const TYPES = [
@@ -13,6 +13,11 @@ const TYPES = [
 function registry() {
   const handlers = Object.fromEntries(COMMAND_IDS.map((id) => [id, { run: () => {} }])) as unknown as Record<string, unknown>;
   handlers['theme.setType'] = { run: () => {}, argumentValues: () => TYPES };
+  handlers['present.start'] = {
+    run: () => {},
+    argumentValues: () => ['auto', 'h2', 'h3', 'h4'].map((v) => ({ value: v, label: v })),
+    argumentError: (_c: unknown, _n: string, input: string) => ({ code: input === 'h5' ? 'E486' : 'E475', title: input, detail: '' }),
+  };
   handlers['view.toggleZen'] = { run: () => {}, isEnabled: () => ({ enabled: false, reason: 'Kommer snart' }) };
   return createCommandRegistry(handlers as unknown as CommandHandlers);
 }
@@ -27,11 +32,11 @@ const ctx = {
 const options = (q: string) => commandPaletteOptions(registry().commands, ctx, q, 'other');
 
 describe('commandPaletteOptions', () => {
-  it('tom spørring gir alle kommandoer gruppert: Visning, Lesing, Søk og kommandoer, Navigasjon', () => {
+  it('tom spørring gir alle kommandoer gruppert: Visning, Lesing, Presentasjon, Søk og kommandoer, Navigasjon', () => {
     const all = options('');
     expect([...all.map((o) => o.commandId)].sort()).toEqual([...COMMAND_IDS].sort());
     const groups = all.map((o) => (o.kind === 'command' ? o.group : null));
-    expect([...new Set(groups)]).toEqual(['visning', 'lesing', 'sok', 'navigasjon']);
+    expect([...new Set(groups)]).toEqual(['visning', 'lesing', 'presentasjon', 'sok', 'navigasjon']);
     expect(all[0]?.commandId).toBe('view.toggleWidth');
   });
 
@@ -93,5 +98,17 @@ describe('commandPaletteOptions', () => {
 
   it('ingen treff gir tom liste', () => {
     expect(options('xqxq')).toEqual([]);
+  });
+
+  it('valgfritt argument: Enter på `:presenter` kjører (ingen utfylling); prefiks-treff (`4` treffer ikke `h4`)', () => {
+    const presenter = options('presenter')[0];
+    expect(presenter).toMatchObject({ commandId: 'present.start', needsArgument: false, completion: null });
+    expect(options('presenter h4').map((o) => (o.kind === 'argument' ? o.value.value : o.commandId))).toEqual(['h4']);
+    expect(options('presenter h').map((o) => (o.kind === 'argument' ? o.value.value : null))).toEqual(['h2', 'h3', 'h4']);
+    expect(options('presenter 4')).toEqual([]);
+    expect(paletteArgumentError(registry().commands, ctx, 'presenter 4')?.code).toBe('E475');
+    expect(paletteArgumentError(registry().commands, ctx, 'presenter h5')?.code).toBe('E486');
+    expect(paletteArgumentError(registry().commands, ctx, 'presenter h4')).toBeNull();
+    expect(paletteArgumentError(registry().commands, ctx, 'tema x')).toBeNull();
   });
 });

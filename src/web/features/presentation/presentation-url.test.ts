@@ -23,3 +23,15 @@ describe('fullskjerm (ADR-010 §4)', () => {
     expect(await enterPresentationFullscreen(document)).toBe('unsupported');
   });
 });
+
+describe('fullskjerm med Fullscreen API (ADR-010 §4)', () => {
+  it('avvist forespørsel gir «denied» uten unntak', async () => {
+    const doc = { fullscreenElement: null, fullscreenEnabled: true, documentElement: { requestFullscreen: () => Promise.reject(new TypeError('nei')) } } as unknown as Document;
+    expect(await enterPresentationFullscreen(doc)).toBe('denied');
+  });
+  it('innvilget gir «entered»; allerede i fullskjerm gir «already»', async () => {
+    const doc = { fullscreenElement: null, fullscreenEnabled: true, documentElement: { requestFullscreen: () => Promise.resolve() } } as unknown as Document;
+    expect(await enterPresentationFullscreen(doc)).toBe('entered');
+    expect(await enterPresentationFullscreen({ fullscreenElement: {} } as unknown as Document)).toBe('already');
+  });
+});

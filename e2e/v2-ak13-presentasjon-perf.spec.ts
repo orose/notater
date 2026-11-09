@@ -86,7 +86,7 @@ async function åpne(page: Page): Promise<void> {
   });
 }
 
-test.fixme('TC-2-13-01 start av presentasjon for rapport med 20 embeds < 500 ms (median av 5)', async ({ page }) => {
+test('TC-2-13-01 start av presentasjon for rapport med 20 embeds < 500 ms (median av 5)', async ({ page }) => {
   test.setTimeout(180_000);
   const målinger: number[] = [];
   for (let i = 0; i < 5; i++) {
@@ -105,7 +105,7 @@ test.fixme('TC-2-13-01 start av presentasjon for rapport med 20 embeds < 500 ms 
   expect(median(målinger), rapport).toBeLessThan(fasit2.ytelse.startRapport20EmbedsMs);
 });
 
-test.fixme('TC-2-13-02 lysbildebytte p95 < 100 ms (neste/forrige/første/siste, 80 bytter)', async ({ page }) => {
+test('TC-2-13-02 lysbildebytte p95 < 100 ms (neste/forrige/første/siste, 80 bytter)', async ({ page }) => {
   test.setTimeout(180_000);
   await åpne(page);
   await page.keyboard.press(':');

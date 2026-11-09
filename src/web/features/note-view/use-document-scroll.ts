@@ -33,6 +33,30 @@ function safeDecode(value: string): string {
   }
 }
 
+/**
+ * Query-parametre for overlegg på notatets egen rute (ADR-010 §4: `?lysbilde=`). Endres bare disse, er det ingen
+ * navigasjon i lesevisningen, og den skal ikke rulle (AR-2-21).
+ */
+export const OVERLAY_PARAMS: readonly string[] = ['lysbilde'];
+
+interface Place {
+  readonly pathname: string;
+  readonly search: string;
+  readonly hash: string;
+}
+
+function withoutOverlays(search: string): string {
+  const params = new URLSearchParams(search);
+  for (const name of OVERLAY_PARAMS) params.delete(name);
+  params.sort();
+  return params.toString();
+}
+
+/** Sann når to plasseringer bare skiller seg i overlegg-parametrene (samme sti, hash og øvrig query). */
+export function onlyOverlayChanged(a: Place, b: Place): boolean {
+  return a.pathname === b.pathname && a.hash === b.hash && withoutOverlays(a.search) === withoutOverlays(b.search);
+}
+
 function reducedMotion(): boolean {
   try {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -46,6 +70,7 @@ export function useDocumentScroll(ready: boolean, docId: string): { toast: strin
   const navigationType = useNavigationType();
   const [toast, setToast] = useState<string | null>(null);
   const initial = useRef(true);
+  const lastPlace = useRef<Place | null>(null);
 
   useEffect(() => {
     const key = location.key;
@@ -68,6 +93,11 @@ export function useDocumentScroll(ready: boolean, docId: string): { toast: strin
 
   useLayoutEffect(() => {
     if (!ready) return undefined;
+    const place = { pathname: location.pathname, search: location.search, hash: location.hash };
+    const previous = lastPlace.current;
+    lastPlace.current = place;
+    // AR-2-21: presentasjonen starter, blar eller avslutter – lesevisningen ligger der den lå.
+    if (previous && !initial.current && onlyOverlayChanged(previous, place)) return undefined;
     const hash = safeDecode(location.hash.replace(/^#/, ''));
     let timer: ReturnType<typeof setTimeout> | undefined;
     if (hash) {

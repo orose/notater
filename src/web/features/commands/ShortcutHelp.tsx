@@ -1,13 +1,15 @@
 import { Fragment, useId, useMemo } from 'react';
 import { Modal } from '../../shared/ui/Modal';
 import { Icon } from '../../shared/ui/Icon';
-import { RESERVED_NORMAL_KEYS } from '../keyboard';
+import { RESERVED_NORMAL_KEYS, type KeyMode } from '../keyboard';
 import { shortcutGroups } from './model/shortcut-docs';
 
 interface ShortcutHelpProps {
   readonly open: boolean;
   readonly onClose: () => void;
   readonly platform: 'apple' | 'other';
+  /** `present` viser presentasjonsmodusens taster (ADR-010 §3, AK-2-10). Standard: normal. */
+  readonly mode?: KeyMode;
 }
 
 /**
@@ -16,7 +18,7 @@ interface ShortcutHelpProps {
  * `data-command-id` på raden; i en par-rad har hver kommando sitt eget element med `data-command-id` inne i
  * raden. Hvert tastealternativ står i `data-testid="hurtigtast-binding"` med én `<kbd>` per akkord. Lukkes med Esc (native) og `?` (dialogens egen tast; motoren er inaktiv bak modal).
  */
-export function ShortcutHelp({ open, onClose, platform }: ShortcutHelpProps) {
+export function ShortcutHelp({ open, onClose, platform, mode = 'normal' }: ShortcutHelpProps) {
   const headingId = useId();
   return (
     <Modal
@@ -31,7 +33,7 @@ export function ShortcutHelp({ open, onClose, platform }: ShortcutHelpProps) {
         }
       }}
     >
-      <ShortcutHelpBody headingId={headingId} platform={platform} />
+      <ShortcutHelpBody headingId={headingId} platform={platform} mode={mode} />
     </Modal>
   );
 }
@@ -56,21 +58,26 @@ function Separator() {
   );
 }
 
-function ShortcutHelpBody({ headingId, platform }: { readonly headingId: string; readonly platform: 'apple' | 'other' }) {
-  const groups = useMemo(() => shortcutGroups(platform), [platform]);
+function ShortcutHelpBody({ headingId, platform, mode }: { readonly headingId: string; readonly platform: 'apple' | 'other'; readonly mode: KeyMode }) {
+  const groups = useMemo(() => shortcutGroups(platform, mode), [platform, mode]);
+  const present = mode === 'present';
   return (
     <>
       <div className="rc-man" aria-hidden="true">
         <span>VAULT-LESER(1)</span>
-        <span>Normal-modus</span>
+        <span>{present ? 'Presentasjon' : 'Normal-modus'}</span>
         <span>VAULT-LESER(1)</span>
       </div>
       <div className="rc-head">
         <div>
           <h2 id={headingId}>Hurtigtaster</h2>
-          <p className="rc-sub">
-            Normal-modus · leder er <kbd className="k lead">Space</kbd>
-          </p>
+          {present ? (
+            <p className="rc-sub">Presentasjon · Space er neste lysbilde, Esc avslutter</p>
+          ) : (
+            <p className="rc-sub">
+              Normal-modus · leder er <kbd className="k lead">Space</kbd>
+            </p>
+          )}
         </div>
         <button type="button" className="icon-btn" aria-label="Lukk" onClick={(event) => event.currentTarget.closest('dialog')?.close()}>
           <Icon name="close" />
@@ -147,9 +154,11 @@ function ShortcutHelpBody({ headingId, platform }: { readonly headingId: string;
         <span>
           Esc eller ? lukker · <code>:hjelp</code> åpner også dette kortet
         </span>
-        <span>
-          Reservert for redigering senere: <span className="res-keys">{RESERVED_NORMAL_KEYS.join(' ')}</span>
-        </span>
+        {present ? null : (
+          <span>
+            Reservert for redigering senere: <span className="res-keys">{RESERVED_NORMAL_KEYS.join(' ')}</span>
+          </span>
+        )}
       </div>
     </>
   );

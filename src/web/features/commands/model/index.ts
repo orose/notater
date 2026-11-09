@@ -18,7 +18,7 @@ export {
   type CommandHandler,
   type CommandSpecBody,
 } from './command-types';
-export type { CommandContext, CommandPorts, CommandRoute, RouteKind, ViewSnapshot } from './command-context';
+export type { CommandContext, CommandPorts, CommandRoute, PresentationLevelInfo, PresentationPort, RouteKind, ViewSnapshot } from './command-context';
 export { catalogBindings, createCommandRegistry, type Command, type CommandHandlers, type CommandRegistry } from './registry';
 export {
   README_MARKERS,

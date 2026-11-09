@@ -101,14 +101,14 @@ test.describe('AK-2-02 lysbilderekkefølge (S1–S7)', () => {
   test.skip(({ isMobile }) => isMobile, 'Tastaturnavigasjon på desktop; mobil: TC-2-12-*');
 
   for (const [navn, n] of NOTATER) {
-    test.fixme(`TC-2-02-01 ${navn}: ${n.sti}`, async ({ page }) => {
+    test(`TC-2-02-01 ${navn}: ${n.sti}`, async ({ page }) => {
       test.slow();
       await presenter(page, n.sti);
       expect(await lesAlleLysbilder(page)).toEqual(n.lysbilder.map(somFasit));
     });
   }
 
-  test.fixme('TC-2-02-02 innhold og markører står på riktig lysbilde (statusmøte og rapport)', async ({ page }) => {
+  test('TC-2-02-02 innhold og markører står på riktig lysbilde (statusmøte og rapport)', async ({ page }) => {
     for (const n of [fasit2.statusmote, fasit2.rapport, fasit2.delte, fasit2.forKort, fasit2.forLang]) {
       await presenter(page, n.sti);
       for (let i = 0; i < n.lysbilder.length; i++) {
@@ -121,7 +121,7 @@ test.describe('AK-2-02 lysbilderekkefølge (S1–S7)', () => {
     }
   });
 
-  test.fixme('TC-2-02-03 rapport: diskré embedding brukes alltid i presentasjonen (S1), også når notatet vises med rammer', async ({ page }) => {
+  test('TC-2-02-03 rapport: diskré embedding brukes alltid i presentasjonen (S1), også når notatet vises med rammer', async ({ page }) => {
     await openNote(page, fasit2.rapport.sti);
     // Rammevisning i lesevisningen (standard).
     await expect(page.locator('main article').getByText('Innebygd fra', { exact: true }).first()).toBeVisible();
@@ -133,7 +133,7 @@ test.describe('AK-2-02 lysbilderekkefølge (S1–S7)', () => {
     await expect(page.locator('main article').getByText('Innebygd fra', { exact: true }).first()).toBeVisible();
   });
 
-  test.fixme('TC-2-02-04 rapport: seksjonsembed tar bare seksjonen (ingen «Utenfor rapporten»)', async ({ page }) => {
+  test('TC-2-02-04 rapport: seksjonsembed tar bare seksjonen (ingen «Utenfor rapporten»)', async ({ page }) => {
     await presenter(page, fasit2.rapport.sti);
     for (let i = 0; i < fasit2.rapport.lysbilder.length; i++) {
       for (const m of fasit2.rapport.aldriSynlig) await expect(lysbilde(page)).not.toContainText(m);
@@ -141,7 +141,7 @@ test.describe('AK-2-02 lysbilderekkefølge (S1–S7)', () => {
     }
   });
 
-  test.fixme('TC-2-02-05 foldetilstand ignoreres (S8): foldede seksjoner presenteres', async ({ page }) => {
+  test('TC-2-02-05 foldetilstand ignoreres (S8): foldede seksjoner presenteres', async ({ page }) => {
     await openNote(page, fasit2.statusmote.sti);
     await page.keyboard.press('z');
     await page.keyboard.press('Shift+M');
@@ -161,19 +161,19 @@ test.describe('AK-2-03 lysbildenivå (S4)', () => {
   test.skip(({ isMobile }) => isMobile, 'Tastatur');
   const n = fasit2.niva;
 
-  test.fixme('TC-2-03-01 standard: agenda H2, lysbilder H3', async ({ page }) => {
+  test('TC-2-03-01 standard: agenda H2, lysbilder H3', async ({ page }) => {
     await presenter(page, n.sti);
     expect(await lesAlleLysbilder(page)).toEqual(n.h3.lysbilder.map(somFasit));
   });
 
   for (const nivå of ['h4', 'h2'] as const) {
-    test.fixme(`TC-2-03-02 \`:presenter ${nivå}\` gir fasitens lysbilder`, async ({ page }) => {
+    test(`TC-2-03-02 \`:presenter ${nivå}\` gir fasitens lysbilder`, async ({ page }) => {
       await presenter(page, n.sti, nivå);
       expect(await lesAlleLysbilder(page)).toEqual(n[nivå].lysbilder.map(somFasit));
     });
   }
 
-  test.fixme('TC-2-03-03 nivået huskes per notat: ny start, reload og etter navigasjon', async ({ page }) => {
+  test('TC-2-03-03 nivået huskes per notat: ny start, reload og etter navigasjon', async ({ page }) => {
     await presenter(page, n.sti, 'h4');
     await avsluttPresentasjon(page);
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -191,7 +191,7 @@ test.describe('AK-2-03 lysbildenivå (S4)', () => {
     expect(await lesAlleLysbilder(page)).toEqual(fasit2.statusmote.lysbilder.map(somFasit));
   });
 
-  test.fixme('TC-2-03-04 valget lagres i localStorage (vault-id + sti), ikke i URL eller notat', async ({ page, vaultDir }) => {
+  test('TC-2-03-04 valget lagres i localStorage (vault-id + sti), ikke i URL eller notat', async ({ page, vaultDir }) => {
     const før = sjekksum(vaultDir);
     const metoder = new Set<string>();
     page.on('request', (r) => metoder.add(r.method()));
@@ -204,7 +204,7 @@ test.describe('AK-2-03 lysbildenivå (S4)', () => {
     expect(sjekksum(vaultDir)).toEqual(før);
   });
 
-  test.fixme('TC-2-03-05 `:presenter auto` fjerner det lagrede nivået (ADR-010 §7)', async ({ page }) => {
+  test('TC-2-03-05 `:presenter auto` fjerner det lagrede nivået (ADR-010 §7)', async ({ page }) => {
     await presenter(page, n.sti, 'h4');
     await avsluttPresentasjon(page);
     await presenter(page, n.sti, 'auto');
@@ -223,7 +223,7 @@ test.describe('AK-2-03 lysbildenivå (S4)', () => {
   }
 
   for (const ugyldig of n.ugyldige) {
-    test.fixme(`TC-2-03-06 ugyldig argument \`:presenter ${ugyldig}\` gir ${n.feilkoder.ugyldig} og norsk forklaring (PO-101)`, async ({ page }) => {
+    test(`TC-2-03-06 ugyldig argument \`:presenter ${ugyldig}\` gir ${n.feilkoder.ugyldig} og norsk forklaring (PO-101)`, async ({ page }) => {
       await presenterMed(page, n.sti, ugyldig);
       await expect(feilkode(page, n.feilkoder.ugyldig)).toBeVisible();
       await expect(feilkode(page, n.feilkoder.ugyldig)).toContainText(ugyldig);
@@ -234,7 +234,7 @@ test.describe('AK-2-03 lysbildenivå (S4)', () => {
   }
 
   for (const tomt of n.tomme) {
-    test.fixme(`TC-2-03-07 nivå som ikke finnes \`:presenter ${tomt}\` gir ${n.feilkoder.tomt}, gyldige nivåer listes, valget huskes ikke (PO-101)`, async ({ page }) => {
+    test(`TC-2-03-07 nivå som ikke finnes \`:presenter ${tomt}\` gir ${n.feilkoder.tomt}, gyldige nivåer listes, valget huskes ikke (PO-101)`, async ({ page }) => {
       await presenterMed(page, n.sti, tomt);
       await expect(feilkode(page, n.feilkoder.tomt)).toBeVisible();
       await expect(feilkode(page, n.feilkoder.tomt)).toContainText(tomt);
@@ -248,7 +248,7 @@ test.describe('AK-2-03 lysbildenivå (S4)', () => {
     });
   }
 
-  test.fixme(`TC-2-03-08 \`:presenter h4\` i statusmøtet (ingen H4) gir ${n.tomIAnnetNotat.feilkode} (PO-101)`, async ({ page }) => {
+  test(`TC-2-03-08 \`:presenter h4\` i statusmøtet (ingen H4) gir ${n.tomIAnnetNotat.feilkode} (PO-101)`, async ({ page }) => {
     await presenterMed(page, n.tomIAnnetNotat.sti, n.tomIAnnetNotat.niva);
     await expect(feilkode(page, n.tomIAnnetNotat.feilkode)).toBeVisible();
     await expect(presentasjon(page)).toBeHidden();
@@ -263,23 +263,24 @@ test.describe('AK-2-04 tematisk skille deler lysbilder (S5)', () => {
   test.skip(({ isMobile }) => isMobile, 'Tastatur');
   const d = fasit2.delte;
 
-  test.fixme('TC-2-04-01 `---` og `***` deler innen samme agendapunkt; første del beholder overskriften, resten «(forts.)»', async ({ page }) => {
+  test('TC-2-04-01 `---` og `***` deler innen samme agendapunkt; første del beholder overskriften, resten «(forts.)»', async ({ page }) => {
     await presenter(page, d.sti);
     const lest = await lesAlleLysbilder(page);
     expect(lest).toEqual(d.lysbilder.map(somFasit));
     expect(lest.filter((l) => l.overskrift?.endsWith(fasit2.forts.trim()))).toHaveLength(3);
   });
 
-  test.fixme('TC-2-04-02 `---` i en kodeblokk deler ikke; skillelinjen vises ikke som <hr> på lysbildet', async ({ page }) => {
+  test('TC-2-04-02 `---` i en kodeblokk deler ikke; skillelinjen vises ikke som <hr> på lysbildet', async ({ page }) => {
     await presenter(page, d.sti);
     const grensesnitt = d.lysbilder.findIndex((l) => l.overskrift === 'Grensesnitt') + 1;
     for (let i = 1; i < grensesnitt; i++) await page.keyboard.press('j');
-    await expect(lysbilde(page).locator('pre, code').first()).toContainText('tittel: eksempel');
+    // `pre` (ikke `pre, code`): avsnittet før kodeblokken har inline-koden `---` (endret av frontend).
+    await expect(lysbilde(page).locator('pre').first()).toContainText('tittel: eksempel');
     await expect(lysbilde(page).locator('pre').first()).toContainText('---');
     await expect(presentasjon(page).locator('hr')).toHaveCount(0);
   });
 
-  test.fixme('TC-2-04-03 `---` sist i en seksjon og to `---` på rad gir ikke tomme lysbilder', async ({ page }) => {
+  test('TC-2-04-03 `---` sist i en seksjon og to `---` på rad gir ikke tomme lysbilder', async ({ page }) => {
     await presenter(page, d.sti);
     const { length } = d.lysbilder;
     for (let i = 1; i <= length; i++) {
@@ -289,7 +290,7 @@ test.describe('AK-2-04 tematisk skille deler lysbilder (S5)', () => {
     }
   });
 
-  test.fixme('TC-2-04-04 `---` i notat uten overskrifter deler bare innholdet (S7)', async ({ page }) => {
+  test('TC-2-04-04 `---` i notat uten overskrifter deler bare innholdet (S7)', async ({ page }) => {
     await presenter(page, fasit2.uten.sti);
     expect(await lesAlleLysbilder(page)).toEqual(fasit2.uten.lysbilder.map(somFasit));
     await expect(presentasjon(page).getByTestId('agendalinje')).toBeHidden();

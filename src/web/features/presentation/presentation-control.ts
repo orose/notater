@@ -1,14 +1,14 @@
 // Porten kommandoene når presentasjonen gjennom (ADR-010 §3, samme mønster som `OutlineHost`/`OutlineControl`).
-// `PresentationProvider` (slice 2-a) monteres i `VaultLayout` over `CommandProvider` og eier URL-parameteren,
-// modusbyttet og fullskjerm; `commands` leser den med `usePresentationControl()` og importerer ikke resten.
+// `PresentationProvider` monteres i `VaultLayout` over `CommandProvider` og eier URL-parameteren, modusbyttet og
+// fullskjerm; `commands` leser den med `usePresentationControl()` og importerer ikke resten.
+//
+// Strukturelt lik `PresentationPort` i `commands/model/command-context.ts` (den rene modellen importerer ikke hit).
 
 import type { HeadingLevel } from './model';
 
 export interface PresentationStatus {
-  /** `?lysbilde` finnes: tastaturmotoren er i modus `present`. */
+  /** `?lysbilde` finnes på et notat som finnes: tastaturmotoren er i modus `present`. */
   readonly active: boolean;
-  /** Nivåene `:presenter h<n>` godtar for notatet som vises (tom når det ikke er et notat). */
-  readonly validLevels: readonly HeadingLevel[];
   /** Lysbildenivået som brukes (lagret overstyring eller automatisk), `null` uten overskrifter. */
   readonly slideLevel: HeadingLevel | null;
   /** Lagret overstyring for notatet (`null` = automatisk). */
@@ -20,8 +20,18 @@ export interface PresentationStatus {
   readonly fullscreen: boolean;
 }
 
-export interface PresentationControl {
-  readonly status: PresentationStatus;
+export interface LevelInfo {
+  readonly level: HeadingLevel;
+  readonly agendaLevel: HeadingLevel | null;
+  readonly slides: number;
+}
+
+/** Kort melding i appens varselsone (toast), valgfritt med tasttegn. Registreres av `CommandProvider`. */
+export type NoticeHandler = (message: string, keys?: readonly string[]) => void;
+
+export interface PresentationControl extends PresentationStatus {
+  /** Nivåene notatet som vises har overskrifter på, med agendanivå og antall lysbilder (beregnes ved behov). */
+  levels(): readonly LevelInfo[];
   /**
    * `Space p` / `:presenter [h<n>|auto]`. Kalles synkront fra brukergesten (fullskjerm krever det).
    * Utenfor presentasjon: lagrer evt. nivået, ber om fullskjerm og legger `?lysbilde=` på historikken.
@@ -32,12 +42,16 @@ export interface PresentationControl {
   previous(): void;
   first(): void;
   last(): void;
+  /** `↑`/`↓`: ruller en for stor blokk på gjeldende lysbilde (PO-94). */
+  scroll(direction: 1 | -1): void;
   toggleOverview(): void;
   toggleBlackout(): void;
   setTransitions(on: boolean): void;
   toggleFullscreen(): void;
-  /** Esc i present-modus: lukk oversikten, ellers avslutt. `false` når ingen presentasjon vises. */
+  /** Esc i present-modus: lukk oversikten / svart skjerm, ellers avslutt. `false` når ingen presentasjon vises. */
   escape(): boolean;
-  /** Avslutt og gå tilbake til samme sted i notatet. */
+  /** Avslutt og gå til seksjonen for gjeldende lysbilde i notatet (PO-87). */
   stop(): void;
+  /** `CommandProvider` registrerer varselsonen sin her. */
+  setNoticeHandler(handler: NoticeHandler | null): void;
 }

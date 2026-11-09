@@ -10,6 +10,9 @@ export {
   transitionSlideId,
   type ParsedSlideId,
 } from './slide-id';
+export { agendaStartNumbers, agendaSubtitles, headingForSlide, slideForHeading } from './agenda';
+export { buildSlideDrafts, fromOutline, presentationLevels } from './build-slides';
+export { CONTINUED_SUFFIX, finalizeDeck, footnotesOf } from './finalize-deck';
 export { resolveSlide, type Locatable, type ResolveReason, type ResolvedSlide } from './resolve-slide';
 export type {
   AgendaItem,

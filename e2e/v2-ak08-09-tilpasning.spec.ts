@@ -42,7 +42,7 @@ test.describe('AK-2-08 for mye innhold', () => {
   test.beforeEach(async ({ page }) => page.setViewportSize(VIEWPORT));
   const m = fasit2.mye;
 
-  test.fixme('TC-2-08-01 langt lysbilde krympes og fortsetter som «(forts.)»; alle markører nøyaktig én gang, i rekkefølge', async ({ page }) => {
+  test('TC-2-08-01 langt lysbilde krympes og fortsetter som «(forts.)»; alle markører nøyaktig én gang, i rekkefølge', async ({ page }) => {
     test.slow();
     await presenter(page, m.sti);
     await gåTilLysbilde(page, 4);
@@ -71,7 +71,7 @@ test.describe('AK-2-08 for mye innhold', () => {
     expect(siste.progresjon).toBe(`${deler.length + 1}/${deler.length + 1}`);
   });
 
-  test.fixme('TC-2-08-02 krymping skjer før splitting: første del bruker mindre skrift enn et kort lysbilde', async ({ page }) => {
+  test('TC-2-08-02 krymping skjer før splitting: første del bruker mindre skrift enn et kort lysbilde', async ({ page }) => {
     await presenter(page, m.sti);
     await gåTilLysbilde(page, 4);
     const lang = await minsteSkrift(page);
@@ -81,7 +81,7 @@ test.describe('AK-2-08 for mye innhold', () => {
     expect(kort).toBeGreaterThanOrEqual(typo.brodtekstPx - typo.toleransePx);
   });
 
-  test.fixme('TC-2-08-03 et listepunkt deles aldri mellom to lysbilder', async ({ page }) => {
+  test('TC-2-08-03 et listepunkt deles aldri mellom to lysbilder', async ({ page }) => {
     await presenter(page, m.sti);
     await gåTilLysbilde(page, 4);
     const sett = new Map<string, number>();
@@ -101,7 +101,7 @@ test.describe('AK-2-08 for mye innhold', () => {
     expect(sett.size).toBe(20);
   });
 
-  test.fixme('TC-2-08-04 for stor kodeblokk: ett lysbilde, minimumsskrift og intern rulling, ingen «(forts.)»', async ({ page }) => {
+  test('TC-2-08-04 for stor kodeblokk: ett lysbilde, minimumsskrift og intern rulling, ingen «(forts.)»', async ({ page }) => {
     const st = fasit2.stor;
     await presenter(page, st.sti);
     await gåTilLysbilde(page, nr(st.lysbilder, 'Lang kode'));
@@ -114,14 +114,15 @@ test.describe('AK-2-08 for mye innhold', () => {
       return { rullbar: !!rul, fs: parseFloat(getComputedStyle(el.querySelector('code') ?? el).fontSize), fokuserbar: (rul as HTMLElement | undefined)?.tabIndex ?? -1 };
     });
     expect(r.rullbar, 'kodeblokken ruller internt').toBe(true);
-    expect(r.fs).toBeGreaterThanOrEqual(minimumPx());
+    // Kode har eget gulv (--slide-mono-min-lp = 24 lp, designsystem §12.3): 0,8 × brødtekstminimum. Endret av frontend.
+    expect(r.fs).toBeGreaterThanOrEqual(24 - typo.toleransePx);
     expect(r.fokuserbar, 'rullbar flate kan nås med tastatur (WCAG 2.1.1)').toBeGreaterThanOrEqual(0);
     expect(await kuttetInnhold(page)).toEqual([]);
     await page.keyboard.press('j');
     await expect(lysbildeOverskrift(page)).toHaveText('Høyt diagram');
   });
 
-  test.fixme('TC-2-08-05 høyt Mermaid-diagram skaleres ned til lerretet (ingen rulling, ingen splitting)', async ({ page }) => {
+  test('TC-2-08-05 høyt Mermaid-diagram skaleres ned til lerretet (ingen rulling, ingen splitting)', async ({ page }) => {
     const st = fasit2.stor;
     await presenter(page, st.sti);
     await gåTilLysbilde(page, nr(st.lysbilder, 'Høyt diagram'));
@@ -135,7 +136,7 @@ test.describe('AK-2-08 for mye innhold', () => {
     await expect(lysbilde(page)).toContainText('Steg 25');
   });
 
-  test.fixme('TC-2-08-06 for stor tabell: ett lysbilde, minimumsskrift og intern rulling', async ({ page }) => {
+  test('TC-2-08-06 for stor tabell: ett lysbilde, minimumsskrift og intern rulling', async ({ page }) => {
     const st = fasit2.stor;
     await presenter(page, st.sti);
     await gåTilLysbilde(page, nr(st.lysbilder, 'Bred tabell'));
@@ -155,7 +156,7 @@ test.describe('AK-2-08 for mye innhold', () => {
     expect((await nummer(page)).av).toBe(st.lysbilder.length);
   });
 
-  test.fixme('TC-2-08-07 ingen lysbilde i noen fasitnotat har avkuttet innhold (1440×900)', async ({ page }) => {
+  test('TC-2-08-07 ingen lysbilde i noen fasitnotat har avkuttet innhold (1440×900)', async ({ page }) => {
     test.slow();
     for (const n of [fasit2.statusmote, fasit2.rapport, fasit2.delte, fasit2.stor, fasit2.mange]) {
       await presenter(page, n.sti);
@@ -175,7 +176,7 @@ test.describe('AK-2-09 bases, Mermaid og fotnoter', () => {
   const s = fasit2.statusmote;
   const oppgaver = s.lysbilder.find((l) => l.base)!;
 
-  test.fixme('TC-2-09-01 kanban: alle kolonner og kort synlige innenfor lerretet', async ({ page }) => {
+  test('TC-2-09-01 kanban: alle kolonner og kort synlige innenfor lerretet', async ({ page }) => {
     await presenter(page, s.sti);
     await gåTilLysbilde(page, nr(s.lysbilder, 'Oppgaver'));
     // `![[Oppgaver.base#Kanban]]` (PO-100). Samme kontrakt som v1 (e2e/bases.spec.ts): region «Kanban: ‹view›»,
@@ -196,7 +197,7 @@ test.describe('AK-2-09 bases, Mermaid og fotnoter', () => {
     expect(await kuttetInnhold(page)).toEqual([]);
   });
 
-  test.fixme('TC-2-09-02 Mermaid i statusmøtet vises tilpasset lerretet', async ({ page }) => {
+  test('TC-2-09-02 Mermaid i statusmøtet vises tilpasset lerretet', async ({ page }) => {
     await presenter(page, s.sti);
     await gåTilLysbilde(page, nr(s.lysbilder, 'Flyt i presentasjonen'));
     const svg = lysbildeInnhold(page).locator('svg').first();
@@ -208,7 +209,7 @@ test.describe('AK-2-09 bases, Mermaid og fotnoter', () => {
     expect(b.y + b.height).toBeLessThanOrEqual(l.y + l.height + 1);
   });
 
-  test.fixme('TC-2-09-03 tabell i rapportens seksjonsembed og i Plan Q1 vises uten avkutting', async ({ page }) => {
+  test('TC-2-09-03 tabell i rapportens seksjonsembed og i Plan Q1 vises uten avkutting', async ({ page }) => {
     for (const [n, overskrift] of [[s, 'Plan Q1'], [fasit2.rapport, 'Milepæler']] as const) {
       await presenter(page, n.sti);
       await gåTilLysbilde(page, nr(n.lysbilder, overskrift));
@@ -217,7 +218,7 @@ test.describe('AK-2-09 bases, Mermaid og fotnoter', () => {
     }
   });
 
-  test.fixme('TC-2-09-04 fotnoten vises nederst på lysbildet den hører til (A4), ikke på andre', async ({ page }) => {
+  test('TC-2-09-04 fotnoten vises nederst på lysbildet den hører til (A4), ikke på andre', async ({ page }) => {
     const plan = s.lysbilder.find((l) => l.fotnote)!;
     await presenter(page, s.sti);
     await gåTilLysbilde(page, nr(s.lysbilder, plan.overskrift!));
@@ -239,7 +240,7 @@ liveTest.describe('AK-2-09 live data i base under presentasjon', () => {
   const s = fasit2.statusmote;
   const b = s.lysbilder.find((l) => l.base)!.base!;
 
-  liveTest.fixme('TC-2-09-05 endret status i en oppgave flytter kortet i kanban uten å miste lysbildet', async ({ page, live }) => {
+  liveTest('TC-2-09-05 endret status i en oppgave flytter kortet i kanban uten å miste lysbildet', async ({ page, live }) => {
     await page.setViewportSize(VIEWPORT);
     await page.goto(live.url(s.sti));
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
