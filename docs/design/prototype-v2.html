@@ -857,6 +857,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .live-flag { display: inline-flex; align-items: baseline; gap: 0.5em; font-family: var(--font-meta); font-style: normal; color: var(--color-muted); }
 .live-flag::before { content: ""; width: 0.55em; height: 0.55em; border-radius: 50%; background: var(--hue-green); align-self: center; }
 .progress { position: absolute; left: 0; right: 0; bottom: 0; height: var(--slide-progress-h); display: flex; gap: calc(6 * var(--lp)); z-index: 2; }
+/* PO-95: tittellysbildet har verken folio eller fremdriftslinje (tidsskrifttradisjon) */
+.present[data-kind="tittel"] .progress, .present[data-kind="tittel"] .folio { visibility: hidden; }
 .progress .seg { position: relative; flex: var(--n) 1 0; background: var(--color-progress-track); overflow: hidden; }
 .progress .fill { position: absolute; inset: 0 auto 0 0; width: var(--w, 0%); background: var(--color-progress); transition: width var(--dur-base) var(--ease-out); }
 
@@ -1715,6 +1717,11 @@ function toggleFs() {
   if (document.fullscreenElement) document.exitFullscreen?.();
   else document.documentElement.requestFullscreen?.().catch(() => toast('<b>Fullskjerm ble ikke tillatt</b><span class="muted">Presentasjonen virker også i vindu, f.eks. ved deling av ett vindu i Teams.</span>'));
 }
+
+/* PO-92: nettleseren tar første Esc i fullskjerm – presentasjonen fortsetter, og vi sier hvordan man avslutter */
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && !$('#present').hidden) toast('<b>Fullskjerm av</b><span class="muted"><span class="k">Esc</span> igjen avslutter presentasjonen · <span class="k">f</span> fullskjerm</span>');
+});
 
 /* ---------- Skalering (ADR-010): k = min(b/1920, h/1080), satt som --stage-scale ---------- */
 function fitStage() {

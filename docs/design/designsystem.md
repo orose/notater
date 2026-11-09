@@ -13,7 +13,7 @@ Eier: UX/webdesign. Bindende grunnlag: `docs/produkt/brief.md` (særlig B9, B10,
 | `skjermbilder/` | Skjermbilder 1440 px og 390 px i flere kombinasjoner (v1.1 i `skjermbilder/v1.1/`) |
 | `prototype-v1.1.html` | **v1.1** (§11): lesebredde, diskré embedding, folding, zen, `:`-palett, `?`-oppslagskort, which-key. Selvstendig, interaktiv. |
 | `kontrast-v1.1.mjs` | Kontrollskript for v1.1-fargene: `node docs/design/kontrast-v1.1.mjs` (exit 1 ved brudd, `--json` for QA) |
-| `prototype-v2.html` | **v2** (§12): presentasjonsmodus. Et realistisk statusmøte på 13 lysbilder, oversikt, svart skjerm, palett med feilkoder, alle typesett/paletter. Selvstendig, interaktiv. |
+| `prototype-v2.html` | **v2** (§12), **generert** fra `prototype-v2/src.html` med `prototype-v2/build.py` (se README der, PO-98): presentasjonsmodus. Et realistisk statusmøte på 13 lysbilder, oversikt, svart skjerm, palett med feilkoder, alle typesett/paletter. Selvstendig, interaktiv. |
 | `kontrast-v2.mjs` | Kontrollskript for v2-fargene (letterbox, agendalinje, oversikt …): `node docs/design/kontrast-v2.mjs` |
 | `skjermbilder/v2/` | 1920×1080, 1280×720, 1440×900 (letterbox) og 390×844 |
 
@@ -955,7 +955,7 @@ lysbildet er synlig. De andre har `visibility: hidden` og `inert`.
   Nederst står «Endret …» i mono over en hårstrek. **Ingen tagger (PO-90).**
 - Terminal: `~/sti`, tittel med en **statisk blokkmarkør** i aksent (█, blinker ikke), og properties som nøkkel/verdi-
   tabell på `surface`. Klartekst: én spalte, properties som fet nøkkel og verdi.
-- Properties respekterer skjulte felt som i leseren. Kolumnetittel vises ikke. Folio og fremdrift vises (A5).
+- Properties respekterer skjulte felt som i leseren. Kolumnetittel, **folio og fremdriftslinje vises ikke** (PO-95, tidsskrifttradisjon: tittelsiden har ingen folio).
 - S6: innhold før første agendaoverskrift står under ingressen hvis det passer (målt med samme tilpasning), ellers på
   et eget lysbilde (ADR-010: id `innledning`).
 
@@ -1016,9 +1016,9 @@ Notene følger lysbildet der referansen står, også etter deling.
 
 ### 12.6 Krom: folio, fremdrift, kontroller
 
-- **Folio** nederst til høyre: «**7** / 13» i mono, med gjeldende nummer i tekstfarge og resten dempet. Nederst til
+- **Folio** nederst til høyre (ikke på tittellysbildet, PO-95): «**7** / 13» i mono, med gjeldende nummer i tekstfarge og resten dempet. Nederst til
   venstre står notattittelen (A kursiv, C mono). Den skjules på tittellysbildet.
-- **Fremdrift** (A5): segmentert stripe på 8 lp helt nederst, med ett segment per agendaseksjon (tittel og agenda er
+- **Fremdrift** (A5, ikke på tittellysbildet, PO-95): segmentert stripe på 8 lp helt nederst, med ett segment per agendaseksjon (tittel og agenda er
   første segment) og 6 lp mellomrom. Fyll i `--color-progress`, spor i `--color-progress-track` (dekor). Bredden
   animeres med `--dur-base`. Segmentene gir struktur uten tekst.
 - **Musekontroller:** «Oversikt [o]» og «Avslutt [Esc]» øverst til høyre. De er skjult i hvile, vises ved
@@ -1059,7 +1059,7 @@ Notene følger lysbildet der referansen står, også etter deling.
   folio) byttes momentant, og fremdriften glir. Ingen bevegelse, skalering eller skyving. Ved
   `prefers-reduced-motion` er `--slide-fade` 0 ms. Toning er også gunstig for videokomprimering (ingen store
   bevegelsesvektorer).
-- **Fullskjerm** `f` / `:fullskjerm` (PO-88). Avvises fullskjerm, kommer en toast om at presentasjonen virker i vindu.
+- **Fullskjerm** `f` / `:fullskjerm` (PO-88). Går man ut av fullskjerm (nettleseren tar første `Esc`), fortsetter presentasjonen med toasten «**Fullskjerm av** [Esc] igjen avslutter presentasjonen · [f] fullskjerm» (PO-92). Avvises fullskjerm, kommer en toast om at presentasjonen virker i vindu.
 - **Esc** (PO-87): lukker overlegg først, avslutter ellers til **seksjonen for gjeldende lysbilde** med toasten
   «Presentasjonen er avsluttet. Du står ved «Outbox-mønsteret». [Space][p] starter herfra.»
 
@@ -1119,7 +1119,12 @@ Ingen nye råverdier, bortsett fra #000 til svart skjerm. Krympefaktoren per lys
 - [ ] `--slide-fade` 0 ved reduced motion. Kanbanglød erstattes av ramme.
 - [ ] Overlegg skaleres med vinduet (`html` font-size i present-modus).
 
-### 12.13 Åpne spørsmål (v2)
+### 12.13 Avklarte spørsmål (v2)
+
+Alle seks spørsmålene er besvart av PO: 1 → PO-92 (to Esc i fullskjerm, toast), 2 → PO-93 (godkjent), 3 → PO-94 (`↑`/`↓`
+registreres), 4 → PO-95 (ingen folio/fremdrift på tittellysbildet), 5 → PO-96 (h2 gir ingen agenda), 6 → PO-97 (hintet
+beholdes). Opprinnelig formulering under, for sporbarhet.
+
 
 1. **Esc i nettleserens fullskjerm.** I fullskjerm tar nettleseren selv første `Esc` (går ut av fullskjerm), og siden
    får ikke tasten. AK-2-01 («Esc avslutter») krever da to trykk. Forslag: når fullskjerm avsluttes mens vi presenterer,
