@@ -3,7 +3,7 @@
 import { KEY_MODES, chordId, parseKeySequence, type EngineBinding, type EngineKeymap, type KeyMode } from '../../keyboard';
 import { COMMAND_CATALOG, COMMAND_IDS, type CommandId } from './catalog';
 import type { CommandContext } from './command-context';
-import { ENABLED, type Availability, type ArgumentValue, type CommandHandler, type CommandSpecBody } from './command-types';
+import { ENABLED, NOT_WHILE_PRESENTING, ONLY_WHILE_PRESENTING, type Availability, type ArgumentError, type ArgumentValue, type CommandHandler, type CommandSpecBody } from './command-types';
 
 /** Én handler per kommando-id – mangler én, feiler typesjekken. */
 export type CommandHandlers = { readonly [K in CommandId]: CommandHandler };
@@ -13,6 +13,7 @@ export interface Command extends CommandSpecBody {
   isEnabled(ctx: CommandContext): Availability;
   state(ctx: CommandContext): string | null;
   argumentValues(ctx: CommandContext, name: string): readonly ArgumentValue[];
+  argumentError(ctx: CommandContext, name: string, input: string): ArgumentError | null;
   run(ctx: CommandContext, args: Readonly<Record<string, string>>): void | Promise<void>;
 }
 
@@ -41,9 +42,14 @@ export function createCommandRegistry(handlers: CommandHandlers): CommandRegistr
     return {
       ...spec,
       id,
-      isEnabled: (ctx) => handler.isEnabled?.(ctx) ?? ENABLED,
+      isEnabled: (ctx) => {
+        // ADR-010 §3: lese-kommandoer under presentasjon, present-kommandoer utenfor.
+        if (spec.modes && !spec.modes.includes(ctx.mode)) return { enabled: false, reason: ctx.mode === 'present' ? NOT_WHILE_PRESENTING : ONLY_WHILE_PRESENTING };
+        return handler.isEnabled?.(ctx) ?? ENABLED;
+      },
       state: (ctx) => handler.state?.(ctx) ?? null,
       argumentValues: (ctx, name) => handler.argumentValues?.(ctx, name) ?? [],
+      argumentError: (ctx, name, input) => handler.argumentError?.(ctx, name, input) ?? null,
       run: (ctx, args) => handler.run(ctx, args),
     };
   });

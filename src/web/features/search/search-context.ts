@@ -46,6 +46,8 @@ export interface PaletteCommandList {
   readonly items: readonly PaletteCommandItem[];
   /** Satt når inndata er en argumentkommando (`tema …`): underlistens overskrift. */
   readonly argument: { readonly ex: string; readonly label: string } | null;
+  /** Forklarende feil når argumentet ikke finnes (S4: E475/E486), ellers null (generell tekst). */
+  readonly error?: { readonly code: string; readonly title: string; readonly detail: string } | null;
 }
 
 /** Kommandomodus i paletten (F5). Leveres av `CommandProvider`. */

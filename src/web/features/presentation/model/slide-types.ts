@@ -5,7 +5,7 @@
 //   finalizeDeck(drafts, fits, options) → SlideDeck       (A2: «(forts.)»-lysbilder, nummer, progresjon, id-er)
 // Mellom dem ligger tilpasningen i DOM (`../fit`), som bare leverer bruddpunkter og skriftskala per utkast.
 
-import type { ElementContent, RootContent } from 'hast';
+import type { ElementContent, Properties, RootContent } from 'hast';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -57,6 +57,8 @@ export interface SlideUnit {
   readonly overflow: UnitOverflow;
   /** Felles nøkkel for punkter fra samme liste; `null` for vanlige blokker. */
   readonly listKey: string | null;
+  /** Listepunkt: listens element (`ul`/`ol` med egenskaper) og punktets indeks (0-basert), så listen kan settes sammen igjen. */
+  readonly list?: { readonly tagName: string; readonly properties: Properties; readonly index: number };
 }
 
 /**

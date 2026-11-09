@@ -45,6 +45,13 @@ const toc = [
 describe('buildOutline i diskré modus (F2, ADR-009 beslutning 3)', () => {
   const outline = buildOutline(rapport, toc, true);
 
+  it('flow: diskré embeds er gjennomsiktige; overskriftene har effektive nivåer (ADR-010 §1)', () => {
+    const heads = outline.flow.filter((b) => b.heading).map((b) => [b.heading?.level, b.heading?.text]);
+    expect(heads.slice(0, 5)).toEqual([[2, 'Sammendrag'], [3, 'Funn'], [3, 'Konklusjon'], [1, 'Del I – Drift'], [2, 'Driftsstatus']]);
+    expect(outline.flow.some((b) => b.node.type === 'element' && (b.node.tagName === 'vr-embed' && b.node.properties.dataStatus === 'ok'))).toBe(false);
+    expect(outline.flow.some((b) => b.node.type === 'element' && b.node.tagName === 'vr-footnotes')).toBe(false);
+  });
+
   it('nivåregel: tittel ett nivå under forrige overskrift (PO-57/58), innhold forskjøvet (PO-65), H1 som tittel (PO-35)', () => {
     expect(outline.headings.map((x) => [x.level, x.text])).toEqual([
       [2, 'Sammendrag'],
