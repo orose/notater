@@ -332,3 +332,14 @@ Se [ADR-010](arkitektur/ADR-010-presentasjonsmodus.md). Skjelett i `src/web/feat
 - **PO-89** Lenker i lysbilder virker og forlater presentasjonen; Tilbake går inn igjen. Godkjent.
 - **PO-90** Tagger vises ikke på tittellysbildet.
 - **PO-91** Ukjent lysbilde-id i URL ved ny lasting → tittellysbildet. QA tilpasser TC-2-11-13.
+
+## PO-avgjørelser etter UX-rapport v2
+
+Designet (prototype-v2.html, designsystem §12) er **godkjent** som referanse.
+- **PO-92** Esc i fullskjerm: nettleseren tar første Esc og går ut av fullskjerm; presentasjonen fortsetter med toast «Esc igjen avslutter». Ett Esc uten fullskjerm avslutter. AK-2-01 presiseres tilsvarende.
+- **PO-93** «Ingen foreldreløse lysbilder» (§12.7.3) godkjent som presisering av A2.
+- **PO-94** `↑`/`↓` ruller en for stor blokk internt i present-modus – registreres i kommandoregisteret.
+- **PO-95** Tittellysbildet har **ikke** folio eller fremdriftslinje (tidsskrifttradisjon) – presisering av A5.
+- **PO-96** `:presenter h2` → agendanivå = notattittel → ingen agenda/overganger. Riktig tolkning av S4.
+- **PO-97** Rullehintet («↓ 38 linjer til») beholdes, diskret.
+- **PO-98** UX sitt byggeskript for prototypen flyttes inn i `docs/design/prototype-v2/` (kilde + build) så prototypen kan vedlikeholdes.
