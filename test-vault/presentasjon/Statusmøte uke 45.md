@@ -43,27 +43,9 @@ Markør STATUS-B.
 
 ### Oppgaver
 
-Tavlen under er levende data fra oppgavemappen (samme utvalg som Kanban-viewet i Oppgaver-basen).
+Tavlen under er Kanban-viewet i Oppgaver-basen, med levende data fra oppgavemappen.
 
-```base
-filters:
-  and:
-    - file.hasTag("task")
-    - file.folder != "templates"
-views:
-  - type: kanban
-    name: Statustavle
-    groupBy:
-      property: status
-      direction: ASC
-    groupOrder:
-      - todo
-      - doing
-      - done
-    order:
-      - file.name
-      - file.tags
-```
+![[Oppgaver.base#Kanban]]
 
 ### Flyt i presentasjonen
 

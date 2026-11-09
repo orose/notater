@@ -32,6 +32,8 @@ export interface FasitLysbilde {
     readonly type: string;
     readonly kort: number;
     readonly kolonner: number;
+    readonly embed: string;
+    readonly view: string;
     readonly liveKort: string;
     readonly liveFil: string;
     readonly fra: string;
@@ -90,7 +92,8 @@ export interface V2Fasit {
     readonly h4: { readonly agenda: readonly string[]; readonly lysbilder: readonly FasitLysbilde[]; readonly ikkeLysbilde: readonly string[] };
     readonly ugyldige: readonly string[];
     readonly tomme: readonly string[];
-    readonly tomIAnnetNotat: { readonly sti: string; readonly niva: string };
+    readonly feilkoder: { readonly ugyldig: string; readonly tomt: string };
+    readonly tomIAnnetNotat: { readonly sti: string; readonly niva: string; readonly feilkode: string };
   };
   readonly lerret: {
     readonly forhold: number;
@@ -142,8 +145,8 @@ export const kunngjøring = (page: Page): Locator => page.getByTestId('lysbilde-
 export const oversikt = (page: Page): Locator => page.getByRole('dialog', { name: 'Lysbildeoversikt' });
 export const oversiktLysbilder = (page: Page): Locator => oversikt(page).getByTestId('oversikt-lysbilde');
 export const svartSkjerm = (page: Page): Locator => page.getByTestId('svart-skjerm');
-/** Feilmelding med vim-stil feilkode (S4), i paletten eller varselsonen. */
-export const feilkode = (page: Page): Locator => page.getByRole('status').filter({ hasText: /E\d{3}/ });
+/** Feilmelding med vim-stil feilkode (S4) i paletten. PO-101: E475 = ugyldig argument, E486 = nivået finnes ikke. */
+export const feilkode = (page: Page, kode?: string): Locator => page.getByRole('status').filter({ hasText: kode ?? /E\d{3}/ });
 
 export async function erIPresentasjon(page: Page): Promise<boolean> {
   return (await presentasjon(page).count()) > 0 && (await presentasjon(page).isVisible());

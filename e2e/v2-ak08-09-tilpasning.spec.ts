@@ -178,8 +178,9 @@ test.describe('AK-2-09 bases, Mermaid og fotnoter', () => {
   test.fixme('TC-2-09-01 kanban: alle kolonner og kort synlige innenfor lerretet', async ({ page }) => {
     await presenter(page, s.sti);
     await gåTilLysbilde(page, nr(s.lysbilder, 'Oppgaver'));
-    // Samme kontrakt som v1 (e2e/bases.spec.ts): region «Kanban: ‹view›», kolonner `section.lane`, kort `a.card`.
-    const tavle = lysbildeInnhold(page).getByRole('region', { name: 'Kanban: Statustavle' });
+    // `![[Oppgaver.base#Kanban]]` (PO-100). Samme kontrakt som v1 (e2e/bases.spec.ts): region «Kanban: ‹view›»,
+    // kolonner `section.lane`, kort `a.card`.
+    const tavle = lysbildeInnhold(page).getByRole('region', { name: `Kanban: ${oppgaver.base!.view}` });
     await expect(tavle).toBeVisible();
     const kolonner = tavle.locator('section.lane');
     await expect(kolonner).toHaveCount(oppgaver.base!.kolonner);

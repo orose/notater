@@ -148,11 +148,11 @@ test.describe('AK10 tilbakelenker (README-QA «Tilbakelenker»)', () => {
     });
   }
 
-  test('Oppgaver.base har 6 tilbakelenker via API (base-side)', async ({ request }) => {
+  test('Oppgaver.base har 7 tilbakelenker via API (base-side)', async ({ request }) => {
     const res = await request.get('/api/vaults/test/document?path=Oppgaver.base');
     const body = (await res.json()) as { backlinks: { source: string }[] };
     expect(body.backlinks.map((b) => b.source).sort()).toEqual(
-      ['Velkommen', 'lenker/Embed-test', 'lenker/Lenketest', 'teknisk/Bash-tips', 'templates/Oppgave-mal', 'templates/sprint/Sprint-oppgave-mal'].sort(),
+      ['Velkommen', 'lenker/Embed-test', 'lenker/Lenketest', 'presentasjon/Statusmøte uke 45', 'teknisk/Bash-tips', 'templates/Oppgave-mal', 'templates/sprint/Sprint-oppgave-mal'].sort(),
     );
   });
 

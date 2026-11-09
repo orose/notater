@@ -23,7 +23,7 @@ Eier: QA. Grunnlag: `docs/produkt/v2-spesifikasjon.md` (AK-2-01 til -14, S1–S8
 
 | Notat (`presentasjon/`) | Brukes til | Fasit |
 |---|---|---|
-| `Statusmøte uke 45` | Eksempelnotatet: 3 agendapunkter, H3-lysbilder med liste, kode, kanban (inline `base`), Mermaid, tabell, fotnote; ingress, properties, skjult `cssclasses`; P1-feller (`lysbildeniva`, `agenda: av`, `presenter:`) | QA-V2-01, -20..25 |
+| `Statusmøte uke 45` | Eksempelnotatet: 3 agendapunkter, H3-lysbilder med liste, kode, kanban (`![[Oppgaver.base#Kanban]]`, PO-100), Mermaid, tabell, fotnote; ingress, properties, skjult `cssclasses`; P1-feller (`lysbildeniva`, `agenda: av`, `presenter:`) | QA-V2-01, -20..25 |
 | `Månedsrapport oktober` + `kilder/*` (4) | Rapport av diskré embeds: agendapunkter fra hele notatembeds og fra vertens H2 med seksjonsembeds; nestet embed; seksjon som aldri skal vises; P1-felle | QA-V2-02 |
 | `Delte lysbilder` | `---`/`***`, `---` i kodeblokk, `---` sist i seksjon og to på rad, agendaseksjon uten H3 | QA-V2-03 |
 | `Mye innhold` | Krymping + «(forts.)», 39 markører, liste som bare kan deles mellom punkter | QA-V2-04 |
@@ -35,8 +35,9 @@ Eier: QA. Grunnlag: `docs/produkt/v2-spesifikasjon.md` (AK-2-01 til -14, S1–S8
 
 Konsekvens: QA-IDX-01 er nå **105** notater (91 + 14). Oppdatert i `README-QA.md`, `e2e/ak01-vault-indeks.spec.ts`,
 `src/server/app/create-app.test.ts` og `src/server/features/vault-index/vault-snapshot.test.ts` (godkjent av PO i oppdraget).
-Ingen av de nye notatene har tagger, lenker ut av mappa eller embed av `.base`-filer: tilbakelenke-, base- og søkefasiten er
-uendret (`Oppgaver.base` har fortsatt 6 tilbakelenker, se Q-17). Ytelsestesten (AK-2-13) genererer sitt eget vault.
+Ingen av de nye notatene har tagger eller lenker ut av mappa, bortsett fra `![[Oppgaver.base#Kanban]]` i statusmøtet (PO-100):
+`Oppgaver.base` har nå **7** tilbakelenker (oppdatert i `ak07-11-navigasjon.spec.ts`, `document-service.test.ts` og README-QA §4).
+Base- og søkefasiten er uendret. Ytelsestesten (AK-2-13) genererer sitt eget vault.
 
 ## 3. Sporbarhet AK → testcaser
 
@@ -44,7 +45,7 @@ uendret (`Oppgaver.base` har fortsatt 6 tilbakelenker, se Q-17). Ytelsestesten (
 |---|---|---|
 | AK-2-01 Start/avslutt | `v2-ak01-start-avslutt.spec.ts` | TC-2-01-01 `Space p` fra toppen → tittel; -02 fra leseposisjon (topp/agendaoverskrift/lysbilde/siste, QA-V2-25); -03 `:presenter`; -04 `Esc` uten navigasjon → samme sted, `j` virker; -05 `Esc` etter navigasjon → seksjonen for gjeldende lysbilde (PO-87); -06 `Esc` lukker oversikt/palett først; -07 `Space p` uten which-key, `Space` alene starter ikke; -08 `.base` deaktivert; -09 ingen ny henting av dokumentet |
 | AK-2-02 Rekkefølge | `v2-ak02-04-struktur.spec.ts` | **TC-2-02-00 fasitsjekk (aktiv)**; -01 rekkefølge for 8 notater (statusmøte, rapport, delinger, store blokker, S7, S6 kort/lang, 8 punkter); -02 markører på riktig lysbilde; -03 diskré alltid i presentasjon, lesevisning urørt; -04 seksjonsembed avgrenset; -05 foldetilstand ignoreres (S8) |
-| AK-2-03 Lysbildenivå | samme | TC-2-03-01 standard h3; -02 `:presenter h4` / `h2`; -03 huskes per notat (ny start, reload, annet notat upåvirket); -04 bare localStorage, ikke URL/notat, bare GET/HEAD, sjekksum; -05 `:presenter auto` fjerner lagret nivå; -06 ugyldig (`h1` `h7` `h9` `hx` `4`) → feilkode; -07 tomt (`h5` `h6`) → feilkode, huskes ikke |
+| AK-2-03 Lysbildenivå | samme | TC-2-03-01 standard h3; -02 `:presenter h4` / `h2`; -03 huskes per notat (ny start, reload, annet notat upåvirket); -04 bare localStorage, ikke URL/notat, bare GET/HEAD, sjekksum; -05 `:presenter auto` fjerner lagret nivå; -06 ugyldig argument (`h7` `h9` `hx` `4`) → **E475**; -07 nivå som ikke finnes (`h1` `h5` `h6`) → **E486** med gyldige nivåer, huskes ikke; -08 `h4` i statusmøtet → E486 (PO-101) |
 | AK-2-04 `---` | samme | TC-2-04-01 `---`/`***` med «(forts.)»; -02 `---` i kodeblokk deler ikke, ingen `<hr>`; -03 ingen tomme lysbilder; -04 S7 |
 | AK-2-05 Tittel/agenda/overgang | `v2-ak05-07-agenda.spec.ts` | TC-2-05-01 tittellysbilde (ingress, properties, skjulte, dato, ingen agendalinje); -02/-03 S6; -04 agenda; -05 overganger med utheving og demping; -06 `:agenda av` beholder lysbildet; -07 huskes ikke (ny start, reload); -08 S7 uten agenda; -09 ingen tagger på tittellysbildet (PO-90) |
 | AK-2-06 Agendalinjen | samme | TC-2-06-01 på alle innholdslysbilder, utheving + progresjon, skjult ellers; -02 diskré (øverst, mindre); -03 avkorting ved 1280×720 (QA-V2-22); -04 agendalysbildet uavkortet; -05 rapport |
@@ -91,7 +92,7 @@ uendret (`Oppgaver.base` har fortsatt 6 tilbakelenker, se Q-17). Ytelsestesten (
 | Ingenting kuttes usynlig | Alle blokker innenfor lerretet; innholdsflaten flyter ikke over (unntak: intern rulling) | `kuttetInnhold()` i TC-2-08-*, -12-01 |
 | 8 agendapunkter | Agendalinjen: forrige · **nåværende** · neste med «…» der det er avkortet; agendalysbildet viser alle | TC-2-06-03, -04 |
 | Ett agendapunkt | Agenda med ett punkt, overgang vises likevel («alltid») | `Mye innhold`, `Stor kodeblokk` i TC-2-02-01 |
-| Presentasjon på `.base`-side | Deaktivert med forklaring (Q-19) | TC-2-01-08 |
+| Presentasjon på `.base`-side | Deaktivert med forklaring («Gjelder bare notater», ADR-010) | TC-2-01-08 |
 | Bilder/diagrammer som lastes sent | Tilpasning skjer når de er lastet (Mermaid venter i testene på `svg`) | TC-2-08-05, -09-02 |
 | Redusert bevegelse | Ingen toning; ellers kort toning (≤ 400 ms) | TC-2-12-13 |
 | Touch | Trykk høyre/venstre, sveip, «Avslutt presentasjon» uten tastatur (P6) | TC-2-10-30..32 |
@@ -143,7 +144,7 @@ Avvik avtales med QA før de implementeres.
 | Kunngjøring | `data-testid="lysbilde-kunngjoring"`, `role=status` (`aria-live=polite`), tekst «Lysbilde 7 av 12: Leveranse B» | Gruppens `aria-label` = samme etikett (`Slide.label`) |
 | Oversikt | `role=dialog` navn «Lysbildeoversikt»; hvert lysbilde `data-testid="oversikt-lysbilde"` (knapp), gjeldende `aria-current="true"`, roving fokus (piler/`hjkl`), `Enter`/klikk hopper | Fokus på gjeldende ved åpning |
 | Svart skjerm | `data-testid="svart-skjerm"`, `background-color: rgb(0, 0, 0)` i alle temaer | ADR-010 §3 |
-| Feilmelding | `role=status` med vim-stil kode (`E` + 3 sifre; ADR-010: `E475 Ugyldig nivå «h9» …`, `E475 Ingen overskrifter på nivå h5 …`) og norsk tekst, i paletten | S4 |
+| Feilmelding | `role=status` med vim-stil kode (`E` + 3 sifre; ADR-010: `E475 Ugyldig nivå «h9» …`, `E486 Ingen overskrifter på nivå h5 i dette notatet. Gyldige nivåer: h2, h3, h4.`) og norsk tekst, i paletten. E475 = ugyldig argument, E486 = nivået finnes ikke | S4, PO-101 |
 | Avslutt med mus/touch | `role=button` «Avslutt presentasjon» | P6, Q-15 |
 | Kanban på lysbildet | Som v1: `role=region` «Kanban: ‹view›», `section.lane`, `.lane-head .label`, `a.card` | `e2e/bases.spec.ts` |
 | Kommandoer | Registeret: modus `present` i `catalogBindings()` (`present.*`, `system.escape`); palett: `:presenter [auto\|h<n>]`, `:agenda [av\|på]`, `:fullskjerm`, `:oversikt`, `:svart`, `:avslutt`; `f` = fullskjerm (PO-88) | P2, ADR-010 §3 |
@@ -179,20 +180,20 @@ Avgjort (testene og fasiten følger avgjørelsen):
 | – | Tagger på tittellysbildet | Vises ikke (PO-90) |
 | – | Ukjent lysbilde-id i URL | Tittellysbildet (PO-91); TC-2-11-13 er tilpasset |
 
-Fortsatt åpne:
+Avgjort i PO-99 til PO-102 (alle QA-forslag godkjent):
 
-| # | Spørsmål | QA foreslår |
+| # | Spørsmål | Avgjørelse |
 |---|---|---|
-| Q-03 | Innholdslysbilder uten overskrift (S7, og innledning som eget lysbilde): hva står øverst, og hva er `data-slide-type`? | Ingen overskrift og ingen agendalinje. `data-slide-type="innhold"` også for `innledning` (fasiten forventer det). |
-| Q-11 | Virker `⌘.`/`Ctrl .` i present-modus? ADR-010 sier at temakommandoene virker. | Ja (TC-2-10-09 forventer det). |
-| Q-13 | Lesevisningens tilstand (folding, diskré, zen) etter presentasjon | Urørt. ADR-010 holder lesevisningen montert, så det bør følge av seg selv (TC-2-14-01). |
-| Q-14 | `***`/`___` som lysbildeskille | Ja, som `---` (ADR-010 bruker `hr`-elementet, så det følger av seg selv). |
-| Q-15 | Start/avslutt med mus/touch (P6) | «Presenter» i Utseende eller notat-headeren og en dempet «Avslutt presentasjon» (TC-2-10-32). UX har et «start-hint for mus» i skjermbildene; navnet må avtales. |
-| Q-16 | Gruppe i `?` for present-tastene | ADR-010 nevner README-tabellen «I presentasjon», men ikke gruppenavnet i `?`. QA foreslår gruppen «Presentasjon» (står i `v2-fasit.json`, `taster.nyeGrupper`, og brukes av TC-08-09 og TC-2-10-11). |
-| Q-17 | Ekte `![[Oppgaver.base#Kanban]]` i statusmøtet i stedet for en inline `base`-blokk | Ja på sikt. Det krever at QA får endre tilbakelenke-fasiten for `Oppgaver.base` fra 6 til 7 (`ak07-11-navigasjon.spec.ts`, README-QA §4). |
-| Q-21 | Kort tekst og en blokk som er for stor alene på samme lysbilde | Del mellom blokkene. Testvaultet unngår tilfellet. |
-| Q-23 | AK-2-13 «start < 500 ms»: median eller hver gang? | Median av 5, og maks rapporteres. |
-| Q-24 | Feilkode for tomt nivå: ADR-010 sier E475, mens UX' skjermbilde heter `16-feil-e486-h5`. | Én kode. Testene godtar `E` + 3 sifre. |
+| Q-03 | Lysbilder uten overskrift | Ingen overskrift og ingen agendalinje; `data-slide-type="innhold"`, også for innledning |
+| Q-11 | `⌘.`/`Ctrl .` i present-modus | Virker |
+| Q-13 | Lesevisningen etter presentasjon | Urørt |
+| Q-14 | `***`/`___` | Deler lysbilder som `---` |
+| Q-15 | Mus/touch | «Presenter» i Utseende og en dempet knapp «Avslutt presentasjon» på lerretet (PO-99) |
+| Q-16 | Gruppe i `?` | «Presentasjon» |
+| Q-17 | Ekte embed av basen | `![[Oppgaver.base#Kanban]]` i statusmøtet; tilbakelenker 6 → 7 (PO-100) |
+| Q-21 | Kort tekst + for stor blokk | Del mellom blokkene |
+| Q-23 | AK-2-13 start | Median av 5, maks rapporteres (PO-102) |
+| Q-24 | Feilkoder | E475 = ugyldig argument (`h9`, `hx`), E486 = nivået finnes ikke i notatet (`h5`) (PO-101) |
 
 ## 9. Manuelt
 

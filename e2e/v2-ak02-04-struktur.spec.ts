@@ -214,33 +214,45 @@ test.describe('AK-2-03 lysbildenivå (S4)', () => {
     expect(await lesAlleLysbilder(page)).toEqual(n.h3.lysbilder.map(somFasit));
   });
 
+  /** Skriver `:presenter <arg>` i paletten og trykker Enter. */
+  async function presenterMed(page: import('@playwright/test').Page, sti: string, arg: string): Promise<void> {
+    await openNote(page, sti);
+    await page.keyboard.press(':');
+    await page.getByRole('combobox').pressSequentially(`presenter ${arg}`);
+    await page.keyboard.press('Enter');
+  }
+
   for (const ugyldig of n.ugyldige) {
-    test.fixme(`TC-2-03-06 ugyldig nivå \`:presenter ${ugyldig}\` gir feilkode og norsk forklaring`, async ({ page }) => {
-      await openNote(page, n.sti);
-      await page.keyboard.press(':');
-      await page.getByRole('combobox').pressSequentially(`presenter ${ugyldig}`);
-      await page.keyboard.press('Enter');
-      await expect(feilkode(page)).toBeVisible();
-      await expect(feilkode(page)).toContainText(/nivå|h2.*h6/i);
+    test.fixme(`TC-2-03-06 ugyldig argument \`:presenter ${ugyldig}\` gir ${n.feilkoder.ugyldig} og norsk forklaring (PO-101)`, async ({ page }) => {
+      await presenterMed(page, n.sti, ugyldig);
+      await expect(feilkode(page, n.feilkoder.ugyldig)).toBeVisible();
+      await expect(feilkode(page, n.feilkoder.ugyldig)).toContainText(ugyldig);
+      await expect(feilkode(page, n.feilkoder.ugyldig)).toContainText(/nivå/i);
+      await expect(feilkode(page, n.feilkoder.tomt)).toHaveCount(0);
       await expect(presentasjon(page)).toBeHidden();
     });
   }
 
   for (const tomt of n.tomme) {
-    test.fixme(`TC-2-03-07 tomt nivå \`:presenter ${tomt}\` (ingen ${tomt.toUpperCase()} i notatet) gir feilkode og norsk forklaring`, async ({ page }) => {
-      await openNote(page, n.sti);
-      await page.keyboard.press(':');
-      await page.getByRole('combobox').pressSequentially(`presenter ${tomt}`);
-      await page.keyboard.press('Enter');
-      await expect(feilkode(page)).toBeVisible();
-      await expect(feilkode(page)).toContainText(new RegExp(tomt, 'i'));
+    test.fixme(`TC-2-03-07 nivå som ikke finnes \`:presenter ${tomt}\` gir ${n.feilkoder.tomt}, gyldige nivåer listes, valget huskes ikke (PO-101)`, async ({ page }) => {
+      await presenterMed(page, n.sti, tomt);
+      await expect(feilkode(page, n.feilkoder.tomt)).toBeVisible();
+      await expect(feilkode(page, n.feilkoder.tomt)).toContainText(tomt);
+      // Meldingen nevner de gyldige nivåene (ADR-010 §3: «Gyldige nivåer: h2, h3, h4.»).
+      await expect(feilkode(page, n.feilkoder.tomt)).toContainText(/h2.*h3.*h4/);
+      await expect(feilkode(page, n.feilkoder.ugyldig)).toHaveCount(0);
       await expect(presentasjon(page)).toBeHidden();
-      // Et feilet valg huskes ikke.
       await page.keyboard.press('Escape');
       await presenter(page, n.sti);
       expect(await lesAlleLysbilder(page)).toEqual(n.h3.lysbilder.map(somFasit));
     });
   }
+
+  test.fixme(`TC-2-03-08 \`:presenter h4\` i statusmøtet (ingen H4) gir ${n.tomIAnnetNotat.feilkode} (PO-101)`, async ({ page }) => {
+    await presenterMed(page, n.tomIAnnetNotat.sti, n.tomIAnnetNotat.niva);
+    await expect(feilkode(page, n.tomIAnnetNotat.feilkode)).toBeVisible();
+    await expect(presentasjon(page)).toBeHidden();
+  });
 });
 
 // ---------------------------------------------------------------------------------------------

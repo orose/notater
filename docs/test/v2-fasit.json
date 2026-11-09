@@ -77,7 +77,9 @@
      "liveKort": "Refaktorer logging",
      "liveFil": "oppgaver/Refaktorer logging.md",
      "fra": "todo",
-     "til": "doing"
+     "til": "doing",
+     "embed": "![[Oppgaver.base#Kanban]]",
+     "view": "Kanban"
     }
    },
    {
@@ -929,19 +931,25 @@
    "avklaring": "Q-04 (agendanivå H1 finnes ikke i brødteksten → ingen agenda)"
   },
   "ugyldige": [
-   "h1",
    "h7",
    "h9",
    "hx",
    "4"
   ],
   "tomme": [
+   "h1",
    "h5",
    "h6"
   ],
   "tomIAnnetNotat": {
    "sti": "presentasjon/Statusmøte uke 45",
-   "niva": "h4"
+   "niva": "h4",
+   "feilkode": "E486"
+  },
+  "feilkoder": {
+   "ugyldig": "E475",
+   "tomt": "E486",
+   "$kommentar": "PO-101: E475 = ugyldig argument (utenfor h1–h6/auto); E486 = nivået finnes ikke i notatet"
   }
  },
  "lerret": {

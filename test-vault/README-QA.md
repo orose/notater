@@ -143,7 +143,7 @@ Antall **distinkte kildenotater** (inkl. embeds og markdown-lenker; property-len
 | `domene/Ordre.md` | 11 (10 uten property-lenker) | `domene/Betaling.md`, `domene/Faktura.md`, `domene/Kunde.md`, `domene/Lager.md`, `domene/_MOC.md`, `domene/ordre-opprettet.md`, `domene/Øyeblikksbilde.md`, `edge/Frontmatter-typer.md` (kun property), `lenker/Lenketest.md`, `oppgaver/Skriv integrasjonstest for ordre-API.md`, `teknisk/Arkitektur/Hendelsesdrevet arkitektur.md` |
 | `domene/avtale.md` | 3 | `domene/Faktura.md`, `domene/_MOC.md`, `lenker/Lenketest.md` |
 | `lenker/Syklus A.md` | 2 | `lenker/Embed-test.md`, `lenker/Syklus B.md` |
-| `Oppgaver.base` | 6 | `Velkommen.md`, `lenker/Embed-test.md`, `lenker/Lenketest.md`, `teknisk/Bash-tips.md`, `templates/Oppgave-mal.md`, `templates/sprint/Sprint-oppgave-mal.md` |
+| `Oppgaver.base` | 7 (PO-100) | `Velkommen.md`, `lenker/Embed-test.md`, `lenker/Lenketest.md`, `presentasjon/Statusmøte uke 45.md`, `teknisk/Bash-tips.md`, `templates/Oppgave-mal.md`, `templates/sprint/Sprint-oppgave-mal.md` |
 | `README-QA.md` | 0 | |
 
 Selvlenker (`[[#…]]`, `![[Selv-embed]]`) teller ikke som tilbakelenke. Lenker i kode/kommentarer teller ikke.
@@ -387,7 +387,7 @@ Alle forslag i tabellen er **godkjent** av PO slik de står (PO-7 til PO-17), me
 | 2026-11-05 | QA-SOK-09: snarvei vises som `⌘K` (macOS) / `Ctrl K` (ellers). | PO-36 |
 | 2026-11-05 | Alias-hint (PO-7/PO-25), tvetydighetsindikator (PO-8/PO-26), property-backlinks (PO-9), tagger case-insensitive (PO-10), norske callout-titler og `<br>` (PO-14), embed-dybde 5 og TOC ≥ 3 (PO-15), CSP (PO-16), ingress/skjulte properties/lesetid (PO-21–23, PO-29), tags-endepunkt og 404 for ukjent API-rute (PO-24), `frontmatterError` (PO-27, ny QA-FM-04), «Lenket fra» på manglende notat (PO-28), «Fotnoter»/sidenoter (PO-20, PO-30). Alle **(PO?)**-merker fjernet. | PO-1–PO-31 |
 | 2026-11-06 | Ny mappe `lesekomfort/` (11 notater) og §19 for v1.1: diskré embedding, folding, bredde, zen. QA-IDX-01: 80 → 91. Ingen tagger, ingen lenker til notater med fasit for tilbakelenker, ingen påvirkning på baser eller søkefasit. | v1.1, PO-53/54 |
-| 2026-11-08 | Ny mappe `presentasjon/` (10 notater + 4 kilder) og §20 for v2: presentasjonsmodus. QA-IDX-01: 91 → 105. Ingen tagger, ingen lenker ut av mappa, ingen embed av `.base`-filer (kanban er en inline `base`-blokk), så tilbakelenke-, base- og søkefasiten er uendret. | v2 |
+| 2026-11-08 | Ny mappe `presentasjon/` (10 notater + 4 kilder) og §20 for v2: presentasjonsmodus. QA-IDX-01: 91 → 105. Ingen tagger og ingen lenker ut av mappa, bortsett fra `![[Oppgaver.base#Kanban]]` i statusmøtet: `Oppgaver.base` får 7 tilbakelenker (6 → 7). Base- og søkefasiten er uendret. | v2, PO-100 |
 
 ## 19. v1.1 – lesekomfort og tastatur
 
@@ -447,13 +447,13 @@ Regel: tittelnivå `T = min(6, forrige + 1)`, der `forrige` er effektivt nivå p
 
 ## 20. v2 – presentasjonsmodus
 
-Testplan: `docs/test/testplan-v2.md`. Maskinlesbar fasit: `docs/test/v2-fasit.json` (testene leser den; TC-2-02-00 sjekker at fasiten stemmer med notatene). Notatene i `presentasjon/` har ingen tagger og lenker/embedder bare hverandre. Kanbantavlen i statusmøtet er en **inline** `base`-blokk med samme utvalg som Kanban-viewet i `Oppgaver.base` (17 kort i 6 kolonner, se `bases-fasit.md`), slik at tilbakelenkene til `Oppgaver.base` fortsatt er 6. Hvert lysbilde har en markør («Markør STATUS-A.» …) som testene leter etter.
+Testplan: `docs/test/testplan-v2.md`. Maskinlesbar fasit: `docs/test/v2-fasit.json` (testene leser den; TC-2-02-00 sjekker at fasiten stemmer med notatene). Notatene i `presentasjon/` har ingen tagger og lenker/embedder bare hverandre, bortsett fra kanbantavlen i statusmøtet, som er en ekte `![[Oppgaver.base#Kanban]]` (17 kort i 6 kolonner, se `bases-fasit.md`; PO-100). Hvert lysbilde har en markør («Markør STATUS-A.» …) som testene leter etter.
 
 Lysbildenotasjon under: **T** tittel · **A** agenda · **O(x)** overgang til agendapunkt x · **x [p/n]** innholdslysbilde med overskrift x og progresjon p/n innen agendapunktet. Standard lysbildenivå er H3 (agendanivå H2). Punkter merket (Q-nn) står i testplanen §8; de fleste er avgjort i ADR-010 / PO-84–91.
 
 | Notat | Formål |
 |-------|--------|
-| `presentasjon/Statusmøte uke 45.md` | Eksempelnotatet fra spesifikasjonen: agendapunktene «Siden sist», «Jobbes med nå», «Relativt nær framtid»; lysbilder (H3) med liste, kode, kanban (inline base), Mermaid, tabell og fotnote. Frontmatter: `description` (ingress), properties, skjult `cssclasses` og **P1-feller**: `lysbildeniva: h4`, `agenda: av`, `presenter: { niva: 2, overganger: false }` – data, ikke visning. |
+| `presentasjon/Statusmøte uke 45.md` | Eksempelnotatet fra spesifikasjonen: agendapunktene «Siden sist», «Jobbes med nå», «Relativt nær framtid»; lysbilder (H3) med liste, kode, kanban (`![[Oppgaver.base#Kanban]]`), Mermaid, tabell og fotnote. Frontmatter: `description` (ingress), properties, skjult `cssclasses` og **P1-feller**: `lysbildeniva: h4`, `agenda: av`, `presenter: { niva: 2, overganger: false }` – data, ikke visning. |
 | `presentasjon/Månedsrapport oktober.md` + `presentasjon/kilder/*` | Rapport bygget av diskré embeds (S1): to agendapunkter er hele innebygde notater (`Siden sist`, `Jobbes med nå`, uten H1 → tittelen blir H2), ett er vertens egen H2 med to seksjonsembeds fra `Plan neste kvartal`. Nestet embed (`Leveranse søk`, H4) ligger inne i lysbildet «Leveranser». Seksjonen «Utenfor rapporten» skal aldri vises. P1-felle: `lysbildeniva: h4`. |
 | `presentasjon/Delte lysbilder.md` | S5: `---` og `***` innen et lysbilde, `---` i en YAML-kodeblokk (deler ikke), `---` sist i en seksjon og to `---` på rad (ingen tomme lysbilder), agendaseksjon uten H3 delt med `---`. |
 | `presentasjon/Mye innhold.md` | A2: «Lang gjennomgang» har 18 lange avsnitt og en liste med 20 punkter → krympes og fortsetter med «(forts.)». «Kort oppsummering» er kort. |
@@ -480,7 +480,7 @@ Lysbildenotasjon under: **T** tittel · **A** agenda · **O(x)** overgang til ag
 | QA-V2-10 | Lysbildenivå, h3 | T · A · O(Område A) · Tema A1 [1/2] (med Detalj A1a/A1b som innhold) · Tema A2 [2/2] · O(Område B) · Tema B1 [1/1] = **7** |
 | QA-V2-11 | Lysbildenivå, `:presenter h4` | T · A (Tema A1, Tema A2, Tema B1) · O(Tema A1) · Tema A1 [1/3] (innledningen, Q-01) · Detalj A1a [2/3] · Detalj A1b [3/3] · O(Tema A2) · Detalj A2a [1/1] · O(Tema B1) · Detalj B1a [1/1] = **10**. «Område A/B» (over agendanivået) blir ikke lysbilder (Q-05). |
 | QA-V2-12 | Lysbildenivå, `:presenter h2` | T · Område A · Område B = **3**. Agendanivået ville vært H1, som ikke finnes i brødteksten → ingen agenda (Q-04). |
-| QA-V2-13 | Lysbildenivå, ugyldig/tomt | `h1`, `h7`, `hx`, `4` → feilkode (E…) + norsk forklaring, ingen presentasjon. `h5`, `h6` (finnes ikke i notatet) og `h4` i statusmøtet → feilkode «tomt nivå». Et feilet valg huskes ikke. |
+| QA-V2-13 | Lysbildenivå, ugyldig/tomt | `h1`, `h7`, `h9`, `hx`, `4` → **E475** (ugyldig argument) + norsk forklaring, ingen presentasjon. `h5`, `h6` (finnes ikke i notatet) og `h4` i statusmøtet → **E486** (nivået finnes ikke) (PO-101). `h1` er gyldig syntaks, men notatet har ingen H1 i brødteksten → **E486**. Et feilet valg huskes ikke. |
 
 ### 20.2 Tittel, agenda, agendalinje og live
 
