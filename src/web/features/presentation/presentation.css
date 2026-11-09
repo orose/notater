@@ -24,7 +24,7 @@ html[data-present="on"] :is(.app, .topbar, .skip-link) { visibility: hidden; }
 }
 .slide-frame { position: absolute; inset: 0; }
 .slide-frame[hidden] { display: none; }
-.slide-frame.is-active { animation: slide-fade-in var(--slide-fade) var(--ease-in-out); }
+.slide-frame.is-active > .slide { animation: slide-fade-in var(--slide-fade) var(--ease-in-out); }
 @keyframes slide-fade-in { from { opacity: 0; } }
 .present[data-blackout] .stage { visibility: hidden; transition: visibility 0s linear var(--slide-fade); }
 
@@ -52,7 +52,7 @@ html[data-present="on"] :is(.app, .topbar, .skip-link) { visibility: hidden; }
 [data-type="tidsskrift"] .runhead ol { border-bottom: var(--slide-hair) solid var(--color-rule-strong); }
 [data-type="terminal"] .runhead { font-family: var(--font-meta); letter-spacing: 0.01em; }
 [data-type="terminal"] .runhead li[data-n]::before { content: attr(data-n) "\2002"; }
-[data-type="terminal"] .runhead li + li[data-n]::before { content: "│\2003" attr(data-n) "\2002"; margin: 0; }
+[data-type="terminal"] .runhead li + li[data-n]::before { content: "│\2003" attr(data-n) "\2002"; margin: 0 0 0 0.8em; }
 [data-type="terminal"] .runhead li.ell + li[data-n]::before, [data-type="terminal"] .runhead li[data-n]:first-child::before { content: attr(data-n) "\2002"; }
 [data-type="terminal"] .runhead li + li.ell::before { content: "│"; margin-inline: 0.8em; }
 [data-type="terminal"] .runhead li.cur[data-n]::before { color: var(--color-accent); }
@@ -293,7 +293,7 @@ html[data-present="on"] :is(.app, .topbar, .skip-link) { visibility: hidden; }
 .ag-cols { display: flex; justify-content: flex-end; max-width: calc(1440 * var(--lp)); margin-bottom: 0.3em; font-size: var(--slide-step-n2); color: var(--color-muted); }
 [data-type="tidsskrift"] .ag-cols { font-family: var(--font-sc); letter-spacing: var(--tracking-sc); }
 [data-type="terminal"] .ag-cols, [data-type="klartekst"] .ag-cols { font-family: var(--font-meta); }
-.ag-list { list-style: none; margin: 0; padding: 0; max-width: calc(1440 * var(--lp)); }
+.slide .ag-list { list-style: none; margin: 0; padding: 0; max-width: calc(1440 * var(--lp)); }
 .ag-item { position: relative; display: grid; grid-template-columns: auto auto minmax(1em, 1fr) auto; align-items: baseline; line-height: 1.12; }
 .ag-item + .ag-item { margin-top: 0.22em; }
 .ag-item::before { content: attr(data-no); grid-column: 1; grid-row: 1; color: var(--color-accent); font-variant-numeric: tabular-nums; }
@@ -388,3 +388,6 @@ dialog.overview:focus, dialog.overview:focus-visible { outline: none; }
 
 /* Toast og palett over presentasjonen */
 html[data-present="on"] :is(.notice-zone, .showcmd) { z-index: var(--z-present-overlay); }
+
+/* Globale klasser med rem (`.label`) følger ikke lerretet: i lysbilder arver de skriften. */
+.canvas .slide .label { font-size: 1em; letter-spacing: inherit; text-transform: none; font-family: inherit; }

@@ -171,7 +171,8 @@ export function PresentationLayer() {
   const kind = slide?.kind ?? 'title';
   const showLine = slide !== null && slide.kind === 'content' && slide.heading !== null && info.agenda.length > 0;
   const announcement = view.blackout ? 'Svart skjerm. Trykk b eller punktum for å fortsette.' : (slide?.label ?? '');
-  const window = deck ? deck.slides.slice(Math.max(0, index - 1), index + 2) : [];
+  // Gjeldende lysbilde først i DOM-en, naboene (forhåndsmontert, skjult) etter (ADR-010 §2).
+  const window = deck ? [index, index - 1, index + 1].flatMap((i) => (deck.slides[i] ? [deck.slides[i]] : [])) : [];
 
   return (
     <div

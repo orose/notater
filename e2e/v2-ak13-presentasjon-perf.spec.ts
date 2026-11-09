@@ -51,24 +51,28 @@ test.afterAll(async () => {
   removeDir(dir);
 });
 
-/** t0 ved neste keydown (capture); slutt når `ferdig()` er sann etter en DOM-endring + to animasjonsrammer. */
-function målFraTast(page: Page, ferdig: string): Promise<number> {
-  return page.evaluate(
-    (kropp) =>
-      new Promise<number>((resolve, reject) => {
-        const sjekk = new Function(`return (${kropp})`) as () => boolean;
-        let t0 = 0;
-        addEventListener('keydown', () => (t0 = performance.now()), { capture: true, once: true });
-        const obs = new MutationObserver(() => {
-          if (!t0 || !sjekk()) return;
-          obs.disconnect();
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve(performance.now() - t0)));
-        });
-        obs.observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true });
-        setTimeout(() => reject(new Error('tidsavbrudd')), 10_000);
-      }),
-    ferdig,
-  );
+/**
+ * t0 ved neste keydown (capture); slutt når `ferdig()` er sann etter en DOM-endring + to animasjonsrammer.
+ * Lytterne installeres og bekreftes *før* tasten trykkes (ellers kan Chromium behandle tasten før skriptet, og
+ * målingen får tidsavbrudd). Endret av frontend: tidligere ble install og tastetrykk sendt samtidig.
+ */
+async function målFraTast(page: Page, ferdig: string): Promise<{ readonly ferdig: Promise<number> }> {
+  await page.evaluate((kropp) => {
+    const w = window as unknown as { __måling?: Promise<number> };
+    w.__måling = new Promise<number>((resolve, reject) => {
+      const sjekk = new Function(`return (${kropp})`) as () => boolean;
+      let t0 = 0;
+      addEventListener('keydown', () => (t0 = performance.now()), { capture: true, once: true });
+      const obs = new MutationObserver(() => {
+        if (!t0 || !sjekk()) return;
+        obs.disconnect();
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve(performance.now() - t0)));
+      });
+      obs.observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true });
+      setTimeout(() => reject(new Error('tidsavbrudd')), 10_000);
+    });
+  }, ferdig);
+  return { ferdig: page.evaluate(() => (window as unknown as { __måling: Promise<number> }).__måling) };
 }
 
 const SYNLIG_INDEKS = (n: number) =>
@@ -94,9 +98,9 @@ test('TC-2-13-01 start av presentasjon for rapport med 20 embeds < 500 ms (media
     // Måles fra Enter i paletten (`:presenter`), så leader-sekvensen ikke er med i tiden.
     await page.keyboard.press(':');
     await page.locator('dialog[open]').getByRole('combobox').pressSequentially('presenter');
-    const m = målFraTast(page, SYNLIG_INDEKS(1));
+    const m = await målFraTast(page, SYNLIG_INDEKS(1));
     await page.keyboard.press('Enter');
-    målinger.push(await m);
+    målinger.push(await m.ferdig);
     await page.keyboard.press('Escape');
   }
   const rapport = `start median ${median(målinger).toFixed(0)} ms / maks ${Math.max(...målinger).toFixed(0)} ms (n=${målinger.length})`;
@@ -121,17 +125,17 @@ test('TC-2-13-02 lysbildebytte p95 < 100 ms (neste/forrige/første/siste, 80 byt
     const tast = i % 20 === 19 ? 'Shift+G' : i % 20 === 18 ? 'g' : i % 3 === 2 ? 'k' : 'j';
     if (tast === 'g') {
       await page.keyboard.press('g');
-      const m = målFraTast(page, SYNLIG_INDEKS(1));
+      const m = await målFraTast(page, SYNLIG_INDEKS(1));
       await page.keyboard.press('g');
-      bytter.push(await m);
+      bytter.push(await m.ferdig);
       nå = 1;
       continue;
     }
     const mål = tast === 'Shift+G' ? antall : tast === 'k' ? Math.max(1, nå - 1) : Math.min(antall, nå + 1);
     if (mål === nå) continue;
-    const m = målFraTast(page, SYNLIG_INDEKS(mål));
+    const m = await målFraTast(page, SYNLIG_INDEKS(mål));
     await page.keyboard.press(tast);
-    bytter.push(await m);
+    bytter.push(await m.ferdig);
     nå = mål;
     await page.waitForTimeout(30);
   }

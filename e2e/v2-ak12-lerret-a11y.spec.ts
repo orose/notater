@@ -47,6 +47,9 @@ test.describe('AK-2-12 lerret i fire vindusstørrelser', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await presenter(page, s.sti);
     await gåTilLysbilde(page, 7);
+    // Nettleservinduet kan ikke endre størrelse i fullskjerm (CDP): gå ut med `f` først. Lagt til av frontend.
+    if (await page.evaluate(() => document.fullscreenElement !== null)) await page.keyboard.press('f');
+    await expect.poll(() => page.evaluate(() => document.fullscreenElement === null)).toBe(true);
     for (const vp of [{ width: 1920, height: 1080 }, { width: 1280, height: 720 }, { width: 900, height: 900 }, { width: 1600, height: 500 }, { width: 390, height: 844 }, { width: 1440, height: 900 }]) {
       await page.setViewportSize(vp);
       await page.waitForTimeout(200);
@@ -146,6 +149,8 @@ test.describe('AK-2-12 tilgjengelighet', () => {
       await page.setViewportSize({ width: 390, height: 844 });
       await openNote(page, s.sti);
       await kjørKommando(page, 'presenter');
+      // Vent til presentasjonen vises før `gg` (ellers kan første `g` havne i normal-modus). Lagt til av frontend.
+      await ventPåLysbilde(page, 1);
       for (const nr of [1, 3, 4, 7]) {
         await gåTilLysbilde(page, nr);
         const res = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();

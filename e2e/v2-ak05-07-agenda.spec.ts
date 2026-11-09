@@ -273,7 +273,9 @@ liveTest.describe('AK-2-07 live oppdatering', () => {
     expect((await nummer(page)).n).toBe(10);
   });
 
-  liveTest('TC-2-07-05 notatet slettes under presentasjon: presentasjonen avsluttes med en forklaring', async ({ page, live }) => {
+  liveTest('TC-2-07-05 notatet slettes under presentasjon: presentasjonen avsluttes med en forklaring', async ({ page, live, guards }) => {
+    // Refetch etter sletting gir 404 i konsollen (som ak12-live-reload). Lagt til av frontend.
+    guards.allowConsole.push(/status of 404/);
     await page.goto(live.url(s.sti));
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     await startPresentasjon(page);

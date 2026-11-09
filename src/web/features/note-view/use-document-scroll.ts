@@ -1,5 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigationType } from 'react-router';
+import { onlyOverlayChanged, type Place } from '../../shared/overlay-params';
+
+export { onlyOverlayChanged };
 
 // Scroll ved navigasjon: til #anker (med kort markering), gjenoppretting ved frem/tilbake (R10),
 // ellers til toppen. Posisjoner lagres per historikk-oppføring (sessionStorage, try/catch).
@@ -31,30 +34,6 @@ function safeDecode(value: string): string {
   } catch {
     return value;
   }
-}
-
-/**
- * Query-parametre for overlegg på notatets egen rute (ADR-010 §4: `?lysbilde=`). Endres bare disse, er det ingen
- * navigasjon i lesevisningen, og den skal ikke rulle (AR-2-21).
- */
-export const OVERLAY_PARAMS: readonly string[] = ['lysbilde'];
-
-interface Place {
-  readonly pathname: string;
-  readonly search: string;
-  readonly hash: string;
-}
-
-function withoutOverlays(search: string): string {
-  const params = new URLSearchParams(search);
-  for (const name of OVERLAY_PARAMS) params.delete(name);
-  params.sort();
-  return params.toString();
-}
-
-/** Sann når to plasseringer bare skiller seg i overlegg-parametrene (samme sti, hash og øvrig query). */
-export function onlyOverlayChanged(a: Place, b: Place): boolean {
-  return a.pathname === b.pathname && a.hash === b.hash && withoutOverlays(a.search) === withoutOverlays(b.search);
 }
 
 function reducedMotion(): boolean {

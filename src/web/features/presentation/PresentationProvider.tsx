@@ -67,6 +67,9 @@ interface PendingStop {
   readonly title: string | null;
 }
 
+/** URL-en oppdateres etter blaing (replace), ikke i samme oppgave som lysbildebyttet. */
+const URL_DELAY_MS = 250;
+
 const HINT_KEY = 'vault-leser.presentasjon.hint';
 const HINT_TIMES = 3;
 
@@ -274,9 +277,24 @@ export function PresentationProvider({ vaultId, docPath, children }: { readonly 
   }, [active, cache]);
 
   // Gjeldende id inn i URL-en (replace, etter visning; Tilbake avslutter, ADR-010 §4).
+  // Utenfor den kritiske stien (AK-2-13): en URL-endring rendrer hele appen på nytt, så den venter til blaingen
+  // har roet seg litt. Første id (start/reload) skrives straks.
   useEffect(() => {
-    if (!active || !resolvedId || param === resolvedId) return;
-    void navigate({ pathname: location.pathname, search: withSlideParam(location.search, resolvedId), hash: location.hash }, { replace: true, state: location.state });
+    if (!active || !resolvedId || param === resolvedId) return undefined;
+    const search = withSlideParam(location.search, resolvedId);
+    const write = () => void navigate({ pathname: location.pathname, search, hash: location.hash }, { replace: true, state: location.state });
+    if (param === '') {
+      write();
+      return undefined;
+    }
+    // Adresselinjen oppdateres straks (Tilbake/Frem og reload ser riktig lysbilde); ruteren tar igjen etterpå.
+    try {
+      window.history.replaceState(window.history.state, '', `${location.pathname}${search}${location.hash}`);
+    } catch {
+      // ignorer (sandkasse)
+    }
+    const timer = window.setTimeout(write, URL_DELAY_MS);
+    return () => window.clearTimeout(timer);
   }, [active, resolvedId, param, location, navigate]);
 
   // ------------------------------------------------------------------ varsler
@@ -353,17 +371,27 @@ export function PresentationProvider({ vaultId, docPath, children }: { readonly 
         window.history.scrollRestoration = mode;
       });
     }
-    if (stop.scroll !== null) window.scrollTo(0, stop.scroll);
+    let target: number | null = 0;
+    if (stop.scroll !== null) target = stop.scroll;
     else if (stop.heading) {
       const el = document.getElementById(stop.heading);
+      target = null;
       if (el) {
         const top = el.getBoundingClientRect().top;
         if (top < 0 || top > window.innerHeight * READING_LINE - 4) {
           makeRoomBelow(el);
-          window.scrollTo(0, Math.max(0, top + window.scrollY - window.innerHeight * 0.18));
+          target = Math.max(0, top + window.scrollY - window.innerHeight * 0.18);
         }
       }
-    } else window.scrollTo(0, 0);
+    }
+    if (target !== null) {
+      const y = target;
+      window.scrollTo(0, y);
+      // Nettleseren kan gjenopprette rulleposisjonen etter popstate: sett den igjen i neste ramme.
+      requestAnimationFrame(() => {
+        if (Math.abs(window.scrollY - y) > 2) window.scrollTo(0, y);
+      });
+    }
     document.getElementById('innhold')?.focus({ preventScroll: true });
     notify(stop.title ? `Presentasjonen er avsluttet. Du står ved «${stop.title}». Space p starter herfra.` : 'Presentasjonen er avsluttet. Space p starter herfra.', ['Space', 'p']);
   });

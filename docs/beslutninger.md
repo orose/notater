@@ -351,3 +351,9 @@ Alle QAs forslag (Q-03, Q-11, Q-13–Q-16, Q-21, Q-23) er **godkjent** som fores
 - **PO-100 (Q-17)** Statusmøtet bruker en **ekte** embed av `Oppgaver.base`. QA får endre tilbakelenke-tallet 6→7 i `ak07-11-navigasjon.spec.ts` og README-QA §4.
 - **PO-101 (Q-24)** Feilkoder: `E475` = ugyldig argument (f.eks. `h9`, `hx`); `E486` = nivået finnes ikke i notatet (f.eks. `h5` uten H5). Som i UX-skjermbildene. ADR-010 oppdateres.
 - **PO-102 (Q-23)** AK-2-13 «start < 500 ms» gjelder median av 5 målinger; maks rapporteres.
+
+## PO-avgjørelser etter frontend v2 (2-a–2-c)
+
+- **PO-103** Frontendens tolkninger 1–6 godkjent: PO-93 vs Q-21 (kort forløp < 1/3 høyde → blokken blir stående og ruller; ellers deles det), full bredde for lysbilder uten overskrift, inntoning (ikke krysstoning), demping med farge, datoer som tekst på tittellysbildet, Esc slår av svart skjerm.
+- **PO-104** QA-testendringene frontend gjorde (TC-2-05-05, -04-02, -08-04, -09-01, -11-05, -07-05, -12-02, -12-14, perf) godkjennes med forbehold om QAs gjennomgang i sluttesten.
+- **PO-105 (backlog)** «● live»-merke og kanban-glød i base-hodet (prototype) er ikke laget – lav prioritet, vurderes etter kundens test. Kanban med intern rulling i statusmøtet forelegges kunden.

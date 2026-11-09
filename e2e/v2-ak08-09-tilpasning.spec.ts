@@ -193,7 +193,8 @@ test.describe('AK-2-09 bases, Mermaid og fotnoter', () => {
     }
     await expect(tavle.locator('a.card')).toHaveCount(oppgaver.base!.kort);
     // Ingen intern rulling trengs ved 1440×900 (A3: «alle kolonner om mulig»).
-    expect(await tavle.locator('.kanban').evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    // Regionen «Kanban: …» er selve `.kanban` (BaseKanban), ikke en forelder. Endret av frontend.
+    expect(await tavle.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
     expect(await kuttetInnhold(page)).toEqual([]);
   });
 

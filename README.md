@@ -115,6 +115,8 @@ Taster i paletten, base-fanene og hopp-lenken (håndteres av komponentene selv):
 - `↑`, `↓`: Velg treff eller kommando i paletten.
 - `↵`: Åpne treffet / kjør kommandoen.
 - `⌘↵` / `Ctrl ↵`: Åpne treffet i ny fane.
+- `←`, `→`, `↑`, `↓`, `h`, `j`, `k`, `l`: Flytt markøren i lysbildeoversikten.
+- `↵`: Gå til lysbildet i oversikten.
 <!-- hurtigtaster:end -->
 
 #### I presentasjon

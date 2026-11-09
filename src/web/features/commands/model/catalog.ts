@@ -361,6 +361,6 @@ export const KEY_HINTS: readonly KeyHint[] = [
   { id: 'bases.tabs', keys: ['ArrowLeft', 'ArrowRight', 'Home', 'End'], description: 'Bytt fane (view) i en base når fanene har fokus.', group: 'navigasjon' },
   { id: 'skip-link', keys: ['Tab'], description: 'Første trykk gir «Hopp til innhold».', group: 'navigasjon' },
   // Oversikten (`o`) eier sine egne taster (ADR-010 §3, AR-2-19).
-  { id: 'overview.move', keys: ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'h', 'j', 'k', 'l'], description: 'Flytt markøren i lysbildeoversikten.', group: 'presentasjon', modes: ['present'] },
-  { id: 'overview.open', keys: ['Enter'], description: 'Gå til lysbildet i oversikten.', group: 'presentasjon', modes: ['present'] },
+  { id: 'overview.move', keys: ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'h', 'j', 'k', 'l'], description: 'Flytt markøren i lysbildeoversikten.', group: 'presentasjon', modes: ['normal', 'present'] },
+  { id: 'overview.open', keys: ['Enter'], description: 'Gå til lysbildet i oversikten.', group: 'presentasjon', modes: ['normal', 'present'] },
 ];

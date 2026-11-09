@@ -13,5 +13,7 @@ describe('useDocumentScroll: overlegg-parametre (ADR-010 §8, AR-2-21)', () => {
     expect(onlyOverlayChanged(at('/v/t/A'), at('/v/t/B'))).toBe(false);
     expect(onlyOverlayChanged(at('/v/t/A'), at('/v/t/A', '', '#x'))).toBe(false);
     expect(onlyOverlayChanged(at('/v/t/A', '?a=1'), at('/v/t/A', '?a=2&lysbilde='))).toBe(false);
+    // Samme plassering (søketreff i åpent notat) er en vanlig navigasjon.
+    expect(onlyOverlayChanged(at('/v/t/A'), at('/v/t/A'))).toBe(false);
   });
 });

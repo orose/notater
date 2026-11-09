@@ -283,7 +283,8 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
   }, [registry, execute]);
 
   // P3 / ADR-010 §3: present-modus mens presentasjonen vises.
-  useEffect(() => {
+  // Layout-effekt: modusen byttes i samme commit som presentasjonen vises, før neste tast.
+  useLayoutEffect(() => {
     engineRef.current?.setMode(mode);
   }, [mode]);
 
