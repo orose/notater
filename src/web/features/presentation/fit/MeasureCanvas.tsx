@@ -68,8 +68,8 @@ export function measureBox(slide: HTMLElement, box: HTMLElement, scale: number):
 }
 
 /** Største trinn som får plass (binærsøk); ellers minimum. Agenda og tittel deles aldri. */
-function shrinkOnly(el: HTMLElement, box: HTMLElement, steps: readonly number[]): number {
-  const fits = (i: number) => measureBox(el, box, steps[i] as number).fits;
+function shrinkOnly(el: HTMLElement, box: HTMLElement, steps: readonly number[], extra: () => boolean = () => true): number {
+  const fits = (i: number) => measureBox(el, box, steps[i] as number).fits && extra();
   if (fits(0)) return steps[0] as number;
   let lo = 1;
   let hi = steps.length - 1;
@@ -87,7 +87,15 @@ function measureOne(el: HTMLElement, draft: SlideDraft, steps: readonly number[]
     // Tittellysbildet: egenskapene (og ingressen) krympes hvis notatet har mange; tittelen krympes aldri.
     const grid = el.querySelector<HTMLElement>('[data-title-box]');
     if (!grid) return { scale: 1, breaks: [], scrollUnits: [] };
-    return { scale: shrinkOnly(el, grid, fontScaleSteps(step, AGENDA_MIN_SCALE)), breaks: [], scrollUnits: [] };
+    // BUG-015: egenskapene og innledningen står i rader over bunnlinjen, men kan flyte ned i den uten at rutenettet
+    // selv flyter over. De må slutte over bunnlinjens øvre kant (med samme sikkerhetsmargin).
+    const clearOfFoot = () => {
+      const foot = grid.querySelector<HTMLElement>('.t-foot');
+      if (!foot) return true;
+      const top = foot.getBoundingClientRect().top;
+      return [...grid.querySelectorAll<HTMLElement>('.t-props, .t-pre, .t-dek')].every((x) => x.getBoundingClientRect().bottom <= top - SAFETY_PX);
+    };
+    return { scale: shrinkOnly(el, grid, fontScaleSteps(step, AGENDA_MIN_SCALE), clearOfFoot), breaks: [], scrollUnits: [] };
   }
   const box = el.querySelector<HTMLElement>('[data-fit-box]');
   if (!box) return { scale: 1, breaks: [], scrollUnits: [] };

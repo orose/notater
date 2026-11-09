@@ -102,12 +102,26 @@ export function PresentationLayer() {
   useLayoutEffect(() => {
     const el = stageRef.current;
     if (!el) return undefined;
-    const update = () => setScale(stageScale(el.clientWidth, el.clientHeight));
+    const update = () => {
+      const k = stageScale(el.clientWidth, el.clientHeight);
+      setScale(k);
+      // Varselsonen (toast) legges over lysbildets bunnlinje (folio, fremdrift), ikke oppå den.
+      // Lerretet er sentrert i scenen (letterbox).
+      const stage = el.getBoundingClientRect();
+      const bottom = stage.top + (stage.height + CANVAS.height * k) / 2;
+      const root = document.documentElement.style;
+      root.setProperty('--present-scale', String(k));
+      root.setProperty('--present-bottom-gap', `${Math.max(0, window.innerHeight - bottom)}px`);
+    };
     update();
     if (typeof ResizeObserver === 'undefined') return undefined;
     const ro = new ResizeObserver(update);
     ro.observe(el);
-    return () => ro.disconnect();
+    return () => {
+      ro.disconnect();
+      document.documentElement.style.removeProperty('--present-scale');
+      document.documentElement.style.removeProperty('--present-bottom-gap');
+    };
   }, [view !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fokus i presentasjonen ved start og etter bytte (Space skal ikke aktivere en knapp i et skjult lysbilde).
@@ -120,6 +134,17 @@ export function PresentationLayer() {
   }, [slideId]);
 
   useScrollHints(slideEl, slideId);
+
+  // Toasten skal ikke dekke bunnlinjen: på tittellysbildet ligger den under «Endret …» (ingen folio der, PO-95),
+  // ellers over folio og fremdrift (se presentation.css).
+  const onTitle = slide?.kind === 'title';
+  useLayoutEffect(() => {
+    const root = document.documentElement.style;
+    root.setProperty('--present-toast-lift', onTitle ? '0' : '112');
+    return () => {
+      root.removeProperty('--present-toast-lift');
+    };
+  }, [onTitle]);
 
   // ↑/↓ ruller blokken på gjeldende lysbilde (PO-94).
   const scrollN = view?.scrollRequest.n ?? 0;
@@ -172,7 +197,7 @@ export function PresentationLayer() {
   const showLine = slide !== null && slide.kind === 'content' && slide.heading !== null && info.agenda.length > 0;
   const announcement = view.blackout ? 'Svart skjerm. Trykk b eller punktum for å fortsette.' : (slide?.label ?? '');
   // Gjeldende lysbilde først i DOM-en, naboene (forhåndsmontert, skjult) etter (ADR-010 §2).
-  const window = deck ? [index, index - 1, index + 1].flatMap((i) => (deck.slides[i] ? [deck.slides[i]] : [])) : [];
+  const mounted = deck ? [index, index - 1, index + 1].flatMap((i) => (deck.slides[i] ? [deck.slides[i]] : [])) : [];
 
   return (
     <div
@@ -197,7 +222,7 @@ export function PresentationLayer() {
         <div className="canvas-box" data-testid="lerret" style={{ '--stage-scale': String(scale) } as CSSProperties}>
           <div className="canvas">
             {showLine && slide ? <AgendaLine agenda={info.agenda} current={slide.agendaIndex} progress={slide.progress} /> : null}
-            {window.map((s) => (
+            {mounted.map((s) => (
               <div key={s.id} className={s === slide ? 'slide-frame is-active' : 'slide-frame'} ref={s === slide ? setSlideEl : undefined} hidden={s !== slide}>
                 <SlideView slide={s} deck={info} mode="view" active={s === slide} />
               </div>

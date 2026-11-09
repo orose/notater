@@ -388,6 +388,9 @@ dialog.overview:focus, dialog.overview:focus-visible { outline: none; }
 
 /* Toast og palett over presentasjonen */
 html[data-present="on"] :is(.notice-zone, .showcmd) { z-index: var(--z-present-overlay); }
+/* Toasten (starthint m.m.) kolliderer ikke med bunnlinjen: på innholdslysbilder står den over folio og fremdrift
+   (112 lp = innholdsflatens nedre grense), på tittellysbildet under «Endret …» (helt nederst). Settes av PresentationLayer. */
+html[data-present="on"] .notice-zone { bottom: calc(var(--present-bottom-gap, 0px) + var(--present-toast-lift, 112) * 1px * var(--present-scale, 1) + 8px); }
 
 /* Globale klasser med rem (`.label`) følger ikke lerretet: i lysbilder arver de skriften. */
 .canvas .slide .label { font-size: 1em; letter-spacing: inherit; text-transform: none; font-family: inherit; }

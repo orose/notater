@@ -183,7 +183,7 @@ Reproduksjon generelt: `E2E_PORT=4418 npx playwright test` (porten kan velges fr
 - **Forslag:** stable varslene (én kø eller vertikal stabel), eller la en ny toast erstatte zen-hintet.
 
 
-## BUG-015 – egenskapene på tittellysbildet flyter ned i bunnlinjen (Tidsskrift) – ÅPEN
+## BUG-015 – egenskapene på tittellysbildet flyter ned i bunnlinjen (Tidsskrift) – RETTET
 
 - **Alvorlighet:** Lav (kosmetisk, men synlig for publikum) · **AK:** AK-2-05 (L1), AK-2-08 («ingen innhold kuttes») · **Eier:** frontend/UX
 - **Funn (avsluttende akseptansetest v2, skjermbilder):** `Statusmøte uke 45` har 6 egenskaper. I Tidsskrift ved

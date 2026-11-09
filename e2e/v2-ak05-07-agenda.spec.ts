@@ -64,7 +64,6 @@ test.describe('AK-2-05 tittel, agenda og overganger', () => {
   });
 
   test('TC-2-05-10 tittellysbildet med mange egenskaper: egenskapene overlapper ikke bunnlinjen/endringsdatoen (Tidsskrift, 1920×1080)', async ({ page }) => {
-    test.fail(true, 'BUG-015 egenskapslisten på tittellysbildet flyter ned i bunnlinjen i Tidsskrift');
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto(`${noteUrl(s.sti)}?type=tidsskrift&palette=papir&mode=light`);
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
