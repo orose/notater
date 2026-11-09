@@ -276,17 +276,54 @@ export async function lesAlleLysbilder(page: Page): Promise<LestLysbilde[]> {
 }
 
 /**
+ * Venter til sidehøyden i lesevisningen er endelig: alle Mermaid-diagrammer er tegnet (eller feilet) og alle bilder
+ * er lastet. Mermaid tegnes asynkront og endrer høyden etterpå, så en rulleposisjon satt før det flytter seg.
+ */
+export async function ventPåStabilLayout(page: Page): Promise<void> {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const diagrammer = [...document.querySelectorAll('main article .diagram-frame')];
+          const tegnet = diagrammer.every((d) => d.querySelector('.diagram-svg svg, .mermaid-error') !== null);
+          const bilder = [...document.querySelectorAll('main article img')].every((i) => (i as HTMLImageElement).complete);
+          return tegnet && bilder;
+        }),
+      { message: 'Mermaid tegnet og bilder lastet', timeout: 15_000 },
+    )
+    .toBe(true);
+  // Høyden er stabil over noen rammer.
+  await expect
+    .poll(async () => {
+      const a = await page.evaluate(() => document.documentElement.scrollHeight);
+      await page.waitForTimeout(120);
+      return (await page.evaluate(() => document.documentElement.scrollHeight)) === a;
+    })
+    .toBe(true);
+}
+
+/**
  * Setter leseposisjonen (leselinje 30 %, PO-53) til seksjonen som starter med overskriften `tekst`:
- * overskriftens topp legges like over leselinjen.
+ * overskriftens topp legges like over leselinjen. Venter først på stabil layout (Mermaid), og bekrefter etterpå at
+ * overskriften faktisk står ved leselinjen – ellers ville testen startet presentasjonen fra en annen seksjon.
  */
 export async function settLeseposisjon(page: Page, tekst: string): Promise<void> {
   const h = page.locator('main article').locator('h1, h2, h3, h4, h5, h6').filter({ hasText: tekst }).first();
   await expect(h).toBeVisible();
-  await h.evaluate((el) => {
-    const top = el.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo(0, Math.max(0, top - window.innerHeight * 0.29));
-  });
-  await page.waitForTimeout(100);
+  await ventPåStabilLayout(page);
+  await expect
+    .poll(
+      async () => {
+        await h.evaluate((el) => {
+          const top = el.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo(0, Math.max(0, top - window.innerHeight * 0.29));
+        });
+        await page.waitForTimeout(100);
+        return overskriftVedLeselinjen(page);
+      },
+      { message: `«${tekst}» står ved leselinjen` },
+    )
+    .toBe(tekst);
 }
 
 /** Overskriften som står ved leselinjen (30 %) i lesevisningen. */
@@ -374,6 +411,34 @@ export function minsteSkrift(page: Page): Promise<number> {
     };
     gå(root);
     return min;
+  });
+}
+
+/**
+ * WCAG-kontrast mellom tekstfargen til elementet og nærmeste ugjennomsiktige bakgrunn oppover i treet.
+ * Brukes for «dempet»: tidligere agendapunkter har lavere kontrast enn gjeldende, men fortsatt ≥ 4,5 (AA).
+ */
+export function kontrast(loc: Locator): Promise<number> {
+  return loc.evaluate((el) => {
+    const rgb = (c: string) => (c.match(/[\d.]+/g) ?? []).map(Number);
+    const lum = ([r, g, b]: number[]) => {
+      const f = (v: number) => {
+        const x = v / 255;
+        return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * f(r!) + 0.7152 * f(g!) + 0.0722 * f(b!);
+    };
+    let bg = [255, 255, 255];
+    for (let n: Element | null = el; n; n = n.parentElement) {
+      const c = rgb(getComputedStyle(n).backgroundColor);
+      if (c.length >= 3 && (c.length < 4 || c[3]! > 0.95)) {
+        bg = c.slice(0, 3);
+        break;
+      }
+    }
+    const a = lum(rgb(getComputedStyle(el).color));
+    const b = lum(bg);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
   });
 }
 

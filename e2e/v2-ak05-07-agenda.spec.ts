@@ -17,6 +17,7 @@ import {
   avsluttPresentasjon,
   fasit2,
   gåTilLysbilde,
+  kontrast,
   lesAlleLysbilder,
   lesLysbilde,
   liveTest,
@@ -104,6 +105,10 @@ test.describe('AK-2-05 tittel, agenda og overganger', () => {
         // Dempet = --color-agenda-past (muted), aldri opasitet (designsystem §12.4/§11.9, WCAG-kontrast). Endret av frontend.
         const farge = (l: typeof nå) => l.evaluate((el) => getComputedStyle(el).color);
         expect(await farge(punkter.nth(i)), 'tidligere punkt er dempet (annen farge enn gjeldende)').not.toBe(await farge(nå));
+        // QA (sluttest): «dempet» = lavere kontrast enn gjeldende punkt, men fortsatt AA.
+        const [kTidligere, kNå] = [await kontrast(punkter.nth(i)), await kontrast(nå)];
+        expect(kTidligere, `kontrast tidligere ${kTidligere.toFixed(2)} < gjeldende ${kNå.toFixed(2)}`).toBeLessThan(kNå);
+        expect(kTidligere, 'tidligere punkt har fortsatt AA-kontrast').toBeGreaterThanOrEqual(4.5);
       }
       await expect(agendalinje(page)).toBeHidden();
     }
