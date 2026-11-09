@@ -343,3 +343,11 @@ Designet (prototype-v2.html, designsystem §12) er **godkjent** som referanse.
 - **PO-96** `:presenter h2` → agendanivå = notattittel → ingen agenda/overganger. Riktig tolkning av S4.
 - **PO-97** Rullehintet («↓ 38 linjer til») beholdes, diskret.
 - **PO-98** UX sitt byggeskript for prototypen flyttes inn i `docs/design/prototype-v2/` (kilde + build) så prototypen kan vedlikeholdes.
+
+## PO-avgjørelser etter QA-testplan v2
+
+Alle QAs forslag (Q-03, Q-11, Q-13–Q-16, Q-21, Q-23) er **godkjent** som foreslått. I tillegg:
+- **PO-99 (Q-15)** Start/avslutt med mus/touch: «Presenter» i Utseende og en dempet knapp «Avslutt presentasjon» på lerretet.
+- **PO-100 (Q-17)** Statusmøtet bruker en **ekte** embed av `Oppgaver.base`. QA får endre tilbakelenke-tallet 6→7 i `ak07-11-navigasjon.spec.ts` og README-QA §4.
+- **PO-101 (Q-24)** Feilkoder: `E475` = ugyldig argument (f.eks. `h9`, `hx`); `E486` = nivået finnes ikke i notatet (f.eks. `h5` uten H5). Som i UX-skjermbildene. ADR-010 oppdateres.
+- **PO-102 (Q-23)** AK-2-13 «start < 500 ms» gjelder median av 5 målinger; maks rapporteres.
