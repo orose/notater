@@ -449,7 +449,7 @@ Regel: tittelnivå `T = min(6, forrige + 1)`, der `forrige` er effektivt nivå p
 
 Testplan: `docs/test/testplan-v2.md`. Maskinlesbar fasit: `docs/test/v2-fasit.json` (testene leser den; TC-2-02-00 sjekker at fasiten stemmer med notatene). Notatene i `presentasjon/` har ingen tagger og lenker/embedder bare hverandre. Kanbantavlen i statusmøtet er en **inline** `base`-blokk med samme utvalg som Kanban-viewet i `Oppgaver.base` (17 kort i 6 kolonner, se `bases-fasit.md`), slik at tilbakelenkene til `Oppgaver.base` fortsatt er 6. Hvert lysbilde har en markør («Markør STATUS-A.» …) som testene leter etter.
 
-Lysbildenotasjon under: **T** tittel · **A** agenda · **O(x)** overgang til agendapunkt x · **x [p/n]** innholdslysbilde med overskrift x og progresjon p/n innen agendapunktet. Standard lysbildenivå er H3 (agendanivå H2). Punkter merket (Q-nn) er QAs forslag til svar på åpne spørsmål i testplanen §8.
+Lysbildenotasjon under: **T** tittel · **A** agenda · **O(x)** overgang til agendapunkt x · **x [p/n]** innholdslysbilde med overskrift x og progresjon p/n innen agendapunktet. Standard lysbildenivå er H3 (agendanivå H2). Punkter merket (Q-nn) står i testplanen §8; de fleste er avgjort i ADR-010 / PO-84–91.
 
 | Notat | Formål |
 |-------|--------|
@@ -486,9 +486,10 @@ Lysbildenotasjon under: **T** tittel · **A** agenda · **O(x)** overgang til ag
 
 | ID | Forventet |
 |----|-----------|
-| QA-V2-20 | Tittellysbildet i statusmøtet: «Statusmøte uke 45», ingressen «Status for leseren og presentasjonsmodus, uke 45.», properties (`møteleder`: Kari Nordmann, `dato`, `deltakere`, P1-fellene som data), **ikke** `cssclasses`, endringsdato 2026-11-01 (fixture-mtime). Ingen agendalinje. |
+| QA-V2-20 | Tagger vises aldri på tittellysbildet (PO-90; sjekkes på `oppgaver/Refaktorer logging`, tagg `task`). Tittellysbildet i statusmøtet: «Statusmøte uke 45», ingressen «Status for leseren og presentasjonsmodus, uke 45.», properties (`møteleder`: Kari Nordmann, `dato`, `deltakere`, P1-fellene som data), **ikke** `cssclasses`, endringsdato 2026-11-01 (fixture-mtime). Ingen agendalinje. |
 | QA-V2-21 | Agendalinjen på innholdslysbildene i statusmøtet viser alle tre punkter, gjeldende uthevet, med progresjon (`1/2`, `2/2`, `1/2`, `2/2`, `1/1`). Skjult på T, A og O. |
 | QA-V2-22 | «Mange agendapunkter» ved 1280×720: Status 1 → Økonomi og budsjettoppfølging · Rekruttering og bemanning …; Status 5 → … Sikkerhet og personvern · **Arkitektur og teknisk gjeld** · Kundetilbakemeldinger og support …; Status 8 → … Leverandører og avtaler · **Opplæring og kompetanseheving**. |
 | QA-V2-23 | `:agenda av` i statusmøtet: de 3 overgangene forsvinner (7 lysbilder), gjeldende lysbilde beholdes. Ny presentasjon (og reload, Q-09) har overgangene igjen. |
-| QA-V2-24 | Live (i en vault-kopi): `## Jobbes med nå` → `## Pågår nå` mens «Oppgaver» (7) vises → agendalinjen viser «Pågår nå», fortsatt lysbilde 7. Sletting av «Leveranse B» mens den vises → «Leveranse A – lesekomfort» (forrige gjenværende, Q-06), 4 / 9. `oppgaver/Refaktorer logging.md` `status: todo` → `doing` → kortet flytter kolonne på «Oppgaver». |
-| QA-V2-25 | Start fra leseposisjon i statusmøtet: toppen → 1, «Jobbes med nå» → 6 (overgangen), «Oppgaver» → 7, «Plan Q1» → 10. |
+| QA-V2-24 | Live (i en vault-kopi): `## Jobbes med nå` → `## Pågår nå` mens «Oppgaver» (7) vises → agendalinjen viser «Pågår nå», fortsatt lysbilde 7. Sletting av «Leveranse B» mens den vises → overgangen til «Jobbes med nå», 5 / 9 (nærmeste nabo, etterfølger før forgjenger, ADR-010 §5). `oppgaver/Refaktorer logging.md` `status: todo` → `doing` → kortet flytter kolonne på «Oppgaver». |
+| QA-V2-25 | Start fra leseposisjon i statusmøtet: toppen → 1, «Jobbes med nå» → 6 (overgangen), «Oppgaver» → 7, «Plan Q1» → 10. `Esc` går til seksjonen for gjeldende lysbilde (PO-87). |
+| QA-V2-26 | URL (ADR-010 §4): `?lysbilde=<id>` med id-er `tittel`, `agenda`, `overgang.siden-sist` (3), `overgang.jobbes-med-nå` (6), `oppgaver` (7), `plan-q1` (10); i «Delte lysbilder» `arkitektur` (4), `arkitektur.del2` (5), `arkitektur.del3` (6). Ukjent id ved ny lasting → tittellysbildet (PO-91). Lenken «Månedsrapport oktober» på «Plan Q1» forlater presentasjonen; Tilbake går inn igjen (PO-89). |

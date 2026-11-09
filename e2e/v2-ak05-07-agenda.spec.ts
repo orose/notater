@@ -56,6 +56,12 @@ test.describe('AK-2-05 tittel, agenda og overganger', () => {
     await expect(agendalinje(page)).toBeHidden();
   });
 
+  test.fixme('TC-2-05-09 tagger vises ikke på tittellysbildet (PO-90)', async ({ page }) => {
+    await presenter(page, fasit2.tagger.sti);
+    await expect(lysbilde(page)).toHaveAttribute('data-slide-type', 'tittel');
+    await expect(lysbilde(page)).not.toContainText(fasit2.tagger.tagg);
+  });
+
   test.fixme('TC-2-05-02 kort innhold før første agendaoverskrift vises på tittellysbildet (S6)', async ({ page }) => {
     await presenter(page, fasit2.forKort.sti);
     for (const m of fasit2.forKort.lysbilder[0]!.inneholder ?? []) await expect(lysbilde(page)).toContainText(m);
@@ -110,7 +116,7 @@ test.describe('AK-2-05 tittel, agenda og overganger', () => {
     expect(await lesAlleLysbilder(page)).toEqual(uten.map(somFasit));
   });
 
-  test.fixme('TC-2-05-07 `:agenda av` huskes ikke: ny presentasjon har overganger igjen (Q-09: også etter reload)', async ({ page }) => {
+  test.fixme('TC-2-05-07 `:agenda av` huskes ikke: ny presentasjon og reload har overganger igjen (ADR-010 §4)', async ({ page }) => {
     await presenter(page, s.sti);
     await kjørKommando(page, 'agenda av');
     await avsluttPresentasjon(page);
@@ -225,7 +231,7 @@ liveTest.describe('AK-2-07 live oppdatering', () => {
     await expect(agendaliste(page).locator('[aria-current="step"]')).toHaveText(ny);
   });
 
-  liveTest.fixme('TC-2-07-02 sletting av lysbildet man står på: nærmeste vises (Q-06: forrige gjenværende)', async ({ page, live }) => {
+  liveTest.fixme('TC-2-07-02 sletting av lysbildet man står på: nærmeste nabo vises, etterfølger før forgjenger (ADR-010 §5)', async ({ page, live }) => {
     await page.goto(live.url(s.sti));
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     await startPresentasjon(page);
@@ -234,8 +240,13 @@ liveTest.describe('AK-2-07 live oppdatering', () => {
     const start = innhold.indexOf(s.live.slettSeksjon);
     const slutt = innhold.indexOf('## Jobbes med nå');
     writeFileSync(fil(live.vault), innhold.slice(0, start) + innhold.slice(slutt));
-    await expect(lysbildeOverskrift(page)).toHaveText(s.live.etterSletting, { timeout: 5000 });
-    expect(await nummer(page)).toEqual({ n: 4, av: s.lysbilder.length - 1 });
+    const e = s.live.etterSletting;
+    await expect.poll(async () => (await nummer(page)).av, { timeout: 5000 }).toBe(e.av);
+    expect(await nummer(page)).toEqual({ n: e.n, av: e.av });
+    const l = await lesLysbilde(page);
+    expect([l.type, l.agendapunkt]).toEqual([e.type, e.agendapunkt]);
+    // Progresjonen i «Siden sist» er nå 1/1.
+    await page.keyboard.press('k');
     await expect(agendaProgresjon(page)).toHaveText(/1\s*\/\s*1/);
   });
 

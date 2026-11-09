@@ -3,7 +3,7 @@
 // AK-2-11 Fullskjerm startes/avsluttes; reload beholder lysbildet via URL.
 // Også: klikker-taster, Space i present-modus mot leader, svart skjerm, oversikt, fremdrift (A5), touch,
 // temabytte og avvist fullskjerm. Testplan: TC-2-10-*, TC-2-11-*. TDD: `test.fixme` til levert.
-import { expect, openNote, test } from './support/guards';
+import { expect, noteUrl, openNote, test } from './support/guards';
 import { brytNorskTastatur, brytReservert, konflikter, lastRegister, parseBinding, visTrinn } from './support/keymap-rules';
 import {
   avsluttPresentasjon,
@@ -12,9 +12,7 @@ import {
   fremdrift,
   gåTilLysbilde,
   lesLysbilde,
-  lysbildeOverskrift,
   lysbildenummer,
-  nummer,
   oversikt,
   oversiktLysbilder,
   presentasjon,
@@ -106,7 +104,7 @@ test.describe('AK-2-10 navigasjonstaster', () => {
     await expect(page.locator('html')).not.toHaveAttribute('data-width', 'full');
   });
 
-  test.fixme('TC-2-10-06 `b` og `.` gir svart skjerm av/på; annen tast enn b/./Esc endrer ikke lysbildet mens den er svart', async ({ page }) => {
+  test.fixme('TC-2-10-06 `b` og `.` gir svart skjerm av/på; neste/forrige mens svart gir bildet tilbake uten å bla (ADR-010 §3)', async ({ page }) => {
     await presenter(page, s.sti);
     await gåTilLysbilde(page, 4);
     for (const tast of t.svart) {
@@ -119,6 +117,18 @@ test.describe('AK-2-10 navigasjonstaster', () => {
       await expect(svartSkjerm(page)).toBeHidden();
     }
     await ventPåLysbilde(page, 4);
+    for (const tast of ['j', 'k']) {
+      await page.keyboard.press('b');
+      await expect(svartSkjerm(page)).toBeVisible();
+      await page.keyboard.press(tast);
+      await expect(svartSkjerm(page)).toBeHidden();
+      await ventPåLysbilde(page, 4);
+    }
+    // Svart skjerm huskes ikke: reload gir lysbildet.
+    await page.keyboard.press('b');
+    await page.reload();
+    await ventPåPresentasjon(page);
+    await expect(svartSkjerm(page)).toBeHidden();
   });
 
   test.fixme('TC-2-10-07 `o` åpner oversikten med gjeldende uthevet; piltaster/hjkl + Enter hopper; Esc lukker', async ({ page }) => {
@@ -215,18 +225,18 @@ test.describe('AK-2-10 navigasjonstaster', () => {
 test.describe('AK-2-10 registeret (P2, P3, P4, P5)', () => {
   test.skip(({ isMobile }) => isMobile, 'Ren logikk – kjøres én gang');
 
-  test.fixme('TC-2-10-20 present-modus finnes i registeret og dekker hele tastetabellen', async () => {
+  test.fixme('TC-2-10-20 present-modus finnes i registeret og dekker hele tastetabellen (inkl. `f`, PO-88)', async () => {
     const { kommandoer } = await lastRegister();
     const present = kommandoer.flatMap((k) => k.bindings.filter((b) => b.mode === t.presentModus));
     const vist = new Set(present.map((b) => visTrinn(b.steps)));
-    const forventet = [...t.neste, ...t.forrige, ...t.forste, ...t.siste, ...t.oversikt, ...t.svart, ...t.palett, ...t.hjelp, ...t.avslutt].map((r) => visTrinn(parseBinding(r)));
+    const forventet = [...t.neste, ...t.forrige, ...t.forste, ...t.siste, ...t.oversikt, ...t.svart, ...t.fullskjerm, ...t.palett, ...t.hjelp, ...t.avslutt].map((r) => visTrinn(parseBinding(r)));
     expect(forventet.filter((f) => !vist.has(f))).toEqual([]);
     // Start er en normal-modus-binding.
     const normal = new Set(kommandoer.flatMap((k) => k.bindings.filter((b) => b.mode === 'normal').map((b) => visTrinn(b.steps))));
     for (const st of t.start) expect(normal.has(visTrinn(parseBinding(st))), st).toBe(true);
   });
 
-  test.fixme('TC-2-10-21 P4 i normal-modus, P5 i alle moduser, ingen konflikter innen present-modus', async () => {
+  test.fixme('TC-2-10-21 P4-bokstavene bare i normal-modus (PO-84), P5 og Esc-regelen i alle moduser, ingen konflikter innen present-modus', async () => {
     const { kommandoer } = await lastRegister();
     const alle = kommandoer.flatMap((k) => k.bindings);
     expect(alle.filter((b) => b.mode === 'normal').map(brytReservert).filter(Boolean), 'P4').toEqual([]);
@@ -273,87 +283,140 @@ test.describe('AK-2-11 fullskjerm', () => {
     // Vaktene (guards) feiler testen ved uncaught rejection eller console.error.
   });
 
-  test.fixme('TC-2-11-03 fullskjerm utilgjengelig (`fullscreenEnabled = false`, f.eks. iframe/Teams): ingen forsøk, ingen feil', async ({ page }) => {
+  test.fixme('TC-2-11-03 fullskjerm utilgjengelig (`fullscreenEnabled = false`, f.eks. iframe/Teams): presentasjonen virker, ingen feil', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(Document.prototype, 'fullscreenEnabled', { get: () => false });
-      (window as unknown as { __fsKall: number }).__fsKall = 0;
-      Element.prototype.requestFullscreen = function () {
-        (window as unknown as { __fsKall: number }).__fsKall++;
-        return Promise.reject(new TypeError('not allowed'));
-      };
+      Element.prototype.requestFullscreen = () => Promise.reject(new TypeError('not allowed'));
     });
     await openNote(page, s.sti);
     await startPresentasjon(page);
-    expect(await page.evaluate(() => (window as unknown as { __fsKall: number }).__fsKall)).toBe(0);
     await forventLerret169(page);
+    await page.keyboard.press('j');
+    await ventPåLysbilde(page, 2);
   });
 
-  test.fixme('TC-2-11-04 nettleseren går ut av fullskjerm (F11/Esc i nettleseren): presentasjonen fortsetter i vinduet (Q-10)', async ({ page }) => {
+  test.fixme('TC-2-11-04 `f` og `:fullskjerm` slår fullskjerm av og på uten å avslutte presentasjonen (PO-88)', async ({ page }) => {
+    await openNote(page, s.sti);
+    await startPresentasjon(page);
+    await gåTilLysbilde(page, 4);
+    const iFullskjerm = () => page.evaluate(() => document.fullscreenElement !== null);
+    await expect.poll(iFullskjerm).toBe(true);
+    await page.keyboard.press('f');
+    await expect.poll(iFullskjerm).toBe(false);
+    await expect(presentasjon(page)).toBeVisible();
+    await ventPåLysbilde(page, 4);
+    await page.keyboard.press('f');
+    await expect.poll(iFullskjerm).toBe(true);
+    await kjørKommando(page, 'fullskjerm');
+    await expect.poll(iFullskjerm).toBe(false);
+    await ventPåLysbilde(page, 4);
+  });
+
+  test.fixme('TC-2-11-05 fullskjerm forlatt utenfra (nettleserens Esc/F11): oversikt åpen → lukkes og presentasjonen fortsetter; ellers avsluttes den (ADR-010 §4)', async ({ page }) => {
     await openNote(page, s.sti);
     await startPresentasjon(page);
     await gåTilLysbilde(page, 4);
     await expect.poll(() => page.evaluate(() => document.fullscreenElement !== null)).toBe(true);
+    await page.keyboard.press('o');
+    await expect(oversikt(page)).toBeVisible();
     await page.evaluate(() => document.exitFullscreen());
+    await expect(oversikt(page)).toBeHidden();
     await expect(presentasjon(page)).toBeVisible();
     await ventPåLysbilde(page, 4);
+    await page.keyboard.press('f');
+    await expect.poll(() => page.evaluate(() => document.fullscreenElement !== null)).toBe(true);
+    await page.evaluate(() => document.exitFullscreen());
+    await expect(presentasjon(page)).toBeHidden();
+  });
+
+  test.fixme('TC-2-11-06 reload under presentasjon: fullskjerm er av, toast med hint om `f`/`:fullskjerm` (PO-88)', async ({ page }) => {
+    await openNote(page, s.sti);
+    await startPresentasjon(page);
+    await gåTilLysbilde(page, 3);
+    await page.reload();
+    await ventPåPresentasjon(page);
+    await expect(page.getByRole('status').filter({ hasText: /Fullskjerm/ })).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: /Fullskjerm/ })).toContainText(/\bf\b|:fullskjerm/);
   });
 });
 
 test.describe('AK-2-11 URL og reload', () => {
   test.skip(({ isMobile }) => isMobile, 'Tastatur');
+  const param = (url: string): string | null => new URL(url).searchParams.get('lysbilde');
 
-  test.fixme('TC-2-11-10 gjeldende lysbilde står i URL-en; reload holder lysbildet', async ({ page }) => {
+  test.fixme('TC-2-11-10 gjeldende lysbilde står i URL-en (`?lysbilde=<id>`); reload holder lysbildet', async ({ page }) => {
     await presenter(page, s.sti);
-    const start = page.url();
-    await gåTilLysbilde(page, 5);
-    await expect.poll(() => page.url()).not.toBe(start);
+    await expect.poll(() => param(page.url())).toBe('tittel');
+    await gåTilLysbilde(page, 7);
+    await expect.poll(() => param(page.url())).toBe('oppgaver');
     const før = await lesLysbilde(page);
     await page.reload();
     await ventPåPresentasjon(page);
-    await ventPåLysbilde(page, 5);
+    await ventPåLysbilde(page, 7);
     expect(await lesLysbilde(page)).toEqual(før);
   });
 
-  test.fixme('TC-2-11-11 URL-en kan åpnes i en ny fane og gir samme lysbilde (dyplenke)', async ({ page, context }) => {
-    await presenter(page, s.sti);
-    await gåTilLysbilde(page, 8);
-    const url = page.url();
-    const ny = await context.newPage();
-    await ny.goto(url);
-    await ventPåPresentasjon(ny);
-    await expect(lysbildeOverskrift(ny)).toHaveText('Flyt i presentasjonen');
-    await ny.close();
+  test.fixme('TC-2-11-11 dyplenker med lysbilde-id-er (ADR-010 §4) åpner riktig lysbilde i ny fane', async ({ page }) => {
+    for (const [n, ider] of [[s, s.urlIder], [fasit2.delte, fasit2.delte.urlIder]] as const) {
+      for (const [id, nr] of Object.entries(ider)) {
+        await page.goto(`${noteUrl(n.sti)}?lysbilde=${encodeURIComponent(id)}`);
+        await ventPåPresentasjon(page);
+        await ventPåLysbilde(page, nr);
+        await expect.poll(() => param(page.url()), id).toBe(id);
+      }
+    }
   });
 
-  test.fixme('TC-2-11-12 lysbildebytte lager ikke historikkoppføringer; Tilbake etter presentasjon går til forrige notat (Q-12)', async ({ page }) => {
+  test.fixme('TC-2-11-12 lysbildebytte lager ikke historikkoppføringer; Tilbake avslutter, Frem går inn igjen på samme lysbilde', async ({ page }) => {
     await openNote(page, 'Velkommen');
     await openNote(page, s.sti);
     const lengde = await page.evaluate(() => history.length);
     await startPresentasjon(page);
     for (let i = 0; i < 5; i++) await page.keyboard.press('j');
+    await ventPåLysbilde(page, 6);
     expect(await page.evaluate(() => history.length)).toBeLessThanOrEqual(lengde + 1);
+    await page.goBack();
+    await expect(presentasjon(page)).toBeHidden();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toHaveText(s.tittel!);
+    await page.goForward();
+    await ventPåPresentasjon(page);
+    await ventPåLysbilde(page, 6);
     await avsluttPresentasjon(page);
     await page.goBack();
-    if (await presentasjon(page).isVisible()) await page.goBack();
     await expect(page.getByRole('heading', { level: 1 }).first()).toHaveText('Velkommen til testvaultet');
   });
 
-  test.fixme('TC-2-11-13 ugyldig lysbilde i URL-en (for stort tall/ukjent overskrift) gir nærmeste lysbilde, ingen feil', async ({ page }) => {
-    await presenter(page, s.sti);
-    await gåTilLysbilde(page, 3);
-    const url = new URL(page.url());
-    for (const [k, v] of url.searchParams) if (/3|siden/i.test(v)) url.searchParams.set(k, '999');
-    await page.goto(url.toString());
+  test.fixme('TC-2-11-13 ukjent lysbilde-id i URL-en ved ny lasting gir tittellysbildet, ingen feil (PO-91)', async ({ page }) => {
+    await page.goto(`${noteUrl(s.sti)}?lysbilde=${fasit2.ukjentUrlId.id}`);
     await ventPåPresentasjon(page);
-    expect((await nummer(page)).n).toBe(ANTALL);
+    await ventPåLysbilde(page, fasit2.ukjentUrlId.gir);
+    await expect.poll(() => param(page.url())).toBe('tittel');
   });
 
   test.fixme('TC-2-11-14 reload etter avsluttet presentasjon gir lesevisningen (ikke presentasjon)', async ({ page }) => {
     await presenter(page, s.sti);
     await avsluttPresentasjon(page);
+    expect(param(page.url())).toBeNull();
     await page.reload();
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     await expect(presentasjon(page)).toBeHidden();
+  });
+
+  test.fixme('TC-2-11-15 `?lysbilde` på en `.base`-side ignoreres', async ({ page }) => {
+    await page.goto(`${noteUrl('Oppgaver.base')}?lysbilde=tittel`);
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+    await expect(presentasjon(page)).toBeHidden();
+  });
+
+  test.fixme('TC-2-11-16 lenke på et lysbilde åpner målet og forlater presentasjonen; Tilbake går inn igjen (PO-89)', async ({ page }) => {
+    await presenter(page, s.sti);
+    await gåTilLysbilde(page, s.lenke.lysbilde);
+    await presentasjon(page).getByRole('link', { name: s.lenke.tekst }).click();
+    await expect(presentasjon(page)).toBeHidden();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toHaveText(s.lenke.tekst);
+    await page.goBack();
+    await ventPåPresentasjon(page);
+    await ventPåLysbilde(page, s.lenke.lysbilde);
   });
 });
 

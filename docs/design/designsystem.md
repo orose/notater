@@ -13,6 +13,9 @@ Eier: UX/webdesign. Bindende grunnlag: `docs/produkt/brief.md` (særlig B9, B10,
 | `skjermbilder/` | Skjermbilder 1440 px og 390 px i flere kombinasjoner (v1.1 i `skjermbilder/v1.1/`) |
 | `prototype-v1.1.html` | **v1.1** (§11): lesebredde, diskré embedding, folding, zen, `:`-palett, `?`-oppslagskort, which-key. Selvstendig, interaktiv. |
 | `kontrast-v1.1.mjs` | Kontrollskript for v1.1-fargene: `node docs/design/kontrast-v1.1.mjs` (exit 1 ved brudd, `--json` for QA) |
+| `prototype-v2.html` | **v2** (§12): presentasjonsmodus. Et realistisk statusmøte på 13 lysbilder, oversikt, svart skjerm, palett med feilkoder, alle typesett/paletter. Selvstendig, interaktiv. |
+| `kontrast-v2.mjs` | Kontrollskript for v2-fargene (letterbox, agendalinje, oversikt …): `node docs/design/kontrast-v2.mjs` |
+| `skjermbilder/v2/` | 1920×1080, 1280×720, 1440×900 (letterbox) og 390×844 |
 
 Prototypen kan styres med URL-parametre: `prototype.html?type=terminal&palette=fosfor&mode=dark`, og har tre «sider»: `#notat` (standard), `#komponenter` (alle callouts, lenketyper, tomtilstander/feil) og `#ukjent` (ukjent notat). `⌘K`/`Ctrl+K` åpner søk, `⌘.` bytter lys/mørk.
 
@@ -857,3 +860,278 @@ brytere og radioknapper.
 5. ~~Fold-pilen bytter ut «§»~~ – **godkjent (PO-73)**.
 6. **Statuslinjeflagg** finnes bare i sidepanelet. På mobil (< 860 px) er Utseende eneste sted man ser at full bredde
    eller diskré er på. Skal topplinjen få et lite flagg?
+
+
+---
+
+## 12. v2 – Presentasjon
+
+Bindende grunnlag: `docs/produkt/v2-spesifikasjon.md` (S1–S8, L1–L4, A1–A5), ADR-010 og PO-84 til PO-91.
+Referanse: **`prototype-v2.html`**. Skjermbilder: `skjermbilder/v2/` (filnavnet sier funksjon, typesett, palett og modus;
+uten suffiks = 1920×1080).
+
+**Prototypen styres med URL-parametre:** `type`, `palette`, `mode` som før, og `s=7` (lysbilde, 1-basert),
+`demo=uten-overskrifter|lang-agenda`, `agenda=av`, `live=1` (et kanbankort er flyttet), `open=oversikt|svart|palett|hjelp|lesevisning`,
+`q=presenter%20h9` (sammen med `open=palett`), `hint=1` (starthint) eller `hint=0` (ingen toast) og `debug=1` (viser krympefaktoren).
+Alle taster i spesifikasjonen virker, og i tillegg `f` (PO-88), `↑`/`↓` (rulling, §12.7) og `Esc` til lesevisningen.
+
+### 12.1 Idé: særtrykket
+
+Presentasjonen skal ikke se ut som Keynote med vårt logo. Den er **et særtrykk av notatet**: hvert lysbilde er en
+side i samme tidsskrift som leseren.
+
+- **Agendalinjen er en kolumnetittel** (running head) øverst, og lysbildenummeret er en **folio** nederst. Det er
+  tidsskriftets eget apparat for «hvor er jeg», og derfor kan det være diskré.
+- **Agendaen er en innholdsfortegnelse.** Den har prikkede ledere og *lysbildenummeret* der seksjonen starter, slik
+  et tidsskrift viser sidetall. I et statusmøte er det nyttig («vi hopper til 9»).
+- **Overgangen er samme side med «du er her».** L2 og L3 har identisk layout, så krysstoningen fra agenda til første
+  overgang endrer bare uthevingen. Publikum ser at det er agendaen igjen, ikke et nytt lysbilde.
+- Figurer, booktabs, «Fig. *n*», `§ 2` i margen og fotnoter (A4) er de samme komponentene som i leseren, skalert opp.
+  Terminal oversetter dette til `01 /`, vim-tabline (`1 Siden sist │ 2 Jobbes med nå 2/3`), invertert «cursorline» og
+  et `├──`-tre. Klartekst sier det med ord («Nå») og tydelige streker.
+- Ingen gradienter, skygger, «byggeklosser» eller animerte punkter. Overgangen er bare en toning.
+
+### 12.2 Lerret, enheter og rutenett (A1)
+
+- **Logisk lerret 1920 × 1080.** Lerretet skaleres med `transform: scale(--stage-scale)` (ADR-010), og letterbox ligger
+  rundt. Alle mål er i **lerretpiksler**: `--lp = 100cqw / 1920` (lerretet har `container-type: size`), som gir
+  **1 lp = 1 px** i visning og måling. Layout, krymping og «(forts.)» blir derfor identisk i et 1280-vindu, på
+  projektor og i Teams. Miniatyrene i oversikten er det samme lysbildet i en mindre container, uten transform, og
+  skalerer «gratis».
+- **Rutenett:** marg 128 lp (6,7 %), 12 kolonner med 32 lp spalteavstand, kolumnetittel på 44 lp, tittel på 148 lp og
+  innhold ned til 112 lp over bunnen. Folio og notattittel står 34 lp fra bunnen, og fremdriften ligger kant i kant
+  helt nederst. `§ n` og hengende tankestreker bruker 40 lp av venstremargen (`--slide-hang`).
+- **Brødtekst holder målbredden** (`--slide-measure`, ≈ 30 em ≈ 62 tegn). Figurer (kode, Mermaid, tabell, base) går i
+  full bredde. Det speiler `--code-wide` i leseren.
+- **Letterbox** (`--color-letterbox`): i lyse temaer 9 % tekstfarge inn i papiret, så lysbildet ligger som et ark på et
+  bord. I mørke temaer 35 % svart, nesten svart, som forsvinner på projektor. Ingen skygge.
+- **Mobil (stående):** lerretet går i full bredde med kontroller under (`‹`, «4 / 13», oversikt, «Neste ›», 44 px),
+  «✕» øverst (Esc finnes ikke på telefon) og hintet «Snu telefonen for større visning». Trykk på venstre tredjedel gir
+  forrige lysbilde, resten gir neste. Sveip virker også. Overflyt: 0 px ved 1280×720, 1440×900, 1920×1080 og 390×844.
+
+### 12.3 Typografi og lesbarhet på avstand og i komprimert video
+
+| Token (lp) | Tidsskrift | Terminal | Klartekst | Bruk |
+|---|---|---|---|---|
+| `--slide-step-4` | 144 (Spectral 300) | 128 (820) | 120 (700) | tittellysbildet |
+| `--slide-step-3` | 84 | 76 | 76 | agendapunkter (krympes også ved behov) |
+| `--slide-step-2` | 72 (400) | 64 (760) | 64 (700) | lysbildetittel, «Agenda» |
+| `--slide-step-1` | 52 | 46 | 46 | ingress |
+| `--slide-step-0` = `--slide-body-lp` | **40** | **36** | **38** | brødtekst ved `--slide-fit` 1 |
+| `--slide-step-n1` | 30 | 28 | 30 | properties, delpunkter i overgang |
+| `--slide-step-n2` | 26 | 24 | 26 | kolumnetittel, folio, fotnoter, bildetekst |
+| `--slide-mono-ratio` | 0,8 | 0,86 | 0,82 | kode, tabell, kanban relativt til brødtekst |
+| `--slide-text-min-lp` (**A2-minimum**, PO-86) | **30** | **28** | **30** | brødtekst krympes aldri under dette |
+| `--slide-mono-min-lp` | 24 | 24 | 24 | gulv for mono, tabell, kanban og tasttegn |
+| `--slide-leading` | 1,42 | 1,4 | 1,5 | |
+
+Regler (begrunnet i Teams/Zoom-video, som er 4:2:0-komprimert og ofte vises 720p eller mindre):
+
+1. **Minste tekst er 24 lp (16 px ved 720p).** Det gjelder også kolumnetittel, folio og fotnoter. Ingen etiketter i
+   0,7 rem «fordi det ser elegant ut».
+2. **Tynne snitt bare i store grader.** Spectral 300 brukes bare ≥ 112 lp (tittellysbildet). Lysbildetitler og brødtekst
+   er 400, fordi hårstrekene i seriffene ellers forsvinner i video. Terminal-brødtekst er 450 (leser: 420).
+3. **Aldri strek under 2 lp.** `--slide-hair` 2 lp, `--slide-rule` 3 lp, `--slide-rule-heavy` 6 lp, fremdrift 8 lp og
+   fokus 4 lp. Alle har `max(…px, …)`-gulv. Hårstreker på 1 px blinker og forsvinner i komprimert video.
+4. **Farge bærer ikke små tekster alene.** Krominans er halvert i video, så små farget tekst blir uskarp. Gjeldende
+   agendapunkt i kolumnetittelen er derfor *tekstfarget* med en 3 lp aksentstrek under, ikke aksentfarget.
+   Aksentfarget tekst brukes bare ≥ 28 lp (`§ n`, overgangspunktet og tallene i tidslinjen).
+5. **Ingen mønstre som flimrer.** Prikkede ledere har prikker på 6 lp med 22 lp avstand (ingen moaré). Det finnes ingen
+   bakgrunnsgradienter (striper i video) og ingen tekstskygge.
+6. **Mermaid:** streker får `vector-effect: non-scaling-stroke` med 3 lp tykkelse, og pilhoder er i
+   `userSpaceOnUse`. Teksten i SVG-en settes i 30/24 enheter (node/undertekst), så den havner på ≈ 30 lp når diagrammet
+   fyller bredden.
+7. **Overlegg skaleres med vinduet.** I presentasjonsmodus er `html { font-size: clamp(16px, 0.55vw + 9px, 22px) }`, så
+   palett, oppslagskort, oversikt og toast er lesbare fra bakerste rad (≈ 20 px ved 1920).
+
+### 12.4 Lysbildetypene
+
+Alle lysbilder har `data-kind="tittel|agenda|overgang|innhold"` og `aria-roledescription="lysbilde"`. Bare det aktive
+lysbildet er synlig. De andre har `visibility: hidden` og `inert`.
+
+**L1 Tittel** (`01-`, `11-`, `17-`, `35-`)
+- Tidsskrift: sti i småkapitéler (aksent), tittel 144 lp, ingress i kursiv (dempet), S6-innhold under, og
+  **properties som marg-spalte** til høyre (kolonne 10–12) med 6 lp tekstfarget strek over, som i notat-headeren.
+  Nederst står «Endret …» i mono over en hårstrek. **Ingen tagger (PO-90).**
+- Terminal: `~/sti`, tittel med en **statisk blokkmarkør** i aksent (█, blinker ikke), og properties som nøkkel/verdi-
+  tabell på `surface`. Klartekst: én spalte, properties som fet nøkkel og verdi.
+- Properties respekterer skjulte felt som i leseren. Kolumnetittel vises ikke. Folio og fremdrift vises (A5).
+- S6: innhold før første agendaoverskrift står under ingressen hvis det passer (målt med samme tilpasning), ellers på
+  et eget lysbilde (ADR-010: id `innledning`).
+
+**L2 Agenda** (`02-`, `12-`)
+- Overskriften «Agenda» står på samme plass og i samme størrelse som lysbildetitler. Under er en liste (`--slide-step-3`)
+  med `§ 1` hengende i margen (Tidsskrift), `01` i mono (Terminal) eller «1.» (Klartekst), prikket leder og
+  **lysbildenummeret** der seksjonen starter. Over tallene står kolonneetiketten «lysbilde».
+- Lister med mange punkter krympes med samme `--slide-fit` (minimum 0,55, dvs. ned mot `--slide-step-1`).
+
+**L3 Overgang** (`03-`, `10-`, `21-`, `31-`): agendaen med tre tilstander per punkt.
+
+| Tilstand | Tidsskrift | Terminal | Klartekst |
+|---|---|---|---|
+| tidligere (`data-state="past"`) | `--color-agenda-past` (= muted, aldri opasitet) | samme | samme |
+| gjeldende (`cur`, `aria-current="step"`) | aksentfarge + 6 lp loddrett aksentstrek i margen + lysbildetitlene under i kursiv, adskilt med « · » | **invertert rad** (tekst på `--color-text`, som vims cursorline) + titlene som tre `├── … └──` i mono | fet aksent, 8 lp strek, merket **«Nå»** + titlene under |
+| kommende | tekstfarge | tekstfarge | tekstfarge |
+
+Gjeldende punkt skilles med form (strek, invertering, «Nå» og delpunktene), ikke bare farge (WCAG 1.4.1).
+Delpunktene viser innholdslysbildene i seksjonen (uten «(forts.)»), så publikum ser hva som kommer.
+
+**L4 Innhold** (`04-`–`09-`): kolumnetittel, tittel (`--slide-step-2`, `text-wrap: balance`, maks 24 em) med `§ n` i
+margen (A), `01 /` over (C) eller ingen nummer (K), deretter kroppen (`data-fit-box`) og fotnoter.
+
+**«(forts.)»** (`06-`, `18-`): tittelen gjentas med « (forts.)» i dempet farge. A: kursiv 0,6 em. C: mono 0,44 em,
+hevet. K: 0,6 em. Teller som et vanlig lysbilde i progresjonen («3/3»). Lysbilder **uten** overskrift (S7) får i stedet
+en kolumnetittel-etikett «Notattittel (forts.)» øverst til venstre.
+
+**Fotnoter (A4):** kort 240 lp hårstrek og noter i `--slide-step-n2`, dempet. A: kursiv, C: mono. Nummeret er i aksent.
+Notene følger lysbildet der referansen står, også etter deling.
+
+**Innhold med figurer:**
+- *Kode:* `0,8 em` av kroppen (32 lp → minst 24 lp). Hode med «Fig. *n*» (A) eller aksentprikk (C), filnavn og språk.
+  Linjenumre i C. Lange linjer krymper hele lysbildet, fordi tilpasningen også måler bredde. Ved minimum ruller blokken
+  internt (§12.7).
+- *Mermaid:* `flex: 1 1 0` med `--slide-figure-min` (260 lp) i måling. I visning vokser den inn i ledig plass, og
+  SVG-en skaleres med `viewBox`. Den deles aldri.
+- *Tabell og Bases-tabell:* booktabs med 3 lp topp- og bunnstrek. Hodet er i småkapitéler (A) eller mono-versaler på
+  `surface` (C). Status har form (○ ◐ ●).
+- *Kanban (A3):* alle kolonner i `repeat(n, minmax(0, 1fr))`. Ingen horisontal rulling så lenge hver kolonne er ≥ 11
+  em ved minimum. A: baner uten flate, med 3 lp strek over og kort skilt av hårstrek. C: baner på `surface` og kort med
+  ramme.
+- *Base-hode:* `Oppgaver.base`, view-navnet (kursiv i A), antall og **«● live»** (grønn prikk). Ved endring står det
+  «oppdatert 14.02», kortet som flyttet seg får en `--color-mark`-glød som toner ut på 1,6 s (ingen animasjon ved
+  reduced motion, bare en markeringsramme), og bunnlinjen viser «● Oppdatert 14.02 · Oppgaver.base» i
+  `--hint-linger` (`07-`). Presentatøren ser da at tavlen faktisk er live.
+
+### 12.5 Agendalinjen (kolumnetittelen)
+
+- Vises bare på innholdslysbilder med agenda (AK-2-06). Den er felles krom utenfor lysbildene og byttes **uten**
+  toning, så den står stille mens innholdet toner.
+- A: Spectral SC med sperring og hårstrek under hele linjen. C: mono, `│`-skille og nummer foran. K: UI-font,
+  gjeldende i fet.
+- Gjeldende punkt: `--color-head-current` (tekst) med 3 lp `--color-head-mark`-understrek, og progresjon `2/3` i mono
+  (`aria-label="lysbilde 2 av 3 i punktet"`). Andre punkter er `--color-head` (muted).
+- **Avkorting** (`19-`, `20-`): JS prøver `full`, så `kort` (`… · forrige · gjeldende · neste · …`) og til slutt
+  `min` (`… · gjeldende · …`). Den første som ikke flyter over, brukes. «…» er `aria-hidden`. Siden lerretet er logisk,
+  avhenger valget bare av teksten, ikke av vinduet.
+
+### 12.6 Krom: folio, fremdrift, kontroller
+
+- **Folio** nederst til høyre: «**7** / 13» i mono, med gjeldende nummer i tekstfarge og resten dempet. Nederst til
+  venstre står notattittelen (A kursiv, C mono). Den skjules på tittellysbildet.
+- **Fremdrift** (A5): segmentert stripe på 8 lp helt nederst, med ett segment per agendaseksjon (tittel og agenda er
+  første segment) og 6 lp mellomrom. Fyll i `--color-progress`, spor i `--color-progress-track` (dekor). Bredden
+  animeres med `--dur-base`. Segmentene gir struktur uten tekst.
+- **Musekontroller:** «Oversikt [o]» og «Avslutt [Esc]» øverst til høyre. De er skjult i hvile, vises ved
+  musebevegelse i 1,8 s og er tab-stopp. Pekeren skjules etter 1,8 s uten bevegelse (`22-`).
+- **Starthint** (de tre første gangene, som zen-hintet): «**Presentasjon** [Esc] avslutter · [o] oversikt · [?] taster».
+  **Etter reload** (PO-88): «Lysbilde 7. Nettleseren går ut av fullskjerm ved ny lasting. [f] slår den på igjen.»
+
+### 12.7 A2 – tilpasning, deling og rulling (designregler for ADR-010)
+
+1. Krymp hele kroppen i steg på `--slide-fit-step` (2,5 %) til innholdet passer i **høyde og bredde** (lange
+   kodelinjer og brede tabeller teller), ned til `--slide-text-min-lp / --slide-body-lp`. Tittel, kolumnetittel og
+   folio krympes aldri. Lysbilder skal ikke «hoppe» i titlene.
+2. Passer det fortsatt ikke: del **mellom blokker** til et nytt lysbilde med «(forts.)». Fotnoter følger delen sin.
+3. **Ingen foreldreløse lysbilder (ny regel).** Er blokken som ikke får plass, for stor også *alene*, flyttes den
+   **ikke**. Den blir stående på lysbildet og ruller internt. Ellers får man et lysbilde med to linjer tekst og et
+   «(forts.)» med en kodeblokk som må rulles likevel (prototypen gjorde akkurat det i første versjon).
+4. **Intern rulling** (`09-`): minimum skrift. Blokken fyller resten av lysbildet (`flex: 1 1 0`), og nederste 3 em
+   tones ut med `mask-image` (fjernes ved slutten). Hintlinjen i mono sier «↓ 38 linjer til · [↑][↓] ruller» og ved
+   slutten «Slutt · 52 linjer». **`↑`/`↓` ruller blokken** på gjeldende lysbilde. De er ledige i present-modus, siden
+   `←`/`→` og `j`/`k` blar. `pre` har `tabindex="0"`, fokusring 4 lp og `aria-label`. Mermaid og bilder ruller aldri,
+   de skaleres.
+
+### 12.8 Oversikt (`o`), svart skjerm og overganger
+
+- **Oversikt** (`13-`, `34-`): fullskjerm-overlegg på `--color-overview-bg` (= letterbox) med overskrift, antall og
+  tasthint. Rutenettet er `repeat(auto-fill, minmax(19rem, 1fr))`: 5 kolonner ved 1920, 3–4 ved 1280 og 2 på mobil.
+  Miniaturen er **det ekte lysbildet** i en mindre container. Under står nummeret i aksent, tittelen og, for
+  overganger, «§ 2» eller «agenda ·».
+  - *Nå*: 3 px `--color-thumb-current`-ramme + merket «NÅ» (bg på aksent).
+  - *Markør*: 3 px `--color-thumb-cursor` (fokusfarge) med 4 px luft, slik at nå og markør kan sees samtidig.
+  - `role="listbox"` med `aria-activedescendant`. Selve rutenettet får ikke fokusring (markøren viser fokus, PO-74).
+    Pil opp/ned er **geometrisk** (nærmeste i raden over/under), ikke ±kolonner. Det tåler ujevne rader.
+- **Svart skjerm** `b`/`.` (`14-`): `--color-blackout` = #000 i alle temaer (projektor: ingen lys), toner inn og ut med
+  `--slide-fade`, og pekeren skjules. Ingenting vises for publikum. Skjermleser får «Svart skjerm. Trykk b eller punktum
+  for å fortsette.» `b`, `.` og `Esc` slår av. Andre taster ignoreres, så et feiltrykk på klikkeren ikke avslører neste
+  lysbilde.
+- **Overgang mellom lysbilder:** krysstoning av lysbildet (`--slide-fade` 240 ms, `--ease-in-out`). Krom (kolumnetittel,
+  folio) byttes momentant, og fremdriften glir. Ingen bevegelse, skalering eller skyving. Ved
+  `prefers-reduced-motion` er `--slide-fade` 0 ms. Toning er også gunstig for videokomprimering (ingen store
+  bevegelsesvektorer).
+- **Fullskjerm** `f` / `:fullskjerm` (PO-88). Avvises fullskjerm, kommer en toast om at presentasjonen virker i vindu.
+- **Esc** (PO-87): lukker overlegg først, avslutter ellers til **seksjonen for gjeldende lysbilde** med toasten
+  «Presentasjonen er avsluttet. Du står ved «Outbox-mønsteret». [Space][p] starter herfra.»
+
+### 12.9 Feiltilstander
+
+| Situasjon | Utforming | Tekst |
+|---|---|---|
+| **Notat uten overskrifter** (S7, `17-`, `18-`) | Tittellysbilde, deretter innhold delt på `---` og A2. Ingen agenda eller kolumnetittel. Toast ved start (`role="status"`). «(forts.)»-etikett øverst til venstre på automatiske deler. | «**Ingen overskrifter** Lysbildene er delt på `---` og der innholdet ikke får plass. Ingen agenda.» |
+| **Ugyldig nivå** `:presenter h9` / `h1` / `hx` / tomt (`15-`) | Feilkort i paletten (som v1.1 E492): stiplet ramme, kode i mono `--hue-red`, fet setning og forklaring. `role="alert"`, `aria-describedby` på feltet. | «**E475** Ugyldig argument: «h9». Skriv `:presenter h2` til `:presenter h6`. Dette notatet har overskrifter på nivå h2 og h3.» |
+| **Tomt nivå** `:presenter h5` (`16-`) | Samme kort. Ingenting lagres. | «**E486** Ingen overskrifter på nivå h5 i notatet. Lysbildene blir ikke delt annerledes. Notatet har overskrifter på nivå h2 og h3. Valget er ikke lagret.» (E486 = vims «Pattern not found») |
+| Gyldig nivå | Toast | «**Lysbildenivå h3** Husket for dette notatet i denne nettleseren. Notatet er ikke endret.» |
+| **For stor blokk** (`09-`) | §12.7 punkt 3–4 | «↓ 38 linjer til · [↑][↓] ruller» |
+| Fullskjerm avvist | Toast | «**Fullskjerm ble ikke tillatt** Presentasjonen virker også i vindu …» |
+
+### 12.10 Tokens og kontrast
+
+Nye tokens står i `tokens.css`, blokken «v2». Lerret og rutenett: `--lp`, `--slide-margin-x`, `--slide-head-top`,
+`--slide-content-top`, `--slide-content-bottom`, `--slide-foot-bottom`, `--slide-gap`, `--slide-hang` og `--slide-flow`.
+Streker: `--slide-hair`, `--slide-rule`, `--slide-rule-heavy`, `--slide-progress-h` og `--slide-focus`. A2:
+`--slide-fit-step`, `--slide-text-min-lp`, `--slide-mono-min-lp`, `--slide-body-lp`, `--slide-mono-ratio` og
+`--slide-figure-min`. Typografi: `--slide-step-n2` til `--slide-step-4`, `--slide-leading`, `--slide-weight-*` og
+`--slide-measure`. Bevegelse og lag: `--slide-fade` og `--z-present*`. Farger: `--color-letterbox`,
+`--color-letterbox-edge`, `--color-head*`, `--color-progress*`, `--color-agenda-past/current`,
+`--color-thumb-current/cursor`, `--color-overview-bg` og `--color-blackout`. Alle farger er avledet av palett-tokens.
+Ingen nye råverdier, bortsett fra #000 til svart skjerm. Krympefaktoren per lysbilde heter `--slide-fit` (ADR-010).
+
+**Kontrast:**
+- `node docs/design/kontrast-v2.mjs`: 36 kontroller × 24 kombinasjoner = **848 kontroller, 0 brudd**. Laveste verdier:
+  oversikt-markør (fokus) mot letterbox 3,72 (Cyanotypi lys, krav 3) og dempet tekst på letterbox 5,11. Første kjøring
+  fant ett reelt brudd: knappekanter i `rule-strong` mot lys letterbox ga 2,48. Det er løst med `--color-letterbox-edge`
+  (= muted, 5,11).
+- **axe-core 4 i nettleser** på `prototype-v2.html`: 24 kombinasjoner × 10 tilstander (tittel, overgang, «(forts.)» med
+  fotnoter, kanban, stor blokk, oversikt, palett med E475, oppslagskort, S7 og lang agenda) = **240 kjøringer, 0 brudd**.
+  Underveis fant vi og rettet `aria-activedescendant` som pekte på en fjernet rad da feilkortet ble vist.
+
+### 12.11 Tilgjengelighet
+
+- Lerretet har `role="region"`, `aria-roledescription="presentasjon"` og notattittelen som navn. Lysbildebytte
+  annonseres i en `aria-live="polite"`-region: «Lysbilde 7 av 13: Outbox-mønsteret (forts.)». Overganger annonseres
+  som «Agenda: Jobbes med nå».
+- Kolumnetittelen er `<header aria-label="Agenda">` med `aria-current="step"`. Ellipser og fremdrift er `aria-hidden`.
+- Én `h1` (tittellysbildet), `h2` for lysbildetitler. Inaktive lysbilder er `inert`.
+- Dimmet og dempet er alltid `--color-muted` (≥ 4,5), aldri opasitet (§11.9-regelen gjelder også her).
+
+### 12.12 Sjekkliste for frontend og QA (v2)
+
+- [ ] Alle mål i lp. Tittel, kolumnetittel og folio krympes ikke, bare `[data-fit-box]` (`--slide-fit`).
+- [ ] Tilpasningen måler både høyde og bredde (kode/tabell/kanban). Gulvene `--slide-text-min-lp` og
+      `--slide-mono-min-lp` holdes.
+- [ ] Regelen om foreldreløse lysbilder (§12.7.3). `↑`/`↓` ruller blokken, hintlinjen oppdateres ved rulling.
+- [ ] Kolumnetittel: `full → kort → min`. Skjult på tittel, agenda og overgang. Oppdateres live uten toning.
+- [ ] Overgang: tre tilstander, form og ikke bare farge. Delpunktene uten «(forts.)».
+- [ ] Svart skjerm er #000 i alle temaer. Bare `b`, `.` og `Esc` slår av.
+- [ ] Oversikt: geometrisk pil opp/ned, `aria-activedescendant`, ingen ring rundt rutenettet. Dialoger har ingen ring
+      på selve `<dialog>` (programmatisk fokus, PO-74).
+- [ ] Ingen strek under 2 lp, ingen tekst under 24 lp, ingen Spectral 300 under 112 lp.
+- [ ] `--slide-fade` 0 ved reduced motion. Kanbanglød erstattes av ramme.
+- [ ] Overlegg skaleres med vinduet (`html` font-size i present-modus).
+
+### 12.13 Åpne spørsmål (v2)
+
+1. **Esc i nettleserens fullskjerm.** I fullskjerm tar nettleseren selv første `Esc` (går ut av fullskjerm), og siden
+   får ikke tasten. AK-2-01 («Esc avslutter») krever da to trykk. Forslag: når fullskjerm avsluttes mens vi presenterer,
+   blir vi i presentasjonen (delt vindu i Teams skal virke), og toasten sier «Fullskjerm av · Esc igjen avslutter».
+   Alternativet er Keyboard Lock API, som bare finnes i Chromium. Arkitekt og PO bør bekrefte.
+2. **Foreldreløse lysbilder (§12.7.3)** er en presisering av A2 som PO bør godkjenne. Teksten i spesifikasjonen kan
+   leses slik at blokken alltid skal flyttes.
+3. **`↑`/`↓` til intern rulling** er en ny binding i present-modus. Den må inn i registeret (P2). Er den OK, eller
+   skal rulling bare skje med mus og styreflate?
+4. **Folio og fremdrift på tittellysbildet:** designet viser dem (A5 sier «nederst», uten unntak). I et tidsskrift har
+   tittelsiden ingen folio. Skal vi skjule dem der?
+5. **Gyldige nivåer for `:presenter`:** designet godtar h2–h6. Med h2 blir agendanivået h1 (= tittel), altså uten
+   agenda. Er det riktig tolkning av S4?
+6. **Rullehintet er synlig for publikum** («↓ 38 linjer til»). Det er ærlig og hjelper presentatøren. Alternativet er
+   bare å tone ut kanten.

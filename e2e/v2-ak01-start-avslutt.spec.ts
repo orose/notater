@@ -60,7 +60,7 @@ test.describe('AK-2-01 start og avslutt', () => {
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(y);
   });
 
-  test.fixme('TC-2-01-05 `Esc` etter navigasjon: lesevisningen står ved seksjonen til siste viste lysbilde (Q-07)', async ({ page }) => {
+  test.fixme('TC-2-01-05 `Esc` etter navigasjon: lesevisningen står ved seksjonen for gjeldende lysbilde (PO-87)', async ({ page }) => {
     await openNote(page, s.sti);
     await startPresentasjon(page);
     // Til «Plan Q1» (siste lysbilde).

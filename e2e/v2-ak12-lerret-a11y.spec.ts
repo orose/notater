@@ -56,31 +56,39 @@ test.describe('AK-2-12 lerret i fire vindusstørrelser', () => {
     }
   });
 
-  test.fixme('TC-2-12-03 typografien er skalert opp for avstand: brødtekst ≈ lerrethøyde/27 på et kort lysbilde', async ({ page, isMobile }) => {
+  test.fixme('TC-2-12-03 typografien er skalert opp for avstand: brødtekst ≈ 40 logiske px, større enn lesevisningen ved 1920×1080', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Desktop');
     await page.setViewportSize({ width: 1920, height: 1080 });
     await openNote(page, s.sti);
     const lesefont = await page.locator('main article p').first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     await startPresentasjon(page);
     await gåTilLysbilde(page, 4);
-    const h = (await boks(lerret(page))).height;
     const fs = await lysbildeInnhold(page).locator('p').first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    const t = fasit2.lerret.typografi;
+    expect(Math.abs(fs - t.brodtekstPx), `brødtekst ${fs} lp`).toBeLessThanOrEqual(t.toleransePx * 2);
+    // Ved 1920×1080 er skalaen 1, så logiske px = skjermpiksler.
+    expect((await boks(lerret(page))).width).toBeCloseTo(t.logiskBredde, -1);
     expect(fs).toBeGreaterThan(lesefont * 1.5);
-    expect(Math.abs(fs - h * fasit2.lerret.typografi.brodtekstAndelAvHoyde)).toBeLessThan(h * 0.01);
   });
 
-  test.fixme('TC-2-12-04 typografien skalerer med lerretet: samme forhold ved 1280×720 og 1920×1080', async ({ page, isMobile }) => {
+  test.fixme('TC-2-12-04 lerretet skaleres som helhet: samme logiske skrift og samme oppdeling ved 1280×720 og 1920×1080', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Desktop');
-    const forhold: number[] = [];
+    const målt: { fs: number; skala: number; antall: number }[] = [];
     for (const vp of [{ width: 1280, height: 720 }, { width: 1920, height: 1080 }]) {
       await page.setViewportSize(vp);
-      await presenter(page, s.sti);
+      await presenter(page, fasit2.mye.sti);
+      const antall = (await page.getByTestId('lysbildenummer').innerText()).replace(/.*\/\s*/, '');
       await gåTilLysbilde(page, 4);
-      const h = (await boks(lerret(page))).height;
-      forhold.push((await lysbildeInnhold(page).locator('p').first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize))) / h);
+      målt.push({
+        fs: await lysbildeInnhold(page).locator('p').first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+        skala: (await boks(lerret(page))).width / fasit2.lerret.typografi.logiskBredde,
+        antall: Number(antall),
+      });
       await page.keyboard.press('Escape');
     }
-    expect(Math.abs(forhold[0]! - forhold[1]!)).toBeLessThan(0.002);
+    expect(målt[0]!.fs).toBe(målt[1]!.fs);
+    expect(målt[0]!.antall, 'oppdelingen i «(forts.)» avhenger ikke av vinduet').toBe(målt[1]!.antall);
+    expect(målt[0]!.skala).toBeCloseTo(1280 / 1920, 2);
   });
 });
 
@@ -101,7 +109,7 @@ test.describe('AK-2-12 tilgjengelighet', () => {
     await expect(presentasjon(page)).toHaveAttribute('aria-roledescription', 'lysbildeserie');
     await expect(lysbilde(page)).toHaveAttribute('role', 'group');
     await expect(lysbilde(page)).toHaveAttribute('aria-roledescription', 'lysbilde');
-    await expect(lysbilde(page)).toHaveAttribute('aria-label', new RegExp(`^1 av ${s.lysbilder.length}`));
+    await expect(lysbilde(page)).toHaveAttribute('aria-label', new RegExp(`1 av ${s.lysbilder.length}`));
     // Lesevisningen bak er skjult for hjelpemidler (inert/aria-hidden), ikke bare visuelt.
     await expect(page.getByRole('navigation', { name: 'Vault' })).toBeHidden();
   });

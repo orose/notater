@@ -52,10 +52,20 @@ export interface V2Fasit {
   readonly statusmote: FasitNotat & {
     readonly tittellysbilde: { readonly ingress: string; readonly properties: readonly string[]; readonly skjult: readonly string[]; readonly endret: string };
     readonly startFraSeksjon: Readonly<Record<string, number>>;
-    readonly live: { readonly agendaFra: string; readonly agendaTil: string; readonly slettSeksjon: string; readonly etterSletting: string };
+    readonly live: {
+      readonly agendaFra: string;
+      readonly agendaTil: string;
+      readonly slettSeksjon: string;
+      readonly etterSletting: { readonly type: LysbildeType; readonly agendapunkt: string; readonly n: number; readonly av: number };
+    };
+    /** ADR-010 §4: `?lysbilde=<id>` → lysbildenummer. */
+    readonly urlIder: Readonly<Record<string, number>>;
+    readonly lenke: { readonly lysbilde: number; readonly tekst: string; readonly mål: string };
   };
   readonly rapport: FasitNotat & { readonly aldriSynlig: readonly string[] };
-  readonly delte: FasitNotat;
+  readonly delte: FasitNotat & { readonly urlIder: Readonly<Record<string, number>> };
+  readonly ukjentUrlId: { readonly id: string; readonly gir: number };
+  readonly tagger: { readonly sti: string; readonly tagg: string };
   readonly mye: {
     readonly sti: string;
     readonly agenda: readonly string[];
@@ -86,9 +96,16 @@ export interface V2Fasit {
     readonly forhold: number;
     readonly toleranse: number;
     readonly viewports: readonly { readonly width: number; readonly height: number }[];
-    readonly typografi: { readonly brodtekstAndelAvHoyde: number; readonly minimumAndelAvHoyde: number; readonly toleransePx: number };
+    /** Logiske px (lerretet er 1920×1080 før `transform: scale`, ADR-010 §2; PO-86). */
+    readonly typografi: {
+      readonly logiskBredde: number;
+      readonly logiskHoyde: number;
+      readonly brodtekstPx: number;
+      readonly minimumPx: number;
+      readonly toleransePx: number;
+    };
   };
-  readonly taster: Readonly<Record<'start' | 'neste' | 'forrige' | 'forste' | 'siste' | 'oversikt' | 'svart' | 'palett' | 'hjelp' | 'avslutt', readonly string[]>> & {
+  readonly taster: Readonly<Record<'start' | 'neste' | 'forrige' | 'forste' | 'siste' | 'oversikt' | 'svart' | 'fullskjerm' | 'palett' | 'hjelp' | 'avslutt', readonly string[]>> & {
     readonly presentModus: string;
     readonly nyeGrupper: readonly string[];
     readonly kommandoer: readonly string[];
@@ -340,7 +357,10 @@ export function kuttetInnhold(page: Page): Promise<string[]> {
   });
 }
 
-/** Minste beregnede skriftstørrelse for tekst i lysbildets innhold (px). */
+/**
+ * Minste beregnede skriftstørrelse for tekst i lysbildets innhold, i **logiske** px: lerretet er 1920×1080 og
+ * skaleres med `transform` (ADR-010 §2), så `getComputedStyle().fontSize` er uavhengig av vindusstørrelsen.
+ */
 export function minsteSkrift(page: Page): Promise<number> {
   return lysbildeInnhold(page).evaluate((root) => {
     let min = Infinity;

@@ -101,7 +101,8 @@
     "agendapunkt": "Relativt nær framtid",
     "progresjon": "1/1",
     "inneholder": [
-     "STATUS-PLAN"
+     "STATUS-PLAN",
+     "Månedsrapport oktober"
     ],
     "tabell": true,
     "fotnote": "Avhenger av kapasitet i plattformteamet."
@@ -117,8 +118,26 @@
    "agendaFra": "## Jobbes med nå",
    "agendaTil": "## Pågår nå",
    "slettSeksjon": "### Leveranse B – tastaturmotor",
-   "etterSletting": "Leveranse A – lesekomfort",
-   "avklaring": "Q-06 (nærmeste = forrige gjenværende lysbilde)"
+   "etterSletting": {
+    "type": "overgang",
+    "agendapunkt": "Jobbes med nå",
+    "n": 5,
+    "av": 9
+   },
+   "$kommentar": "ADR-010 §5 resolveSlide: eksakt id → kortere suffiks → strukturell adresse → nærmeste nabo (etterfølgere før forgjengere). Slettet «Leveranse B» (SS #2) har ingen strukturell tvilling, så etterfølgeren (overgangen til «Jobbes med nå») vises."
+  },
+  "urlIder": {
+   "tittel": 1,
+   "agenda": 2,
+   "overgang.siden-sist": 3,
+   "oppgaver": 7,
+   "overgang.jobbes-med-nå": 6,
+   "plan-q1": 10
+  },
+  "lenke": {
+   "lysbilde": 10,
+   "tekst": "Månedsrapport oktober",
+   "mål": "presentasjon/Månedsrapport oktober"
   }
  },
  "rapport": {
@@ -309,7 +328,12 @@
      "DELT-6"
     ]
    }
-  ]
+  ],
+  "urlIder": {
+   "arkitektur": 4,
+   "arkitektur.del2": 5,
+   "arkitektur.del3": 6
+  }
  },
  "mye": {
   "sti": "presentasjon/Mye innhold",
@@ -907,6 +931,7 @@
   "ugyldige": [
    "h1",
    "h7",
+   "h9",
    "hx",
    "4"
   ],
@@ -941,9 +966,11 @@
    }
   ],
   "typografi": {
-   "$kommentar": "QA-forslag (Q-08), relativt til lerretets høyde: brødtekst ≈ høyde/27 (40 px ved 1080), minimum ≈ høyde/45 (24 px ved 1080).",
-   "brodtekstAndelAvHoyde": 0.037037037037037035,
-   "minimumAndelAvHoyde": 0.022222222222222223,
+   "$kommentar": "ADR-010 §2 + PO-86: fast logisk lerret 1920×1080 skalert med transform; beregnet font-size er i logiske px. Brødtekst ≈ 40 lp, minimum ≈ 30 lp (faktor ≈ 0,75, per typesett).",
+   "logiskBredde": 1920,
+   "logiskHoyde": 1080,
+   "brodtekstPx": 40,
+   "minimumPx": 30,
    "toleransePx": 1.5
   }
  },
@@ -993,11 +1020,30 @@
   "kommandoer": [
    ":presenter",
    ":presenter h<n>",
-   ":agenda av"
+   ":presenter auto",
+   ":agenda av",
+   ":agenda på",
+   ":fullskjerm",
+   ":oversikt",
+   ":svart",
+   ":avslutt"
+  ],
+  "fullskjerm": [
+   "f"
   ]
  },
  "ytelse": {
   "lysbildebytteP95Ms": 100,
   "startRapport20EmbedsMs": 500
+ },
+ "ukjentUrlId": {
+  "id": "finnes-ikke",
+  "gir": 1,
+  "$kommentar": "PO-91: ukjent lysbilde-id ved ny lasting → tittellysbildet"
+ },
+ "tagger": {
+  "sti": "oppgaver/Refaktorer logging",
+  "tagg": "task",
+  "$kommentar": "PO-90: tagger vises ikke på tittellysbildet"
  }
 }

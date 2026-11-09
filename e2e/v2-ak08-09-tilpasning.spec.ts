@@ -5,7 +5,6 @@
 // Testplan: TC-2-08-*, TC-2-09-*. TDD: `test.fixme` til levert.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { Page } from '@playwright/test';
 import { expect, test } from './support/guards';
 import {
   boks,
@@ -28,9 +27,9 @@ import {
 const VIEWPORT = { width: 1440, height: 900 };
 const typo = fasit2.lerret.typografi;
 
-/** Skriftminimum i px for gjeldende lerret (Q-08). */
-async function minimumPx(page: Page): Promise<number> {
-  return (await boks(lerret(page))).height * typo.minimumAndelAvHoyde - typo.toleransePx;
+/** Skriftminimum i logiske px (PO-86: ≈ 30 px på 1920×1080-lerretet). Uavhengig av vindusstørrelsen (ADR-010 §2). */
+function minimumPx(): number {
+  return typo.minimumPx - typo.toleransePx;
 }
 
 /** Nummeret til første lysbilde med denne overskriften. */
@@ -55,7 +54,7 @@ test.describe('AK-2-08 for mye innhold', () => {
       overskrifter.push(l.overskrift ?? '');
       deler.push(await lysbildeInnhold(page).innerText());
       expect(await kuttetInnhold(page), `del ${deler.length}`).toEqual([]);
-      expect(await minsteSkrift(page), `skrift ≥ minimum, del ${deler.length}`).toBeGreaterThanOrEqual(await minimumPx(page));
+      expect(await minsteSkrift(page), `skrift ≥ minimum, del ${deler.length}`).toBeGreaterThanOrEqual(minimumPx());
       await page.keyboard.press('j');
     }
     expect(deler.length).toBeGreaterThanOrEqual(m.minstDeler);
@@ -79,7 +78,7 @@ test.describe('AK-2-08 for mye innhold', () => {
     await page.keyboard.press('Shift+G');
     const kort = await minsteSkrift(page);
     expect(lang).toBeLessThan(kort);
-    expect(kort).toBeGreaterThanOrEqual((await boks(lerret(page))).height * typo.brodtekstAndelAvHoyde - typo.toleransePx);
+    expect(kort).toBeGreaterThanOrEqual(typo.brodtekstPx - typo.toleransePx);
   });
 
   test.fixme('TC-2-08-03 et listepunkt deles aldri mellom to lysbilder', async ({ page }) => {
@@ -115,7 +114,7 @@ test.describe('AK-2-08 for mye innhold', () => {
       return { rullbar: !!rul, fs: parseFloat(getComputedStyle(el.querySelector('code') ?? el).fontSize), fokuserbar: (rul as HTMLElement | undefined)?.tabIndex ?? -1 };
     });
     expect(r.rullbar, 'kodeblokken ruller internt').toBe(true);
-    expect(r.fs).toBeGreaterThanOrEqual(await minimumPx(page));
+    expect(r.fs).toBeGreaterThanOrEqual(minimumPx());
     expect(r.fokuserbar, 'rullbar flate kan nås med tastatur (WCAG 2.1.1)').toBeGreaterThanOrEqual(0);
     expect(await kuttetInnhold(page)).toEqual([]);
     await page.keyboard.press('j');

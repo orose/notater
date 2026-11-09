@@ -204,11 +204,12 @@ test.describe('AK-2-03 lysbildenivå (S4)', () => {
     expect(sjekksum(vaultDir)).toEqual(før);
   });
 
-  test.fixme('TC-2-03-05 `:presenter h3` tilbakestiller til standard for notatet', async ({ page }) => {
+  test.fixme('TC-2-03-05 `:presenter auto` fjerner det lagrede nivået (ADR-010 §7)', async ({ page }) => {
     await presenter(page, n.sti, 'h4');
     await avsluttPresentasjon(page);
-    await presenter(page, n.sti, 'h3');
+    await presenter(page, n.sti, 'auto');
     await avsluttPresentasjon(page);
+    expect(await page.evaluate(() => localStorage.getItem('vault-leser.presentasjon') ?? '')).not.toMatch(/Lysbildeniv/);
     await presenter(page, n.sti);
     expect(await lesAlleLysbilder(page)).toEqual(n.h3.lysbilder.map(somFasit));
   });

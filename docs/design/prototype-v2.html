@@ -656,9 +656,11 @@
    v2 – Presentasjonsmodus (designsystem §12)
    Lerretet er et logisk 1920 × 1080-rom. Alle mål i presentasjonen er i «lerretpiksler» (lp):
      1 lp = 1/1920 av lerretets bredde = 1 px ved 1080p, 0,667 px ved 720p.
-   Fordi alt er relativt til lerretet, blir layout, krymping (A2) og «(forts.)»-deling IDENTISK i et
-   1280-vindu, på projektor, i Teams-deling og i oversiktens miniatyrer. Lerretet har
-   container-type: size; --lp evalueres der den brukes (nærmeste container), så miniatyrer skalerer gratis.
+   ADR-010: lerretet er ALLTID 1920 × 1080 CSS-px og skaleres til vinduet med transform: scale(--stage-scale),
+   så 1 lp = 1 px i både visning og måling. Layout, krymping (A2) og «(forts.)»-deling blir dermed identisk i et
+   1280-vindu, på projektor og i Teams-deling. Lerretet har container-type: size; --lp evalueres der den brukes
+   (nærmeste container), så miniatyrer i oversikten (mindre container, uten transform) skalerer gratis.
+   Krympefaktoren settes per lysbilde som --slide-fit (1 … text-min/body) og multipliseres med brødtekst-tokenene.
    Tall med suffiks -lp er rene tall som JS leser med getComputedStyle (som --leader-delay i v1.1).
    ========================================================================== */
 :root {
@@ -683,6 +685,7 @@
 
   /* --- A2 Automatisk tilpasning (JS leser -lp-tallene) --- */
   --slide-fit-step: 0.025;          /* innholdet krympes i steg à 2,5 % til det passer eller når minimum */
+  --slide-figure-min: calc(260 * var(--lp));  /* minstehøyde for Mermaid/bilde i måling; vokser inn i ledig plass i visning */
   --slide-mono-min-lp: 24;          /* kode, tabell, kanban, kolumnetittel: aldri under 24 lp (16 px ved 720p) */
 
   /* --- Bevegelse og lag --- */
@@ -695,7 +698,7 @@
    lesbart fra bakerste rad i et møterom og i et Teams-vindu på 960 px. */
 [data-type="tidsskrift"] {
   --slide-body-lp: 40;              /* brødtekst ved fit = 1 */
-  --slide-text-min-lp: 30;          /* A2-minimum for brødtekst → fit-min 0,75 */
+  --slide-text-min-lp: 30;          /* A2-minimum for brødtekst → fit-min 0,75 (PO-86) */
   --slide-mono-ratio: 0.8;          /* kode = 0,8 × brødtekst → 32 lp, ved minimum 24 lp */
   --slide-step-n2: calc(26 * var(--lp));   /* kolumnetittel, folio, fotnoter */
   --slide-step-n1: calc(30 * var(--lp));   /* bildetekst, properties, metadata, delpunkter */
@@ -795,9 +798,11 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .present { position: fixed; inset: 0; }
 .present.is-idle, .present.is-idle * { cursor: none !important; }
 .stage { position: absolute; inset: 0; display: grid; place-items: center; background: var(--color-letterbox); }
+.canvas-box { position: relative; width: calc(1920px * var(--stage-scale, 1)); height: calc(1080px * var(--stage-scale, 1)); flex: none; }
+/* ADR-010: lerretet er alltid 1920 × 1080 logiske px; visningen skaleres med transform (1 lp = 1 px) */
 .canvas {
-  position: relative; width: min(100vw, calc(100vh * 16 / 9)); width: min(100vw, calc(100dvh * 16 / 9));
-  aspect-ratio: 16 / 9; container-type: size; overflow: hidden;
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform: scale(var(--stage-scale, 1)); transform-origin: 0 0;
+  container-type: size; overflow: hidden;
   background: var(--color-bg); color: var(--color-text);
   font-family: var(--font-body); font-weight: var(--slide-weight-body); line-height: var(--slide-leading);
   font-variant-ligatures: common-ligatures; hanging-punctuation: first allow-end last;
@@ -877,11 +882,11 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 [data-type="tidsskrift"] .kicker-forts { font-style: italic; }
 [data-type="terminal"] .kicker-forts { font-family: var(--font-meta); }
 
-/* ---------- Innholdslysbilde: kropp (A2: --fit settes av JS) ---------- */
+/* ---------- Innholdslysbilde: kropp (A2: --slide-fit settes av JS, ADR-010) ---------- */
 .slide-body {
   --mono-floor: calc(var(--slide-mono-min-lp) * var(--lp));
   flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--slide-flow);
-  font-size: calc(var(--slide-step-0) * var(--fit, 1)); overflow: hidden;
+  font-size: calc(var(--slide-step-0) * var(--slide-fit, 1)); overflow: hidden;
   /* hengende tankestreker, «§» og anførselstegn skal ikke klippes: kroppen strekker seg inn i margen */
   margin-inline: calc(-1 * var(--slide-hang)); padding-inline: var(--slide-hang);
 }
@@ -948,7 +953,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .scroll-hint .k { font-size: 0.85em; }
 
 /* ---------- Diagram (Mermaid): skaleres til plassen som er igjen ---------- */
-.s-diagram { flex: 1 1 0 !important; min-height: calc(260 * var(--lp)); display: flex; flex-direction: column; counter-increment: fig; }
+.s-diagram { flex: 1 1 0 !important; min-height: var(--slide-figure-min); display: flex; flex-direction: column; counter-increment: fig; }
 .s-diagram .frame { flex: 1 1 0; min-height: 0; display: flex; padding: 0.4em 0.5em; background: var(--color-surface); border: var(--slide-hair) solid var(--color-rule); border-radius: var(--radius-l); }
 .s-diagram svg { width: 100%; height: 100%; font-family: var(--font-ui); overflow: visible; }
 .s-diagram figcaption { flex: none; margin-top: 0.45em; font-size: var(--slide-step-n2); color: var(--color-muted); }
@@ -1062,7 +1067,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .t-props a { color: var(--color-text); text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: max(1px, calc(3 * var(--lp))); text-underline-offset: 0.2em; }
 [data-type="tidsskrift"] .t-props { border-top: var(--slide-rule-heavy) solid var(--color-text); }
 [data-type="tidsskrift"] .t-props dt { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: var(--tracking-sc); }
-.t-foot { grid-area: foot; display: flex; justify-content: space-between; align-items: baseline; gap: 2em; padding-top: calc(20 * var(--lp)); border-top: var(--slide-hair) solid var(--color-rule-strong); font-size: var(--slide-step-n2); color: var(--color-muted); }
+.t-foot { grid-area: foot; display: flex; justify-content: flex-start; align-items: baseline; gap: 2em; padding-top: calc(20 * var(--lp)); border-top: var(--slide-hair) solid var(--color-rule-strong); font-size: var(--slide-step-n2); color: var(--color-muted); }
 .t-foot .tags { display: flex; gap: 0.8em; color: var(--color-accent); }
 [data-type="tidsskrift"] .t-foot .tags { font-style: italic; }
 [data-type="terminal"] .t-foot .tags, [data-type="klartekst"] .t-foot .tags { font-family: var(--font-meta); }
@@ -1089,7 +1094,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 /* ---------- L2 Agenda og L3 Overgang (samme oppsett: overgangen er agendaen med «du er her») ---------- */
 .ag-label { flex: none; margin: 0 0 calc(40 * var(--lp)); font-family: var(--font-display); font-size: var(--slide-step-2); font-weight: var(--slide-weight-title); line-height: 1.06; letter-spacing: var(--tracking-display); }
-.ag-body { flex: 1 1 auto; min-height: 0; overflow: hidden; font-size: calc(var(--slide-step-3) * var(--fit, 1));
+.ag-body { flex: 1 1 auto; min-height: 0; overflow: hidden; font-size: calc(var(--slide-step-3) * var(--slide-fit, 1));
   margin-left: calc(-1 * var(--slide-margin-x)); padding-left: var(--slide-margin-x); }
 .ag-list { list-style: none; margin: 0; padding: 0; max-width: calc(1440 * var(--lp)); }
 .ag-cols { display: flex; justify-content: flex-end; max-width: calc(1440 * var(--lp)); margin-bottom: 0.3em; font-size: var(--slide-step-n2); color: var(--color-muted); }
@@ -1143,7 +1148,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .m-bar, .m-top, .m-hint { display: none; }
 @media (max-aspect-ratio: 1/1) {
   .stage { display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 14px; padding: max(12px, env(safe-area-inset-top)) 0 max(12px, env(safe-area-inset-bottom)); }
-  .canvas { width: 100vw; flex: none; }
   .p-ctrl { display: none; }
   .m-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; }
   .m-top .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); font-size: 0.9rem; }
@@ -1188,6 +1192,7 @@ svg.i { width: 1.1em; height: 1.1em; stroke: currentColor; fill: none; stroke-wi
 
 /* ---------- Palett (:) og oppslagskort (?) – som v1.1, i present-modus ---------- */
 dialog { color: var(--color-text); }
+dialog:focus, dialog:focus-visible { outline: none; }  /* programmatisk fokusmål, jf. PO-74 */
 dialog::backdrop { background: var(--color-overlay); }
 .palette { width: min(40rem, calc(100vw - 2rem)); margin: 12vh auto auto; padding: 0; background: var(--color-bg); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-l); font-family: var(--font-ui); }
 [data-type="tidsskrift"] .palette { border-radius: 0; border-top: 3px solid var(--color-cmd); }
@@ -1212,7 +1217,7 @@ dialog::backdrop { background: var(--color-overlay); }
 .p-err code { font-family: var(--font-mono); font-size: 0.9em; color: var(--color-text); }
 .p-foot { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; padding: 0.55rem 1rem; border-top: 1px solid var(--color-rule); font-family: var(--font-meta); font-size: 0.75rem; color: var(--color-muted); }
 .p-foot .mode { color: var(--color-cmd); }
-.refcard { width: min(46rem, calc(100vw - 2rem)); padding: 1.6rem 1.8rem 1.4rem; background: var(--color-bg); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-l); font-family: var(--font-ui); }
+.refcard { width: min(56rem, calc(100vw - 2rem)); padding: 1.6rem 1.8rem 1.4rem; background: var(--color-bg); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-l); font-family: var(--font-ui); }
 [data-type="tidsskrift"] .refcard { border-radius: 0; border-top: 3px solid var(--color-text); }
 [data-type="terminal"] .refcard { box-shadow: 6px 6px 0 var(--color-rule-strong); }
 .rc-man { display: none; justify-content: space-between; font-family: var(--font-meta); font-size: 0.75rem; color: var(--color-muted); margin-bottom: 0.8rem; }
@@ -1220,12 +1225,12 @@ dialog::backdrop { background: var(--color-overlay); }
 .refcard h2 { margin: 0; font-family: var(--font-display); font-weight: var(--weight-h2); font-size: var(--step-3); line-height: 1.1; }
 [data-type="tidsskrift"] .refcard h2 { font-style: italic; font-weight: 300; }
 .rc-sub { margin: 0.3rem 0 1.2rem; color: var(--color-muted); }
-.rc-cols { columns: 2 19rem; column-gap: 2.2rem; }
+.rc-cols { columns: 2 24rem; column-gap: 2.4rem; }
 .rc-group { break-inside: avoid; margin-bottom: 1.1rem; }
 .rc-group h3 { margin: 0 0 0.4rem; padding-top: 0.4rem; font-size: 0.8rem; font-family: var(--font-meta); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted); font-weight: 500; border-top: 1px solid var(--color-rule-strong); }
 [data-type="tidsskrift"] .rc-group h3 { font-family: var(--font-sc); text-transform: lowercase; font-size: 1rem; border-top: 1.5px solid var(--color-text); }
 [data-type="terminal"] .rc-group h3 { color: var(--color-accent); border-top: 0; }
-.rc-row { display: grid; grid-template-columns: 9.5rem 1fr; gap: 0.75rem; padding: 0.32rem 0; align-items: baseline; font-size: 0.95rem; }
+.rc-row { display: grid; grid-template-columns: 12.5rem 1fr; gap: 0.75rem; padding: 0.32rem 0; align-items: baseline; font-size: 0.95rem; }
 .rc-row + .rc-row { border-top: 1px solid var(--color-rule); }
 [data-type="terminal"] .rc-row + .rc-row { border-top: 0; }
 .rc-foot { margin: 0.8rem 0 0; font-size: 0.85rem; color: var(--color-muted); }
@@ -1268,7 +1273,7 @@ dialog::backdrop { background: var(--color-overlay); }
       <button class="m-btn" id="m-exit" aria-label="Avslutt presentasjonen"><svg class="i"><use href="#i-x"/></svg></button>
       <span class="ttl" id="m-title"></span>
     </div>
-    <div class="canvas" id="canvas" role="region" aria-roledescription="presentasjon">
+    <div class="canvas-box" id="canvas-box"><div class="canvas" id="canvas" role="region" aria-roledescription="presentasjon">
       <div id="slides"></div>
       <header class="runhead" id="runhead" aria-label="Agenda"><ol></ol></header>
       <div class="kicker-forts" id="kicker" hidden></div>
@@ -1281,7 +1286,7 @@ dialog::backdrop { background: var(--color-overlay); }
         <button class="p-btn" id="btn-exit">Avslutt <span class="k">Esc</span></button>
       </div>
       <div class="debug" id="debug" hidden></div>
-    </div>
+    </div></div>
     <nav class="m-bar" aria-label="Lysbilder">
       <button class="m-btn" id="m-prev" aria-label="Forrige lysbilde"><svg class="i"><use href="#i-prev"/></svg></button>
       <span class="folio-m" id="m-folio"></span>
@@ -1315,7 +1320,7 @@ dialog::backdrop { background: var(--color-overlay); }
   <h2 id="rc-h">Hurtigtaster</h2>
   <p class="rc-sub">Presentasjonsmodus · gjelder til du avslutter med <span class="k">Esc</span></p>
   <div class="rc-cols" id="rc-cols"></div>
-  <p class="rc-foot">Bare som kommando: <code>:agenda av</code> <code>:presenter h‹n›</code> <code>:tema</code> <code>:palett</code> <code>:lys</code> <code>:mørk</code><br><span class="k">Esc</span> eller <span class="k">?</span> lukker.</p>
+  <p class="rc-foot">Bare som kommando: <code>:agenda av</code> <code>:fullskjerm</code> <code>:presenter h‹n›</code> <code>:tema</code> <code>:palett</code> <code>:lys</code> <code>:mørk</code><br><span class="k">Esc</span> eller <span class="k">?</span> lukker.</p>
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1541,7 +1546,7 @@ function agendaHtml(cur) {
 function sectionPages() { const p = []; state.slides.forEach((s, i) => { if (s.sec >= 0 && p[s.sec] == null && (s.kind === 'overgang' || s.kind === 'innhold')) p[s.sec] = i + 1; }); return p; }
 function slideHtml(s) {
   const d = deck();
-  if (s.kind === 'tittel') return `<p class="t-kick">${d.path.map((p) => `<span>${p}</span>`).join('<span class="sep">/</span>')}</p><h1 class="t-title">${d.title}</h1>${d.dek ? `<p class="t-dek">${d.dek}</p>` : ''}${d.pre ? `<p class="t-pre">${d.pre}</p>` : ''}<dl class="t-props">${d.props.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl><div class="t-foot"><span class="tags">${d.tags.map((t) => `<span>${t}</span>`).join('')}</span><span class="meta">${d.meta}</span></div>`;
+  if (s.kind === 'tittel') return `<p class="t-kick">${d.path.map((p) => `<span>${p}</span>`).join('<span class="sep">/</span>')}</p><h1 class="t-title">${d.title}</h1>${d.dek ? `<p class="t-dek">${d.dek}</p>` : ''}${d.pre ? `<p class="t-pre">${d.pre}</p>` : ''}<dl class="t-props">${d.props.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl><div class="t-foot"><span class="meta">${d.meta}</span></div>`;
   if (s.kind === 'agenda') return agendaHtml(null);
   if (s.kind === 'overgang') return agendaHtml(s.sec);
   const title = s.title ? `<h2 class="slide-title">${s.sec >= 0 ? `<span class="sec-no">${secNo(s.sec)}</span>` : ''}${s.title}${s.forts ? ' <span class="forts">(forts.)</span>' : ''}</h2>` : '';
@@ -1567,8 +1572,8 @@ function fit(el) {
   const isAgenda = el.dataset.kind !== 'innhold';
   const min = isAgenda ? 0.55 : num('--slide-text-min-lp') / num('--slide-body-lp');
   const step = num('--slide-fit-step') || 0.025;
-  let f = 1; box.style.setProperty('--fit', 1);
-  while (overflows(box) && f > min + 1e-6) { f = Math.max(min, +(f - step).toFixed(3)); box.style.setProperty('--fit', f); }
+  let f = 1; box.style.setProperty('--slide-fit', 1);
+  while (overflows(box) && f > min + 1e-6) { f = Math.max(min, +(f - step).toFixed(3)); box.style.setProperty('--slide-fit', f); }
   el.dataset.fit = f.toFixed(3);
   return f;
 }
@@ -1705,6 +1710,20 @@ function moveCursor(d, vertical) {
 /* ---------- Svart skjerm ---------- */
 function setBlack(on) { state.black = on; $('#blackout').classList.toggle('is-on', on); $('#announcer').textContent = on ? 'Svart skjerm. Trykk b eller punktum for å fortsette.' : `Lysbilde ${state.i + 1} av ${state.slides.length}: ${slideName(state.slides[state.i])}`; }
 
+/* ---------- Fullskjerm (f, :fullskjerm – PO-88) ---------- */
+function toggleFs() {
+  if (document.fullscreenElement) document.exitFullscreen?.();
+  else document.documentElement.requestFullscreen?.().catch(() => toast('<b>Fullskjerm ble ikke tillatt</b><span class="muted">Presentasjonen virker også i vindu, f.eks. ved deling av ett vindu i Teams.</span>'));
+}
+
+/* ---------- Skalering (ADR-010): k = min(b/1920, h/1080), satt som --stage-scale ---------- */
+function fitStage() {
+  const portrait = matchMedia('(max-aspect-ratio: 1/1)').matches;
+  const k = portrait ? innerWidth / 1920 : Math.min(innerWidth / 1920, innerHeight / 1080);
+  root.style.setProperty('--stage-scale', k);
+}
+new ResizeObserver(fitStage).observe(document.documentElement); fitStage();
+
 /* ---------- Toast ---------- */
 let toastT;
 function toast(html, ms) { const t = $('#toast'); t.innerHTML = html; t.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('is-on'), ms || num('--hint-linger') || 4000); }
@@ -1715,6 +1734,7 @@ const CMDS = [
   { g: 'Presentasjon', c: 'agenda på', n: 'Vis overgangslysbilder', run: () => setAgenda(true) },
   { g: 'Presentasjon', c: 'presenter h‹n›', n: 'Velg lysbildenivå (huskes per notat)', fill: 'presenter h' },
   { g: 'Presentasjon', c: 'oversikt', n: 'Oversikt over alle lysbilder', keys: '<span class="k">o</span>', run: () => openOverview() },
+  { g: 'Presentasjon', c: 'fullskjerm', n: 'Fullskjerm av / på', keys: '<span class="k">f</span>', now: () => (document.fullscreenElement ? 'nå: på' : 'nå: av'), run: () => toggleFs() },
   { g: 'Presentasjon', c: 'svart', n: 'Svart skjerm', keys: '<span class="k">b</span><span class="alt">/</span><span class="k">.</span>', run: () => setBlack(true) },
   { g: 'Visning', c: 'tema tidsskrift', n: 'Typesett Tidsskrift', run: () => setTheme('type', 'tidsskrift') },
   { g: 'Visning', c: 'tema terminal', n: 'Typesett Terminal', run: () => setTheme('type', 'terminal') },
@@ -1762,8 +1782,8 @@ function presenterLevel(arg) {
 const K = (...k) => k.map((x) => (x === '/' ? '<span class="alt">/</span>' : `<span class="k${x === 'Space' ? ' lead' : ''}">${x}</span>`)).join('');
 const REF = [
   ['Navigasjon', [[K('j', '/', '→', '/', 'n', '/', 'Space', '/', 'PgDn'), 'Neste lysbilde'], [K('k', '/', '←', '/', 'p', '/', 'PgUp'), 'Forrige lysbilde'], [K('g') + K('g') + ' ' + K('/', 'G'), 'Første / siste lysbilde'], [K('↑', '/', '↓'), 'Rull i en blokk som ikke får plass']]],
-  ['Visning', [[K('o'), 'Oversikt over alle lysbilder'], [K('b', '/', '.'), 'Svart skjerm av / på']]],
-  ['Kommandoer', [[K(':'), 'Kommandopalett'], [K('?'), 'Denne oversikten'], [K('Esc'), 'Lukk oversikt eller palett, ellers avslutt']]],
+  ['Visning', [[K('o'), 'Oversikt over alle lysbilder'], [K('f'), 'Fullskjerm av / på'], [K('b', '/', '.'), 'Svart skjerm av / på']]],
+  ['Kommandoer', [[K(':'), 'Kommandopalett'], [K('?'), 'Denne oversikten'], [K('Esc'), 'Lukk oversikt eller palett, ellers avslutt til seksjonen du står i']]],
 ];
 function openRef() { $('#rc-cols').innerHTML = REF.map(([g, rows]) => `<section class="rc-group"><h3>${g}</h3>${rows.map(([k, t]) => `<div class="rc-row"><span>${k}</span><span>${t}</span></div>`).join('')}</section>`).join(''); $('#refcard').showModal(); }
 
@@ -1787,7 +1807,7 @@ function exitPresent() {
   $('#present').hidden = true; $('#reader').hidden = false;
   $('#r-crumb').textContent = d.path.join(' / '); $('#r-title').textContent = d.title;
   $('#r-outline').innerHTML = d.noHeadings ? '<li>(notatet har ingen overskrifter)</li>' : d.sections.map((x, k) => `<li class="${k === s.sec ? 'here' : ''}"><span>${x.title}</span><ol>${x.slides.map((y) => `<li${y.title === s.title ? ' class="here"' : ''}><span>${y.title}</span></li>`).join('')}</ol></li>`).join('');
-  $('#reader').focus(); toast('<b>Presentasjonen er avsluttet</b><span class="muted">Du står der du var. <span class="k lead">Space</span><span class="k">p</span> starter igjen.</span>', 2500);
+  $('#reader').focus(); toast(`<b>Presentasjonen er avsluttet</b><span class="muted">Du står ved «${esc(s.title || (s.sec >= 0 ? d.sections[s.sec].title : d.title))}». <span class="k lead">Space</span><span class="k">p</span> starter herfra.</span>`, 3000);
 }
 function enterPresent() { $('#reader').hidden = true; $('#present').hidden = false; go(state.i); }
 
@@ -1820,6 +1840,7 @@ addEventListener('keydown', (e) => {
   else if (k === 'G') go(state.slides.length - 1);
   else if (k === 'o') { e.preventDefault(); openOverview(); }
   else if (k === 'b' || k === '.') setBlack(true);
+  else if (k === 'f') toggleFs();
   else if (k === ':') { e.preventDefault(); openPalette(); }
   else if (k === '?') { e.preventDefault(); openRef(); }
   else if (k === 'Escape') exitPresent();
@@ -1851,6 +1872,7 @@ build().then(() => {
   if (state.live && Q.get('live') === '1') simulateLive();
   if (Q.get('hint') === '1') toast('<b>Presentasjon</b><span class="muted"><span class="k">Esc</span> avslutter · <span class="k">o</span> oversikt · <span class="k">?</span> taster</span>', 60000);
   if (state.deckId === 'uten-overskrifter' && Q.get('hint') !== '0') hintNoHeadings();
+  else if (Q.get('s') && Q.get('hint') !== '0' && Q.get('hint') !== '1' && !o) toast('<b>Lysbilde ' + (state.i + 1) + '</b><span class="muted">Nettleseren går ut av fullskjerm ved ny lasting. <span class="k">f</span> slår den på igjen.</span>');
 });
 </script>
 </body>

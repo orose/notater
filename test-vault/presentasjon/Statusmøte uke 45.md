@@ -87,7 +87,7 @@ Markør STATUS-FLYT.
 | Februar | PDF-eksport (forstudie) | Ola |
 | Mars | Presentatørvisning (forstudie) | Per |
 
-Planen er foreløpig.[^plan]
+Planen er foreløpig.[^plan] Detaljer i [[Månedsrapport oktober]].
 
 [^plan]: Avhenger av kapasitet i plattformteamet.
 
