@@ -21,6 +21,7 @@ import {
   svartSkjerm,
   ventPåLysbilde,
   ventPåPresentasjon,
+  ventPåRoligLysbilde,
 } from './support/v2';
 import { hurtigtastoversikt, kjørKommando, leaderHint, trykkNorsk } from './support/v11';
 
@@ -85,10 +86,26 @@ test.describe('AK-2-10 navigasjonstaster', () => {
 
   test('TC-2-10-05 Space i present-modus er «neste», ikke leader: ingen which-key, ingen forsinkelse', async ({ page }) => {
     await presenter(page, s.sti);
-    const t0 = Date.now();
+    // Målt i nettleseren fra keydown til lysbilde 2 er i DOM (sluttest: målt i Node ga 613 ms under full last,
+    // som er Playwright-rundtur, ikke ventetid i appen). Grensen er den samme: under leader-tidsavbruddet (~400 ms).
+    await page.evaluate(() => {
+      const w = window as unknown as { __space?: Promise<number> };
+      w.__space = new Promise<number>((resolve) => {
+        let t0 = 0;
+        addEventListener('keydown', () => (t0 = performance.now()), { capture: true, once: true });
+        const obs = new MutationObserver(() => {
+          if (t0 && document.querySelector('[data-testid="lysbilde"][data-slide-index="2"]')) {
+            obs.disconnect();
+            resolve(performance.now() - t0);
+          }
+        });
+        obs.observe(document.body, { subtree: true, childList: true, attributes: true });
+      });
+    });
     await page.keyboard.press(' ');
     await ventPåLysbilde(page, 2);
-    expect(Date.now() - t0, 'Space venter ikke på en leader-sekvens').toBeLessThan(350);
+    const ms = await page.evaluate(() => (window as unknown as { __space: Promise<number> }).__space);
+    expect(ms, `Space venter ikke på en leader-sekvens (${Math.round(ms)} ms)`).toBeLessThan(350);
     await page.waitForTimeout(500);
     await expect(leaderHint(page)).toBeHidden();
     // `Space p` i present-modus = neste + forrige (ikke «start presentasjon» på nytt).
@@ -416,6 +433,8 @@ test.describe('AK-2-11 URL og reload', () => {
   test('TC-2-11-16 lenke på et lysbilde åpner målet og forlater presentasjonen; Tilbake går inn igjen (PO-89)', async ({ page }) => {
     await presenter(page, s.sti);
     await gåTilLysbilde(page, s.lenke.lysbilde);
+    // Klikk først når inntoningen er ferdig (sluttest: et klikk midt i overgangen ble av og til ikke registrert, 1/12).
+    await ventPåRoligLysbilde(page);
     await presentasjon(page).getByRole('link', { name: s.lenke.tekst }).click();
     await expect(presentasjon(page)).toBeHidden();
     await expect(page.getByRole('heading', { level: 1 }).first()).toHaveText(s.lenke.tekst);

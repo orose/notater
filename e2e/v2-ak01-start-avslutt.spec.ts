@@ -13,6 +13,7 @@ import {
   somFasit,
   startPresentasjon,
   ventPåLysbilde,
+  ventPåStabilLayout,
 } from './support/v2';
 import { fokusPåInnhold, kjørKommando, leaderHint, trykkSekvens } from './support/v11';
 
@@ -28,6 +29,8 @@ test.describe('AK-2-01 start og avslutt', () => {
     expect(await lesLysbilde(page)).toEqual(somFasit(s.lysbilder[0]!));
   });
 
+  // `settLeseposisjon` venter på at Mermaid er tegnet (stabil sidehøyde). «Plan Q1» er siste seksjon og når ikke
+  // leselinjen; da er siden rullet til bunnen, og presentasjonen bruker siste overskrift i øvre 75 % (frontend).
   for (const [seksjon, nr] of Object.entries(s.startFraSeksjon)) {
     test(`TC-2-01-02 \`Space p\` med leseposisjon i «${seksjon}» starter på lysbilde ${nr}`, async ({ page }) => {
       await openNote(page, s.sti);
@@ -37,6 +40,15 @@ test.describe('AK-2-01 start og avslutt', () => {
       expect(await lesLysbilde(page)).toEqual(somFasit(s.lysbilder[nr - 1]!));
     });
   }
+
+  test('TC-2-01-10 rullet helt til bunnen: `Space p` starter på siste seksjon («Plan Q1», lysbilde 10)', async ({ page }) => {
+    await openNote(page, s.sti);
+    await ventPåStabilLayout(page);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(150);
+    await startPresentasjon(page, 'leader');
+    await ventPåLysbilde(page, s.startFraSeksjon['Plan Q1']!);
+  });
 
   test('TC-2-01-03 `:presenter` fra paletten starter fra leseposisjonen', async ({ page }) => {
     await openNote(page, s.sti);
@@ -67,7 +79,8 @@ test.describe('AK-2-01 start og avslutt', () => {
     await page.keyboard.press('Shift+G');
     await ventPåLysbilde(page, s.lysbilder.length);
     await avsluttPresentasjon(page);
-    expect(await overskriftVedLeselinjen(page)).toBe('Plan Q1');
+    // Lesevisningen får plass under siste seksjon, så overskriften står ved leselinjen (PO-87).
+    await expect.poll(() => overskriftVedLeselinjen(page)).toBe('Plan Q1');
   });
 
   test('TC-2-01-06 `Esc` lukker først oversikt/palett, deretter presentasjonen', async ({ page }) => {

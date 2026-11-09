@@ -196,6 +196,11 @@ export async function ventPåLysbilde(page: Page, n: number): Promise<void> {
   await expect(lysbilde(page)).toHaveAttribute('data-slide-index', String(n));
 }
 
+/** Venter til inntoningen av gjeldende lysbilde er ferdig (CSS-overganger/animasjoner i lysbildet). */
+export async function ventPåRoligLysbilde(page: Page): Promise<void> {
+  await lysbilde(page).evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => undefined))));
+}
+
 /** Går til lysbilde `n` (1-basert) med `gg` + `j`. */
 export async function gåTilLysbilde(page: Page, n: number): Promise<void> {
   await trykkSekvens(page, ['g', 'g']);
@@ -306,6 +311,8 @@ export async function ventPåStabilLayout(page: Page): Promise<void> {
  * Setter leseposisjonen (leselinje 30 %, PO-53) til seksjonen som starter med overskriften `tekst`:
  * overskriftens topp legges like over leselinjen. Venter først på stabil layout (Mermaid), og bekrefter etterpå at
  * overskriften faktisk står ved leselinjen – ellers ville testen startet presentasjonen fra en annen seksjon.
+ * Unntak: en kort siste seksjon kan ikke nå leselinjen. Da er siden rullet helt ned, og det holder at overskriften er
+ * den siste i øvre 75 % av vinduet (regelen presentasjonen bruker nederst på siden).
  */
 export async function settLeseposisjon(page: Page, tekst: string): Promise<void> {
   const h = page.locator('main article').locator('h1, h2, h3, h4, h5, h6').filter({ hasText: tekst }).first();
@@ -319,9 +326,21 @@ export async function settLeseposisjon(page: Page, tekst: string): Promise<void>
           window.scrollTo(0, Math.max(0, top - window.innerHeight * 0.29));
         });
         await page.waitForTimeout(100);
-        return overskriftVedLeselinjen(page);
+        const vedLinjen = await overskriftVedLeselinjen(page);
+        if (vedLinjen === tekst) return tekst;
+        return page.evaluate(() => {
+          const bunn = Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 2;
+          if (!bunn) return null;
+          const hs = [...document.querySelectorAll('main article h1, main article h2, main article h3, main article h4, main article h5, main article h6')];
+          const synlige = hs.filter((h) => h.getBoundingClientRect().top < window.innerHeight * 0.75);
+          const siste = synlige[synlige.length - 1];
+          if (!siste) return null;
+          const kopi = siste.cloneNode(true) as HTMLElement;
+          kopi.querySelectorAll('button, .heading-anchor, [aria-hidden="true"]').forEach((n) => n.remove());
+          return (kopi.textContent ?? '').replace(/\s+/g, ' ').trim();
+        });
       },
-      { message: `«${tekst}» står ved leselinjen` },
+      { message: `«${tekst}» står ved leselinjen (eller er siste overskrift i øvre 75 % nederst på siden)` },
     )
     .toBe(tekst);
 }

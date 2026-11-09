@@ -147,6 +147,8 @@ Fasit: `README-QA.md` §20 og `docs/test/v2-fasit.json` (lysbilderekkefølge per
 Tester: `e2e/v2-*.spec.ts` (TDD, `test.fixme` fjernes av frontend når en funksjon leveres; TC-2-02-00 sjekker fasiten
 mot vaultet og kjører nå). Live-endringer under presentasjon kjører med egen vault-kopi og server per test (`liveTest` i
 `e2e/support/v2.ts`). Ytelse: `v2-ak13-presentasjon-perf.spec.ts` i perf-prosjektet. Axe: `v2-ak12-axe-matrise.spec.ts`.
+**Avsluttende akseptansetest v2, 2026-11-09:** alle AK-2-01..14 bestått, ingen `fixme` igjen, én åpen kosmetisk feil
+(BUG-015, `test.fail`); rapport `docs/test/akseptanserapport-v2.md`.
 
 ## 4. Definition of Done per slice
 

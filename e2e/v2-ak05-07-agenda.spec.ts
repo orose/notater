@@ -8,7 +8,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';
-import { expect, test } from './support/guards';
+import { expect, noteUrl, test } from './support/guards';
 import {
   agendaEllipse,
   agendalinje,
@@ -61,6 +61,25 @@ test.describe('AK-2-05 tittel, agenda og overganger', () => {
     await presenter(page, fasit2.tagger.sti);
     await expect(lysbilde(page)).toHaveAttribute('data-slide-type', 'tittel');
     await expect(lysbilde(page)).not.toContainText(fasit2.tagger.tagg);
+  });
+
+  test('TC-2-05-10 tittellysbildet med mange egenskaper: egenskapene overlapper ikke bunnlinjen/endringsdatoen (Tidsskrift, 1920×1080)', async ({ page }) => {
+    test.fail(true, 'BUG-015 egenskapslisten på tittellysbildet flyter ned i bunnlinjen i Tidsskrift');
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto(`${noteUrl(s.sti)}?type=tidsskrift&palette=papir&mode=light`);
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+    await startPresentasjon(page);
+    await expect(lysbilde(page)).toHaveAttribute('data-slide-type', 'tittel');
+    const overlapp = await lysbilde(page).evaluate((el) => {
+      const fot = el.querySelector('.t-foot');
+      const over = fot?.previousElementSibling;
+      if (!fot || !over) return 'fant ikke egenskaper/bunnlinje';
+      const a = over.getBoundingClientRect();
+      const b = fot.getBoundingClientRect();
+      // Egenskapene kan stå ved siden av datoen, men ikke krysse bunnlinjen (fotens øvre kant).
+      return a.bottom > b.top + 1 && a.right > b.left ? `egenskapene slutter ${Math.round(a.bottom - b.top)} px under bunnlinjen` : null;
+    });
+    expect(overlapp).toBeNull();
   });
 
   test('TC-2-05-02 kort innhold før første agendaoverskrift vises på tittellysbildet (S6)', async ({ page }) => {
