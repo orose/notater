@@ -1,0 +1,36 @@
+[0;7m       [0m [0;1;31m1 [0;1;4:1;58:5:1mSiden sist[0;90m 1/3 [0;7m│ 2 Jobbes med nå │ 3 Relativt nær framtid                                                     [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0m        [0;1;31m01 /[0m                                                                                                            [0m
+[0m        [0;1mIdempotente ordre-kall[0m  [0;37m────────────────────────────────────────────────────────────────────────────────[0m        [0m
+[0m                                                                                                                        [0m
+[0m        Klienten sender [0;32mIdempotency-Key[0m, og svaret lagres i 24 timer.                                                   [0m
+[0m                                                                                                                        [0m
+[0m      [0;90m  – [0mI produksjon siden 4. november                                                                                [0m
+[0m      [0;90m  – [0;1m0 doble ordre[0m siste uke (før: 3–5 per uke)                                                                    [0m
+[0m      [0;90m  – [0mBeslutningen står i [0;4:1;31;58:5:1mADR-014 Idempotens[0m                                                                        [0m
+[0m                                                                                                                        [0m
+[0m          [0;31m●[0m [0;1mIdempotencyFilter.java[0m                                                                        [0;90mjava[0m          [0m
+[0m         [0;37m╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌[0m         [0m
+[0m          [0;90m 1[0m  [0;35mvar[0m key [0;35m=[0m request[0;90m.[0;34mheader[0;90m([0;32m"Idempotency-Key"[0;90m);[0m                                                              [0m
+[0m          [0;90m 2[0m  [0;35mif[0m [0;90m([0mkey [0;35m==[0m [0;35mnull[0;90m)[0m [0;35mreturn[0m chain[0;90m.[0;34mproceed[0;90m([0mrequest[0;90m);[0m                                                           [0m
+[0m          [0;90m 3[0m                                                                                                            [0m
+[0m          [0;90m 4[0m  [0;35mreturn[0m store[0;90m.[0;34mfindResponse[0;90m([0mkey[0;90m)[0m                                                                            [0m
+[0m          [0;90m 5[0m      [0;90m.[0;34mmap[0;90m([0;36mResponse[0;35m::[0mreplay[0;90m)[0m          [0;3;90m// samme svar, ingen ny ordre[0m                                         [0m
+[0m          [0;90m 6[0m      [0;90m.[0;34morElseGet[0;90m(()[0m [0;35m->[0m [0;90m{[0m                                                                                    [0m
+[0m          [0;90m 7[0m        [0;35mvar[0m response [0;35m=[0m chain[0;90m.[0;34mproceed[0;90m([0mrequest[0;90m);[0m                                                              [0m
+[0m          [0;90m 8[0m        store[0;90m.[0;34msave[0;90m([0mkey[0;90m,[0m response[0;90m,[0m [0;36mDuration[0;90m.[0;34mofHours[0;90m([0;33m24[0;90m));[0m                                                    [0m
+[0m          [0;90m 9[0m        [0;35mreturn[0m response[0;90m;[0m                                                                                    [0m
+[0m          [0;90m10[0m      [0;90m});[0m                                                                                                   [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0m                                                                                                                        [0m
+[0;7m        Statusmøte uke 45               [0;1;7mj k[0;7m blar  ·  [0;1;7mo[0;7m oversikt  ·  [0;1;7m:[0;7m kommando  ·  [0;1;7m?[0;7m hjelp   ━━ ━━── ── ──  [0;1;7m4[0;7m/10        [0m

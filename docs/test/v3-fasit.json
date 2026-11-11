@@ -1,0 +1,1043 @@
+{
+ "$kommentar": "Fasit for v3 (presentasjon i terminalen). Speiler test-vault/README-QA.md §21 og docs/test/testplan-v3.md. Lysbilderekkefølgen gjenbrukes fra docs/test/v2-fasit.json (AK-3-02) – her står bare det som er terminalspesifikt, pluss det nye notatet presentasjon/Terminalkanter. Lysbilder er 1-baserte. Felter merket 'avklaring' avhenger av et spørsmål i testplanen §9; verdien er QAs forslag. Endres et notat i test-vault/presentasjon/, endres denne fila og v2-fasit.json i samme commit.",
+ "kommando": {
+  "npm": [
+   "npm",
+   "run",
+   "present",
+   "--"
+  ],
+  "flagg": [
+   "--vault",
+   "--config",
+   "--vault-id",
+   "--niva",
+   "--palett",
+   "--farger",
+   "--uten-agenda"
+  ]
+ },
+ "storrelser": {
+  "standard": [
+   {
+    "cols": 80,
+    "rows": 24
+   },
+   {
+    "cols": 120,
+    "rows": 36
+   },
+   {
+    "cols": 200,
+    "rows": 50
+   }
+  ],
+  "minimum": {
+   "cols": 80,
+   "rows": 24
+  },
+  "forLite": [
+   {
+    "cols": 79,
+    "rows": 23
+   },
+   {
+    "cols": 79,
+    "rows": 24
+   },
+   {
+    "cols": 80,
+    "rows": 23
+   },
+   {
+    "cols": 40,
+    "rows": 12
+   }
+  ],
+  "forLiteMelding": {
+   "inneholder": [
+    "for liten"
+   ],
+   "monstre": [
+    "{cols}\\s*×\\s*{rows}",
+    "80\\s*×\\s*24"
+   ],
+   "eksempel": "Terminalen er for liten (79×23). / Gjør vinduet minst 80×24, eller trykk q.",
+   "$kommentar": "Teksten fra skjelettet i src/terminal (ADR-011); {cols}/{rows} = gjeldende størrelse. Ingen lysbildeinnhold vises samtidig."
+  }
+ },
+ "rekkefolge": {
+  "$kommentar": "AK-3-02: lysbildelista i terminalen == v2-fasit.json. Ved 200×50 eksakt (samme type, overskrift, agendapunkt, progresjon). Ved 80×24 og 120×36 kan et innholdslysbilde få ekstra «(forts.)»-deler rett etter seg (terminalen er mindre enn lerretet); fjernes de, er lista eksakt lik, og progresjonen er konsistent n/N (avklaring Q-3-01). 'mye' sjekkes med invariantene i v2-fasit.",
+  "v2Notater": [
+   "statusmote",
+   "rapport",
+   "delte",
+   "stor",
+   "uten",
+   "forKort",
+   "forLang",
+   "mange"
+  ],
+  "v2Niva": {
+   "h3": "standard",
+   "h4": "--niva h4",
+   "h2": "--niva h2"
+  },
+  "eksaktVed": {
+   "cols": 200,
+   "rows": 50
+  },
+  "moduloFortsVed": [
+   {
+    "cols": 80,
+    "rows": 24
+   },
+   {
+    "cols": 120,
+    "rows": 36
+   }
+  ],
+  "avklaring": "Q-3-01"
+ },
+ "kanter": {
+  "sti": "presentasjon/Terminalkanter",
+  "tittel": "Terminalkanter",
+  "agenda": [
+   "Særtegn",
+   "Blokker",
+   "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
+  ],
+  "lysbilder": [
+   {
+    "type": "tittel",
+    "overskrift": "Terminalkanter",
+    "inneholder": [
+     "Kanttilfeller for presentasjon i terminalen – særtegn, bredde og plassholdere."
+    ]
+   },
+   {
+    "type": "agenda",
+    "overskrift": null
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Særtegn"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Æøå og emoji 🚀",
+    "agendapunkt": "Særtegn",
+    "progresjon": "1/1",
+    "inneholder": [
+     "TERM-SÆR",
+     "Blåbærsyltetøy",
+     "漢字テスト",
+     "한국어",
+     "👩‍💻",
+     "🇳🇴"
+    ]
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Blokker"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Callouts",
+    "agendapunkt": "Blokker",
+    "progresjon": "1/4",
+    "inneholder": [
+     "TERM-CALLOUT-NOTE",
+     "TERM-CALLOUT-WARN",
+     "Merk deg",
+     "Advarsel med æøå"
+    ],
+    "callouts": 2
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Bases-tabell",
+    "agendapunkt": "Blokker",
+    "progresjon": "2/4",
+    "inneholder": [
+     "TERM-BASE"
+    ],
+    "basetabell": {
+     "view": "Kritisk",
+     "kolonner": [
+      "file.name",
+      "status",
+      "due"
+     ],
+     "rader": [
+      "Oppgrader Spring Boot til 3.3",
+      "Avklar (GDPR) sletting av kundedata",
+      "Migrer til Java 21",
+      "Fiks flaky test i BetalingServiceTest"
+     ],
+     "kilde": "bases-fasit.json › Sprintoversikt.md blokk 1 (samme definisjon)"
+    }
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Bilde",
+    "agendapunkt": "Blokker",
+    "progresjon": "3/4",
+    "inneholder": [
+     "TERM-BILDE",
+     "[bilde: arkitektur.png]"
+    ]
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Ti kolonner",
+    "agendapunkt": "Blokker",
+    "progresjon": "4/4",
+    "inneholder": [
+     "TERM-TABELL",
+     "Kol01",
+     "Kol10",
+     "T1K01",
+     "T3K10",
+     "Ærlig"
+    ],
+    "tabell": true,
+    "celler": 30
+   },
+   {
+    "type": "overgang",
+    "overskrift": null,
+    "agendapunkt": "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
+   },
+   {
+    "type": "innhold",
+    "overskrift": "Lange ord og lenker",
+    "agendapunkt": "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft",
+    "progresjon": "1/1",
+    "inneholder": [
+     "TERM-LANG",
+     "Personvernkonsekvensvurderingsprosessdokumentasjonsmalverktøyleverandøravtalereforhandlingsmøtereferatet",
+     "https://eksempel.invalid/sti/som/er/mye/lengre/enn/en/terminal/på/åtti/kolonner/og/derfor/må/brytes?side=2",
+     "presentasjonsdokumentasjonen"
+    ],
+    "lenker": [
+     {
+      "tekst": "presentasjonsdokumentasjonen",
+      "url": "https://eksempel.invalid/dokumentasjon/presentasjon"
+     },
+     {
+      "tekst": "https://eksempel.invalid/sti/som/er/mye/lengre/enn/en/terminal/på/åtti/kolonner/og/derfor/må/brytes?side=2",
+      "url": "https://eksempel.invalid/sti/som/er/mye/lengre/enn/en/terminal/på/åtti/kolonner/og/derfor/må/brytes?side=2"
+     }
+    ]
+   }
+  ]
+ },
+ "figlet": {
+  "$kommentar": "T5/AK-3-03: figlet-hode på tittel, agenda og overgang, aldri på innhold. Glyfene er UX sine: docs/design/terminal/figlet-glyfer.json (fontene 'stor' = ANSI Shadow, 6 rader, og 'kompakt' = Future, 3 rader). Regel (QAs forslag, Q-3-03): én linje, ingen orddeling; 'stor' hvis den får plass, ellers 'kompakt', ellers fallback (fet tekst i aksentfarge). Mangler et tegn i fonten (é, ä …) → fallback. Bredden = summen av glyfbreddene (store bokstaver). Testene regner bredden selv fra glyffila; 'garantert' er bare tilfeller med minst 12 kolonners slakk, så margen ikke avgjør.",
+  "glyfer": "docs/design/terminal/figlet-glyfer.json",
+  "typer": [
+   "tittel",
+   "agenda",
+   "overgang"
+  ],
+  "aldri": [
+   "innhold"
+  ],
+  "agendaTekst": "Agenda",
+  "slakk": 12,
+  "lysbilder": {
+   "statusmote": [
+    1,
+    2,
+    3,
+    6,
+    9
+   ],
+   "rapport": [
+    1,
+    2,
+    3,
+    6,
+    10
+   ],
+   "delte": [
+    1,
+    2,
+    3,
+    8
+   ],
+   "stor": [
+    1,
+    2,
+    3
+   ],
+   "uten": [
+    1
+   ],
+   "forKort": [
+    1,
+    2,
+    3,
+    5
+   ],
+   "forLang": [
+    1,
+    3,
+    4,
+    6
+   ],
+   "mange": [
+    1,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    13,
+    15,
+    17
+   ],
+   "kanter": [
+    1,
+    2,
+    3,
+    5,
+    10
+   ]
+  },
+  "garantert": {
+   "80": {
+    "stor": [
+     "Agenda",
+     "Del to",
+     "Blokker",
+     "Særtegn"
+    ],
+    "kompakt": [
+     "Terminalkanter",
+     "Statusmøte uke 45",
+     "Relativt nær framtid",
+     "Månedsrapport oktober"
+    ],
+    "fallback": [
+     "Kundetilbakemeldinger og support",
+     "Opplæring og kompetanseheving",
+     "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
+    ],
+    "manglerTegn": [
+     "Del én",
+     "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
+    ]
+   },
+   "200": {
+    "stor": [
+     "Agenda",
+     "Del to",
+     "Blokker",
+     "Særtegn",
+     "Statusmøte uke 45",
+     "Terminalkanter",
+     "Månedsrapport oktober",
+     "Relativt nær framtid"
+    ],
+    "kompakt": [
+     "Kundetilbakemeldinger og support",
+     "Opplæring og kompetanseheving"
+    ],
+    "fallback": [
+     "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
+    ],
+    "manglerTegn": [
+     "Del én",
+     "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
+    ]
+   }
+  },
+  "steder": [
+   {
+    "notat": "kanter",
+    "lysbilde": 1,
+    "tekst": "Terminalkanter",
+    "80": "kompakt",
+    "200": "stor"
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 2,
+    "tekst": "Agenda",
+    "80": "stor",
+    "200": "stor"
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 3,
+    "tekst": "Særtegn",
+    "80": "stor",
+    "200": "stor",
+    "merknad": "Æ fra UX sine glyfer"
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 5,
+    "tekst": "Blokker",
+    "80": "stor",
+    "200": "stor"
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 10,
+    "tekst": "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft",
+    "80": "fallback",
+    "200": "fallback",
+    "merknad": "80 tegn i ett ord og ä mangler i fonten; fallback-teksten brytes hardt ved 80 kolonner, ingenting kuttes"
+   },
+   {
+    "notat": "statusmote",
+    "lysbilde": 1,
+    "tekst": "Statusmøte uke 45",
+    "80": "kompakt",
+    "200": "stor"
+   },
+   {
+    "notat": "statusmote",
+    "lysbilde": 9,
+    "tekst": "Relativt nær framtid",
+    "80": "kompakt",
+    "200": "stor"
+   },
+   {
+    "notat": "delte",
+    "lysbilde": 3,
+    "tekst": "Del én",
+    "80": "fallback",
+    "200": "fallback",
+    "merknad": "é finnes ikke i glyffila (Q-3-03)"
+   },
+   {
+    "notat": "delte",
+    "lysbilde": 8,
+    "tekst": "Del to",
+    "80": "stor",
+    "200": "stor"
+   },
+   {
+    "notat": "mange",
+    "lysbilde": 13,
+    "tekst": "Kundetilbakemeldinger og support",
+    "80": "fallback",
+    "200": "kompakt"
+   }
+  ],
+  "hoyde": {
+   "stor": 6,
+   "kompakt": 3
+  },
+  "farger": "rollene 'hode' (fyll) og 'hode_skygge' (skygge/kontur) i docs/design/terminal/farger.json; fallback: 'hode' + fet",
+  "heuristikk": "En figlet-blokk er ≥ 3 sammenhengende rader der < 20 % av blekket (tegn utenom mellomrom) er bokstaver/sifre. Se e2e/support/terminal.ts › finnFiglet()."
+ },
+ "agendalinje": {
+  "$kommentar": "T6/AK-3-04: øverste ikke-tomme rad på innholdslysbilder; skjult på T/A/O og på lysbilder uten agendapunkt. Gjeldende punkt er uthevet (andre SGR-attributter enn naboene) og har progresjon n/m rett etter navnet. Avkorting i trinn (Q-3-02): alle → forrige · nåværende · neste med «…» → naboene forkortes med «…» → nåværende forkortes med «…». Progresjonen vises alltid.",
+  "ellipse": "…",
+  "vedBredde": {
+   "80": {
+    "statusmote": {
+     "alleLysbilder": {
+      "synlige": [
+       "Siden sist",
+       "Jobbes med nå",
+       "Relativt nær framtid"
+      ],
+      "før": false,
+      "etter": false
+     }
+    },
+    "rapport": {
+     "alleLysbilder": {
+      "synlige": [
+       "Siden sist",
+       "Jobbes med nå",
+       "Relativt nær framtid"
+      ],
+      "før": false,
+      "etter": false
+     }
+    },
+    "delte": {
+     "alleLysbilder": {
+      "synlige": [
+       "Del én",
+       "Del to"
+      ],
+      "før": false,
+      "etter": false
+     }
+    },
+    "mange": {
+     "Status 1": {
+      "synlige": [
+       "Økonomi og budsjettoppfølging",
+       "Rekruttering og bemanning"
+      ],
+      "før": false,
+      "etter": true
+     },
+     "Status 8": {
+      "synlige": [
+       "Leverandører og avtaler",
+       "Opplæring og kompetanseheving"
+      ],
+      "før": true,
+      "etter": false
+     },
+     "Status 5": {
+      "gjeldendeHel": "Arkitektur og teknisk gjeld",
+      "forkortet": true,
+      "før": true,
+      "etter": true,
+      "avklaring": "Q-3-02"
+     },
+     "Status 2": {
+      "gjeldendeHel": "Rekruttering og bemanning",
+      "forkortet": true,
+      "før": false,
+      "etter": true,
+      "avklaring": "Q-3-02"
+     }
+    },
+    "kanter": {
+     "Æøå og emoji 🚀": {
+      "synlige": [
+       "Særtegn",
+       "Blokker"
+      ],
+      "før": false,
+      "etter": true
+     },
+     "Callouts": {
+      "gjeldendeHel": "Blokker",
+      "forkortet": true,
+      "før": false,
+      "etter": false,
+      "avklaring": "Q-3-02"
+     },
+     "Lange ord og lenker": {
+      "gjeldendeForkortet": true,
+      "progresjon": "1/1",
+      "avklaring": "Q-3-02 (gjeldende punkt er 80 tegn)"
+     }
+    }
+   },
+   "200": {
+    "statusmote": {
+     "alleLysbilder": {
+      "synlige": [
+       "Siden sist",
+       "Jobbes med nå",
+       "Relativt nær framtid"
+      ],
+      "før": false,
+      "etter": false
+     }
+    },
+    "kanter": {
+     "alleLysbilder": {
+      "synlige": [
+       "Særtegn",
+       "Blokker",
+       "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
+      ],
+      "før": false,
+      "etter": false
+     }
+    },
+    "mange": {
+     "$kommentar": "237 tegn får ikke plass ved 200: samme som v2-fasit mange.avkortet (forrige · nåværende · neste)",
+     "fraV2": "mange.avkortet"
+    }
+   }
+  },
+  "progresjon": "fra v2-fasit (lysbilder[].progresjon)"
+ },
+ "nummerering": {
+  "$kommentar": "Innholdslysbildets overskrift har agendapunktets nummer «02 /» (som SlideView, designsystem §C). Lysbilder uten agendapunkt har ikke nummer.",
+  "lysbilder": {
+   "statusmote": {
+    "4": "01 /",
+    "5": "01 /",
+    "7": "02 /",
+    "8": "02 /",
+    "10": "03 /"
+   },
+   "rapport": {
+    "4": "01 /",
+    "5": "01 /",
+    "7": "02 /",
+    "8": "02 /",
+    "9": "02 /",
+    "11": "03 /",
+    "12": "03 /"
+   },
+   "delte": {
+    "4": "01 /",
+    "5": "01 /",
+    "6": "01 /",
+    "7": "01 /",
+    "9": "02 /",
+    "10": "02 /"
+   },
+   "stor": {
+    "4": "01 /",
+    "5": "01 /",
+    "6": "01 /"
+   },
+   "uten": {
+    "2": null,
+    "3": null,
+    "4": null
+   },
+   "forKort": {
+    "4": "01 /",
+    "6": "02 /"
+   },
+   "forLang": {
+    "2": null,
+    "5": "01 /",
+    "7": "02 /"
+   },
+   "mange": {
+    "4": "01 /",
+    "6": "02 /",
+    "8": "03 /",
+    "10": "04 /",
+    "12": "05 /",
+    "14": "06 /",
+    "16": "07 /",
+    "18": "08 /"
+   },
+   "kanter": {
+    "4": "01 /",
+    "6": "02 /",
+    "7": "02 /",
+    "8": "02 /",
+    "9": "02 /",
+    "11": "03 /"
+   }
+  }
+ },
+ "statuslinje": {
+  "$kommentar": "Nederste ikke-tomme rad: notattittel, diskré tastehint (minst «?»), lysbildenummer «n/N» sist på raden.",
+  "nummerRegex": "(\\d+)/(\\d+)\\s*$",
+  "inneholderTittel": true,
+  "hint": [
+   "?"
+  ]
+ },
+ "plassholdere": {
+  "mermaid": "Mermaid-diagram – vises i web-leseren",
+  "kanban": "Kanban: ‹view› – vises i web-leseren",
+  "bilde": "[bilde: ‹navn›]",
+  "steder": [
+   {
+    "notat": "statusmote",
+    "lysbilde": 8,
+    "type": "mermaid",
+    "tekst": "Mermaid-diagram – vises i web-leseren",
+    "ikke": [
+     "flowchart",
+     "-->"
+    ]
+   },
+   {
+    "notat": "stor",
+    "lysbilde": 5,
+    "type": "mermaid",
+    "tekst": "Mermaid-diagram – vises i web-leseren",
+    "ikke": [
+     "flowchart",
+     "Steg 25"
+    ],
+    "$kommentar": "25 steg i kilden, men plassholderen er liten: ingen intern rulling, ingen «(forts.)»"
+   },
+   {
+    "notat": "statusmote",
+    "lysbilde": 7,
+    "type": "kanban",
+    "tekst": "Kanban: Kanban – vises i web-leseren",
+    "ikke": [
+     "Refaktorer logging"
+    ]
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 8,
+    "type": "bilde",
+    "tekst": "[bilde: arkitektur.png]"
+   }
+  ]
+ },
+ "innhold": {
+  "kode": [
+   {
+    "notat": "statusmote",
+    "lysbilde": 5,
+    "inneholder": [
+     "PRESENT_BINDINGS",
+     "PageDown"
+    ],
+    "truecolor": true
+   },
+   {
+    "notat": "stor",
+    "lysbilde": 4,
+    "inneholder": [
+     "STOR-KODE 001",
+     "STOR-KODE 120"
+    ],
+    "internRulling": true,
+    "bredereEnnTerminalVed": 80,
+    "linje001": "export const linje001 = 'STOR-KODE 001 i en kodeblokk som er altfor lang for ett lysbilde';",
+    "$kommentar": "Kodelinjene er ~95 tegn: ved 80 kolonner brytes de med fortsettelsesmerke (Q-3-04); ingen tegn går tapt."
+   }
+  ],
+  "tabeller": [
+   {
+    "notat": "statusmote",
+    "lysbilde": 10,
+    "inneholder": [
+     "Måned",
+     "Leveranse",
+     "Ansvarlig",
+     "Januar",
+     "Presentasjonsmodus i produksjon",
+     "Per"
+    ]
+   },
+   {
+    "notat": "stor",
+    "lysbilde": 6,
+    "kolonner": 12,
+    "rader": 40,
+    "celleMønster": "R%02dK%02d",
+    "internRulling": true
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 9,
+    "kolonner": 10,
+    "rader": 3,
+    "bredereEnnTerminalVed": 80
+   }
+  ],
+  "fotnoter": [
+   {
+    "notat": "statusmote",
+    "lysbilde": 10,
+    "tekst": "Avhenger av kapasitet i plattformteamet."
+   }
+  ],
+  "rammetegn": "─│┌┐└┘├┤┬┴┼╭╮╰╯═║╔╗╚╝",
+  "callouts": {
+   "notat": "kanter",
+   "lysbilde": 6,
+   "etiketter": [
+    "Merk deg",
+    "Advarsel med æøå"
+   ]
+  }
+ },
+ "forts": {
+  "notat": "mye",
+  "fraV2": "mye",
+  "storrelser": [
+   {
+    "cols": 80,
+    "rows": 24
+   },
+   {
+    "cols": 200,
+    "rows": 50
+   }
+  ]
+ },
+ "taster": {
+  "neste": [
+   "j",
+   "Right",
+   "n",
+   "Space",
+   "PageDown"
+  ],
+  "forrige": [
+   "k",
+   "Left",
+   "p",
+   "PageUp"
+  ],
+  "forste": [
+   "g g"
+  ],
+  "siste": [
+   "G"
+  ],
+  "oversikt": [
+   "o"
+  ],
+  "svart": [
+   "b",
+   "."
+  ],
+  "rull": [
+   "Up",
+   "Down"
+  ],
+  "kommando": [
+   ":"
+  ],
+  "hjelp": [
+   "?"
+  ],
+  "avslutt": [
+   "q",
+   "Escape",
+   "C-c"
+  ],
+  "$kommentar": "tmux send-keys-navn. «g g» = to tastetrykk.",
+  "kommandoer": [
+   ":presenter h<n>",
+   ":agenda av",
+   ":palett <navn>",
+   ":farger terminal",
+   ":q"
+  ],
+  "feilkoder": {
+   "ugyldig": "E475",
+   "tomt": "E486",
+   "ukjentKommando": "E492",
+   "avklaring": "Q-3-08 (E492 for ukjent kommando, som vim)"
+  },
+  "feil": [
+   {
+    "kommando": "presenter h9",
+    "kode": "E475"
+   },
+   {
+    "kommando": "presenter hx",
+    "kode": "E475"
+   },
+   {
+    "kommando": "presenter h5",
+    "kode": "E486",
+    "notat": "niva"
+   },
+   {
+    "kommando": "presenter h4",
+    "kode": "E486",
+    "notat": "statusmote"
+   },
+   {
+    "kommando": "palett regnbue",
+    "kode": "E475"
+   },
+   {
+    "kommando": "farger regnbue",
+    "kode": "E475"
+   },
+   {
+    "kommando": "finnesikke",
+    "kode": "E492",
+    "avklaring": "Q-3-08"
+   }
+  ]
+ },
+ "farger": {
+  "$kommentar": "AK-3-09. Fargerollene eies av UX: docs/design/terminal/farger.json (truecolor per palett × lys/mørk, og ansi16). Testene leser den fila; her står bare forventningene. Kontrastkrav: tekst ≥ 4,5:1, figlet/rammer/dekor ≥ 3:1 mot rollen 'bg'.",
+  "kilde": "docs/design/terminal/farger.json",
+  "standard": {
+   "palett": "fosfor",
+   "modus": "system",
+   "fra": "farger.json › standard"
+  },
+  "paletter": [
+   "papir",
+   "cyanotypi",
+   "fosfor",
+   "signal"
+  ],
+  "moduser": [
+   "light",
+   "dark"
+  ],
+  "kontrast": {
+   "tekst": 4.5,
+   "stor": 3
+  },
+  "modus": {
+   "avklaring": "Q-3-06",
+   "forslag": "«system» = terminalens bakgrunn (OSC 11-svar innen 100 ms, så COLORFGBG), ellers mørk"
+  },
+  "miljo": {
+   "truecolor": {
+    "TERM": "xterm-ghostty",
+    "COLORTERM": "truecolor",
+    "forvent": "38;2/48;2-sekvenser; bakgrunnen males med rollen 'bg' (avklaring Q-3-06)"
+   },
+   "256": {
+    "TERM": "xterm-256color",
+    "COLORTERM": "",
+    "forvent": "ingen 38;2/48;2, bare 38;5;n/48;5;n (nærmeste farge) – eller ansi16 (avklaring Q-3-07)",
+    "avklaring": "Q-3-07"
+   },
+   "terminal16": {
+    "flagg": [
+     "--farger",
+     "terminal"
+    ],
+    "kommando": "farger terminal",
+    "forvent": "bare SGR 30–37, 90–97, 40–47, 100–107 og 39/49 (farger.json › ansi16); ingen 38;x/48;x"
+   },
+   "NO_COLOR": {
+    "env": {
+     "NO_COLOR": "1"
+    },
+    "forvent": "ingen fargekoder (30–49, 90–107, 38;x, 48;x); fet/understreket/invertert er lov; --farger terminal overstyrer ikke NO_COLOR",
+    "avklaring": "Q-3-07"
+   }
+  }
+ },
+ "live": {
+  "overskrift": {
+   "notat": "statusmote",
+   "lysbilde": 7,
+   "fra": "## Jobbes med nå",
+   "til": "## Pågår nå",
+   "forvent": {
+    "lysbilde": 7,
+    "av": 10,
+    "agendalinje": "Pågår nå"
+   }
+  },
+  "slett": {
+   "notat": "statusmote",
+   "lysbilde": 5,
+   "seksjon": "### Leveranse B – tastaturmotor",
+   "fraV2": "statusmote.live.etterSletting",
+   "forvent": {
+    "type": "overgang",
+    "agendapunkt": "Jobbes med nå",
+    "lysbilde": 5,
+    "av": 9
+   }
+  },
+  "base": {
+   "notat": "kanter",
+   "lysbilde": 7,
+   "fil": "oppgaver/Migrer til Java 21.md",
+   "fra": "status: doing",
+   "til": "status: blocked",
+   "rad": "Migrer til Java 21",
+   "forvent": {
+    "lysbilde": 7,
+    "verdi": "blocked"
+   }
+  },
+  "notatSlettet": {
+   "notat": "statusmote",
+   "forvent": "Presentasjonen avsluttes med forklaring, terminalen gjenopprettes, exit-kode 0 (avklaring Q-3-10)"
+  },
+  "maksMs": 3000
+ },
+ "notatvalg": {
+  "eksakt": [
+   {
+    "arg": "Statusmøte uke 45",
+    "notat": "statusmote"
+   },
+   {
+    "arg": "presentasjon/Statusmøte uke 45",
+    "notat": "statusmote"
+   },
+   {
+    "arg": "presentasjon/Statusmøte uke 45.md",
+    "notat": "statusmote"
+   },
+   {
+    "arg": "statusmøte uke 45",
+    "notat": "statusmote"
+   }
+  ],
+  "fuzzyEttTreff": [
+   {
+    "arg": "terminalkant",
+    "notat": "kanter"
+   }
+  ],
+  "flereTreff": {
+   "arg": "rapport",
+   "treff": [
+    "Månedsrapport oktober",
+    "Årsrapport (NFD)",
+    "Kvartalsrapport"
+   ],
+   "forvent": "søkbar liste forhåndsfylt med «rapport», ingen presentasjon startet (avklaring Q-3-09)"
+  },
+  "ukjent": {
+   "arg": "finnes-ikke-qa-xyz",
+   "forvent": "melding på stderr med argumentet, exit-kode ≠ 0, ingen alternativ skjerm igjen (avklaring Q-3-09)"
+  },
+  "listeUtenArgument": {
+   "inneholder": [
+    "Statusmøte uke 45",
+    "Månedsrapport oktober"
+   ],
+   "filter": "terminalkanter",
+   "treffEtterFilter": "Terminalkanter"
+  },
+  "nfd": {
+   "arg": "Årsrapport (NFD)",
+   "$kommentar": "NFC-argument mot NFD-filnavn (QA-IDX-09) skal treffe eksakt"
+  }
+ },
+ "ytelse": {
+  "startMs": 3000,
+  "lysbildebytteMs": 50,
+  "vault": {
+   "generator": "test-vault-tools/generate-large-vault.mjs",
+   "count": 2000,
+   "seed": 42
+  },
+  "maling": "median av 5 kalde starter; bytte p95 av 80"
+ },
+ "hygiene": {
+  "$kommentar": "AK-3-11 + Terminalhygiene. Sjekkes etter at prosessen har avsluttet: tmux #{alternate_on}=0 og #{cursor_flag}=1, og at råstrømmen inneholder ?1049h … ?1049l og ?25l … ?25h.",
+  "avslutt": [
+   "q",
+   "Escape",
+   "C-c",
+   "kommando:q"
+  ],
+  "krasj": {
+   "env": {
+    "VAULT_PRESENT_QA_KRASJ": "1"
+   },
+   "avklaring": "Q-3-11 (testkrok som kaster en ukjent feil etter første tegning)"
+  },
+  "signaler": [
+   "SIGTERM",
+   "SIGHUP"
+  ],
+  "ctrlCUnderTegning": {
+   "notat": "stor",
+   "beskrivelse": "Ctrl c rett etter en tastestorm (20 × j) og under resize"
+  },
+  "rasekvenser": {
+   "altPå": "\u001b[?1049h",
+   "altAv": "\u001b[?1049l",
+   "markørAv": "\u001b[?25l",
+   "markørPå": "\u001b[?25h"
+  }
+ }
+}

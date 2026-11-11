@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "node scripts/check-node.js && tsx scripts/build-if-changed.ts && tsx src/server/main.ts",
+    "present": "node scripts/check-node.js && tsx src/terminal/main.ts",
     "dev": "node scripts/check-node.js && concurrently --kill-others --names server,web --prefix-colors blue,magenta \"tsx watch --clear-screen=false src/server/main.ts\" \"vite\"",
     "build": "npm run typecheck && vite build",
     "typecheck": "tsc -b",

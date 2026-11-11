@@ -33,6 +33,23 @@ export default tseslint.config(
     rules: reactHooks.configs.recommended.rules,
   },
   {
+    // ADR-011: terminalen bruker server-features og (etter K1–K4) src/core – aldri web-koden eller React.
+    files: ['src/terminal/**/*.ts'],
+    languageOptions: { globals: globals.node },
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            { name: 'react', message: 'Terminalen bruker ikke React (ADR-011 §3).' },
+            { name: 'react-dom', message: 'Terminalen bruker ikke React (ADR-011 §3).' },
+          ],
+          patterns: [{ group: ['**/web/**', '**/web'], message: 'Terminalen importerer ikke web-koden; flytt delt logikk til src/core (ADR-011 §1).' }],
+        },
+      ],
+    },
+  },
+  {
     files: ['src/server/**/*.ts', '*.config.{ts,js}', 'e2e/**/*.ts', 'scripts/**/*.{js,mjs,ts}', 'test-vault-tools/**/*.{js,mjs}'],
     languageOptions: { globals: globals.node },
   },

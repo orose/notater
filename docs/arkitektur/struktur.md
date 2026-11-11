@@ -158,3 +158,19 @@ src/web/features/presentation/
 Avhengighetsretning: `app` → `presentation` → `note-view` (`HastContent`), `outline`, `properties`, `shared/api`;
 `commands` → `presentation` (kun kontrollporten og typer). `presentation` importerer ikke `commands`, og
 `note-view`/`outline` importerer ikke `presentation`.
+
+## Tillegg v3 (arkitekt, ADR-011)
+
+```
+src/core/            ren TS uten plattform (ingen DOM, Node eller React), delt av web og terminal:
+                     hast/, outline/, presentation/{model,fit}, format/, keyboard/, commands/ (flyttes i K1–K6)
+src/terminal/        `npm run present` – frittstående presentasjon i terminalen (T7)
+├── main.ts          inngang
+├── app/             komposisjonsrot: konfig, VaultRuntime, økt (bruker server-features direkte, ingen HTTP)
+└── features/        cli-args, screen, keys, cells (skjelett) · capabilities, vault, note-picker, session,
+                     commands, theme, draw, figlet, slides, command-line, overlays (3-a–3-c)
+```
+
+Avhengighetsretning: `web → core`, `terminal → core + server/features/*/index`, `core → shared`. `core` importerer aldri
+`web`, `server`, `terminal`, `react` eller `node:*` (håndheves av at mappa ligger i både web- og server-tsconfig, og av
+ESLint). `terminal` importerer aldri `web` eller `react` (ESLint). Regel 5 står fast: `src/shared` er kun API-typer.

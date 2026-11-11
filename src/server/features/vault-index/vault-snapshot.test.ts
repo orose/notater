@@ -197,10 +197,10 @@ describe('bildedimensjoner i indeksen (PO-71)', () => {
 });
 
 describe('buildSnapshot mot test-vault (QA-IDX-01/02)', () => {
-  it('105 notater og 9 andre filer', async () => {
+  it('106 notater og 9 andre filer', async () => {
     const snap = await buildSnapshot(join(process.cwd(), 'test-vault'), [], createInlineMetaExtractor());
     const files = [...snap.files.values()];
-    expect(files.filter((f) => f.ext === 'md')).toHaveLength(105);
+    expect(files.filter((f) => f.ext === 'md')).toHaveLength(106);
     expect(files.filter((f) => f.ext !== 'md')).toHaveLength(9);
   });
 });

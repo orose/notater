@@ -10,9 +10,9 @@ function flatten(node: TreeNode): string[] {
 }
 
 test.describe('Indeks (QA-IDX-01..04)', () => {
-  test('105 notater, 9 andre filer, ingen dot-mapper', async ({ request }) => {
+  test('106 notater, 9 andre filer, ingen dot-mapper', async ({ request }) => {
     const vaults = (await (await request.get('/api/vaults')).json()) as VaultsResponse;
-    expect(vaults.vaults[0]).toMatchObject({ id: 'test', status: 'ready', noteCount: 105 });
+    expect(vaults.vaults[0]).toMatchObject({ id: 'test', status: 'ready', noteCount: 106 });
     const tree = (await (await request.get('/api/vaults/test/tree')).json()) as TreeResponse;
     const paths = flatten(tree.root);
     expect(paths.filter((p) => p.startsWith('.') || p.includes('/.'))).toEqual([]);
