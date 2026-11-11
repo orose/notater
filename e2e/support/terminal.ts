@@ -416,12 +416,16 @@ export function lysbildenummer(rader: readonly string[]): { n: number; av: numbe
   return m ? { n: Number(m[1]), av: Number(m[2]) } : null;
 }
 
-/** Agendalinjen = øverste ikke-tomme rad når den inneholder et agendapunkt (ellers null). */
+/**
+ * Agendalinjen = øverste ikke-tomme rad når den inneholder (begynnelsen av) et agendapunkt OG progresjonen «n/m»
+ * (progresjonen vises alltid, T6). Ellers null – f.eks. på en overgang der agendapunktet står som fet fallback øverst.
+ */
 export function agendalinje(rader: readonly string[], agenda: readonly string[]): string | null {
   const i = ikkeTom(rader)[0];
-  if (i === undefined) return null;
+  if (i === undefined || i === ikkeTom(rader).at(-1)) return null;
   const rad = rader[i]!;
-  return agenda.some((p) => rad.includes(p) || rad.includes(p.slice(0, 6))) ? rad : null;
+  const harPunkt = agenda.some((p) => rad.includes(p.slice(0, Math.min(6, p.length))));
+  return harPunkt && /\d+\/\d+/.test(rad) ? rad : null;
 }
 
 /** Innholdsflaten: alt mellom agendalinjen (hvis den finnes) og statuslinjen. */

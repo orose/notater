@@ -845,6 +845,9 @@ def statuslinje(sk, g, deck, slides, nr, tittelside=False, hint=None, modus=None
     if tittelside:
         # tittelsiden: ingen folio og ingen fremdrift (PO-95), bare starthintet
         e = sk.put(x + 1, y, 'Presentasjon', L + S(fg='tekst', b=1))
+        if sk.W > 160:
+            # Brede terminaler gir liten skrift i delt skjerm: foreslå større skrift (bare på tittelsiden)
+            sk.spans(e, y, [('  ·  %d × %d: ' % (sk.W, sk.H), L + S(fg='dempet')), ('Ctrl +', L + S(fg='tekst', b=1)), (' gir større tekst i Teams og Zoom', L + S(fg='dempet'))])
         taster = [('→', 'neste'), ('o', 'oversikt'), ('?', 'taster'), ('q', 'avslutt')]
         hint_sp = []
         for k, (t, f) in enumerate(taster):
@@ -1080,6 +1083,21 @@ def oversikt(W, H, cur_nr, markor_nr):
             sk.put(e + 2, y, ' NÅ ', S(fg='invertert_tekst', bg='aksent', b=1))
         sk.put(g.x + w - len(typ), y, typ, base + (D if not er_markor else S()))
         y += 1
+    # Brede terminaler: forhåndsvisning av lysbildet under markøren i høyre rute (som Telescope i nvim).
+    px = g.x + w + 6
+    pw = g.x + g.sats - px
+    if pw >= 80:
+        ph = min(H - 2 - g.topp, round(pw * 0.30) + 2)
+        flytevindu(sk, px, g.topp - 1, pw, ph, 'Forhåndsvisning', 'lysbilde %d' % markor_nr)
+        mal = slides[markor_nr - 1]
+        pg = Rutenett(pw - 2, ph - 2)
+        for kand in paginer(DECK, pg):
+            if kand['type'] == mal['type'] and kand.get('sek') == mal.get('sek') and kand.get('tittel') == mal.get('tittel') and kand.get('forts') == mal.get('forts'):
+                sub, _, _ = tegn_lysbilde(pw - 2, ph - 2, kand['nr'])
+                for yy in range(ph - 2):
+                    for xx in range(pw - 2):
+                        sk.c[g.topp + yy][px + 1 + xx] = sub.c[yy][xx]
+                break
     statuslinje(sk, g, DECK, slides, cur_nr, hint=[('j k', 'flytter'), ('↵', 'hopper'), ('Esc', 'lukker')], modus='OVERSIKT')
     return sk
 
@@ -1289,7 +1307,7 @@ def main():
         if s['type'] in ('tittel', 'agenda') or (s['type'] == 'overgang' and s['sek'] == 0) or s['type'] == 'innhold' and s['tittel'] in ('Outbox-mønsteret', 'Java 21-migrering'):
             sk, _, _ = tegn_lysbilde(200, 50, s['nr'])
             laget.append(skriv('60-%02d-%s' % (s['nr'], s['type']), sk))
-    laget.append(skriv('61-oversikt', oversikt(200, 50, 5, 5)))
+    laget.append(skriv('61-oversikt', oversikt(200, 50, 5, 7)))
     print('\n'.join(laget))
     print('120×36: %d lysbilder · 80×24: %d · 200×50: %d' % (len(slides), len(s80), len(s200)))
 
