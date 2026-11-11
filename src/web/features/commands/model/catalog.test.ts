@@ -7,12 +7,13 @@ import { renderShortcutsMarkdown, shortcutGroups } from './shortcut-docs';
 describe('kommandokatalogen v1.1', () => {
   it('AK-1.1-08: ingen reserverte (P4) eller ⌥-avhengige (P5) taster, entydig tastaturkart', () => {
     expect(validateBindings(catalogBindings())).toEqual([]);
-    const firstKeys = catalogBindings().map((b) => b.keys.split(' ')[0]);
+    // P4 gjelder første akkord i normal-modus (AR-1.1-07, PO-84).
+    const firstKeys = catalogBindings().filter((b) => b.mode === 'normal').map((b) => b.keys.split(' ')[0]);
     for (const reserved of RESERVED_NORMAL_KEYS) expect(firstKeys).not.toContain(reserved);
   });
 
   it('har spesifikasjonens tastaturkart', () => {
-    const keys = Object.fromEntries(COMMAND_IDS.map((id) => [id, catalogBindings().filter((b) => b.commandId === id).map((b) => b.keys)]));
+    const keys = Object.fromEntries(COMMAND_IDS.map((id) => [id, catalogBindings().filter((b) => b.commandId === id && b.mode === 'normal').map((b) => b.keys)]));
     expect(keys['palette.search']).toEqual(['Mod+k', '/']);
     expect(keys['palette.commands']).toEqual([':']);
     expect(keys['help.shortcuts']).toEqual(['?']);
@@ -20,6 +21,35 @@ describe('kommandokatalogen v1.1', () => {
     expect(keys['outline.toggleSection']).toEqual(['z a']);
     expect(keys['view.toggleDiscreet']).toEqual(['Leader d']);
     expect(keys['theme.toggleMode']).toEqual(['Leader m', 'Mod+.']);
+  });
+
+  it('v2 present-modus: spesifikasjonens tabell, Space er en vanlig tast, ingen leader (ADR-010 §3, PO-88, PO-94)', () => {
+    const present = (id: string) => catalogBindings().filter((b) => b.commandId === id && b.mode === 'present').map((b) => b.keys);
+    expect(present('present.next')).toEqual(['j', 'ArrowRight', 'n', 'Space', 'PageDown']);
+    expect(present('present.previous')).toEqual(['k', 'ArrowLeft', 'p', 'PageUp']);
+    expect(present('present.first')).toEqual(['g g']);
+    expect(present('present.last')).toEqual(['G']);
+    expect(present('present.overview')).toEqual(['o']);
+    expect(present('present.blackout')).toEqual(['b', '.']);
+    expect(present('present.fullscreen')).toEqual(['f']);
+    expect(present('present.scrollDown')).toEqual(['ArrowDown']);
+    expect(present('palette.commands')).toEqual([':']);
+    expect(present('help.shortcuts')).toEqual(['?']);
+    expect(present('system.escape')).toEqual(['Escape']);
+    expect(present('theme.toggleMode')).toEqual(['Mod+.']);
+    expect(catalogBindings().filter((b) => b.mode === 'present' && b.keys.startsWith('Leader'))).toEqual([]);
+    expect(catalogBindings().filter((b) => b.commandId === 'present.start').map((b) => [b.mode, b.keys])).toEqual([['normal', 'Leader p']]);
+  });
+
+  it('?-kortet i present-modus: Presentasjon først, ingen normal-modus-taster', () => {
+    const groups = shortcutGroups('other', 'present');
+    expect(groups[0]?.label).toBe('Presentasjon');
+    const ids = groups.flatMap((g) => g.rows.flatMap((r) => r.commands.map((c) => c.id)));
+    expect(ids).not.toContain('outline.toggleSection');
+    expect(ids).not.toContain('view.toggleWidth');
+    expect(ids).toContain('present.next');
+    expect(groups[0]?.commandOnly).toEqual(['presenter', 'agenda', 'avslutt']);
+    expect(groups.flatMap((g) => g.rows).filter((r) => r.kind === 'hint').map((r) => r.id)).toContain('overview.move');
   });
 
   it('aliaser er unike, små bokstaver og uten kolon', () => {
@@ -38,9 +68,9 @@ describe('kommandokatalogen v1.1', () => {
 
   it('AK-1.1-07: ?-oversikten har alle bundne kommandoer i fast gruppeorden', () => {
     const groups = shortcutGroups('docs');
-    expect(groups.map((g) => g.label)).toEqual(['Navigasjon', 'Lesing', 'Visning', 'Søk og kommandoer']);
+    expect(groups.map((g) => g.label)).toEqual(['Navigasjon', 'Lesing', 'Visning', 'Søk og kommandoer', 'Presentasjon']);
     const ids = groups.flatMap((g) => g.rows.flatMap((r) => r.commands.map((c) => c.id)));
-    expect([...ids].sort()).toEqual([...new Set(catalogBindings().map((b) => b.commandId))].sort());
+    expect([...ids].sort()).toEqual([...new Set(catalogBindings().filter((b) => b.mode === 'normal').map((b) => b.commandId))].sort());
     const search = groups.flatMap((g) => g.rows).find((r) => r.id === 'palette.search');
     expect(search?.bindings.map((b) => b.keys)).toEqual(['⌘K / Ctrl K', '/']);
   });

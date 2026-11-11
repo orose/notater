@@ -1,17 +1,8 @@
-import type { NoteDocument, PropertyEntry } from '../../../shared/api-types';
+import type { NoteDocument } from '../../../shared/api-types';
 import { folderOf } from '../../shared/api';
 import { Icon } from '../../shared/ui/Icon';
-import { PropertyList, formatDateTime } from '../properties';
+import { PropertyList, formatDateTime, ingressOf } from '../properties';
 import { useOpenSearch } from '../search';
-
-/** PO-21: ingress fra `description`, deretter `summary`. */
-function ingress(properties: readonly PropertyEntry[]): string | null {
-  for (const key of ['description', 'summary']) {
-    const entry = properties.find((p) => p.key.toLowerCase() === key);
-    if (entry?.value.type === 'string' && entry.value.value.trim()) return entry.value.value.trim();
-  }
-  return null;
-}
 
 interface NoteHeaderProps {
   readonly doc: NoteDocument;
@@ -24,7 +15,7 @@ interface NoteHeaderProps {
 export function NoteHeader({ doc, title, readingMinutes }: NoteHeaderProps) {
   const openSearch = useOpenSearch();
   const folder = folderOf(doc.path);
-  const dek = ingress(doc.properties);
+  const dek = ingressOf(doc.properties);
   const onTag = (tag: string) => openSearch(`#${tag}`);
   // PO-27: frontmatterError og warnings kan ha samme melding – vis hver melding én gang.
   const warnings = [...new Set([...(doc.warnings ?? []).map((w) => w.message), ...(doc.frontmatterError ? [doc.frontmatterError] : [])])];

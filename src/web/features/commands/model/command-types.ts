@@ -5,17 +5,24 @@ import type { KeyMode } from '../../keyboard';
 import type { CommandContext } from './command-context';
 
 /** Grupper i fast rekkefølge (F6). Etikettene vises i `?`-oversikten, paletten og README. */
-export const COMMAND_GROUPS = ['navigasjon', 'lesing', 'visning', 'sok'] as const;
+export const COMMAND_GROUPS = ['navigasjon', 'lesing', 'visning', 'sok', 'presentasjon'] as const;
 export type CommandGroup = (typeof COMMAND_GROUPS)[number];
 
 /** Gruppeorden i paletten med tom `:`-linje: mest brukt først (designsystem §11.7). */
-export const PALETTE_GROUP_ORDER: readonly CommandGroup[] = ['visning', 'lesing', 'sok', 'navigasjon'];
+export const PALETTE_GROUP_ORDER: readonly CommandGroup[] = ['visning', 'lesing', 'presentasjon', 'sok', 'navigasjon'];
+
+/** Gruppeorden i `?`-kortet per modus: under presentasjon står presentasjonstastene først. */
+export const MODE_GROUP_ORDER: Readonly<Record<KeyMode, readonly CommandGroup[]>> = {
+  normal: COMMAND_GROUPS,
+  present: ['presentasjon', 'visning', 'sok', 'navigasjon', 'lesing'],
+};
 
 export const GROUP_LABELS: Readonly<Record<CommandGroup, string>> = {
   navigasjon: 'Navigasjon',
   lesing: 'Lesing',
   visning: 'Visning',
   sok: 'Søk og kommandoer',
+  presentasjon: 'Presentasjon',
 };
 
 export interface BindingSpec {
@@ -32,6 +39,19 @@ export interface ArgumentSpec {
   readonly name: string;
   /** Visningsnavn i paletten, f.eks. «Typesett». */
   readonly label: string;
+  /** Kommandoen kan kjøres uten argument (Enter på kommandoraden kjører, ⇥ fyller inn). Standard: nei. */
+  readonly optional?: boolean;
+  /** `prefix`: verdiene matches fra starten (`4` treffer ikke `h4`). Standard: fuzzy. */
+  readonly match?: 'fuzzy' | 'prefix';
+}
+
+/** Forklarende feil for et argument som ikke finnes blant verdiene (vim-stil kode, f.eks. E475/E486). */
+export interface ArgumentError {
+  readonly code: string;
+  /** Fet første setning. */
+  readonly title: string;
+  /** Forklaring etter tittelen. */
+  readonly detail: string;
 }
 
 /** En lovlig verdi for et argument (verdiene kommer fra handleren ved kjøretid). */
@@ -74,9 +94,17 @@ export interface CommandSpecBody {
   readonly short?: string;
   /** Kort etikett i which-key (`bredde`). Standard: første alias. */
   readonly hint?: string;
+  /**
+   * Modiene kommandoen kan brukes i (ADR-010 §3). Standard: alle. Utenfor gir den begrunnelsen «Ikke under
+   * presentasjon» / «Bare under presentasjon», og `?`-kortet viser den bare i sine modi.
+   */
+  readonly modes?: readonly KeyMode[];
   /** `false` = vises ikke i paletten. Standard: vises (i v1.1 vises alle, AK-1.1-06). */
   readonly inPalette?: boolean;
 }
+
+export const NOT_WHILE_PRESENTING = 'Ikke under presentasjon';
+export const ONLY_WHILE_PRESENTING = 'Bare under presentasjon';
 
 /** `isEnabled` svarer alltid med begrunnelse når kommandoen ikke kan brukes (F5). */
 export type Availability = { readonly enabled: true } | { readonly enabled: false; readonly reason: string };
@@ -91,6 +119,11 @@ export interface CommandHandler {
   readonly state?: (ctx: CommandContext) => string | null;
   /** Lovlige verdier for argumentet `name` (tema, palett …). */
   readonly argumentValues?: (ctx: CommandContext, name: string) => readonly ArgumentValue[];
+  /**
+   * Forklaring når inndata ikke treffer noen verdi (S4: `:presenter h9` → E475, `:presenter h5` → E486). `null` gir
+   * palettens generelle E475-tekst.
+   */
+  readonly argumentError?: (ctx: CommandContext, name: string, input: string) => ArgumentError | null;
   /**
    * Utfører kommandoen. `args` er tom når den kjøres fra tastaturet; da bruker kommandoen et
    * fornuftig standardvalg (f.eks. veksle) eller åpner paletten på argumentlisten.

@@ -234,7 +234,7 @@ describe('CommandProvider: tastatur → kommandoer', () => {
       vi.advanceTimersByTime(WHICH_KEY_DELAY_MS);
     });
     const hint = screen.getByTestId('leader-hint');
-    expect([...hint.querySelectorAll('li kbd')].map((k) => k.textContent)).toEqual(['w', 'd', 'z', 'm', 't']);
+    expect([...hint.querySelectorAll('li kbd')].map((k) => k.textContent)).toEqual(['w', 'd', 'z', 'm', 't', 'p']);
     expect(hint).toHaveTextContent('bredde');
     key('Escape');
     expect(screen.queryByTestId('leader-hint')).not.toBeInTheDocument();
@@ -252,6 +252,7 @@ describe('?-oversikten', () => {
       'Lesing',
       'Visning',
       'Søk og kommandoer',
+      'Presentasjon',
     ]);
     const rows = within(dialog).getAllByTestId('hurtigtast-rad');
     const toggle = rows.find((r) => r.dataset.commandId === 'theme.toggleMode');

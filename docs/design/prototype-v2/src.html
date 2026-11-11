@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="nb" data-type="tidsskrift" data-palette="papir" data-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>v2 · Presentasjonsmodus · Vault-leser</title>
+<!-- Prototype v2 (docs/design/designsystem.md §12). Selvstendig: ingen nettverkskall, fonter og tokens.css innebygd.
+     URL-styring: ?type=tidsskrift|terminal|klartekst &palette=papir|cyanotypi|fosfor|signal &mode=light|dark
+                  &s=7 (lysbilde, 1-basert) &demo=uten-overskrifter|lang-agenda &agenda=av &live=1
+                  &open=oversikt|svart|palett|hjelp|lesevisning &q=presenter%20h9 &hint=1 &debug=1 -->
+<script>
+(function () {
+  var d = { mode: 'light', type: 'tidsskrift', palette: 'papir' };
+  try { var s = JSON.parse(localStorage.getItem('vault-leser.tema') || 'null'); if (s) d = Object.assign(d, s); } catch (e) {}
+  var q = new URLSearchParams(location.search);
+  ['mode', 'type', 'palette'].forEach(function (k) { if (q.get(k)) d[k] = q.get(k); });
+  var dark = d.mode === 'dark' || (d.mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+  var r = document.documentElement;
+  r.dataset.type = d.type; r.dataset.palette = d.palette; r.dataset.mode = dark ? 'dark' : 'light';
+})();
+</script>
+<style>
+/*FONTS*/
+</style>
+<style>
+/*TOKENS*/
+</style>
+<style>
+/* ==========================================================================
+   v2 PRESENTASJON – komponenter (referanse for frontend, designsystem §12)
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+/* I present-modus skaleres rotfonten med vinduet: palett, oppslagskort, oversikt og toast må leses fra bakerste rad også */
+html { font-size: clamp(16px, 0.55vw + 9px, 22px); }
+body {
+  background: var(--color-letterbox); color: var(--color-text); overflow: hidden;
+  font-family: var(--font-ui); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  font-kerning: normal; text-rendering: optimizeLegibility;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.k {
+  display: inline-block; font-family: var(--font-meta); font-size: 0.8em; font-weight: 500; line-height: 1; font-style: normal;
+  padding: 0.22em 0.42em 0.18em; border: 1px solid var(--color-kbd-edge); border-bottom-width: 2px;
+  border-radius: var(--radius-m); background: var(--color-kbd-bg); color: var(--color-kbd-fg); white-space: nowrap;
+}
+[data-type="tidsskrift"] .k { border-radius: var(--radius-l); }
+.k.lead { color: var(--color-cmd); }
+.k + .k { margin-left: 0.15em; }
+.alt { color: var(--color-muted); margin: 0 0.2em; }
+
+/* ---------- Scene (letterbox) og lerret ---------- */
+.present { position: fixed; inset: 0; }
+.present.is-idle, .present.is-idle * { cursor: none !important; }
+.stage { position: absolute; inset: 0; display: grid; place-items: center; background: var(--color-letterbox); }
+.canvas-box { position: relative; width: calc(1920px * var(--stage-scale, 1)); height: calc(1080px * var(--stage-scale, 1)); flex: none; }
+/* ADR-010: lerretet er alltid 1920 × 1080 logiske px; visningen skaleres med transform (1 lp = 1 px) */
+.canvas {
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform: scale(var(--stage-scale, 1)); transform-origin: 0 0;
+  container-type: size; overflow: hidden;
+  background: var(--color-bg); color: var(--color-text);
+  font-family: var(--font-body); font-weight: var(--slide-weight-body); line-height: var(--slide-leading);
+  font-variant-ligatures: common-ligatures; hanging-punctuation: first allow-end last;
+}
+
+/* ---------- Lysbilder: absolutt stablet, krysstoning ---------- */
+.slide {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  padding: var(--slide-content-top) var(--slide-margin-x) var(--slide-content-bottom);
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--slide-fade) var(--ease-in-out), visibility 0s linear var(--slide-fade);
+}
+.slide.is-active { opacity: 1; visibility: visible; transition: opacity var(--slide-fade) var(--ease-in-out), visibility 0s; }
+.slide.is-measure { opacity: 0 !important; visibility: hidden !important; }
+
+/* ---------- Agendalinjen = kolumnetittel ---------- */
+.runhead {
+  position: absolute; left: var(--slide-margin-x); right: var(--slide-margin-x); top: var(--slide-head-top);
+  font-size: var(--slide-step-n2); line-height: 1.25; color: var(--color-head); z-index: 2;
+}
+.runhead[hidden] { display: block; visibility: hidden; }
+.runhead ol { display: flex; list-style: none; margin: 0; padding: 0 0 calc(16 * var(--lp)); white-space: nowrap; overflow: hidden; }
+.runhead li { flex: none; }
+.runhead li + li::before { content: "·"; margin-inline: 0.65em; color: var(--color-head); text-decoration: none; display: inline-block; }
+.runhead .t { text-underline-offset: 0.32em; text-decoration-thickness: var(--slide-rule); }
+.runhead .cur { color: var(--color-head-current); }
+.runhead .cur .t { text-decoration-line: underline; text-decoration-color: var(--color-head-mark); }
+.runhead .pos { font-family: var(--font-meta); font-size: max(calc(var(--slide-mono-min-lp) * var(--lp)), 0.9em); margin-left: 0.55em; font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; }
+.runhead .ell { color: var(--color-head); }
+.runhead .no { display: none; }
+[data-type="tidsskrift"] .runhead { font-family: var(--font-sc); letter-spacing: var(--tracking-sc); }
+[data-type="tidsskrift"] .runhead .t { text-transform: lowercase; }
+[data-type="tidsskrift"] .runhead ol { border-bottom: var(--slide-hair) solid var(--color-rule-strong); }
+[data-type="terminal"] .runhead { font-family: var(--font-meta); letter-spacing: 0.01em; }
+[data-type="terminal"] .runhead .no { display: inline; color: inherit; margin-right: 0.5em; }
+[data-type="terminal"] .runhead li + li::before { content: "│"; margin-inline: 0.8em; }
+[data-type="terminal"] .runhead .cur .no { color: var(--color-accent); }
+[data-type="klartekst"] .runhead { font-family: var(--font-ui); }
+[data-type="klartekst"] .runhead .cur { font-weight: 700; }
+
+/* ---------- Bunn: notattittel, folio, fremdrift ---------- */
+.slide-foot {
+  position: absolute; left: var(--slide-margin-x); right: var(--slide-margin-x); bottom: var(--slide-foot-bottom);
+  display: flex; justify-content: space-between; align-items: baseline; gap: 2em;
+  font-size: var(--slide-step-n2); line-height: 1.1; color: var(--color-muted); z-index: 2;
+}
+.foot-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+[data-type="tidsskrift"] .foot-title { font-style: italic; }
+[data-type="terminal"] .foot-title { font-family: var(--font-meta); }
+.folio { margin-left: auto; font-family: var(--font-meta); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: max(calc(var(--slide-mono-min-lp) * var(--lp)), 1em); }
+.folio b { font-weight: 500; color: var(--color-text); }
+.live-flag { display: inline-flex; align-items: baseline; gap: 0.5em; font-family: var(--font-meta); font-style: normal; color: var(--color-muted); }
+.live-flag::before { content: ""; width: 0.55em; height: 0.55em; border-radius: 50%; background: var(--hue-green); align-self: center; }
+.progress { position: absolute; left: 0; right: 0; bottom: 0; height: var(--slide-progress-h); display: flex; gap: calc(6 * var(--lp)); z-index: 2; }
+/* PO-95: tittellysbildet har verken folio eller fremdriftslinje (tidsskrifttradisjon) */
+.present[data-kind="tittel"] .progress, .present[data-kind="tittel"] .folio { visibility: hidden; }
+.progress .seg { position: relative; flex: var(--n) 1 0; background: var(--color-progress-track); overflow: hidden; }
+.progress .fill { position: absolute; inset: 0 auto 0 0; width: var(--w, 0%); background: var(--color-progress); transition: width var(--dur-base) var(--ease-out); }
+
+/* ---------- Innholdslysbilde: tittel ---------- */
+.slide-title {
+  position: relative; flex: none; margin: 0 0 calc(36 * var(--lp)); max-width: 24em;
+  font-family: var(--font-display); font-size: var(--slide-step-2); font-weight: var(--slide-weight-title);
+  line-height: 1.06; letter-spacing: var(--tracking-display); text-wrap: balance;
+}
+.slide-title .sec-no { font-weight: 400; }
+[data-type="tidsskrift"] .slide-title .sec-no {
+  position: absolute; right: calc(100% + 0.42em); top: 0.42em; font-size: 0.46em; font-style: italic; color: var(--color-accent); white-space: nowrap; letter-spacing: 0;
+}
+[data-type="terminal"] .slide-title .sec-no {
+  display: block; margin-bottom: 0.45em; font-family: var(--font-meta); font-size: var(--slide-step-n2); font-weight: 500; letter-spacing: 0.06em; color: var(--color-accent);
+}
+[data-type="klartekst"] .slide-title .sec-no { display: none; }
+.forts { color: var(--color-muted); font-weight: 400; letter-spacing: 0; white-space: nowrap; }
+[data-type="tidsskrift"] .forts { font-style: italic; font-size: 0.6em; }
+[data-type="terminal"] .forts { font-family: var(--font-meta); font-size: 0.44em; vertical-align: 0.35em; }
+[data-type="klartekst"] .forts { font-size: 0.6em; }
+.kicker-forts { position: absolute; left: var(--slide-margin-x); top: var(--slide-head-top); font-size: var(--slide-step-n2); color: var(--color-muted); }
+[data-type="tidsskrift"] .kicker-forts { font-style: italic; }
+[data-type="terminal"] .kicker-forts { font-family: var(--font-meta); }
+
+/* ---------- Innholdslysbilde: kropp (A2: --slide-fit settes av JS, ADR-010) ---------- */
+.slide-body {
+  --mono-floor: calc(var(--slide-mono-min-lp) * var(--lp));
+  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--slide-flow);
+  font-size: calc(var(--slide-step-0) * var(--slide-fit, 1)); overflow: hidden;
+  /* hengende tankestreker, «§» og anførselstegn skal ikke klippes: kroppen strekker seg inn i margen */
+  margin-inline: calc(-1 * var(--slide-hang)); padding-inline: var(--slide-hang);
+}
+.slide-body > * { margin: 0; flex: none; }
+.slide-body > :is(p, ul, ol, blockquote, h3, .callout) { max-width: var(--slide-measure); }
+.slide-body p { text-wrap: pretty; }
+.slide-body strong { font-weight: var(--weight-strong); }
+.slide-body h3 { font-family: var(--font-display); font-size: 1.3em; font-weight: var(--weight-h3); font-style: var(--style-h3); line-height: 1.15; }
+.slide-body ul, .slide-body ol { padding-left: 1.1em; }
+.slide-body li + li { margin-top: 0.28em; }
+.slide-body li::marker { color: var(--color-accent); }
+[data-type="tidsskrift"] .slide-body ul { list-style: "–\2002"; padding-left: 0; }
+[data-type="tidsskrift"] .slide-body ol { padding-left: 0; }
+[data-type="terminal"] .slide-body ul { list-style: square; }
+.slide-body :not(pre) > code { font-family: var(--font-mono); font-size: calc(var(--slide-mono-ratio) * 1.04em); font-feature-settings: var(--mono-ligatures); }
+[data-type="terminal"] .slide-body :not(pre) > code, [data-type="klartekst"] .slide-body :not(pre) > code { background: var(--color-sunken); padding: 0.06em 0.28em; border-radius: var(--radius-s); }
+.slide-body a, .t-pre a {
+  color: var(--color-link); text-decoration-line: underline; text-decoration-thickness: max(1px, calc(3 * var(--lp)));
+  text-underline-offset: 0.2em; text-decoration-color: color-mix(in oklab, var(--color-link) 55%, transparent);
+}
+[data-type="tidsskrift"] .slide-body a.wikilink, [data-type="tidsskrift"] .t-pre a.wikilink { color: var(--color-text); text-decoration-color: var(--color-accent); }
+.slide-body mark { background: var(--color-mark); color: inherit; padding: 0 0.12em; }
+.timeline { list-style: none !important; padding: 0 !important; display: grid; grid-template-columns: max-content 1fr; gap: 0.5em 1.1em; }
+.timeline li { display: contents; }
+.timeline .when { font-family: var(--font-meta); font-size: calc(var(--slide-mono-ratio) * 1em); color: var(--color-accent); padding-top: 0.12em; font-variant-numeric: tabular-nums; }
+.timeline .what small { display: block; font-size: max(var(--mono-floor), 0.72em); color: var(--color-muted); }
+[data-type="tidsskrift"] .timeline .what small { font-style: italic; }
+
+/* Fotnoter (A4): små noter nederst på lysbildet de hører til */
+.fn-ref { font-family: var(--font-meta); font-size: 0.62em; vertical-align: super; line-height: 0; color: var(--color-accent); padding-left: 0.08em; }
+.slide-notes { flex: none; margin: calc(20 * var(--lp)) 0 0; padding: 0; list-style: none; font-size: var(--slide-step-n2); line-height: 1.35; color: var(--color-muted); max-width: 52em; }
+.slide-notes::before { content: ""; display: block; width: calc(240 * var(--lp)); border-top: var(--slide-hair) solid var(--color-rule-strong); margin-bottom: 0.55em; }
+.slide-notes li { display: flex; gap: 0.5em; }
+.slide-notes .n { font-family: var(--font-meta); color: var(--color-accent); min-width: 1ch; }
+[data-type="tidsskrift"] .slide-notes { font-style: italic; }
+[data-type="terminal"] .slide-notes { font-family: var(--font-meta); }
+
+/* ---------- Kodefigur ---------- */
+.s-code { font-size: calc(var(--slide-mono-ratio) * 1em); background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius-l); min-width: 0; display: flex; flex-direction: column; }
+.s-code .head { flex: none; display: flex; align-items: baseline; gap: 0.9em; padding: 0.5em 0.9em 0.45em; font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.8em); color: var(--color-muted); border-bottom: var(--slide-hair) solid var(--color-rule); }
+.s-code .file { color: var(--code-fg); font-weight: 500; }
+.s-code .lang { margin-left: auto; }
+.s-code pre { margin: 0; padding: 0.6em 0.9em 0.7em; font-family: var(--font-mono); line-height: 1.45; font-feature-settings: var(--mono-ligatures); tab-size: 2; overflow: hidden; }
+.s-code pre code { display: block; }
+.s-code .line { display: block; min-height: 1.45em; white-space: pre; }
+[data-type="tidsskrift"] .s-code { counter-increment: fig; border-radius: 0; border-top: var(--slide-rule) solid var(--color-text); border-bottom: var(--slide-hair) solid var(--color-rule-strong); }
+[data-type="tidsskrift"] .s-code .head::before { content: "Fig.\00a0" attr(data-fig); font-family: var(--font-sc); font-size: 1.12em; letter-spacing: 0.04em; color: var(--color-accent); }
+[data-type="terminal"] .s-code { border: var(--slide-hair) solid var(--color-rule); }
+[data-type="terminal"] .s-code .head { background: color-mix(in oklab, var(--code-bg) 60%, var(--color-surface)); }
+[data-type="terminal"] .s-code .head::before { content: ""; width: 0.5em; height: 0.5em; border-radius: 50%; background: var(--color-accent); align-self: center; }
+[data-type="terminal"] .s-code pre code { counter-reset: ln; }
+[data-type="terminal"] .s-code .line::before { counter-increment: ln; content: counter(ln); display: inline-block; width: 2ch; margin-right: 1.4ch; text-align: right; color: var(--color-muted); }
+.kw { color: var(--shiki-token-keyword); } .str { color: var(--shiki-token-string); } .cm { color: var(--shiki-token-comment); font-style: italic; }
+.fn { color: var(--shiki-token-function); } .cn { color: var(--shiki-token-constant); } .nu { color: var(--shiki-token-number); }
+.ty { color: var(--shiki-token-type); } .pu { color: var(--shiki-token-punctuation); }
+
+/* A2 siste utvei: én blokk som er for stor alene → minimum skrift + intern rulling (↑ ↓) */
+.is-scroller { flex: 1 1 0 !important; min-height: 0; }
+.is-scroller pre { flex: 1 1 0; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--color-rule-strong) transparent;
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 3em), transparent); mask-image: linear-gradient(#000 calc(100% - 3em), transparent); }
+.is-scroller.at-end pre { -webkit-mask-image: none; mask-image: none; }
+.is-scroller pre:focus-visible { outline: var(--slide-focus) solid var(--color-focus); outline-offset: calc(-1 * var(--slide-focus)); }
+.scroll-hint { flex: none; display: flex; justify-content: space-between; gap: 1em; padding: 0.4em 0.9em 0.5em; font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.8em); color: var(--color-muted); border-top: var(--slide-hair) solid var(--color-rule); }
+.scroll-hint .k { font-size: 0.85em; }
+
+/* ---------- Diagram (Mermaid): skaleres til plassen som er igjen ---------- */
+.s-diagram { flex: 1 1 0 !important; min-height: var(--slide-figure-min); display: flex; flex-direction: column; counter-increment: fig; }
+.s-diagram .frame { flex: 1 1 0; min-height: 0; display: flex; padding: 0.4em 0.5em; background: var(--color-surface); border: var(--slide-hair) solid var(--color-rule); border-radius: var(--radius-l); }
+.s-diagram svg { width: 100%; height: 100%; font-family: var(--font-ui); overflow: visible; }
+.s-diagram figcaption { flex: none; margin-top: 0.45em; font-size: var(--slide-step-n2); color: var(--color-muted); }
+[data-type="tidsskrift"] .s-diagram .frame { background: transparent; border-width: var(--slide-rule) 0 var(--slide-hair); border-color: var(--color-text) transparent var(--color-rule-strong); border-radius: 0; }
+[data-type="tidsskrift"] .s-diagram figcaption { font-style: italic; }
+[data-type="tidsskrift"] .s-diagram figcaption::before { content: "Fig.\00a0" attr(data-fig) "\2003"; font-style: normal; font-family: var(--font-sc); color: var(--color-accent); letter-spacing: 0.04em; }
+.mm-node rect, .mm-node path { fill: var(--color-bg); stroke: var(--color-rule-strong); stroke-width: max(1.5px, calc(3 * var(--lp))); vector-effect: non-scaling-stroke; }
+.mm-node.hl rect { fill: color-mix(in oklab, var(--color-accent) 12%, var(--color-bg)); stroke: var(--color-accent); }
+.mm-node text { fill: var(--color-text); font-size: 30px; font-weight: 500; }
+.mm-node text.sub { fill: var(--color-muted); font-size: 24px; font-family: var(--font-meta); font-weight: 400; }
+.mm-cluster rect { fill: none; stroke: var(--color-rule-strong); stroke-dasharray: 10 8; stroke-width: max(1px, calc(2 * var(--lp))); vector-effect: non-scaling-stroke; }
+.mm-cluster text { fill: var(--color-muted); font-size: 24px; font-family: var(--font-meta); }
+.mm-edge { stroke: var(--color-muted); stroke-width: max(1.5px, calc(3 * var(--lp))); fill: none; vector-effect: non-scaling-stroke; }
+.mm-arrow { fill: var(--color-muted); }
+.mm-label { fill: var(--color-muted); font-size: 24px; font-family: var(--font-meta); }
+.mm-label-bg { fill: var(--color-surface); }
+[data-type="tidsskrift"] .mm-label-bg { fill: var(--color-bg); }
+
+/* ---------- Tabell (booktabs) og Bases ---------- */
+.s-table { width: 100%; border-collapse: collapse; font-size: calc(var(--slide-mono-ratio) * 1.05em); line-height: 1.3; font-variant-numeric: tabular-nums lining-nums;
+  border-top: var(--slide-rule) solid var(--color-text); border-bottom: var(--slide-rule) solid var(--color-text); }
+.s-table caption { caption-side: top; text-align: left; padding-bottom: 0.4em; font-size: var(--slide-step-n2); color: var(--color-muted); }
+.s-table th, .s-table td { text-align: left; vertical-align: baseline; padding: 0.42em 1em 0.42em 0; }
+.s-table th:last-child, .s-table td:last-child { padding-right: 0; }
+.s-table thead th { font-weight: 500; border-bottom: var(--slide-hair) solid var(--color-text); color: var(--color-muted); font-size: max(var(--mono-floor), 0.85em); }
+.s-table tbody tr + tr td { border-top: var(--slide-hair) solid var(--color-rule); }
+.s-table .num { text-align: right; white-space: nowrap; }
+.s-table .mono { font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.9em); }
+.s-table .empty { color: var(--color-muted); font-style: italic; }
+[data-type="tidsskrift"] .s-table thead th { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: 0.05em; font-size: 1em; }
+[data-type="terminal"] .s-table { border: var(--slide-hair) solid var(--color-rule); }
+[data-type="terminal"] .s-table thead th { font-family: var(--font-meta); text-transform: uppercase; letter-spacing: 0.08em; background: var(--color-surface); border-bottom-color: var(--color-rule-strong); }
+[data-type="terminal"] .s-table th, [data-type="terminal"] .s-table td { padding: 0.42em 0.8em; }
+[data-type="terminal"] .s-table tbody tr:nth-child(even) td { background: color-mix(in oklab, var(--color-surface) 70%, transparent); }
+[data-type="terminal"] .s-table tbody tr + tr td { border-top: 0; }
+.s-table a { color: var(--color-text); text-decoration-color: var(--color-rule-strong); }
+.status { display: inline-flex; align-items: center; gap: 0.45em; font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.88em); white-space: nowrap; }
+.status::before { content: ""; width: 0.6em; height: 0.6em; border-radius: 50%; border: max(1.5px, calc(3 * var(--lp))) solid currentColor; flex: none; }
+.status[data-s="todo"] { color: var(--color-muted); }
+.status[data-s="doing"] { color: var(--hue-orange); }
+.status[data-s="doing"]::before { background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+.status[data-s="done"] { color: var(--hue-green); }
+.status[data-s="done"]::before { background: currentColor; }
+
+.s-base { display: flex; flex-direction: column; gap: 0.45em; min-width: 0; }
+.s-base-head { display: flex; align-items: baseline; gap: 0.9em; font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.72em); color: var(--color-muted); }
+.s-base-head .src { color: var(--color-text); }
+.s-base-head .view { color: var(--color-muted); }
+.s-base-head .total { margin-left: auto; }
+[data-type="tidsskrift"] .s-base-head .view { font-family: var(--font-body); font-style: italic; font-size: 1.15em; }
+
+.s-kanban { display: grid; grid-template-columns: repeat(var(--lanes, 4), minmax(0, 1fr)); gap: calc(24 * var(--lp)); font-size: calc(var(--slide-mono-ratio) * 1em); }
+.lane { background: var(--color-surface); border-radius: var(--radius-l); padding: 0.45em; display: flex; flex-direction: column; gap: 0.4em; min-width: 0; }
+.lane-head { display: flex; justify-content: space-between; align-items: baseline; padding: 0.1em 0.25em 0.2em; font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.8em); color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.card { background: var(--color-bg); border: var(--slide-hair) solid var(--color-rule); border-radius: var(--radius-m); padding: 0.5em 0.6em; line-height: 1.22; }
+.card .t { display: block; font-weight: var(--weight-strong); }
+.card .m { display: flex; flex-wrap: wrap; gap: 0.2em 0.8em; margin-top: 0.35em; font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.78em); color: var(--color-muted); }
+.card.just-moved { animation: moved 1.6s var(--ease-out); }
+@keyframes moved { from { background: var(--color-mark); } }
+@media (prefers-reduced-motion: reduce) { .card.just-moved { animation: none; outline: var(--slide-rule) solid var(--color-mark); } }
+[data-type="tidsskrift"] .lane { background: transparent; border-radius: 0; border-top: var(--slide-rule) solid var(--color-text); padding: 0.3em 0 0; gap: 0; }
+[data-type="tidsskrift"] .lane-head { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: var(--tracking-sc); padding-inline: 0; font-size: 1em; }
+[data-type="tidsskrift"] .lane-head .n { font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.8em); }
+[data-type="tidsskrift"] .card { background: transparent; border: 0; border-bottom: var(--slide-hair) solid var(--color-rule-strong); border-radius: 0; padding: 0.45em 0 0.5em; }
+[data-type="tidsskrift"] .card .t { font-weight: 400; }
+
+/* ---------- Callout ---------- */
+.callout { --c: var(--hue-blue); border-left: var(--slide-rule-heavy) solid var(--c); padding: 0.45em 0.8em 0.55em 0.9em; background: color-mix(in oklab, var(--c) var(--tint), var(--color-bg)); border-radius: var(--radius-m); }
+.callout .ct { display: flex; gap: 0.5em; align-items: baseline; color: var(--c); font-weight: var(--weight-strong); margin-bottom: 0.2em; }
+.callout .ct .name { font-family: var(--font-meta); font-size: max(var(--mono-floor), 0.66em); text-transform: uppercase; letter-spacing: 0.08em; }
+.callout .ct .sub { color: var(--color-text); }
+.callout .ct .sub::before { content: "—\2009"; color: var(--color-muted); font-weight: 400; }
+.callout p { margin: 0; }
+.callout[data-callout="question"] { --c: var(--hue-amber); }
+.callout[data-callout="warning"] { --c: var(--hue-orange); }
+[data-type="tidsskrift"] .callout { background: transparent; border-left-width: var(--slide-rule); border-radius: 0; }
+[data-type="tidsskrift"] .callout .ct .name { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: 0.05em; font-size: 1em; font-weight: 500; }
+[data-type="tidsskrift"] .callout .ct .sub { font-style: italic; font-weight: 400; }
+
+/* ---------- L1 Tittellysbilde ---------- */
+.slide[data-kind="tittel"] {
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--slide-gap);
+  padding: calc(112 * var(--lp)) var(--slide-margin-x) calc(104 * var(--lp)); align-content: stretch;
+  grid-template-rows: auto auto auto auto 1fr auto;
+  grid-template-areas:
+    "kick kick kick kick kick kick kick kick kick kick kick kick"
+    "titl titl titl titl titl titl titl titl titl titl  .    .  "
+    "dek  dek  dek  dek  dek  dek  dek  dek   .   prop prop prop"
+    "pre  pre  pre  pre  pre  pre  pre  pre   .   prop prop prop"
+    ".    .    .    .    .    .    .    .     .   prop prop prop"
+    "foot foot foot foot foot foot foot foot foot foot foot foot";
+}
+.t-kick { grid-area: kick; font-size: var(--slide-step-n1); color: var(--color-muted); margin: 0 0 calc(28 * var(--lp)); }
+[data-type="tidsskrift"] .t-kick { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: var(--tracking-sc); color: var(--color-accent); }
+[data-type="terminal"] .t-kick { font-family: var(--font-meta); }
+[data-type="terminal"] .t-kick::before { content: "~/"; color: var(--color-accent); }
+.t-kick .sep { color: var(--color-muted); margin-inline: 0.35em; }
+.t-title {
+  grid-area: titl; margin: 0; font-family: var(--font-display); font-size: var(--slide-step-4); font-weight: var(--slide-weight-display);
+  line-height: 0.98; letter-spacing: calc(var(--tracking-display) * 1.4); text-wrap: balance;
+}
+[data-type="terminal"] .t-title::after { content: ""; display: inline-block; width: 0.42em; height: 0.78em; margin-left: 0.12em; background: var(--color-accent); vertical-align: -0.04em; }
+.t-dek { grid-area: dek; margin: calc(44 * var(--lp)) 0 0; font-size: var(--slide-step-1); line-height: 1.3; color: var(--color-muted); text-wrap: pretty; }
+[data-type="tidsskrift"] .t-dek { font-style: italic; }
+.t-pre { grid-area: pre; margin: calc(28 * var(--lp)) 0 0; font-size: var(--slide-step-n1); color: var(--color-text); }
+.t-props { grid-area: prop; align-self: start; margin: calc(44 * var(--lp)) 0 0; font-size: var(--slide-step-n1); line-height: 1.3; }
+.t-props div { display: grid; gap: 0.1em; padding: 0.55em 0; border-bottom: var(--slide-hair) solid var(--color-rule-strong); }
+.t-props div:last-child { border-bottom: 0; }
+.t-props dt { font-size: var(--slide-step-n2); color: var(--color-muted); }
+.t-props dd { margin: 0; }
+.t-props a { color: var(--color-text); text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: max(1px, calc(3 * var(--lp))); text-underline-offset: 0.2em; }
+[data-type="tidsskrift"] .t-props { border-top: var(--slide-rule-heavy) solid var(--color-text); }
+[data-type="tidsskrift"] .t-props dt { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: var(--tracking-sc); }
+.t-foot { grid-area: foot; display: flex; justify-content: flex-start; align-items: baseline; gap: 2em; padding-top: calc(20 * var(--lp)); border-top: var(--slide-hair) solid var(--color-rule-strong); font-size: var(--slide-step-n2); color: var(--color-muted); }
+.t-foot .tags { display: flex; gap: 0.8em; color: var(--color-accent); }
+[data-type="tidsskrift"] .t-foot .tags { font-style: italic; }
+[data-type="terminal"] .t-foot .tags, [data-type="klartekst"] .t-foot .tags { font-family: var(--font-meta); }
+.t-foot .meta { font-family: var(--font-meta); font-variant-numeric: tabular-nums; font-size: max(calc(var(--slide-mono-min-lp) * var(--lp)), 1em); }
+/* Terminal og Klartekst: én spalte, properties som nøkkel/verdi-tabell nederst til venstre */
+[data-type="terminal"] .slide[data-kind="tittel"], [data-type="klartekst"] .slide[data-kind="tittel"] {
+  grid-template-areas:
+    "kick kick kick kick kick kick kick kick kick kick kick kick"
+    "titl titl titl titl titl titl titl titl titl titl titl  .  "
+    "dek  dek  dek  dek  dek  dek  dek  dek  dek   .    .    .  "
+    "pre  pre  pre  pre  pre  pre  pre  pre  pre   .    .    .  "
+    "prop prop prop prop prop prop prop prop  .    .    .    .  "
+    "foot foot foot foot foot foot foot foot foot foot foot foot";
+}
+[data-type="terminal"] .t-props, [data-type="klartekst"] .t-props {
+  align-self: end; justify-self: start; min-width: 50%; margin: 0 0 calc(40 * var(--lp)); display: grid; grid-template-columns: max-content 1fr; gap: 0.25em 1.4em;
+}
+[data-type="terminal"] .t-props { font-family: var(--font-meta); background: var(--color-surface); border: var(--slide-hair) solid var(--color-rule); border-radius: var(--radius-l); padding: 0.7em 1em; }
+[data-type="terminal"] .t-props div, [data-type="klartekst"] .t-props div { display: contents; }
+[data-type="terminal"] .t-props dt, [data-type="klartekst"] .t-props dt { font-size: 1em; }
+[data-type="klartekst"] .t-props dt { font-weight: 700; color: var(--color-text); }
+[data-type="klartekst"] .t-props { border-top: var(--slide-rule) solid var(--color-text); padding-top: 0.6em; }
+[data-type="terminal"] .t-foot, [data-type="klartekst"] .t-foot { border-top: 0; padding-top: 0; }
+
+/* ---------- L2 Agenda og L3 Overgang (samme oppsett: overgangen er agendaen med «du er her») ---------- */
+.ag-label { flex: none; margin: 0 0 calc(40 * var(--lp)); font-family: var(--font-display); font-size: var(--slide-step-2); font-weight: var(--slide-weight-title); line-height: 1.06; letter-spacing: var(--tracking-display); }
+.ag-body { flex: 1 1 auto; min-height: 0; overflow: hidden; font-size: calc(var(--slide-step-3) * var(--slide-fit, 1));
+  margin-left: calc(-1 * var(--slide-margin-x)); padding-left: var(--slide-margin-x); }
+.ag-list { list-style: none; margin: 0; padding: 0; max-width: calc(1440 * var(--lp)); }
+.ag-cols { display: flex; justify-content: flex-end; max-width: calc(1440 * var(--lp)); margin-bottom: 0.3em; font-size: var(--slide-step-n2); color: var(--color-muted); }
+[data-type="tidsskrift"] .ag-cols { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: var(--tracking-sc); }
+[data-type="terminal"] .ag-cols, [data-type="klartekst"] .ag-cols { font-family: var(--font-meta); }
+.ag-item { position: relative; }
+.ag-item + .ag-item { margin-top: 0.22em; }
+.ag-row { display: grid; grid-template-columns: auto auto minmax(1em, 1fr) auto; align-items: baseline; line-height: 1.12; }
+.ag-no { grid-column: 1; color: var(--color-accent); font-variant-numeric: tabular-nums; }
+.ag-t { grid-column: 2; text-wrap: balance; padding-right: 0.35em; }
+.ag-lead { grid-column: 3; align-self: end; height: 0.32em; margin-bottom: 0.18em;
+  background: radial-gradient(circle, var(--lead, var(--color-rule-strong)) 0 calc(3 * var(--lp)), transparent calc(3.5 * var(--lp))) left bottom / calc(22 * var(--lp)) 100% repeat-x; }
+.ag-page { grid-column: 4; font-family: var(--font-meta); font-size: max(calc(var(--slide-mono-min-lp) * var(--lp)), 0.4em); color: var(--color-muted); font-variant-numeric: tabular-nums; padding-left: 0.5em; }
+.ag-sub { display: none; list-style: none; margin: 0.3em 0 0.2em; padding: 0; font-size: max(var(--slide-step-n1), 0.38em); line-height: 1.35; color: var(--color-muted); }
+.ag-now { display: none; }
+[data-type="tidsskrift"] .ag-label { font-style: italic; font-weight: 300; }
+[data-type="tidsskrift"] .ag-no { position: absolute; right: calc(100% + 0.32em); top: 0.42em; font-size: 0.4em; font-style: italic; white-space: nowrap; }
+[data-type="terminal"] .ag-no { font-family: var(--font-meta); font-size: 0.5em; font-weight: 500; margin-right: 0.4em; }
+[data-type="klartekst"] .ag-no { font-weight: 700; margin-right: 0.15em; }
+[data-type="klartekst"] .ag-no::after { content: "."; }
+/* L3 tilstander */
+.ag-item[data-state="past"] { color: var(--color-agenda-past); }
+.ag-item[data-state="past"] .ag-no { color: var(--color-agenda-past); }
+.ag-item[data-state="cur"] { color: var(--color-agenda-current); }
+.ag-item[data-state="cur"] .ag-page { color: var(--color-agenda-current); }
+.ag-item[data-state="cur"] .ag-sub { display: block; }
+[data-type="tidsskrift"] .ag-item[data-state="cur"]::before {
+  content: ""; position: absolute; left: calc(-1 * var(--slide-margin-x) + 52 * var(--lp)); top: 0.14em; height: 0.92em; width: var(--slide-rule-heavy); background: var(--color-agenda-current);
+}
+[data-type="tidsskrift"] .ag-sub { font-style: italic; }
+[data-type="tidsskrift"] .ag-sub li, [data-type="klartekst"] .ag-sub li { display: inline; }
+[data-type="tidsskrift"] .ag-sub li + li::before, [data-type="klartekst"] .ag-sub li + li::before { content: "\2002·\2002"; }
+[data-type="terminal"] .ag-item[data-state="cur"] .ag-row { background: var(--color-text); color: var(--color-bg); --lead: var(--color-bg); margin-inline: -0.2em; padding-inline: 0.2em; border-radius: var(--radius-s); }
+[data-type="terminal"] .ag-item[data-state="cur"] .ag-no, [data-type="terminal"] .ag-item[data-state="cur"] .ag-page { color: var(--color-bg); }
+[data-type="terminal"] .ag-sub { font-family: var(--font-meta); padding-left: 1.2em; }
+[data-type="terminal"] .ag-sub li::before { content: "├── "; color: var(--color-muted); }
+[data-type="terminal"] .ag-sub li:last-child::before { content: "└── "; }
+[data-type="klartekst"] .ag-item[data-state="cur"] { font-weight: 700; }
+[data-type="klartekst"] .ag-item[data-state="cur"]::before { content: ""; position: absolute; left: -0.45em; top: 0.12em; height: 0.95em; width: calc(8 * var(--lp)); background: var(--color-agenda-current); border-radius: calc(4 * var(--lp)); }
+[data-type="klartekst"] .ag-item[data-state="cur"] .ag-now { display: inline-block; margin-right: 0.4em; font-size: 0.42em; vertical-align: 0.4em; padding: 0.15em 0.45em; border-radius: var(--radius-s); background: var(--color-agenda-current); color: var(--color-bg); font-weight: 700; }
+[data-type="klartekst"] .ag-sub { font-weight: 400; }
+
+/* ---------- Kontroller: mus (hjørne) og mobil ---------- */
+.p-ctrl { position: absolute; top: 12px; right: 12px; z-index: 5; display: flex; gap: 8px; opacity: 0; pointer-events: none; transition: opacity var(--dur-base) var(--ease-out); }
+.present.is-pointer .p-ctrl, .p-ctrl:focus-within { opacity: 1; pointer-events: auto; }
+.p-btn { display: inline-flex; align-items: center; gap: 0.5em; min-height: 36px; padding: 0.35em 0.75em; font-family: var(--font-ui); font-size: 0.85rem; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-m); }
+.p-btn:hover { border-color: var(--color-text); }
+.p-btn .k { font-size: 0.75rem; }
+.tapzone { position: absolute; top: 0; bottom: 0; z-index: 1; -webkit-tap-highlight-color: transparent; }
+.tapzone.prev { left: 0; width: 33%; } .tapzone.next { right: 0; width: 67%; }
+.m-bar, .m-top, .m-hint { display: none; }
+@media (max-aspect-ratio: 1/1) {
+  .stage { display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 14px; padding: max(12px, env(safe-area-inset-top)) 0 max(12px, env(safe-area-inset-bottom)); }
+  .p-ctrl { display: none; }
+  .m-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; }
+  .m-top .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); font-size: 0.9rem; }
+  [data-type="tidsskrift"] .m-top .ttl { font-style: italic; }
+  .m-bar { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 8px; padding: 0 16px; }
+  .m-bar .folio-m { text-align: center; font-family: var(--font-meta); font-size: 0.9rem; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+  .m-btn { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 0.4em; padding: 0 0.8rem; color: var(--color-text); border: 1px solid var(--color-letterbox-edge); border-radius: var(--radius-m); font-size: 0.95rem; }
+  .m-hint { display: block; padding: 0 16px; text-align: center; color: var(--color-muted); font-size: 0.85rem; }
+}
+svg.i { width: 1.1em; height: 1.1em; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* ---------- Oversikt (o) ---------- */
+.overview { position: fixed; inset: 0; z-index: var(--z-present-overlay); background: var(--color-overview-bg); overflow-y: auto; padding: clamp(16px, 3vw, 44px) clamp(16px, 4vw, 64px) 48px; font-family: var(--font-ui); }
+.overview[hidden] { display: none; }
+.ov-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.5rem; margin-bottom: clamp(16px, 2vw, 28px); }
+.ov-head h2 { margin: 0; font-family: var(--font-display); font-size: var(--step-3); font-weight: var(--weight-h2); line-height: 1.1; }
+[data-type="tidsskrift"] .ov-head h2 { font-style: italic; font-weight: 300; }
+[data-type="terminal"] .ov-head h2 { font-size: var(--step-2); }
+.ov-head .sub { color: var(--color-muted); font-family: var(--font-meta); font-size: 0.8rem; }
+.ov-keys { margin-left: auto; display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; color: var(--color-muted); font-size: 0.85rem; }
+.ov-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 26px 22px; }
+.ov-item { cursor: pointer; min-width: 0; border-radius: var(--radius-s); }
+.ov-item:focus { outline: none; }
+.ov-grid:focus, .ov-grid:focus-visible { outline: none; }  /* markøren (aktiv rad) bærer fokus visuelt, jf. §11.3 PO-74 */
+.thumb { position: relative; aspect-ratio: 16 / 9; container-type: size; overflow: hidden; background: var(--color-bg); outline: 1px solid var(--color-rule); }
+.thumb .slide { opacity: 1; visibility: visible; transition: none; pointer-events: none; }
+.thumb .runhead-mini { position: absolute; left: var(--slide-margin-x); right: var(--slide-margin-x); top: var(--slide-head-top); }
+.ov-item[aria-current="step"] .thumb { outline: 3px solid var(--color-thumb-current); outline-offset: 0; }
+.ov-item.is-cursor .thumb { box-shadow: 0 0 0 4px var(--color-overview-bg), 0 0 0 7px var(--color-thumb-cursor); }
+.cap { display: flex; align-items: baseline; gap: 0.55em; margin-top: 0.55rem; font-size: 0.9rem; line-height: 1.3; min-width: 0; }
+.cap .no { font-family: var(--font-meta); font-size: 0.8rem; color: var(--color-accent); font-variant-numeric: tabular-nums; min-width: 2ch; }
+.cap .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cap .kind { color: var(--color-muted); }
+[data-type="tidsskrift"] .cap .kind { font-style: italic; }
+.cap .now { margin-left: auto; flex: none; font-family: var(--font-meta); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; padding: 0.15em 0.45em; border-radius: var(--radius-s); background: var(--color-thumb-current); color: var(--color-bg); }
+@media (max-width: 640px) { .ov-grid { grid-template-columns: 1fr 1fr; gap: 18px 12px; } .ov-keys { display: none; } .cap { font-size: 0.8rem; } }
+
+/* ---------- Svart skjerm (b / .) ---------- */
+.blackout { position: fixed; inset: 0; z-index: var(--z-blackout); background: var(--color-blackout); opacity: 0; visibility: hidden; cursor: none;
+  transition: opacity var(--slide-fade) var(--ease-in-out), visibility 0s linear var(--slide-fade); }
+.blackout.is-on { opacity: 1; visibility: visible; transition: opacity var(--slide-fade) var(--ease-in-out), visibility 0s; }
+
+/* ---------- Palett (:) og oppslagskort (?) – som v1.1, i present-modus ---------- */
+dialog { color: var(--color-text); }
+dialog:focus, dialog:focus-visible { outline: none; }  /* programmatisk fokusmål, jf. PO-74 */
+dialog::backdrop { background: var(--color-overlay); }
+.palette { width: min(40rem, calc(100vw - 2rem)); margin: 12vh auto auto; padding: 0; background: var(--color-bg); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-l); font-family: var(--font-ui); }
+[data-type="tidsskrift"] .palette { border-radius: 0; border-top: 3px solid var(--color-cmd); }
+[data-type="terminal"] .palette { box-shadow: 6px 6px 0 var(--color-rule-strong); }
+.p-field { display: flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1rem; border-bottom: 1px solid var(--color-rule); }
+[data-type="terminal"] .p-field { box-shadow: inset 3px 0 0 var(--color-cmd); }
+.p-prompt { font-family: var(--font-mono); font-weight: 600; color: var(--color-cmd); font-size: 1.1rem; }
+.p-input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--color-text); font-family: var(--font-mono); font-size: 1.05rem; caret-color: var(--color-cmd); }
+.p-input:focus { outline: none; }
+.p-list { list-style: none; margin: 0; padding: 0.4rem; max-height: 46vh; overflow: auto; }
+.p-group { padding: 0.6rem 0.6rem 0.2rem; font-size: 0.75rem; color: var(--color-muted); font-family: var(--font-meta); text-transform: uppercase; letter-spacing: 0.08em; }
+[data-type="tidsskrift"] .p-group { font-family: var(--font-sc); text-transform: lowercase; letter-spacing: var(--tracking-sc); font-size: 0.9rem; }
+.p-row { display: grid; grid-template-columns: 10.5rem 1fr auto; gap: 0.75rem; align-items: baseline; padding: 0.45rem 0.6rem; border-radius: var(--radius-m); cursor: pointer; }
+.p-row[aria-selected="true"] { background: var(--color-row-active); box-shadow: inset 2px 0 0 var(--color-cmd); }
+.p-row .c { font-family: var(--font-mono); font-size: 0.85rem; color: var(--color-muted); }
+.p-row .now { font-family: var(--font-meta); font-size: 0.75rem; color: var(--color-muted); margin-left: 0.4em; }
+.p-row .keys { white-space: nowrap; }
+.p-err { margin: 0.6rem; padding: 0.8rem 1rem; display: grid; grid-template-columns: auto 1fr; gap: 0.15rem 0.75rem; border: 1px dashed var(--color-rule-strong); border-radius: var(--radius-m); font-size: 0.95rem; line-height: 1.45; }
+.p-err .code { grid-row: span 2; font-family: var(--font-mono); font-weight: 600; color: var(--hue-red); }
+.p-err p { margin: 0; color: var(--color-muted); }
+.p-err strong { color: var(--color-text); font-weight: var(--weight-strong); }
+.p-err code { font-family: var(--font-mono); font-size: 0.9em; color: var(--color-text); }
+.p-foot { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; padding: 0.55rem 1rem; border-top: 1px solid var(--color-rule); font-family: var(--font-meta); font-size: 0.75rem; color: var(--color-muted); }
+.p-foot .mode { color: var(--color-cmd); }
+.refcard { width: min(56rem, calc(100vw - 2rem)); padding: 1.6rem 1.8rem 1.4rem; background: var(--color-bg); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-l); font-family: var(--font-ui); }
+[data-type="tidsskrift"] .refcard { border-radius: 0; border-top: 3px solid var(--color-text); }
+[data-type="terminal"] .refcard { box-shadow: 6px 6px 0 var(--color-rule-strong); }
+.rc-man { display: none; justify-content: space-between; font-family: var(--font-meta); font-size: 0.75rem; color: var(--color-muted); margin-bottom: 0.8rem; }
+[data-type="terminal"] .rc-man { display: flex; }
+.refcard h2 { margin: 0; font-family: var(--font-display); font-weight: var(--weight-h2); font-size: var(--step-3); line-height: 1.1; }
+[data-type="tidsskrift"] .refcard h2 { font-style: italic; font-weight: 300; }
+.rc-sub { margin: 0.3rem 0 1.2rem; color: var(--color-muted); }
+.rc-cols { columns: 2 24rem; column-gap: 2.4rem; }
+.rc-group { break-inside: avoid; margin-bottom: 1.1rem; }
+.rc-group h3 { margin: 0 0 0.4rem; padding-top: 0.4rem; font-size: 0.8rem; font-family: var(--font-meta); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted); font-weight: 500; border-top: 1px solid var(--color-rule-strong); }
+[data-type="tidsskrift"] .rc-group h3 { font-family: var(--font-sc); text-transform: lowercase; font-size: 1rem; border-top: 1.5px solid var(--color-text); }
+[data-type="terminal"] .rc-group h3 { color: var(--color-accent); border-top: 0; }
+.rc-row { display: grid; grid-template-columns: 12.5rem 1fr; gap: 0.75rem; padding: 0.32rem 0; align-items: baseline; font-size: 0.95rem; }
+.rc-row + .rc-row { border-top: 1px solid var(--color-rule); }
+[data-type="terminal"] .rc-row + .rc-row { border-top: 0; }
+.rc-foot { margin: 0.8rem 0 0; font-size: 0.85rem; color: var(--color-muted); }
+.rc-foot code { font-family: var(--font-mono); color: var(--color-text); }
+
+/* ---------- Toast / hint ---------- */
+.toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: var(--z-present-overlay); max-width: min(38rem, calc(100vw - 2rem));
+  display: flex; gap: 0.75rem; align-items: baseline; padding: 0.7rem 1rem; background: var(--color-surface); color: var(--color-text);
+  border: 1px solid var(--color-rule-strong); border-radius: var(--radius-m); font-family: var(--font-ui); font-size: 0.92rem; line-height: 1.45;
+  opacity: 0; visibility: hidden; transition: opacity var(--dur-base), visibility 0s linear var(--dur-base); }
+.toast.is-on { opacity: 1; visibility: visible; transition: opacity var(--dur-base), visibility 0s; }
+.toast b { font-weight: var(--weight-strong); }
+.toast .muted { color: var(--color-muted); }
+[data-type="tidsskrift"] .toast { border-radius: 0; border-top: 2px solid var(--color-text); }
+[data-type="terminal"] .toast { box-shadow: 4px 4px 0 var(--color-rule-strong); }
+@media (max-aspect-ratio: 1/1) { .toast { bottom: auto; top: 12px; } }
+
+/* ---------- Lesevisning (stub etter Esc) ---------- */
+.reader { position: fixed; inset: 0; overflow: auto; background: var(--color-bg); padding: clamp(24px, 6vw, 96px) clamp(16px, 8vw, 160px); font-family: var(--font-body); }
+.reader[hidden] { display: none; }
+.reader h1 { font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--step-5); line-height: 1.05; margin: 0 0 1rem; }
+.reader .crumb { font-family: var(--font-meta); font-size: 0.8rem; color: var(--color-muted); }
+.reader ol { line-height: 1.7; }
+.reader li.here > span { background: var(--color-mark); }
+.reader .start { margin-top: 1.5rem; }
+.debug { position: absolute; right: var(--slide-margin-x); top: var(--slide-head-top); z-index: 3; font: 500 calc(22 * var(--lp)) / 1 var(--font-meta); color: var(--color-muted); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="7" height="6"/><rect x="13.5" y="4.5" width="7" height="6"/><rect x="3.5" y="13.5" width="7" height="6"/><rect x="13.5" y="13.5" width="7" height="6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+</svg>
+
+<div class="present" id="present">
+  <div class="stage" id="stage">
+    <div class="m-top">
+      <button class="m-btn" id="m-exit" aria-label="Avslutt presentasjonen"><svg class="i"><use href="#i-x"/></svg></button>
+      <span class="ttl" id="m-title"></span>
+    </div>
+    <div class="canvas-box" id="canvas-box"><div class="canvas" id="canvas" role="region" aria-roledescription="presentasjon">
+      <div id="slides"></div>
+      <header class="runhead" id="runhead" aria-label="Agenda"><ol></ol></header>
+      <div class="kicker-forts" id="kicker" hidden></div>
+      <footer class="slide-foot" id="foot"><span class="foot-title" id="foot-title"></span><span class="folio" id="folio"></span></footer>
+      <div class="progress" id="progress" aria-hidden="true"></div>
+      <div class="tapzone prev" data-tap="-1" aria-hidden="true"></div>
+      <div class="tapzone next" data-tap="1" aria-hidden="true"></div>
+      <div class="p-ctrl" id="p-ctrl">
+        <button class="p-btn" id="btn-ov">Oversikt <span class="k">o</span></button>
+        <button class="p-btn" id="btn-exit">Avslutt <span class="k">Esc</span></button>
+      </div>
+      <div class="debug" id="debug" hidden></div>
+    </div></div>
+    <nav class="m-bar" aria-label="Lysbilder">
+      <button class="m-btn" id="m-prev" aria-label="Forrige lysbilde"><svg class="i"><use href="#i-prev"/></svg></button>
+      <span class="folio-m" id="m-folio"></span>
+      <button class="m-btn" id="m-ov" aria-label="Oversikt"><svg class="i"><use href="#i-grid"/></svg></button>
+      <button class="m-btn" id="m-next" aria-label="Neste lysbilde">Neste <svg class="i"><use href="#i-next"/></svg></button>
+    </nav>
+    <p class="m-hint">Trykk eller sveip på lysbildet. Snu telefonen for større visning.</p>
+  </div>
+</div>
+
+<div class="overview" id="overview" role="dialog" aria-modal="true" aria-labelledby="ov-h" hidden>
+  <header class="ov-head">
+    <h2 id="ov-h">Oversikt</h2>
+    <span class="sub" id="ov-sub"></span>
+    <span class="ov-keys"><span><span class="k">←</span><span class="k">→</span><span class="k">↑</span><span class="k">↓</span> <span class="alt">/</span> <span class="k">h</span><span class="k">j</span><span class="k">k</span><span class="k">l</span> flytt</span><span><span class="k">↵</span> gå til</span><span><span class="k">o</span> <span class="alt">/</span> <span class="k">Esc</span> lukk</span></span>
+  </header>
+  <ol class="ov-grid" id="ov-grid" role="listbox" aria-labelledby="ov-h" tabindex="0"></ol>
+</div>
+
+<div class="blackout" id="blackout" aria-hidden="true"></div>
+
+<dialog class="palette" id="palette" aria-label="Kommando">
+  <div class="p-field"><span class="p-prompt" aria-hidden="true">:</span><input class="p-input" id="p-input" aria-label="Kommando" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="p-list"></div>
+  <div id="p-err" hidden></div>
+  <ul class="p-list" id="p-list" role="listbox" aria-label="Kommandoer"></ul>
+  <div class="p-foot"><span class="mode" id="p-mode"></span><span>↑↓ velg</span><span>⇥ fullfør</span><span>↵ kjør</span><span>Esc lukk</span></div>
+</dialog>
+
+<dialog class="refcard" id="refcard" aria-labelledby="rc-h">
+  <div class="rc-man"><span>VAULT-LESER(1)</span><span>Presentasjon</span><span>VAULT-LESER(1)</span></div>
+  <h2 id="rc-h">Hurtigtaster</h2>
+  <p class="rc-sub">Presentasjonsmodus · gjelder til du avslutter med <span class="k">Esc</span></p>
+  <div class="rc-cols" id="rc-cols"></div>
+  <p class="rc-foot">Bare som kommando: <code>:agenda av</code> <code>:fullskjerm</code> <code>:presenter h‹n›</code> <code>:tema</code> <code>:palett</code> <code>:lys</code> <code>:mørk</code><br><span class="k">Esc</span> eller <span class="k">?</span> lukker.</p>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="sr-only" id="announcer" aria-live="polite" aria-atomic="true"></div>
+
+<main class="reader" id="reader" hidden tabindex="-1">
+  <p class="crumb" id="r-crumb"></p>
+  <h1 id="r-title"></h1>
+  <ol id="r-outline"></ol>
+  <p class="start"><button class="p-btn" id="r-start">Presenter fra her <span class="k lead">Space</span><span class="k">p</span></button></p>
+</main>
+
+<script>
+/* ==========================================================================
+   Prototype-logikk. Lysbildemodellen speiler spesifikasjonen (S1–S8): et notat → seksjoner (agendanivå)
+   → lysbilder (lysbildenivå). Alt layout er i lerretpiksler, så krymping og «(forts.)» gir samme resultat
+   uansett vindusstørrelse.
+   ========================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const Q = new URLSearchParams(location.search);
+const root = document.documentElement;
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/* ---------- Minimal uthever (prototypen bruker Shiki-variablene) ---------- */
+function hl(src, lang) {
+  const kw = lang === 'sql'
+    ? /\b(BEGIN|COMMIT|ALTER|TABLE|RENAME|TO|CREATE|PRIMARY|KEY|PARTITION|BY|RANGE|OF|FOR|VALUES|FROM|DEFAULT|INDEX|ON|WHERE|INSERT|INTO|SELECT|DROP|CONSTRAINT|ADD|FOREIGN|REFERENCES|ANALYZE|DO|IF|THEN|RAISE|EXCEPTION|END|NOT|NULL|CHECK|DESC)\b/
+    : /\b(var|if|return|new|final|public|private|class|null|import)\b/;
+  const re = new RegExp(`(${lang === 'sql' ? '--.*' : '//.*'})|('[^']*'|"[^"]*")|\\b(\\d+)\\b|${kw.source}|\\b(uuid|text|bigint|timestamptz|Duration|Response)\\b|\\b([a-z]\\w*)(?=\\()`, 'g');
+  return src.split('\n').map((line) => '<span class="line">' + esc(line).replace(re, (m, c, s, n, k, t, f) =>
+    c ? `<span class="cm">${c}</span>` : s ? `<span class="str">${s}</span>` : n ? `<span class="nu">${n}</span>` : k ? `<span class="kw">${k}</span>` : t ? `<span class="ty">${t}</span>` : f ? `<span class="fn">${f}</span>` : m) + '</span>').join('');
+}
+const code = (file, lang, src, fig) => `<figure class="s-code" data-fig="${fig}"><figcaption class="head" data-fig="${fig}"><span class="file">${file}</span><span class="lang">${lang}</span></figcaption><pre tabindex="-1"><code>${hl(src, lang)}</code></pre></figure>`;
+
+/* ---------- Innhold: et realistisk statusmøte ---------- */
+const JAVA = `var key = request.header("Idempotency-Key");
+if (key == null) return chain.proceed(request);
+
+return store.findResponse(key)
+    .map(Response::replay)          // samme svar, ingen ny ordre
+    .orElseGet(() -> {
+      var response = chain.proceed(request);
+      store.save(key, response, Duration.ofHours(24));
+      return response;
+    });`;
+const SQL = `-- V12__partisjoner_ordre.sql
+-- Partisjonerer ordre per måned. Kjøres i vedlikeholdsvindu (ca. 6 min).
+
+BEGIN;
+
+ALTER TABLE ordre RENAME TO ordre_gammel;
+
+CREATE TABLE ordre (
+  id            uuid        NOT NULL,
+  kunde_id      uuid        NOT NULL,
+  status        text        NOT NULL,
+  belop_ore     bigint      NOT NULL CHECK (belop_ore >= 0),
+  opprettet     timestamptz NOT NULL DEFAULT now(),
+  oppdatert     timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (id, opprettet)
+) PARTITION BY RANGE (opprettet);
+
+CREATE TABLE ordre_2026_10 PARTITION OF ordre
+  FOR VALUES FROM ('2026-10-01') TO ('2026-11-01');
+CREATE TABLE ordre_2026_11 PARTITION OF ordre
+  FOR VALUES FROM ('2026-11-01') TO ('2026-12-01');
+CREATE TABLE ordre_2026_12 PARTITION OF ordre
+  FOR VALUES FROM ('2026-12-01') TO ('2027-01-01');
+CREATE TABLE ordre_2027_01 PARTITION OF ordre
+  FOR VALUES FROM ('2027-01-01') TO ('2027-02-01');
+CREATE TABLE ordre_standard PARTITION OF ordre DEFAULT;
+
+CREATE INDEX ordre_kunde_idx  ON ordre (kunde_id, opprettet DESC);
+CREATE INDEX ordre_status_idx ON ordre (status) WHERE status <> 'levert';
+
+INSERT INTO ordre (id, kunde_id, status, belop_ore, opprettet, oppdatert)
+SELECT id, kunde_id, status, belop_ore, opprettet, oppdatert
+  FROM ordre_gammel;
+
+-- Outbox peker på ordre via id alene; fremmednøkkelen må gjenopprettes
+ALTER TABLE outbox DROP CONSTRAINT outbox_ordre_fk;
+ALTER TABLE outbox
+  ADD CONSTRAINT outbox_ordre_fk
+  FOREIGN KEY (ordre_id, ordre_opprettet)
+  REFERENCES ordre (id, opprettet);
+
+ANALYZE ordre;
+
+-- Kontroll: like mange rader før og etter
+DO $$
+BEGIN
+  IF (SELECT count(*) FROM ordre) <> (SELECT count(*) FROM ordre_gammel) THEN
+    RAISE EXCEPTION 'Antall rader stemmer ikke';
+  END IF;
+END $$;
+
+COMMIT;`;
+
+const node = (x, y, w, h, t, sub, cls = '') => `<g class="mm-node ${cls}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6"/><text x="${x + w / 2}" y="${y + (sub ? h / 2 - 4 : h / 2 + 10)}" text-anchor="middle">${t}</text>${sub ? `<text class="sub" x="${x + w / 2}" y="${y + h / 2 + 28}" text-anchor="middle">${sub}</text>` : ''}</g>`;
+const edge = (d) => `<path class="mm-edge" d="${d}" marker-end="url(#mm-a)"/>`;
+const label = (x, y, t) => `<rect class="mm-label-bg" x="${x - t.length * 7.5 - 8}" y="${y - 22}" width="${t.length * 15 + 16}" height="32"/><text class="mm-label" x="${x}" y="${y}" text-anchor="middle">${t}</text>`;
+const OUTBOX_SVG = `<svg viewBox="0 0 1640 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Outbox-mønsteret: Ordre-API skriver ordre og hendelse i én transaksjon; relay publiserer til Kafka; lager og faktura konsumerer.">
+<defs><marker id="mm-a" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="18" markerHeight="18" orient="auto-start-reverse"><path class="mm-arrow" d="M0 0L10 5L0 10z"/></marker></defs>
+<g class="mm-cluster"><rect x="330" y="20" width="400" height="430" rx="4"/><text x="350" y="56">Postgres · én transaksjon</text></g>
+${edge('M250 235 C 290 235, 290 145, 368 145')}${edge('M250 235 C 290 235, 290 345, 368 345')}
+${edge('M690 345 L 788 345')}${edge('M1040 345 L 1108 345')}
+${edge('M1370 345 C 1400 345, 1400 160, 1438 160')}${edge('M1370 345 C 1400 345, 1400 380, 1438 380')}
+${node(20, 190, 230, 90, 'Ordre-API', 'POST /ordre')}
+${node(370, 100, 320, 90, 'ordre', 'tabell')}
+${node(370, 300, 320, 90, 'outbox', 'tabell', 'hl')}
+${node(790, 300, 250, 90, 'Relay', 'poll 200 ms')}
+${node(1110, 300, 260, 90, 'ordre.v1', 'Kafka-topic')}
+${node(1440, 120, 180, 80, 'Lager')}${node(1440, 340, 180, 80, 'Faktura')}
+</svg>`;
+
+const card = (t, m) => `<div class="card" data-card="${t}"><span class="t">${t}</span><span class="m">${m}</span></div>`;
+function kanban(live) {
+  const lanes = [
+    ['todo', [['Skriv integrasjonstest for ordre-API', '13.11 · #test'], ['Rydd Kafka-konsumentgrupper', '20.11 · #kafka'], ['Lag dashboard i Grafana', '27.11 · #drift']]],
+    ['doing', [['Migrer til Java 21', '15.11 · #java'], ['Undersøk minnelekkasje', '12.11 · #drift']].concat(live ? [] : [['Sett opp Flyway-migreringer', '12.11 · #db']])],
+    ['review', (live ? [['Sett opp Flyway-migreringer', '12.11 · #db']] : []).concat([['Bytt til records i DTO-er', '10.11 · #java']])],
+    ['done', [['Oppgrader Spring Boot til 3.3', '04.11 · #spring'], ['Fiks flaky test i BetalingServiceTest', '05.11 · #test'], ['Refaktorer logging', '06.11 · #drift']]],
+  ];
+  const n = lanes.reduce((a, l) => a + l[1].length, 0);
+  return `<div class="s-base"><div class="s-base-head"><span class="src">Oppgaver.base</span><span class="view">Kanban · gruppert på status</span><span class="total">${n} oppgaver</span><span class="live-flag">${live ? 'oppdatert 14.02' : 'live'}</span></div>
+  <div class="s-kanban" style="--lanes:${lanes.length}">${lanes.map(([s, cs]) => `<section class="lane" aria-label="${s}, ${cs.length}"><div class="lane-head"><span>${s}</span><span class="n">${cs.length}</span></div>${cs.map((c) => card(c[0], c[1])).join('')}</section>`).join('')}</div></div>`;
+}
+const st = (s, t) => `<span class="status" data-s="${s}">${t}</span>`;
+const JAVA21 = `<div class="s-base"><div class="s-base-head"><span class="src">Tjenester.base</span><span class="view">Java 21-migrering</span><span class="total">6 tjenester</span><span class="live-flag">live</span></div>
+<table class="s-table"><thead><tr><th>Tjeneste</th><th>Status</th><th>Java</th><th>Eier</th><th class="num">Ferdig</th></tr></thead><tbody>
+<tr><td><a>ordre-api</a></td><td>${st('done', 'done')}</td><td class="mono">21</td><td>Kari</td><td class="num mono">30.10.2026</td></tr>
+<tr><td><a>betaling</a></td><td>${st('doing', 'doing')}</td><td class="mono">17 → 21</td><td>Ola</td><td class="num mono">15.11.2026</td></tr>
+<tr><td><a>lager</a></td><td>${st('doing', 'doing')}</td><td class="mono">17 → 21</td><td>Sindre</td><td class="num mono">20.11.2026</td></tr>
+<tr><td><a>faktura</a></td><td>${st('todo', 'todo')}</td><td class="mono">17</td><td>Ola</td><td class="num mono">04.12.2026</td></tr>
+<tr><td><a>varsling</a></td><td>${st('todo', 'todo')}</td><td class="mono">11</td><td class="empty">ikke satt</td><td class="num mono">11.12.2026</td></tr>
+<tr><td><a>rapport-batch</a></td><td>${st('todo', 'todo')}</td><td class="mono">11</td><td>Kari</td><td class="num mono">18.12.2026</td></tr>
+</tbody></table></div>`;
+
+const DECKS = {
+  status: {
+    title: 'Statusmøte uke 45', path: ['rapporter', 'statusmøter'],
+    dek: 'Ordreplattformen er i rute for desemberleveransen. Idempotens er i produksjon, outbox-mønsteret er i test, og vi trenger en avklaring om lagringstid før 20. november.',
+    pre: 'Referat føres i <a class="wikilink">Møtereferat uke 45</a>. Forrige møte: <a class="wikilink">Statusmøte uke 43</a>.',
+    props: [['prosjekt', '<a>Ordreplattform</a>'], ['møtedato', '9. nov. 2026'], ['status', '<span class="status" data-s="doing">i rute</span>'], ['deltakere', 'Kari N., Ola H., Sindre V.'], ['sprint', '12']],
+    tags: ['#status', '#ordreplattform'], meta: 'Endret 6. nov. 2026, 14.20',
+    sections: [
+      { title: 'Siden sist', slides: [
+        { title: 'Idempotente ordre-kall', blocks: [
+          '<p>Klienten sender <code>Idempotency-Key</code>, og svaret lagres i 24 timer.</p>',
+          '<ul><li>I produksjon siden 4. november</li><li><strong>0 doble ordre</strong> siste uke (før: 3–5 per uke)</li><li>Beslutningen står i <a class="wikilink">ADR-014 Idempotens</a></li></ul>',
+          () => code('IdempotencyFilter.java', 'java', JAVA, 1)] },
+        { title: 'Outbox-mønsteret', blocks: [
+          '<p>Ordren og hendelsen skrives i samme transaksjon. En relay publiserer fra outbox-tabellen til Kafka.</p>',
+          `<figure class="s-diagram" data-fig="2"><div class="frame">${OUTBOX_SVG}</div><figcaption data-fig="2">Ingen hendelse uten ordre, ingen ordre uten hendelse.</figcaption></figure>`],
+          more: [{ blocks: [
+            '<table class="s-table"><caption>Målinger i staging<span class="fn-ref">1</span></caption><thead><tr><th>Måling</th><th class="num">Før</th><th class="num">Etter</th></tr></thead><tbody><tr><td>Ordre per minutt, p95</td><td class="num">1 900</td><td class="num">2 400</td></tr><tr><td>Forsinkelse til Kafka, p95</td><td class="num">–</td><td class="num">180 ms</td></tr><tr><td>Tapte hendelser per døgn</td><td class="num">7</td><td class="num">0</td></tr><tr><td>Doble hendelser per døgn</td><td class="num">–</td><td class="num">0<span class="fn-ref">2</span></td></tr></tbody></table>',
+            '<p>Relayen kjører i to instanser med ledervalg i Postgres (<code>pg_advisory_lock</code>).</p>'],
+            notes: ['Staging 2.–6. november, syntetisk last på 2 400 ordre per minutt.', 'Konsumentene er idempotente, så eventuelle duplikater ville uansett blitt forkastet.'] }] },
+      ] },
+      { title: 'Jobbes med nå', slides: [
+        { title: 'Oppgaver', live: true, blocks: [(d) => kanban(d.live)] },
+        { title: 'Java 21-migrering', blocks: ['<p>To av seks tjenester gjenstår etter planen. <code>varsling</code> mangler eier.</p>', JAVA21] },
+        { title: 'Flyway V12: partisjonert ordretabell', blocks: ['<p>Ordretabellen deles per måned før volumet dobles i desember. Skriptet er til gjennomgang.</p>', () => code('V12__partisjoner_ordre.sql', 'sql', SQL, 3)] },
+      ] },
+      { title: 'Relativt nær framtid', slides: [
+        { title: 'Plan for første kvartal', blocks: ['<ul class="timeline"><li><span class="when">uke 49</span><span class="what">Outbox i produksjon for ordre og betaling</span></li><li><span class="when">uke 51</span><span class="what">Java 21 på alle tjenester<small>varsling og rapport-batch flyttes til januar hvis eier mangler</small></span></li><li><span class="when">uke 2</span><span class="what">Partisjonert ordretabell (V12) i produksjon</span></li><li><span class="when">uke 6</span><span class="what">Automatisk sletting av kundedata<small>avhenger av avklaringen på neste lysbilde</small></span></li></ul>'] },
+        { title: 'Avklaringer vi trenger', blocks: [
+          '<div class="callout" data-callout="question"><div class="ct"><span class="name">Spørsmål</span><span class="sub">Hvor lenge beholder vi ordrehistorikk?</span></div><p>Juridisk anbefaler fem år (bokføringsloven), produkt ønsker tre. Beslutning trengs innen 20. november.</p></div>',
+          '<div class="callout" data-callout="warning"><div class="ct"><span class="name">Advarsel</span><span class="sub">Kafka-klyngen nærmer seg diskgrensen</span></div><p>78 % brukt. Utvidelse er bestilt, men kommer tidligst uke 50.</p></div>'] },
+      ] },
+    ],
+  },
+  /* S7: notat uten overskrifter → tittellysbilde + innhold delt på --- og automatisk overflyt. Ingen agenda. */
+  'uten-overskrifter': {
+    title: 'Driftsnotat 3. november', path: ['drift'], noHeadings: true,
+    dek: 'Kort notat etter hendelsen i betalingstjenesten natt til mandag.',
+    props: [['type', 'driftsnotat'], ['alvorlighet', 'middels'], ['varighet', '42 min']], tags: ['#drift', '#hendelse'], meta: 'Endret 3. nov. 2026, 09.41',
+    sections: [{ title: '', slides: [
+      { blocks: ['<p>Klokken 02.14 begynte betalingstjenesten å svare med 503 på omtrent hvert femte kall. Årsaken var en tilkoblingspool som ikke slapp tilkoblinger etter en nettverksfeil mot banken.</p>', '<p>Vakthavende startet tjenesten på nytt 02.56. Ingen betalinger gikk tapt, fordi klientene prøver igjen med samme idempotensnøkkel.</p>'] },
+      { blocks: ['<ul><li>Pool-størrelse og tidsavbrudd er nå satt eksplisitt</li><li>Ny alarm når ledige tilkoblinger er under 10 % i mer enn ett minutt</li><li>Kjøreboken for betaling er oppdatert</li></ul>'] },
+      { blocks: ['<p>Tidslinje, med alle tider i norsk tid:</p>', '<ul><li>02.14 – første 503 i loggen</li><li>02.19 – alarm på feilrate over 5 %</li><li>02.27 – vakthavende bekrefter alarmen</li><li>02.38 – årsak funnet: pool tom etter nettverksfeil mot banken</li><li>02.56 – tjenesten startet på nytt</li><li>03.10 – feilraten tilbake på normalt nivå</li><li>08.30 – gjennomgang med teamet</li><li>09.15 – endringer i konfigurasjon lagt inn</li><li>09.40 – kjøreboken oppdatert</li><li>10.05 – notatet sendt til ledelsen</li></ul>', '<p>Neste steg er en belastningstest av poolen mot bankens testmiljø, planlagt til uke 46. Resultatet legges i dette notatet.</p>', '<p>Spørsmål om hendelsen kan rettes til vakthavende for uke 45 eller til teamleder.</p>', '<p>Lærdom: tilkoblingspoolen hadde standardverdier fra biblioteket, som ikke passer for en ekstern bank med lange svartider. Vi går gjennom de andre tjenestene som snakker med eksterne parter, og setter grensene eksplisitt der også.</p>', '<ul><li>betaling – gjort</li><li>faktura – uke 46</li><li>varsling (SMS-leverandør) – uke 47</li></ul>'] },
+    ] }],
+  },
+  /* Lang agenda: viser avkortet agendalinje («… forrige · nåværende · neste …») */
+  'lang-agenda': {
+    title: 'Kvartalsgjennomgang Q3', path: ['rapporter'],
+    dek: 'Gjennomgang av tredje kvartal for ordreplattformen.', props: [['periode', '2026-Q3'], ['status', '<span class="status" data-s="done">ferdig</span>']], tags: ['#kvartal'], meta: 'Endret 2. okt. 2026, 10.05',
+    sections: ['Sammendrag og nøkkeltall for kvartalet', 'Leveranser i ordreplattformen', 'Drift, hendelser og oppetid', 'Sikkerhet og personvern (GDPR)', 'Teknisk gjeld og oppgraderinger', 'Budsjett og ressurser', 'Veikart for første halvår 2027'].map((t, k) => ({ title: t, slides: [
+      { title: ['Hovedtall', 'Leveranser', 'Oppetid', 'Personvern', 'Gjeld', 'Budsjett', 'Veikart'][k], blocks: ['<p>Agendalinjen øverst er for lang for lerretet, så den viser bare forrige, nåværende og neste punkt, med «…» foran og bak.</p>', '<ul><li>Gjeldende punkt er uthevet med strek</li><li>Progresjonen innen punktet står etter navnet</li><li>Hele agendaen ser du på overgangslysbildene og i oversikten</li></ul>'] },
+      { title: 'Detaljer', blocks: ['<p>Et lysbilde til i samme agendapunkt, så progresjonen viser 2/2.</p>'] }] })),
+  },
+};
+
+/* ---------- Lysbildemodell ---------- */
+const state = { deckId: Q.get('demo') || 'status', agenda: Q.get('agenda') !== 'av', live: Q.get('live') === '1', i: 0, ov: false, cursor: 0, black: false, slides: [] };
+const deck = () => DECKS[state.deckId] || DECKS.status;
+function model() {
+  const d = deck(), out = [{ kind: 'tittel' }];
+  const secs = d.noHeadings ? [] : d.sections;
+  if (secs.length) out.push({ kind: 'agenda' });
+  (d.noHeadings ? d.sections : secs).forEach((sec, si) => {
+    if (secs.length && state.agenda) out.push({ kind: 'overgang', sec: si });
+    sec.slides.forEach((sl) => {
+      out.push({ kind: 'innhold', sec: d.noHeadings ? -1 : si, title: sl.title || '', blocks: sl.blocks, notes: sl.notes, live: sl.live });
+      (sl.more || []).forEach((m) => out.push({ kind: 'innhold', sec: si, title: sl.title, forts: true, blocks: m.blocks, notes: m.notes }));
+    });
+  });
+  return out;
+}
+
+/* ---------- Rendering av ett lysbilde ---------- */
+function blockHtml(b) { return typeof b === 'function' ? b(state) : b; }
+function secNo(si) { const t = root.dataset.type; return t === 'terminal' ? String(si + 1).padStart(2, '0') + ' /' : '§ ' + (si + 1); }
+function agendaHtml(cur) {
+  const d = deck(), pages = sectionPages();
+  return `<h2 class="ag-label">Agenda</h2><div class="ag-body" data-fit-box><div class="ag-cols" aria-hidden="true">lysbilde</div><ol class="ag-list">${d.sections.map((s, k) => {
+    const stt = cur == null ? '' : k < cur ? 'past' : k === cur ? 'cur' : 'next';
+    const subs = s.slides.map((x) => x.title);
+    return `<li class="ag-item"${stt ? ` data-state="${stt}"` : ''}${stt === 'cur' ? ' aria-current="step"' : ''}><div class="ag-row"><span class="ag-no">${root.dataset.type === 'terminal' ? String(k + 1).padStart(2, '0') : root.dataset.type === 'klartekst' ? k + 1 : '§ ' + (k + 1)}</span><span class="ag-t"><span class="ag-now">Nå</span>${s.title}</span><span class="ag-lead"></span><span class="ag-page">${pages[k]}</span></div><ul class="ag-sub">${subs.map((t) => `<li>${t}</li>`).join('')}</ul></li>`;
+  }).join('')}</ol></div>`;
+}
+function sectionPages() { const p = []; state.slides.forEach((s, i) => { if (s.sec >= 0 && p[s.sec] == null && (s.kind === 'overgang' || s.kind === 'innhold')) p[s.sec] = i + 1; }); return p; }
+function slideHtml(s) {
+  const d = deck();
+  if (s.kind === 'tittel') return `<p class="t-kick">${d.path.map((p) => `<span>${p}</span>`).join('<span class="sep">/</span>')}</p><h1 class="t-title">${d.title}</h1>${d.dek ? `<p class="t-dek">${d.dek}</p>` : ''}${d.pre ? `<p class="t-pre">${d.pre}</p>` : ''}<dl class="t-props">${d.props.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl><div class="t-foot"><span class="meta">${d.meta}</span></div>`;
+  if (s.kind === 'agenda') return agendaHtml(null);
+  if (s.kind === 'overgang') return agendaHtml(s.sec);
+  const title = s.title ? `<h2 class="slide-title">${s.sec >= 0 ? `<span class="sec-no">${secNo(s.sec)}</span>` : ''}${s.title}${s.forts ? ' <span class="forts">(forts.)</span>' : ''}</h2>` : '';
+  const notes = s.notes ? `<ol class="slide-notes">${s.notes.map((n, k) => `<li><span class="n">${k + 1}</span><span>${n}</span></li>`).join('')}</ol>` : '';
+  return `${title}<div class="slide-body" data-fit-box>${s.blocks.map(blockHtml).join('')}</div>${notes}`;
+}
+function makeSlide(s, i) {
+  const el = document.createElement('section');
+  el.className = 'slide'; el.dataset.kind = s.kind; el.dataset.i = i;
+  el.setAttribute('aria-roledescription', 'lysbilde');
+  el.innerHTML = slideHtml(s);
+  return el;
+}
+
+/* ---------- A2: krymp → «(forts.)» → intern rulling ---------- */
+const num = (n) => parseFloat(getComputedStyle(root).getPropertyValue(n));
+function overflows(box) {
+  if (box.scrollHeight > box.clientHeight + 1) return true;
+  return $$('pre, .s-kanban, .s-table', box).some((x) => x.scrollWidth > x.clientWidth + 1);
+}
+function fit(el) {
+  const box = el.querySelector('[data-fit-box]'); if (!box) return 1;
+  const isAgenda = el.dataset.kind !== 'innhold';
+  const min = isAgenda ? 0.55 : num('--slide-text-min-lp') / num('--slide-body-lp');
+  const step = num('--slide-fit-step') || 0.025;
+  let f = 1; box.style.setProperty('--slide-fit', 1);
+  while (overflows(box) && f > min + 1e-6) { f = Math.max(min, +(f - step).toFixed(3)); box.style.setProperty('--slide-fit', f); }
+  el.dataset.fit = f.toFixed(3);
+  return f;
+}
+/* Deler et innholdslysbilde mellom blokker til hver del passer ved minimum skrift. Aldri inne i en blokk. */
+function paginate(list) {
+  const canvas = $('#canvas'), out = [];
+  for (const s of list) {
+    if (s.kind !== 'innhold') { out.push(s); continue; }
+    let rest = s.blocks.slice(), first = true;
+    while (rest.length) {
+      const fits = (blocks) => { const el = makeSlide({ ...s, blocks, forts: s.forts || !first, notes: blocks.length === rest.length ? s.notes : null }, 0); el.classList.add('is-measure'); canvas.appendChild(el); fit(el); const ok = !overflows(el.querySelector('[data-fit-box]')); el.remove(); return ok; };
+      let n = rest.length;
+      while (n > 1 && !fits(rest.slice(0, n))) n--;
+      // Ingen foreldreløse lysbilder: en blokk som er for stor ALENE blir der den er og rulles internt,
+      // i stedet for å bli flyttet til et «(forts.)»-lysbilde der den må rulles likevel.
+      if (n < rest.length && !fits([rest[n]])) n++;
+      out.push({ ...s, blocks: rest.slice(0, n), forts: s.forts || !first, notes: n === rest.length ? s.notes : null });
+      rest = rest.slice(n); first = false;
+    }
+  }
+  return out;
+}
+/* Siste utvei: én blokk som ikke får plass alene → minimum skrift + intern rulling med ↑ ↓ */
+function scroller(el) {
+  const box = el.querySelector('.slide-body'); if (!box || !overflows(box)) return;
+  const big = [...box.children].sort((a, b) => b.offsetHeight - a.offsetHeight)[0];
+  if (!big || !big.classList.contains('s-code')) return;
+  big.classList.add('is-scroller'); el.dataset.scroll = '';
+  const pre = big.querySelector('pre'); pre.tabIndex = 0;
+  pre.setAttribute('aria-label', 'Kodeblokk som rulles internt: ' + big.querySelector('.file').textContent);
+  const hint = document.createElement('div'); hint.className = 'scroll-hint'; big.appendChild(hint);
+  const lines = pre.querySelectorAll('.line').length;
+  const upd = () => {
+    const lh = pre.querySelector('.line').offsetHeight || 1;
+    const left = Math.max(0, Math.round((pre.scrollHeight - pre.scrollTop - pre.clientHeight) / lh));
+    big.classList.toggle('at-end', left === 0);
+    hint.innerHTML = left ? `<span>↓ ${left} linjer til</span><span><span class="k">↑</span><span class="k">↓</span> ruller</span>` : `<span>Slutt · ${lines} linjer</span><span><span class="k">↑</span> ruller tilbake</span>`;
+  };
+  pre.addEventListener('scroll', upd); requestAnimationFrame(upd);
+}
+
+/* ---------- Bygg hele presentasjonen ---------- */
+async function build(keepTitle) {
+  await document.fonts.ready;
+  const wrap = $('#slides'); wrap.innerHTML = '';
+  state.slides = model();
+  state.slides = paginate(state.slides);
+  state.slides.forEach((s, i) => { const el = makeSlide(s, i); wrap.appendChild(el); });
+  // agenda/overgang og tittel trenger sidetall og totalt antall – render på nytt etter paginering
+  $$('.slide', wrap).forEach((el, i) => { if (el.dataset.kind !== 'innhold') el.innerHTML = slideHtml(state.slides[i]); fit(el); scroller(el); });
+  let fig = 0; $$('[data-fig]', wrap).forEach((f) => { if (f.matches('figure')) fig++; f.dataset.fig = fig; f.querySelectorAll('[data-fig]').forEach((c) => (c.dataset.fig = fig)); });
+  $('#canvas').setAttribute('aria-label', deck().title);
+  $('#foot-title').textContent = deck().title; $('#m-title').textContent = deck().title;
+  renderProgressSegments();
+  if (keepTitle) { const k = state.slides.findIndex((s) => s.title === keepTitle.title && !!s.forts === !!keepTitle.forts && s.kind === keepTitle.kind && s.sec === keepTitle.sec); if (k >= 0) state.i = k; }
+  go(Math.min(state.i, state.slides.length - 1), true);
+}
+
+/* ---------- Krom: agendalinje, folio, fremdrift ---------- */
+function runheadHtml(s, mode) {
+  const d = deck(), items = d.sections.map((x, k) => ({ k, t: x.title }));
+  const inSec = state.slides.filter((x) => x.kind === 'innhold' && x.sec === s.sec);
+  const pos = inSec.indexOf(s) + 1;
+  const li = (x) => {
+    const cls = x.k < s.sec ? 'past' : x.k === s.sec ? 'cur' : 'next';
+    return `<li class="${cls}"${cls === 'cur' ? ' aria-current="step"' : ''}><span class="no">${x.k + 1}</span><span class="t">${x.t}</span>${cls === 'cur' ? `<span class="pos" aria-label="lysbilde ${pos} av ${inSec.length} i punktet">${pos}/${inSec.length}</span>` : ''}</li>`;
+  };
+  if (mode === 'full') return items.map(li).join('');
+  const lo = mode === 'kort' ? s.sec - 1 : s.sec, hi = mode === 'kort' ? s.sec + 1 : s.sec;
+  const vis = items.filter((x) => x.k >= lo && x.k <= hi);
+  return (lo > 0 ? '<li class="ell" aria-hidden="true">…</li>' : '') + vis.map(li).join('') + (hi < items.length - 1 ? '<li class="ell" aria-hidden="true">…</li>' : '');
+}
+function renderRunhead(s) {
+  const head = $('#runhead'), ol = head.querySelector('ol');
+  const show = s.kind === 'innhold' && s.sec >= 0;
+  head.hidden = !show; if (!show) { ol.innerHTML = ''; return; }
+  for (const mode of ['full', 'kort', 'min']) { ol.innerHTML = runheadHtml(s, mode); head.dataset.mode = mode; if (ol.scrollWidth <= ol.clientWidth + 1) break; }
+}
+function renderProgressSegments() {
+  const groups = []; state.slides.forEach((s, i) => { const g = s.kind === 'tittel' || s.kind === 'agenda' ? 'start' : s.sec; const last = groups[groups.length - 1]; if (last && last.g === g) last.to = i; else groups.push({ g, from: i, to: i }); });
+  state.groups = groups;
+  $('#progress').innerHTML = groups.map((g) => `<span class="seg" style="--n:${g.to - g.from + 1}"><span class="fill"></span></span>`).join('');
+}
+function renderChrome() {
+  const s = state.slides[state.i], n = state.slides.length;
+  $('#present').dataset.kind = s.kind;
+  renderRunhead(s);
+  const k = $('#kicker'); k.hidden = !(s.kind === 'innhold' && s.sec < 0 && s.forts); k.textContent = deck().title + ' (forts.)';
+  $('#folio').innerHTML = `<b>${state.i + 1}</b> / ${n}`;
+  $('#m-folio').textContent = `${state.i + 1} / ${n}`;
+  $('#foot-title').hidden = s.kind === 'tittel';
+  $$('#progress .seg').forEach((seg, gi) => { const g = state.groups[gi]; const w = state.i > g.to ? 100 : state.i < g.from ? 0 : ((state.i - g.from + 1) / (g.to - g.from + 1)) * 100; seg.firstChild.style.setProperty('--w', w + '%'); });
+  if (Q.get('debug')) { const el = $('.slide.is-active'); const dbg = $('#debug'); dbg.hidden = false; dbg.textContent = `fit ${el.dataset.fit || '–'}${el.dataset.scroll != null ? ' · rulling' : ''}`; }
+}
+function slideName(s) { return s.kind === 'tittel' ? deck().title : s.kind === 'agenda' ? 'Agenda' : s.kind === 'overgang' ? 'Agenda: ' + deck().sections[s.sec].title : (s.title || deck().title) + (s.forts ? ' (forts.)' : ''); }
+
+/* ---------- Navigasjon ---------- */
+function go(i, silent) {
+  i = Math.max(0, Math.min(state.slides.length - 1, i));
+  const prev = state.i; state.i = i;
+  $$('#slides .slide').forEach((el, k) => { el.classList.toggle('is-active', k === i); el.setAttribute('aria-hidden', k === i ? 'false' : 'true'); el.inert = k !== i; });
+  renderChrome();
+  const u = new URL(location); u.searchParams.set('s', i + 1); history.replaceState(null, '', u);
+  if (!silent || prev !== i) $('#announcer').textContent = `Lysbilde ${i + 1} av ${state.slides.length}: ${slideName(state.slides[i])}`;
+}
+const next = () => go(state.i + 1), prev = () => go(state.i - 1);
+
+/* ---------- Oversikt ---------- */
+function openOverview() {
+  state.ov = true; state.cursor = state.i;
+  const grid = $('#ov-grid');
+  grid.innerHTML = $$('#slides .slide').map((el, i) => {
+    const s = state.slides[i];
+    const kind = s.kind === 'overgang' ? `<span class="kind">${root.dataset.type === 'tidsskrift' ? '§ ' + (s.sec + 1) : 'agenda ·'}</span>` : '';
+    return `<li class="ov-item" role="option" id="ov-${i}" data-i="${i}" aria-selected="false"${i === state.i ? ' aria-current="step"' : ''}><div class="thumb" aria-hidden="true"></div><div class="cap"><span class="no">${i + 1}</span>${kind}<span class="t">${s.kind === 'overgang' ? deck().sections[s.sec].title : esc(slideName(s))}</span>${i === state.i ? '<span class="now">NÅ</span>' : ''}</div></li>`;
+  }).join('');
+  $$('#slides .slide').forEach((el, i) => { const c = el.cloneNode(true); c.classList.add('is-active'); c.removeAttribute('aria-hidden'); c.inert = true; $$('[id]', c).forEach((x) => x.removeAttribute('id')); grid.children[i].firstChild.appendChild(c); });
+  $('#ov-sub').textContent = `${state.slides.length} lysbilder · ${deck().title}`;
+  $('#overview').hidden = false; grid.focus(); moveCursor(0);
+}
+function closeOverview(jump) { state.ov = false; $('#overview').hidden = true; if (jump) go(state.cursor); }
+function moveCursor(d, vertical) {
+  const items = $$('#ov-grid .ov-item');
+  if (vertical) { // geometrisk: samme kolonne i raden over/under
+    const cur = items[state.cursor].getBoundingClientRect();
+    const cands = items.map((it, k) => ({ k, r: it.getBoundingClientRect() })).filter((x) => (d > 0 ? x.r.top > cur.top + 5 : x.r.top < cur.top - 5));
+    if (cands.length) { const rowTop = d > 0 ? Math.min(...cands.map((x) => x.r.top)) : Math.max(...cands.map((x) => x.r.top)); const row = cands.filter((x) => Math.abs(x.r.top - rowTop) < 5); state.cursor = row.sort((a, b) => Math.abs(a.r.left - cur.left) - Math.abs(b.r.left - cur.left))[0].k; }
+  } else state.cursor = Math.max(0, Math.min(items.length - 1, state.cursor + d));
+  items.forEach((it, k) => { it.classList.toggle('is-cursor', k === state.cursor); it.setAttribute('aria-selected', k === state.cursor); });
+  $('#ov-grid').setAttribute('aria-activedescendant', 'ov-' + state.cursor);
+  items[state.cursor].scrollIntoView({ block: 'nearest' });
+}
+
+/* ---------- Svart skjerm ---------- */
+function setBlack(on) { state.black = on; $('#blackout').classList.toggle('is-on', on); $('#announcer').textContent = on ? 'Svart skjerm. Trykk b eller punktum for å fortsette.' : `Lysbilde ${state.i + 1} av ${state.slides.length}: ${slideName(state.slides[state.i])}`; }
+
+/* ---------- Fullskjerm (f, :fullskjerm – PO-88) ---------- */
+function toggleFs() {
+  if (document.fullscreenElement) document.exitFullscreen?.();
+  else document.documentElement.requestFullscreen?.().catch(() => toast('<b>Fullskjerm ble ikke tillatt</b><span class="muted">Presentasjonen virker også i vindu, f.eks. ved deling av ett vindu i Teams.</span>'));
+}
+
+/* PO-92: nettleseren tar første Esc i fullskjerm – presentasjonen fortsetter, og vi sier hvordan man avslutter */
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && !$('#present').hidden) toast('<b>Fullskjerm av</b><span class="muted"><span class="k">Esc</span> igjen avslutter presentasjonen · <span class="k">f</span> fullskjerm</span>');
+});
+
+/* ---------- Skalering (ADR-010): k = min(b/1920, h/1080), satt som --stage-scale ---------- */
+function fitStage() {
+  const portrait = matchMedia('(max-aspect-ratio: 1/1)').matches;
+  const k = portrait ? innerWidth / 1920 : Math.min(innerWidth / 1920, innerHeight / 1080);
+  root.style.setProperty('--stage-scale', k);
+}
+new ResizeObserver(fitStage).observe(document.documentElement); fitStage();
+
+/* ---------- Toast ---------- */
+let toastT;
+function toast(html, ms) { const t = $('#toast'); t.innerHTML = html; t.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('is-on'), ms || num('--hint-linger') || 4000); }
+
+/* ---------- Palett (:) ---------- */
+const CMDS = [
+  { g: 'Presentasjon', c: 'agenda av', n: 'Skjul overgangslysbilder', now: () => (state.agenda ? 'nå: på' : 'nå: av'), run: () => setAgenda(false) },
+  { g: 'Presentasjon', c: 'agenda på', n: 'Vis overgangslysbilder', run: () => setAgenda(true) },
+  { g: 'Presentasjon', c: 'presenter h‹n›', n: 'Velg lysbildenivå (huskes per notat)', fill: 'presenter h' },
+  { g: 'Presentasjon', c: 'oversikt', n: 'Oversikt over alle lysbilder', keys: '<span class="k">o</span>', run: () => openOverview() },
+  { g: 'Presentasjon', c: 'fullskjerm', n: 'Fullskjerm av / på', keys: '<span class="k">f</span>', now: () => (document.fullscreenElement ? 'nå: på' : 'nå: av'), run: () => toggleFs() },
+  { g: 'Presentasjon', c: 'svart', n: 'Svart skjerm', keys: '<span class="k">b</span><span class="alt">/</span><span class="k">.</span>', run: () => setBlack(true) },
+  { g: 'Visning', c: 'tema tidsskrift', n: 'Typesett Tidsskrift', run: () => setTheme('type', 'tidsskrift') },
+  { g: 'Visning', c: 'tema terminal', n: 'Typesett Terminal', run: () => setTheme('type', 'terminal') },
+  { g: 'Visning', c: 'tema klartekst', n: 'Typesett Klartekst', run: () => setTheme('type', 'klartekst') },
+  ...['papir', 'cyanotypi', 'fosfor', 'signal'].map((p) => ({ g: 'Visning', c: 'palett ' + p, n: 'Palett ' + p[0].toUpperCase() + p.slice(1), run: () => setTheme('palette', p) })),
+  { g: 'Visning', c: 'lys', n: 'Lys modus', run: () => setTheme('mode', 'light') },
+  { g: 'Visning', c: 'mørk', n: 'Mørk modus', run: () => setTheme('mode', 'dark') },
+  { g: 'Hjelp', c: 'hjelp', n: 'Hurtigtaster', keys: '<span class="k">?</span>', run: () => openRef() },
+  { g: 'Prototype', c: 'demo status', n: 'Statusmøte uke 45', run: () => setDeck('status') },
+  { g: 'Prototype', c: 'demo uten-overskrifter', n: 'Notat uten overskrifter (S7)', run: () => setDeck('uten-overskrifter') },
+  { g: 'Prototype', c: 'demo lang-agenda', n: 'Lang agenda (avkortet agendalinje)', run: () => setDeck('lang-agenda') },
+  { g: 'Prototype', c: 'simuler live', n: 'Flytt et kanbankort (live reload)', run: () => simulateLive() },
+];
+let pSel = 0, pRows = [];
+function openPalette(q) {
+  const dlg = $('#palette'); $('#p-input').value = q || ''; $('#p-err').hidden = true;
+  $('#p-mode').textContent = root.dataset.type === 'terminal' ? '-- KOMMANDO --' : 'kommando';
+  dlg.showModal(); renderPalette(); $('#p-input').focus();
+  if (q && /^presenter /.test(q)) runPalette();
+}
+function renderPalette() {
+  const q = $('#p-input').value.trim().toLowerCase();
+  pRows = CMDS.filter((c) => !q || c.c.includes(q) || (c.fill && q.startsWith('presenter')));
+  let g = ''; pSel = Math.min(pSel, Math.max(0, pRows.length - 1));
+  $('#p-list').innerHTML = pRows.map((c, k) => `${!q && c.g !== g ? `<li class="p-group" role="presentation">${(g = c.g)}</li>` : ''}<li class="p-row" role="option" id="pr-${k}" aria-selected="${k === pSel}" data-k="${k}"><span class="c">:${c.c}</span><span>${c.n}${c.now ? `<span class="now">${c.now()}</span>` : ''}</span><span class="keys">${c.keys || ''}</span></li>`).join('');
+  $('#p-input').setAttribute('aria-activedescendant', pRows.length ? 'pr-' + pSel : '');
+}
+function runPalette() {
+  const v = $('#p-input').value.trim();
+  const m = v.match(/^presenter(?:\s+(\S*))?$/);
+  if (m) return presenterLevel(m[1] || '');
+  const c = pRows[pSel]; if (!c) return showErr('E492', `Ingen kommando heter «${esc(v)}».`, 'Prøv <code>:hjelp</code> for å se kommandoene.');
+  if (c.fill) { $('#p-input').value = c.fill; renderPalette(); return; }
+  $('#palette').close(); c.run();
+}
+function showErr(codeTxt, strong, p) { const e = $('#p-err'); e.className = 'p-err'; e.hidden = false; e.setAttribute('role', 'alert'); e.innerHTML = `<span class="code">${codeTxt}</span><strong>${strong}</strong><p>${p}</p>`; $('#p-list').innerHTML = ''; $('#p-input').removeAttribute('aria-activedescendant'); $('#p-input').setAttribute('aria-describedby', 'p-err'); }
+function presenterLevel(arg) {
+  const levels = ['h2', 'h3'];
+  if (!/^h[2-6]$/.test(arg)) return showErr('E475', `Ugyldig argument: «${esc(arg || 'tomt')}».`, 'Skriv <code>:presenter h2</code> til <code>:presenter h6</code>. Dette notatet har overskrifter på nivå h2 og h3.');
+  if (!levels.includes(arg)) return showErr('E486', `Ingen overskrifter på nivå ${arg} i notatet.`, `Lysbildene blir ikke delt annerledes. Notatet har overskrifter på nivå ${levels.join(' og ')}. Valget er ikke lagret.`);
+  $('#palette').close(); toast(`<b>Lysbildenivå ${arg}</b><span class="muted">Husket for dette notatet i denne nettleseren. Notatet er ikke endret.</span>`);
+}
+
+/* ---------- Oppslagskort (?) ---------- */
+const K = (...k) => k.map((x) => (x === '/' ? '<span class="alt">/</span>' : `<span class="k${x === 'Space' ? ' lead' : ''}">${x}</span>`)).join('');
+const REF = [
+  ['Navigasjon', [[K('j', '/', '→', '/', 'n', '/', 'Space', '/', 'PgDn'), 'Neste lysbilde'], [K('k', '/', '←', '/', 'p', '/', 'PgUp'), 'Forrige lysbilde'], [K('g') + K('g') + ' ' + K('/', 'G'), 'Første / siste lysbilde'], [K('↑', '/', '↓'), 'Rull i en blokk som ikke får plass']]],
+  ['Visning', [[K('o'), 'Oversikt over alle lysbilder'], [K('f'), 'Fullskjerm av / på'], [K('b', '/', '.'), 'Svart skjerm av / på']]],
+  ['Kommandoer', [[K(':'), 'Kommandopalett'], [K('?'), 'Denne oversikten'], [K('Esc'), 'Lukk oversikt eller palett, ellers avslutt til seksjonen du står i']]],
+];
+function openRef() { $('#rc-cols').innerHTML = REF.map(([g, rows]) => `<section class="rc-group"><h3>${g}</h3>${rows.map(([k, t]) => `<div class="rc-row"><span>${k}</span><span>${t}</span></div>`).join('')}</section>`).join(''); $('#refcard').showModal(); }
+
+/* ---------- Tema, agenda, demo, live ---------- */
+function current() { const s = state.slides[state.i]; return s && { title: s.title, forts: s.forts, kind: s.kind, sec: s.sec }; }
+function setTheme(k, v) { root.dataset[k] = v; const u = new URL(location); u.searchParams.set(k, v); history.replaceState(null, '', u); build(current()); }
+function setAgenda(on) { state.agenda = on; build(current()); toast(on ? '<b>Overganger på</b>' : '<b>Overganger av</b><span class="muted">for denne presentasjonen. <code>:agenda på</code> slår dem på igjen.</span>'); }
+function setDeck(id) { state.deckId = id; state.i = 0; const u = new URL(location); u.searchParams.set('demo', id); history.replaceState(null, '', u); build().then(() => (id === 'uten-overskrifter' ? hintNoHeadings() : 0)); }
+function hintNoHeadings() { toast('<b>Ingen overskrifter</b><span class="muted">Lysbildene er delt på <code>---</code> og der innholdet ikke får plass. Ingen agenda.</span>'); }
+function simulateLive() {
+  state.live = true; const keep = current(); build(keep).then(() => {
+    const c = $('.slide.is-active .card[data-card="Sett opp Flyway-migreringer"]'); if (c) c.classList.add('just-moved');
+    const ft = $('#foot-title'); ft.innerHTML = '<span class="live-flag">Oppdatert 14.02 · Oppgaver.base</span>';
+    setTimeout(() => (ft.textContent = deck().title), num('--hint-linger') || 4000);
+  });
+}
+
+/* ---------- Avslutt (Esc) → lesevisning på samme sted ---------- */
+function exitPresent() {
+  const s = state.slides[state.i], d = deck();
+  $('#present').hidden = true; $('#reader').hidden = false;
+  $('#r-crumb').textContent = d.path.join(' / '); $('#r-title').textContent = d.title;
+  $('#r-outline').innerHTML = d.noHeadings ? '<li>(notatet har ingen overskrifter)</li>' : d.sections.map((x, k) => `<li class="${k === s.sec ? 'here' : ''}"><span>${x.title}</span><ol>${x.slides.map((y) => `<li${y.title === s.title ? ' class="here"' : ''}><span>${y.title}</span></li>`).join('')}</ol></li>`).join('');
+  $('#reader').focus(); toast(`<b>Presentasjonen er avsluttet</b><span class="muted">Du står ved «${esc(s.title || (s.sec >= 0 ? d.sections[s.sec].title : d.title))}». <span class="k lead">Space</span><span class="k">p</span> starter herfra.</span>`, 3000);
+}
+function enterPresent() { $('#reader').hidden = true; $('#present').hidden = false; go(state.i); }
+
+/* ---------- Taster: modus «present» ---------- */
+let gPending = 0;
+addEventListener('keydown', (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!$('#reader').hidden) { if (e.key === ' ') { e.preventDefault(); gPending = 'space'; return; } if (gPending === 'space' && e.key === 'p') { gPending = 0; enterPresent(); } return; }
+  if ($('#palette').open) {
+    if (e.key === 'ArrowDown' || (e.key === 'n' && e.ctrlKey)) { pSel = Math.min(pRows.length - 1, pSel + 1); renderPalette(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { pSel = Math.max(0, pSel - 1); renderPalette(); e.preventDefault(); }
+    else if (e.key === 'Enter') { e.preventDefault(); runPalette(); }
+    else if (e.key === 'Tab') { e.preventDefault(); const c = pRows[pSel]; if (c) { $('#p-input').value = c.fill || c.c; renderPalette(); } }
+    return;
+  }
+  if ($('#refcard').open) { if (e.key === '?') { e.preventDefault(); $('#refcard').close(); } return; }
+  if (state.ov) {
+    const k = e.key;
+    if (k === 'ArrowRight' || k === 'l') moveCursor(1); else if (k === 'ArrowLeft' || k === 'h') moveCursor(-1);
+    else if (k === 'ArrowDown' || k === 'j') moveCursor(1, true); else if (k === 'ArrowUp' || k === 'k') moveCursor(-1, true);
+    else if (k === 'Enter') closeOverview(true); else if (k === 'Escape' || k === 'o') closeOverview(false); else return;
+    e.preventDefault(); return;
+  }
+  if (state.black) { if (['b', '.', 'Escape'].includes(e.key)) { e.preventDefault(); setBlack(false); } return; }
+  const k = e.key;
+  if (k === 'g') { if (gPending === 'g') { gPending = 0; go(0); } else { gPending = 'g'; setTimeout(() => (gPending = 0), num('--sequence-timeout') || 1000); } return; }
+  gPending = 0;
+  if (['j', 'ArrowRight', 'n', ' ', 'PageDown'].includes(k)) { e.preventDefault(); next(); }
+  else if (['k', 'ArrowLeft', 'p', 'PageUp'].includes(k)) { e.preventDefault(); prev(); }
+  else if (k === 'G') go(state.slides.length - 1);
+  else if (k === 'o') { e.preventDefault(); openOverview(); }
+  else if (k === 'b' || k === '.') setBlack(true);
+  else if (k === 'f') toggleFs();
+  else if (k === ':') { e.preventDefault(); openPalette(); }
+  else if (k === '?') { e.preventDefault(); openRef(); }
+  else if (k === 'Escape') exitPresent();
+  else if (k === 'ArrowDown' || k === 'ArrowUp') { const pre = $('.slide.is-active .is-scroller pre'); if (pre) { e.preventDefault(); pre.scrollBy({ top: (k === 'ArrowDown' ? 3 : -3) * pre.querySelector('.line').offsetHeight }); } }
+});
+$('#p-input').addEventListener('input', () => { pSel = 0; $('#p-err').hidden = true; $('#p-input').removeAttribute('aria-describedby'); renderPalette(); });
+$('#p-list').addEventListener('click', (e) => { const r = e.target.closest('.p-row'); if (r) { pSel = +r.dataset.k; renderPalette(); runPalette(); } });
+$('#ov-grid').addEventListener('click', (e) => { const it = e.target.closest('.ov-item'); if (it) { state.cursor = +it.dataset.i; closeOverview(true); } });
+
+/* ---------- Mus, berøring og knapper ---------- */
+let idleT;
+addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse' || (!e.movementX && !e.movementY)) return; const p = $('#present'); p.classList.add('is-pointer'); p.classList.remove('is-idle'); clearTimeout(idleT); idleT = setTimeout(() => { p.classList.remove('is-pointer'); p.classList.add('is-idle'); }, 1800); });
+let sx = null, sy = null;
+$('#canvas').addEventListener('pointerdown', (e) => { sx = e.clientX; sy = e.clientY; });
+$('#canvas').addEventListener('pointerup', (e) => {
+  if (sx == null || e.target.closest('button, a, pre')) return; const dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) return dx < 0 ? next() : prev();
+  if (Math.abs(dx) < 10 && Math.abs(dy) < 10) { const r = $('#canvas').getBoundingClientRect(); (e.clientX - r.left < r.width / 3 ? prev : next)(); }
+});
+$('#btn-ov').onclick = openOverview; $('#btn-exit').onclick = exitPresent; $('#m-exit').onclick = exitPresent;
+$('#m-prev').onclick = prev; $('#m-next').onclick = next; $('#m-ov').onclick = openOverview; $('#r-start').onclick = enterPresent;
+$('#refcard').addEventListener('close', () => {});
+
+/* ---------- Oppstart ---------- */
+state.i = Math.max(0, (parseInt(Q.get('s'), 10) || 1) - 1);
+build().then(() => {
+  const o = Q.get('open');
+  if (o === 'oversikt') openOverview(); else if (o === 'svart') setBlack(true); else if (o === 'palett') openPalette(Q.get('q') || ''); else if (o === 'hjelp') openRef(); else if (o === 'lesevisning') exitPresent();
+  if (state.live && Q.get('live') === '1') simulateLive();
+  if (Q.get('hint') === '1') toast('<b>Presentasjon</b><span class="muted"><span class="k">Esc</span> avslutter · <span class="k">o</span> oversikt · <span class="k">?</span> taster</span>', 60000);
+  if (state.deckId === 'uten-overskrifter' && Q.get('hint') !== '0') hintNoHeadings();
+  else if (Q.get('s') && Q.get('hint') !== '0' && Q.get('hint') !== '1' && !o) toast('<b>Lysbilde ' + (state.i + 1) + '</b><span class="muted">Nettleseren går ut av fullskjerm ved ny lasting. <span class="k">f</span> slår den på igjen.</span>');
+});
+</script>
+</body>
+</html>

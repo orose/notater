@@ -158,9 +158,9 @@ describe('getDocument – tilbakelenker (README-QA §4 tabell)', () => {
     expect(fm).toMatchObject({ fromProperty: true });
   });
 
-  it('base har tilbakelenker (6)', () => {
+  it('base har tilbakelenker (7, PO-100)', () => {
     const doc = getDocument(state, 'Oppgaver.base', bases) as BaseDocument;
-    expect(doc.backlinks).toHaveLength(6);
+    expect(doc.backlinks).toHaveLength(7);
   });
 });
 

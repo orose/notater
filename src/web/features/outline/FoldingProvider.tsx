@@ -1,5 +1,6 @@
 import './outline.css';
 import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { onlyOverlayChanged, type Place } from '../../shared/overlay-params';
 import { useLocation, useNavigationType } from 'react-router';
 import type { Outline } from './build-outline';
 import { FoldingContext, OutlineHostContext, type FoldingValue, type OutlineControl } from './folding-context';
@@ -31,6 +32,7 @@ interface AfterFold {
 interface FoldState {
   readonly docKey: string;
   readonly navKey: string;
+  readonly place: Place;
   readonly folded: ReadonlySet<string>;
 }
 
@@ -44,13 +46,16 @@ const EMPTY: ReadonlySet<string> = new Set();
 export function FoldingProvider({ outline, docKey, children }: { readonly outline: Outline; readonly docKey: string; readonly children: ReactNode }) {
   const location = useLocation();
   const navigationType = useNavigationType();
-  const [state, setState] = useState<FoldState>({ docKey, navKey: location.key, folded: EMPTY });
+  const [state, setState] = useState<FoldState>({ docKey, navKey: location.key, place: location, folded: EMPTY });
 
   // Avledet tilstand i render (samme mønster som `lastPath` i VaultLayout).
   let folded = state.folded;
   if (state.docKey !== docKey) {
     folded = EMPTY;
-    setState({ docKey, navKey: location.key, folded });
+    setState({ docKey, navKey: location.key, place: location, folded });
+  } else if (state.navKey !== location.key && onlyOverlayChanged(state.place, location)) {
+    // Presentasjonen starter/avslutter (`?lysbilde`): lesevisningens folding er urørt (Q-13).
+    setState({ docKey, navKey: location.key, place: location, folded });
   } else if (state.navKey !== location.key) {
     const hash = safeDecode(location.hash.replace(/^#/, ''));
     if (hash) {
@@ -64,7 +69,7 @@ export function FoldingProvider({ outline, docKey, children }: { readonly outlin
       // Søketreff eller lenke til samme notat uten anker: regnes som å åpne notatet.
       folded = EMPTY;
     }
-    setState({ docKey, navKey: location.key, folded });
+    setState({ docKey, navKey: location.key, place: location, folded });
   }
 
   const foldedRef = useRef(folded);

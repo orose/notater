@@ -81,6 +81,14 @@ describe('buildOutline (ADR-009, F3)', () => {
     expect(hiddenBlocks(outline, new Set()).size).toBe(0);
   });
 
+  it('flow: toppnivåflyten uten blanke tekstnoder og fotnoter, med overskrifter og skiller (ADR-010 §8)', () => {
+    const withHr = buildOutline({ ...content, children: [...content.children.slice(0, 4), { type: 'element', tagName: 'hr', properties: {}, children: [] }, ...content.children.slice(4)] }, []);
+    expect(withHr.flow.map((b) => (b.node.type === 'element' ? b.node.tagName : b.node.type))).toEqual(['p', 'h2', 'p', 'hr', 'h3', 'p', 'h6', 'p', 'h3', 'vr-code', 'h2', 'p', 'h1', 'h2', 'p']);
+    expect(withHr.flow.filter((b) => b.thematicBreak)).toHaveLength(1);
+    expect(withHr.flow[1]?.heading).toEqual({ id: 'a', level: 2, text: 'Seksjon A' });
+    expect(withHr.flow[0]?.heading).toBeNull();
+  });
+
   it('teller ord og figurer i seksjonen (fold-linjen)', () => {
     expect(outline.stats('a2')).toEqual({ words: 0, figures: 1 });
     expect(outline.stats('b')).toEqual({ words: 2, figures: 0 });

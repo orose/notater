@@ -19,6 +19,7 @@ import {
   type KeyEngine,
   type PendingSequence,
 } from '../keyboard';
+import { usePresentationControl } from '../presentation';
 import { usePalette, type PaletteCommandItem, type PaletteCommandSource } from '../search';
 import { PALETTES, PALETTE_INFO, TYPES, TYPE_INFO, useTheme } from '../theme';
 import { useOutlineControl } from '../outline';
@@ -26,9 +27,9 @@ import { ZenHint, useViewSettings } from '../view-settings';
 import { CommandsContext, type CommandsContextValue } from './commands-context';
 import { createCommandHandlers } from './handlers';
 import { COMMAND_CATALOG, type CommandId } from './model/catalog';
-import type { CommandContext, CommandPorts, CommandRoute, ViewSnapshot } from './model/command-context';
+import type { CommandContext, CommandPorts, CommandRoute, PresentationPort, ViewSnapshot } from './model/command-context';
 import { GROUP_LABELS, type CommandSpecBody } from './model/command-types';
-import { commandPaletteOptions, paletteArgumentHeading } from './model/palette-options';
+import { commandPaletteOptions, paletteArgumentError, paletteArgumentHeading } from './model/palette-options';
 import { createCommandRegistry } from './model/registry';
 import { createScrollPort } from './scroll';
 import { ShortcutHelp } from './ShortcutHelp';
@@ -45,6 +46,30 @@ interface CommandProviderProps {
 
 
 const TOAST_MS = 4000;
+
+/** Uten `PresentationProvider` (tester, forsiden): ingen presentasjon. */
+const NO_PRESENTATION: PresentationPort = {
+  active: false,
+  slideLevel: null,
+  storedLevel: null,
+  transitions: true,
+  overviewOpen: false,
+  blackout: false,
+  fullscreen: false,
+  levels: () => [],
+  start: () => {},
+  next: () => {},
+  previous: () => {},
+  first: () => {},
+  last: () => {},
+  scroll: () => {},
+  toggleOverview: () => {},
+  toggleBlackout: () => {},
+  setTransitions: () => {},
+  toggleFullscreen: () => {},
+  escape: () => false,
+  stop: () => {},
+};
 
 /** Tidskonstanter leses fra tokens (`--leader-delay`, `--sequence-timeout`, designsystem §11.2). */
 function cssMs(name: string, fallback: number): number {
@@ -100,6 +125,14 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
   const { setPreferences, toggleMode, preferences, resolvedMode } = theme;
   const { toggleWidth, setZen, zen, width, toggleDiscreet, isDiscreet } = viewSettings;
   const outlineControl = useOutlineControl();
+  const presentationControl = usePresentationControl();
+  const presentation: PresentationPort = presentationControl ?? NO_PRESENTATION;
+  const mode = presentation.active ? 'present' : 'normal';
+  useEffect(() => {
+    if (!presentationControl) return undefined;
+    presentationControl.setNoticeHandler(showToast);
+    return () => presentationControl.setNoticeHandler(null);
+  }, [presentationControl, showToast]);
   const ports = useMemo<CommandPorts>(
     () => ({
       scroll,
@@ -170,9 +203,10 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
           showToast('Alle seksjoner er foldet ut', ['z', 'M']);
         },
       },
+      presentation,
       toast: showToast,
     }),
-    [scroll, navigate, palette.openSearch, palette.openCommands, onOpenAppearance, resolvedMode, toggleMode, setPreferences, preferences.type, preferences.palette, showToast, toggleWidth, setZen, zen, outlineControl, toggleDiscreet, vaultId, docPath],
+    [presentation, scroll, navigate, palette.openSearch, palette.openCommands, onOpenAppearance, resolvedMode, toggleMode, setPreferences, preferences.type, preferences.palette, showToast, toggleWidth, setZen, zen, outlineControl, toggleDiscreet, vaultId, docPath],
   );
 
   const foldableHeadings = outlineControl?.foldableHeadings ?? 0;
@@ -182,7 +216,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
     () => ({ width, discreet, zen, noteEmbeds, foldableHeadings }),
     [width, discreet, zen, noteEmbeds, foldableHeadings],
   );
-  const ctx = useMemo<CommandContext>(() => ({ mode: 'normal', route: routeOf(vaultId, docPath), view, ports }), [vaultId, docPath, view, ports]);
+  const ctx = useMemo<CommandContext>(() => ({ mode, route: routeOf(vaultId, docPath), view, ports }), [mode, vaultId, docPath, view, ports]);
   const ctxRef = useRef(ctx);
   useLayoutEffect(() => {
     ctxRef.current = ctx;
@@ -214,6 +248,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
       onStateChange: (state) => setPending(state.pending),
       sequenceTimeoutMs: cssMs('--sequence-timeout', SEQUENCE_TIMEOUT_MS),
       whichKeyDelayMs: cssMs('--leader-delay', WHICH_KEY_DELAY_MS),
+      initialMode: ctxRef.current.mode,
     });
     engineRef.current = engine;
 
@@ -246,6 +281,12 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
       engineRef.current = null;
     };
   }, [registry, execute]);
+
+  // P3 / ADR-010 §3: present-modus mens presentasjonen vises.
+  // Layout-effekt: modusen byttes i samme commit som presentasjonen vises, før neste tast.
+  useLayoutEffect(() => {
+    engineRef.current?.setMode(mode);
+  }, [mode]);
 
   // Navigasjon avbryter en påbegynt sekvens.
   useEffect(() => {
@@ -328,7 +369,8 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
                 args: { [option.argument]: option.value.value },
               },
         );
-        return { items, argument: paletteArgumentHeading(registry.commands, query) };
+        const error = items.length === 0 ? paletteArgumentError(registry.commands, ctxRef.current, query) : null;
+        return { items, argument: paletteArgumentHeading(registry.commands, query), error };
       },
       run: (item) => execute(item.commandId as CommandId, item.args, 'palette'),
     }),
@@ -353,7 +395,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
   return (
     <CommandsContext.Provider value={value}>
       {children}
-      <ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} platform={platform} />
+      <ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} platform={platform} mode={mode} />
       {pending ? (
         // showcmd (vim): påbegynt sekvens vises med en gang; kun visuelt.
         <div className="showcmd" aria-hidden="true">

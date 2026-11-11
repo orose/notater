@@ -18,6 +18,24 @@ export interface OutlineHeading {
   readonly sec: number | null;
 }
 
+/** Overskrift i flyten (effektivt nivå etter diskré-utflating). */
+export interface FlowHeading {
+  readonly id: string;
+  readonly level: HeadingLevel;
+  readonly text: string;
+}
+
+/**
+ * Én blokk i toppnivåflyten (ADR-010 §8): rotens barn, der diskré embeds er gjennomsiktige. Uten fotnotelisten og
+ * blanke tekstnoder. Presentasjonsmodellen bygger lysbildene av denne.
+ */
+export interface FlowBlock {
+  readonly node: RootContent | ElementContent;
+  readonly heading: FlowHeading | null;
+  /** `hr` på toppnivå i flyten (`---`, `***`, `___`). */
+  readonly thematicBreak: boolean;
+}
+
 export interface SectionStats {
   readonly words: number;
   /** Kode, diagram, tabell, bilde og base. */
@@ -31,6 +49,8 @@ export interface Outline {
   readonly toc: readonly TocEntry[];
   /** Antall innebygde notater (`vr-embed[data-status=ok]`) i dokumentet. */
   readonly noteEmbeds: number;
+  /** Toppnivåflyten i lesefølge (ADR-010 §8). */
+  readonly flow: readonly FlowBlock[];
   /** Flytelementene (indekser i lesefølge) som seksjonen til overskriften dekker: `[start, end)`. */
   readonly sectionRange: (headingId: string) => readonly [number, number] | null;
   /**
@@ -323,6 +343,18 @@ export function buildOutline(content: Root, toc: readonly TocEntry[], discreet =
   }
   const finalContent = patchPaths(rewritten, patches);
 
+  const headingAt = new Map(flowHeadings.map((h, i) => [h.index, headings[i] as OutlineHeading]));
+  const flowBlocks: FlowBlock[] = [];
+  flow.forEach((item, index) => {
+    if (index >= footnotesAt || isFootnotes(item.node) || isBlank(item.node)) return;
+    const h = headingAt.get(index);
+    flowBlocks.push({
+      node: item.node,
+      heading: h ? { id: h.id, level: h.level, text: h.text } : null,
+      thematicBreak: isElement(item.node) && item.node.tagName === 'hr',
+    });
+  });
+
   const toc2: readonly TocEntry[] = discreet ? headings.map((h) => ({ depth: h.level, text: h.text, id: h.id })) : toc;
   const statsCache = new Map<string, SectionStats>();
 
@@ -331,6 +363,7 @@ export function buildOutline(content: Root, toc: readonly TocEntry[], discreet =
     headings,
     toc: toc2,
     noteEmbeds,
+    flow: flowBlocks,
     sectionRange: (id) => ranges.get(id) ?? null,
     sectionOf: (id) => {
       const block = blockOfId.get(id);

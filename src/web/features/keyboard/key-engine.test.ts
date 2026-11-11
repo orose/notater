@@ -26,6 +26,8 @@ const KEYMAP: EngineKeymap = {
     b('search', 'Mod+k', { inTextFields: true }),
     b('escape', 'Escape'),
   ],
+  // Present-modus (ADR-010 §3): Space er en vanlig tast, ingen leader.
+  present: [b('present.next', 'Space'), b('present.next', 'j', { repeat: true }), b('present.first', 'g g')],
 };
 
 const plain = { repeat: false, typing: false };
@@ -191,10 +193,22 @@ describe('createKeyEngine', () => {
     expect(e.handle(['w'], plain)).toEqual({ kind: 'unhandled' });
   });
 
+  it('present-modus: Space er neste uten ventende sekvens; normal-bindingene virker ikke (ADR-010 §3)', () => {
+    const e = engine();
+    e.setMode('present');
+    expect(e.handle(['Space'], plain)).toEqual({ kind: 'handled', commandId: 'present.next' });
+    expect(e.getState().pending).toBeNull();
+    expect(e.handle(['z'], plain)).toEqual({ kind: 'unhandled' });
+    expect(e.handle(['g'], plain)).toEqual({ kind: 'pending' });
+    expect(e.handle(['g'], plain)).toEqual({ kind: 'handled', commandId: 'present.first' });
+    e.setMode('normal');
+    expect(e.handle(['j'], plain)).toEqual({ kind: 'handled', commandId: 'scroll.down' });
+  });
+
   it('setKeymap bytter tastaturkart og avbryter påbegynt sekvens', () => {
     const e = engine();
     e.handle(['g'], plain);
-    e.setKeymap({ normal: [b('other', 'g')] });
+    e.setKeymap({ normal: [b('other', 'g')], present: [] });
     expect(e.getState().pending).toBeNull();
     expect(e.handle(['g'], plain)).toEqual({ kind: 'handled', commandId: 'other' });
   });

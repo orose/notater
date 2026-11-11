@@ -612,3 +612,118 @@
   --color-src-rule: var(--color-rule-strong);        /* klammen ved hover på diskré embed */
   --color-veil: color-mix(in oklab, var(--color-bg) 92%, transparent);   /* bak zen-hint/which-key */
 }
+
+/* ==========================================================================
+   v2 – Presentasjonsmodus (designsystem §12)
+   Lerretet er et logisk 1920 × 1080-rom. Alle mål i presentasjonen er i «lerretpiksler» (lp):
+     1 lp = 1/1920 av lerretets bredde = 1 px ved 1080p, 0,667 px ved 720p.
+   ADR-010: lerretet er ALLTID 1920 × 1080 CSS-px og skaleres til vinduet med transform: scale(--stage-scale),
+   så 1 lp = 1 px i både visning og måling. Layout, krymping (A2) og «(forts.)»-deling blir dermed identisk i et
+   1280-vindu, på projektor og i Teams-deling. Lerretet har container-type: size; --lp evalueres der den brukes
+   (nærmeste container), så miniatyrer i oversikten (mindre container, uten transform) skalerer gratis.
+   Krympefaktoren settes per lysbilde som --slide-fit (1 … text-min/body) og multipliseres med brødtekst-tokenene.
+   Tall med suffiks -lp er rene tall som JS leser med getComputedStyle (som --leader-delay i v1.1).
+   ========================================================================== */
+:root {
+  /* --- Lerret og rutenett --- */
+  --lp: calc(100cqw / 1920);
+  --slide-aspect: 16 / 9;
+  --slide-margin-x: calc(128 * var(--lp));        /* venstre/høyre marg (6,7 %) – utenfor Teams' navnelapp-sone */
+  --slide-head-top: calc(44 * var(--lp));         /* kolumnetittelen (agendalinjen) */
+  --slide-content-top: calc(148 * var(--lp));     /* lysbildetittelens topp */
+  --slide-content-bottom: calc(112 * var(--lp));  /* innholdets nedre grense, målt fra bunnen */
+  --slide-foot-bottom: calc(34 * var(--lp));      /* folio og notattittel, målt fra bunnen */
+  --slide-gap: calc(32 * var(--lp));              /* spalteavstand, 12 kolonner à 110 lp */
+  --slide-hang: calc(40 * var(--lp));             /* «§ 2» og nummer henger så langt ut i venstremargen */
+  --slide-flow: 0.7em;                            /* luft mellom blokker (følger krympingen, fordi den er i em) */
+
+  /* --- Streker: aldri under 2 lp. 1 px-hårstreker blinker og forsvinner i komprimert video --- */
+  --slide-hair: max(1px, calc(2 * var(--lp)));
+  --slide-rule: max(1px, calc(3 * var(--lp)));
+  --slide-rule-heavy: max(2px, calc(6 * var(--lp)));
+  --slide-progress-h: max(3px, calc(8 * var(--lp)));
+  --slide-focus: max(2px, calc(4 * var(--lp)));
+
+  /* --- A2 Automatisk tilpasning (JS leser -lp-tallene) --- */
+  --slide-fit-step: 0.025;          /* innholdet krympes i steg à 2,5 % til det passer eller når minimum */
+  --slide-figure-min: calc(260 * var(--lp));  /* minstehøyde for Mermaid/bilde i måling; vokser inn i ledig plass i visning */
+  --slide-mono-min-lp: 24;          /* kode, tabell, kanban, kolumnetittel: aldri under 24 lp (16 px ved 720p) */
+
+  /* --- Bevegelse og lag --- */
+  --slide-fade: 240ms;              /* krysstoning mellom lysbilder; kromet (agendalinje, folio) byttes uten toning */
+  --z-present: 70; --z-present-overlay: 75; --z-blackout: 80;
+}
+@media (prefers-reduced-motion: reduce) { :root { --slide-fade: 0ms; } }
+
+/* Typografisk skala for lerretet (lp). Ratio ≈ 1,3. Brødtekst 36–40 lp ≈ 1/27–1/30 av lerrethøyden:
+   lesbart fra bakerste rad i et møterom og i et Teams-vindu på 960 px. */
+[data-type="tidsskrift"] {
+  --slide-body-lp: 40;              /* brødtekst ved fit = 1 */
+  --slide-text-min-lp: 30;          /* A2-minimum for brødtekst → fit-min 0,75 (PO-86) */
+  --slide-mono-ratio: 0.8;          /* kode = 0,8 × brødtekst → 32 lp, ved minimum 24 lp */
+  --slide-step-n2: calc(26 * var(--lp));   /* kolumnetittel, folio, fotnoter */
+  --slide-step-n1: calc(30 * var(--lp));   /* bildetekst, properties, metadata, delpunkter */
+  --slide-step-0: calc(var(--slide-body-lp) * var(--lp));
+  --slide-step-1: calc(52 * var(--lp));    /* ingress, underoverskrift i lysbilde */
+  --slide-step-2: calc(72 * var(--lp));    /* lysbildetittel */
+  --slide-step-3: calc(84 * var(--lp));    /* agendapunkter */
+  --slide-step-4: calc(144 * var(--lp));   /* tittellysbildet */
+  --slide-leading: 1.42;
+  --slide-weight-body: 400;
+  --slide-weight-title: 400;        /* Spectral 300 bare ≥ 112 lp – tynne seriffer forsvinner i video */
+  --slide-weight-display: 300;
+  --slide-measure: 30em;            /* ≈ 62 tegn ved 40 lp */
+}
+[data-type="terminal"] {
+  --slide-body-lp: 36;
+  --slide-text-min-lp: 28;          /* → fit-min 0,778 */
+  --slide-mono-ratio: 0.86;         /* 31 lp, ved minimum 24 lp */
+  --slide-step-n2: calc(24 * var(--lp));
+  --slide-step-n1: calc(28 * var(--lp));
+  --slide-step-0: calc(var(--slide-body-lp) * var(--lp));
+  --slide-step-1: calc(46 * var(--lp));
+  --slide-step-2: calc(64 * var(--lp));
+  --slide-step-3: calc(76 * var(--lp));
+  --slide-step-4: calc(128 * var(--lp));
+  --slide-leading: 1.4;
+  --slide-weight-body: 450;         /* litt tyngre enn lesevisningens 420: tåler videokomprimering */
+  --slide-weight-title: 760;
+  --slide-weight-display: 820;
+  --slide-measure: 33em;
+}
+[data-type="klartekst"] {
+  --slide-body-lp: 38;
+  --slide-text-min-lp: 30;          /* → fit-min 0,79 */
+  --slide-mono-ratio: 0.82;         /* 31 lp, ved minimum 24,6 lp */
+  --slide-step-n2: calc(26 * var(--lp));
+  --slide-step-n1: calc(30 * var(--lp));
+  --slide-step-0: calc(var(--slide-body-lp) * var(--lp));
+  --slide-step-1: calc(46 * var(--lp));
+  --slide-step-2: calc(64 * var(--lp));
+  --slide-step-3: calc(76 * var(--lp));
+  --slide-step-4: calc(120 * var(--lp));
+  --slide-leading: 1.5;
+  --slide-weight-body: 420;
+  --slide-weight-title: 700;
+  --slide-weight-display: 700;
+  --slide-measure: 31em;
+}
+
+/* Avledede v2-farger. Kontroll: node docs/design/kontrast-v2.mjs */
+:root {
+  --color-head: var(--color-muted);                 /* agendalinje: andre punkter */
+  --color-head-current: var(--color-text);          /* agendalinje: gjeldende punkt */
+  --color-head-mark: var(--color-accent);           /* strek under gjeldende punkt (ikke-tekst ≥ 3) */
+  --color-progress: var(--color-accent);            /* fremdriftslinjen (≥ 3 mot bg) */
+  --color-progress-track: var(--color-rule);        /* sporet – kun dekor */
+  --color-agenda-past: var(--color-muted);          /* overgang: tidligere punkter («dempet» = muted, aldri opacity) */
+  --color-agenda-current: var(--color-accent);      /* overgang: gjeldende punkt */
+  --color-thumb-current: var(--color-accent);       /* oversikt: lysbildet du står på */
+  --color-thumb-cursor: var(--color-focus);         /* oversikt: markøren (tastatur) */
+  --color-blackout: #000;                           /* b / . – alltid svart, også i lyse temaer */
+  --color-overview-bg: var(--color-letterbox);
+  --color-letterbox-edge: var(--color-muted);       /* kanter på kontroller i letterbox (rule-strong gir bare 2,5:1 der) */
+}
+/* Letterbox: et hakk mørkere enn papiret, så lysbildet ligger som et ark på et bord. Ingen skygge. */
+[data-mode="light"] { --color-letterbox: color-mix(in oklab, var(--color-text) 9%, var(--color-bg)); }
+[data-mode="dark"]  { --color-letterbox: color-mix(in oklab, #000 35%, var(--color-bg)); }

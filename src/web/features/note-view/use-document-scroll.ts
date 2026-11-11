@@ -1,5 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigationType } from 'react-router';
+import { onlyOverlayChanged, type Place } from '../../shared/overlay-params';
+
+export { onlyOverlayChanged };
 
 // Scroll ved navigasjon: til #anker (med kort markering), gjenoppretting ved frem/tilbake (R10),
 // ellers til toppen. Posisjoner lagres per historikk-oppføring (sessionStorage, try/catch).
@@ -46,6 +49,7 @@ export function useDocumentScroll(ready: boolean, docId: string): { toast: strin
   const navigationType = useNavigationType();
   const [toast, setToast] = useState<string | null>(null);
   const initial = useRef(true);
+  const lastPlace = useRef<Place | null>(null);
 
   useEffect(() => {
     const key = location.key;
@@ -68,6 +72,11 @@ export function useDocumentScroll(ready: boolean, docId: string): { toast: strin
 
   useLayoutEffect(() => {
     if (!ready) return undefined;
+    const place = { pathname: location.pathname, search: location.search, hash: location.hash };
+    const previous = lastPlace.current;
+    lastPlace.current = place;
+    // AR-2-21: presentasjonen starter, blar eller avslutter – lesevisningen ligger der den lå.
+    if (previous && !initial.current && onlyOverlayChanged(previous, place)) return undefined;
     const hash = safeDecode(location.hash.replace(/^#/, ''));
     let timer: ReturnType<typeof setTimeout> | undefined;
     if (hash) {

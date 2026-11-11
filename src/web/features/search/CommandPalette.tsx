@@ -363,7 +363,12 @@ function useCommandList(
           })}
         </ul>
         {items.length === 0 ? (
-          list.argument ? (
+          list.argument && list.error ? (
+            <div className="cmd-err" role="status">
+              <span className="code">{list.error.code}</span>
+              <strong>{list.error.title}</strong> {list.error.detail}
+            </div>
+          ) : list.argument ? (
             <div className="cmd-err" role="status">
               <span className="code">E475</span>
               <strong>Ugyldig argument «{trimmed.slice(list.argument.ex.length).trim()}».</strong> Slett litt og velg en av verdiene.

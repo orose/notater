@@ -140,6 +140,16 @@ fjernes av frontend når en funksjon leveres). AK-1.1-08 kjøres mot registeret 
 `docs/test/akseptanserapport-v1.1.md`. Nye filer: `v1.1-ak11-12-axe-matrise.spec.ts` (24 temakombinasjoner med
 v1.1-kontrollene) og `v1.1-folding-perf.spec.ts` (perf-prosjektet).
 
+### 3.2 v2
+
+Testplan, sporbarhet AK-2-01..14 → TC-2-…, kanttilfeller, selektorkontrakt og spørsmål: `docs/test/testplan-v2.md`.
+Fasit: `README-QA.md` §20 og `docs/test/v2-fasit.json` (lysbilderekkefølge per notat i `test-vault/presentasjon/`).
+Tester: `e2e/v2-*.spec.ts` (TDD, `test.fixme` fjernes av frontend når en funksjon leveres; TC-2-02-00 sjekker fasiten
+mot vaultet og kjører nå). Live-endringer under presentasjon kjører med egen vault-kopi og server per test (`liveTest` i
+`e2e/support/v2.ts`). Ytelse: `v2-ak13-presentasjon-perf.spec.ts` i perf-prosjektet. Axe: `v2-ak12-axe-matrise.spec.ts`.
+**Avsluttende akseptansetest v2, 2026-11-09:** alle AK-2-01..14 bestått, ingen `fixme` igjen, én åpen kosmetisk feil
+(BUG-015, `test.fail`); rapport `docs/test/akseptanserapport-v2.md`.
+
 ## 4. Definition of Done per slice
 
 Felles for alle slices (fra brief): tester grønne · QA har verifisert mot AK · README oppdatert · kunden kan teste med én kommando. I tillegg:

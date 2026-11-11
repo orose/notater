@@ -181,3 +181,16 @@ Reproduksjon generelt: `E2E_PORT=4418 npx playwright test` (porten kan velges fr
   which-key-panelet blir også delvis dekket av en toast som fortsatt vises. Skjermbilder:
   `desktop-*-06-zen-full-bredde.png`, `desktop-*-09-which-key.png`, `mobil-*-06-zen-full-bredde.png`.
 - **Forslag:** stable varslene (én kø eller vertikal stabel), eller la en ny toast erstatte zen-hintet.
+
+
+## BUG-015 – egenskapene på tittellysbildet flyter ned i bunnlinjen (Tidsskrift) – RETTET
+
+- **Alvorlighet:** Lav (kosmetisk, men synlig for publikum) · **AK:** AK-2-05 (L1), AK-2-08 («ingen innhold kuttes») · **Eier:** frontend/UX
+- **Funn (avsluttende akseptansetest v2, skjermbilder):** `Statusmøte uke 45` har 6 egenskaper. I Tidsskrift ved
+  1920×1080 slutter egenskapskolonnen (`.t-props`) på y = 960, mens bunnlinjen med «Endret …» (`.t-foot`, 2 px kant)
+  starter på y = 917. Linjen krysser den siste egenskapen («presenter»). Det samme skjer ved 1280×720. Terminal har
+  egenskapene i en boks og er ikke rammet. Skjermbilder: `statusmote-tidsskrift-1920-01.png`,
+  `statusmote-tidsskrift-1280-01.png` og miniatyren i `statusmote-tidsskrift-1920-oversikt.png`.
+- **Test:** TC-2-05-10 (`test.fail`) i `e2e/v2-ak05-07-agenda.spec.ts`.
+- **Forslag:** tittellysbildet måles som andre lysbilder (krymp egenskapslisten, eller begrens den til N rader med
+  «+ k til»), eller egenskapskolonnen avsluttes over bunnlinjen.

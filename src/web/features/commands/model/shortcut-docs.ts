@@ -1,10 +1,10 @@
 // `?`-oversikten og README-avsnittet genereres fra samme funksjon (F6, AK-1.1-07). Ren TS.
 // Kommandoer med `pair` slås sammen til én rad («`j` / `k` Rull ned / opp», PO-69).
 
-import { formatKeySequence, parseKeySequence, type LabelPlatform } from '../../keyboard';
+import { formatKeySequence, parseKeySequence, type KeyMode, type LabelPlatform } from '../../keyboard';
 import { COMMAND_CATALOG, KEY_HINTS, type CommandId } from './catalog';
 import { catalogBindings } from './registry';
-import { COMMAND_GROUPS, GROUP_LABELS, type CommandGroup, type CommandSpecBody } from './command-types';
+import { GROUP_LABELS, MODE_GROUP_ORDER, type CommandGroup, type CommandSpecBody } from './command-types';
 
 /** Én tastevariant: ferdig tekst (`⌘K`) og én etikett per akkord (`['Space', 'w']`). */
 export interface ShortcutBinding {
@@ -47,9 +47,12 @@ function variant(keys: string, platform: LabelPlatform): ShortcutBinding {
   return { keys: formatKeySequence(sequence, platform), chords: sequence.map((chord) => formatKeySequence([chord], platform)) };
 }
 
-/** Alle normal-modus-bindinger (par slått sammen) + tastehint, gruppert i fast rekkefølge. */
-export function shortcutGroups(platform: LabelPlatform): ShortcutGroup[] {
-  const bindings = catalogBindings().filter((b) => b.mode === 'normal');
+/**
+ * Alle bindinger i modusen (par slått sammen) + tastehint, gruppert i fast rekkefølge. Standard: normal-modus.
+ * `present` gir presentasjonsmodusens kort (`?` under presentasjon, README «I presentasjon», ADR-010 §3).
+ */
+export function shortcutGroups(platform: LabelPlatform, mode: KeyMode = 'normal'): ShortcutGroup[] {
+  const bindings = catalogBindings().filter((b) => b.mode === mode);
   const commandOf = (id: CommandId): ShortcutCommand => ({
     id,
     name: COMMAND_CATALOG[id].name,
@@ -57,13 +60,13 @@ export function shortcutGroups(platform: LabelPlatform): ShortcutGroup[] {
   });
   const paired = new Set<string>(Object.values(COMMAND_CATALOG).flatMap((spec: CommandSpecBody) => (spec.pair ? [spec.pair] : [])));
 
-  return COMMAND_GROUPS.map((group) => {
+  return MODE_GROUP_ORDER[mode].map((group) => {
     const rows: ShortcutRow[] = [];
     const commandOnly: string[] = [];
     for (const [rawId, raw] of Object.entries(COMMAND_CATALOG)) {
       const id = rawId as CommandId;
       const spec: CommandSpecBody = raw;
-      if (spec.group !== group) continue;
+      if (spec.group !== group || (spec.modes && !spec.modes.includes(mode))) continue;
       const first = commandOf(id);
       if (first.bindings.length === 0) {
         commandOnly.push(spec.aliases[0] ?? spec.name);
@@ -81,7 +84,7 @@ export function shortcutGroups(platform: LabelPlatform): ShortcutGroup[] {
       });
     }
     for (const hint of KEY_HINTS) {
-      if (hint.group !== group) continue;
+      if (hint.group !== group || !(hint.modes ?? ['normal']).includes(mode)) continue;
       rows.push({
         id: hint.id,
         kind: 'hint',
@@ -100,7 +103,10 @@ export function shortcutGroups(platform: LabelPlatform): ShortcutGroup[] {
  * de samme radene som `?`-kortet (par slått sammen, gruppen på første rad i hver gruppe), og tastehintene
  * som liste under.
  */
-export function renderShortcutsMarkdown(groups: readonly ShortcutGroup[]): string {
+export function renderShortcutsMarkdown(
+  groups: readonly ShortcutGroup[],
+  hintsIntro = 'Taster i paletten, base-fanene og hopp-lenken (håndteres av komponentene selv):',
+): string {
   const code = (k: string) =>
     k
       .split(' / ')
@@ -122,8 +128,11 @@ export function renderShortcutsMarkdown(groups: readonly ShortcutGroup[]): strin
     }
   }
   const parts = [table.join('\n')];
-  if (hints.length > 0) parts.push(['Taster i paletten, base-fanene og hopp-lenken (håndteres av komponentene selv):', '', ...hints].join('\n'));
+  if (hints.length > 0) parts.push([hintsIntro, '', ...hints].join('\n'));
   return parts.join('\n\n');
 }
 
 export const README_MARKERS = { start: '<!-- hurtigtaster:start -->', end: '<!-- hurtigtaster:end -->' } as const;
+
+/** README-avsnittet «I presentasjon» (present-modus, ADR-010 §3). */
+export const README_PRESENT_MARKERS = { start: '<!-- hurtigtaster-presentasjon:start -->', end: '<!-- hurtigtaster-presentasjon:end -->' } as const;

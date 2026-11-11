@@ -10,6 +10,7 @@ import { SearchProvider } from '../features/search';
 import { ThemePicker } from '../features/theme';
 import { DiscreetMoveSync, ViewFlags, ZenChrome, useViewSettings } from '../features/view-settings';
 import { useLiveState } from '../features/live-reload';
+import { PresentationLayer, PresentationMoveSync, PresentationProvider } from '../features/presentation';
 import { VaultHome } from './VaultHome';
 
 const DRAWER_ID = 'sidebar';
@@ -82,6 +83,7 @@ export function VaultLayout() {
   return (
     <SearchProvider vaultId={vaultId}>
       <OutlineHost>
+      <PresentationProvider vaultId={vaultId} docPath={docPath}>
       <CommandProvider vaultId={vaultId} docPath={docPath} onOpenAppearance={() => setThemeOpen(true)}>
       <LiveReloadProvider vaultId={vaultId}>
         <a className="skip-link" href="#innhold">
@@ -110,8 +112,10 @@ export function VaultLayout() {
         <AppearanceDialog open={themeOpen} onClose={() => setThemeOpen(false)} vaultId={vaultId} docPath={docPath} />
         <MovedNotes vaultId={vaultId} />
         <ZenChrome />
+        <PresentationLayer />
       </LiveReloadProvider>
       </CommandProvider>
+      </PresentationProvider>
       </OutlineHost>
     </SearchProvider>
   );
@@ -136,9 +140,10 @@ function useDiscreetControl({ vaultId, docPath }: DocProps) {
 
 /** Utseende med diskré-bryter og knapp til hurtigtastoversikten (F2, F6), som eies av kommandoregisteret. */
 function AppearanceDialog({ open, onClose, ...doc }: { readonly open: boolean; readonly onClose: () => void } & DocProps) {
-  const { openShortcuts } = useCommands();
+  const { openShortcuts, run, availability } = useCommands();
   const discreet = useDiscreetControl(doc);
-  return <ThemePicker open={open} onClose={onClose} onOpenShortcuts={openShortcuts} discreet={discreet} />;
+  const onPresent = availability('present.start').enabled ? () => run('present.start') : undefined;
+  return <ThemePicker open={open} onClose={onClose} onOpenShortcuts={openShortcuts} discreet={discreet} onPresent={onPresent} />;
 }
 
 function LayoutFlags(doc: DocProps) {
@@ -149,5 +154,10 @@ function LayoutFlags(doc: DocProps) {
 /** PO-49: diskré-valget følger notatet ved omdøping mens leseren er åpen. */
 function MovedNotes({ vaultId }: { readonly vaultId: string }) {
   const { moved } = useLiveState();
-  return <DiscreetMoveSync vaultId={vaultId} moved={moved} />;
+  return (
+    <>
+      <DiscreetMoveSync vaultId={vaultId} moved={moved} />
+      <PresentationMoveSync vaultId={vaultId} moved={moved} />
+    </>
+  );
 }

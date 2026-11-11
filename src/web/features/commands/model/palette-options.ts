@@ -2,7 +2,7 @@
 
 import { formatKeySequence, parseKeySequence, type LabelPlatform } from '../../keyboard';
 import type { CommandContext } from './command-context';
-import { PALETTE_GROUP_ORDER, type ArgumentSpec } from './command-types';
+import { PALETTE_GROUP_ORDER, type ArgumentError, type ArgumentSpec } from './command-types';
 import { fuzzyMatch, normalizeForSearch } from './fuzzy';
 import type { PaletteArgumentOption, PaletteCommandOption, PaletteOption } from './palette-types';
 import type { Command } from './registry';
@@ -43,6 +43,20 @@ function argumentTarget(commands: readonly Command[], query: string): ArgumentTa
   return best;
 }
 
+function prefixMatch(query: string, candidate: string): ReturnType<typeof fuzzyMatch> {
+  const q = normalizeForSearch(query.trim());
+  const c = normalizeForSearch(candidate);
+  if (!c.startsWith(q)) return null;
+  return { score: q.length === c.length ? 1000 : 500 + q.length, ranges: q.length > 0 ? [[0, q.length]] : [] };
+}
+
+/** Handlerens forklaring når argumentet ikke treffer noen verdi (S4), ellers null (generell E475). */
+export function paletteArgumentError(commands: readonly Command[], ctx: CommandContext, query: string): ArgumentError | null {
+  const target = argumentTarget(commands, query);
+  if (!target || target.rest === '' || argumentOptions(target, ctx).length > 0) return null;
+  return target.command.argumentError(ctx, target.argument.name, target.rest);
+}
+
 /** Underlistens overskrift når inndata er en argumentkommando (`tema …`), ellers null. */
 export function paletteArgumentHeading(commands: readonly Command[], query: string): { readonly ex: string; readonly label: string } | null {
   const target = argumentTarget(commands, query);
@@ -55,7 +69,7 @@ function argumentOptions(target: ArgumentTarget, ctx: CommandContext): PaletteAr
   const values = command.argumentValues(ctx, argument.name);
   const scored = values.flatMap((value, index) => {
     const candidates = [value.label, value.value, ...(value.aliases ?? [])];
-    const matches = candidates.map((c) => fuzzyMatch(rest, c));
+    const matches = candidates.map((c) => (argument.match === 'prefix' ? prefixMatch(rest, c) : fuzzyMatch(rest, c)));
     const score = Math.max(...matches.map((m) => m?.score ?? -1));
     if (score < 0) return [];
     const option: PaletteArgumentOption = {
@@ -125,8 +139,8 @@ export function commandPaletteOptions(
       shortcut: shortcutChords(command, platform),
       enabled: availability.enabled,
       reason: availability.enabled ? null : availability.reason,
-      needsArgument: argument !== undefined,
-      completion: argument !== undefined ? `${command.aliases[0] ?? command.name} ` : null,
+      needsArgument: argument !== undefined && argument.optional !== true,
+      completion: argument !== undefined && argument.optional !== true ? `${command.aliases[0] ?? command.name} ` : null,
       highlights: nameMatch?.ranges ?? [],
     };
     const order = empty ? PALETTE_GROUP_ORDER.indexOf(command.group) * 1000 + index : index;

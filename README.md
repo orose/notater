@@ -106,6 +106,7 @@ Tabellen genereres fra kommandoregisteret med `npm run docs:shortcuts`. Ikke red
 |  | `:` | Kommandoer |
 |  | `?` | Hurtigtastoversikt |
 |  | `Esc` | Lukk / avbryt |
+| Presentasjon | `Space p` | Presenter |
 
 Taster i paletten, base-fanene og hopp-lenken (håndteres av komponentene selv):
 
@@ -114,7 +115,57 @@ Taster i paletten, base-fanene og hopp-lenken (håndteres av komponentene selv):
 - `↑`, `↓`: Velg treff eller kommando i paletten.
 - `↵`: Åpne treffet / kjør kommandoen.
 - `⌘↵` / `Ctrl ↵`: Åpne treffet i ny fane.
+- `←`, `→`, `↑`, `↓`, `h`, `j`, `k`, `l`: Flytt markøren i lysbildeoversikten.
+- `↵`: Gå til lysbildet i oversikten.
 <!-- hurtigtaster:end -->
+
+#### I presentasjon
+
+`Space p` eller `:presenter` viser notatet som lysbilder, fra seksjonen ved leseposisjonen (se
+[Presentasjon](#presentasjon)). Da gjelder egne taster (present-modus): `Space` er *neste lysbilde*, ikke leder, og
+`Esc` avslutter. Tabellen genereres fra samme register.
+
+<!-- hurtigtaster-presentasjon:start -->
+| Gruppe | Taster | Kommando |
+|---|---|---|
+| Presentasjon | `j`, `→`, `n`, `Space`, `PageDown`, `k`, `←`, `p`, `PageUp` | Neste / forrige lysbilde |
+|  | `gg`, `G` | Første / siste lysbilde |
+|  | `↓`, `↑` | Rull stor blokk ned / opp |
+|  | `o` | Lysbildeoversikt |
+|  | `b`, `.` | Svart skjerm |
+|  | `f` | Fullskjerm |
+| Visning | `⌘.` / `Ctrl .` | Bytt lys/mørk |
+| Søk og kommandoer | `:` | Kommandoer |
+|  | `?` | Hurtigtastoversikt |
+|  | `Esc` | Lukk / avbryt |
+
+Taster i lysbildeoversikten (`o`) og paletten (håndteres av komponentene selv):
+
+- `←`, `→`, `↑`, `↓`, `h`, `j`, `k`, `l`: Flytt markøren i lysbildeoversikten.
+- `↵`: Gå til lysbildet i oversikten.
+- `↑`, `↓`: Velg treff eller kommando i paletten.
+- `↵`: Åpne treffet / kjør kommandoen.
+<!-- hurtigtaster-presentasjon:end -->
+
+### Presentasjon
+
+Et notat kan vises som lysbilder direkte i leseren (v2), for statusmøter i Teams/Zoom eller på projektor. Ingenting
+skrives til notatet, og ingenting leses fra frontmatter: lysbildene utledes av overskriftene.
+
+- **Struktur:** notattittelen blir tittellysbildet. Øverste overskriftsnivå i brødteksten (vanligvis H2) blir
+  agendapunkter, nivået under (H3) blir lysbilder. Før hvert agendapunkt kommer en overgang med agendaen og «du er
+  her». Innebygde notater (`![[…]]`) presenteres alltid som diskré embedding, og foldetilstand ignoreres.
+- **`---`** (også `***` og `___`) deler et lysbilde; delene etter den første får «(forts.)».
+- **For mye innhold** krympes til et lesbart minimum og fortsetter så på et «(forts.)»-lysbilde. Kode, tabeller,
+  diagrammer og baser deles aldri; en blokk som er for stor alene ruller internt (`↑`/`↓`).
+- **Lysbildenivå:** `:presenter h4` gir lysbilder på H4 (agendaen blir nærmeste nivå over). Valget huskes for
+  notatet i denne nettleseren; `:presenter auto` fjerner det.
+- **`:agenda av`** fjerner overgangene for gjeldende presentasjon (huskes ikke).
+- **URL:** gjeldende lysbilde står i adressen (`?lysbilde=plan-q1`), så en lenke eller ny lasting åpner samme
+  lysbilde. Tilbake i nettleseren avslutter presentasjonen.
+- **Fullskjerm** startes når presentasjonen starter, hvis nettleseren tillater det. `f` slår den av og på.
+  Nettleseren bruker første `Esc` til å gå ut av fullskjerm; neste `Esc` avslutter presentasjonen.
+- **Live:** endringer i vaultet (også Bases-data) vises med en gang, og du blir stående på samme lysbilde.
 
 ### Temaer
 

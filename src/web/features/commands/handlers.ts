@@ -5,7 +5,7 @@
 // de vises deaktivert med begrunnelsen «Kommer snart».
 
 import type { CommandContext } from './model/command-context';
-import { ENABLED, type Availability, type CommandHandler } from './model/command-types';
+import { ENABLED, type ArgumentError, type ArgumentValue, type Availability, type CommandHandler } from './model/command-types';
 import type { CommandHandlers } from './model/registry';
 
 /** Visningsfunksjoner fra senere slices. Fjern fra settet når funksjonen er levert. */
@@ -19,6 +19,50 @@ export const NOT_ON_BASE = 'Ikke tilgjengelig – .base-sider har ingen innebygd
 export const NO_HEADINGS = 'Notatet har ingen overskrifter';
 
 const onOff = (on: boolean) => (on ? 'på' : 'av');
+
+/** «h2, h3 og h4». */
+function listLevels(levels: readonly number[]): string {
+  const names = levels.map((l) => `h${l}`);
+  return names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} og ${names[names.length - 1]}`;
+}
+
+function levelsSentence(levels: readonly number[]): string {
+  return levels.length === 0 ? 'Notatet har ingen overskrifter.' : `Notatet har overskrifter på nivå ${listLevels(levels)}.`;
+}
+
+/** S4 / PO-101: E475 = ugyldig argument, E486 = nivået finnes ikke i notatet. Ren funksjon (testes direkte). */
+export function presentLevelError(input: string, validLevels: readonly number[]): ArgumentError | null {
+  const value = input.trim().toLowerCase();
+  if (value === '' || value === 'auto') return null;
+  const m = /^h([1-6])$/.exec(value);
+  if (!m) {
+    return {
+      code: 'E475',
+      title: `Ugyldig nivå «${input.trim()}».`,
+      detail: `Skriv auto eller h1–h6, f.eks. :presenter h3. ${levelsSentence(validLevels)}`,
+    };
+  }
+  if (validLevels.includes(Number(m[1]))) return null;
+  return {
+    code: 'E486',
+    title: `Ingen overskrifter på nivå ${value} i notatet.`,
+    detail: `Lysbildene blir ikke delt annerledes. ${validLevels.length > 0 ? `Gyldige nivåer: ${listLevels(validLevels)}.` : levelsSentence(validLevels)} Valget er ikke lagret.`,
+  };
+}
+
+function levelValues(ctx: CommandContext): ArgumentValue[] {
+  const p = ctx.ports.presentation;
+  const auto: ArgumentValue = { value: 'auto', label: 'auto', description: 'Lysbildenivå fra notatets overskrifter', current: p.storedLevel === null };
+  return [
+    auto,
+    ...p.levels().map((info) => ({
+      value: `h${info.level}`,
+      label: `h${info.level}`,
+      description: `${info.agendaLevel === null ? 'ingen agenda' : `agenda h${info.agendaLevel}`} · ${info.slides} lysbilder`,
+      current: p.storedLevel === info.level,
+    })),
+  ];
+}
 
 const coming: Availability = { enabled: false, reason: COMING_SOON };
 const notesOnly: Availability = { enabled: false, reason: NOTES_ONLY };
@@ -56,12 +100,71 @@ export function createCommandHandlers({ pending = PENDING_FEATURES }: HandlerOpt
     'scroll.bottom': { run: ({ ports }) => ports.scroll.toBottom() },
     'history.back': { run: ({ ports }) => ports.history.back() },
     'history.forward': { run: ({ ports }) => ports.history.forward() },
-    // Palett og dialoger lukker seg selv (motoren er inaktiv bak modal); her gjenstår zen.
+    // Palett og dialoger lukker seg selv (motoren er inaktiv bak modal); her gjenstår zen – og presentasjonen.
     'system.escape': {
-      run: ({ ports }) => {
+      run: ({ ports, mode }) => {
+        if (mode === 'present' && ports.presentation.escape()) return;
         ports.view.exitZen();
       },
     },
+
+    // ADR-010 §3. Modusbegrunnelsene («Bare under presentasjon» …) gir registeret ut fra `modes` i katalogen.
+    'present.start': {
+      isEnabled: (ctx) => (ctx.route.kind === 'note' ? ENABLED : notesOnly),
+      state: ({ ports, route }) => {
+        if (route.kind !== 'note') return null;
+        const stored = ports.presentation.storedLevel;
+        return stored === null ? 'auto' : `h${stored}`;
+      },
+      argumentValues: (ctx, name) => (name === 'nivå' ? levelValues(ctx) : []),
+      argumentError: (ctx, name, input) => (name === 'nivå' ? presentLevelError(input, ctx.ports.presentation.levels().map((l) => l.level)) : null),
+      run: ({ ports }, args) => {
+        const raw = (args.nivå ?? '').trim().toLowerCase();
+        if (raw === '') {
+          ports.presentation.start();
+          return;
+        }
+        const levels = ports.presentation.levels().map((l) => l.level);
+        const error = presentLevelError(raw, levels);
+        if (error) {
+          ports.toast(`${error.code} ${error.title} ${error.detail}`);
+          return;
+        }
+        if (raw === 'auto') {
+          ports.presentation.start('auto');
+          ports.toast('Lysbildenivå automatisk. Overstyringen er fjernet for dette notatet.');
+          return;
+        }
+        ports.presentation.start(Number(raw.slice(1)));
+        ports.toast(`Lysbildenivå ${raw} – husket for dette notatet i denne nettleseren. Notatet er ikke endret.`);
+      },
+    },
+    'present.next': { run: ({ ports }) => ports.presentation.next() },
+    'present.previous': { run: ({ ports }) => ports.presentation.previous() },
+    'present.first': { run: ({ ports }) => ports.presentation.first() },
+    'present.last': { run: ({ ports }) => ports.presentation.last() },
+    'present.scrollDown': { run: ({ ports }) => ports.presentation.scroll(1) },
+    'present.scrollUp': { run: ({ ports }) => ports.presentation.scroll(-1) },
+    'present.overview': { state: ({ ports }) => onOff(ports.presentation.overviewOpen), run: ({ ports }) => ports.presentation.toggleOverview() },
+    'present.blackout': { state: ({ ports }) => onOff(ports.presentation.blackout), run: ({ ports }) => ports.presentation.toggleBlackout() },
+    'present.fullscreen': { state: ({ ports }) => onOff(ports.presentation.fullscreen), run: ({ ports }) => ports.presentation.toggleFullscreen() },
+    'present.agenda': {
+      state: ({ ports }) => onOff(ports.presentation.transitions),
+      argumentValues: (_ctx, name) =>
+        name === 'verdi'
+          ? [
+              { value: 'av', label: 'av', description: 'Ingen overgangslysbilder i denne presentasjonen' },
+              { value: 'på', label: 'på', aliases: ['pa'], description: 'Agendaen med «du er her» før hvert agendapunkt' },
+            ]
+          : [],
+      run: ({ ports }, args) => {
+        const value = (args.verdi ?? '').trim().toLowerCase();
+        const on = value === 'av' ? false : value === 'på' || value === 'pa' ? true : !ports.presentation.transitions;
+        ports.presentation.setTransitions(on);
+        ports.toast(on ? 'Overganger på' : 'Overganger av for denne presentasjonen (huskes ikke)');
+      },
+    },
+    'present.stop': { run: ({ ports }) => ports.presentation.stop() },
 
     'outline.toggleSection': folding(({ ports }) => ports.outline.toggleAtReadingPosition()),
     'outline.foldAll': folding(({ ports }) => ports.outline.foldAll()),
