@@ -680,14 +680,13 @@ export interface TerminalFixtures {
  * Terminaltestene trenger ingen nettleser. Kalles først i hver test/fixture som starter en terminal.
  */
 export function hoppOverUtenforTerminal(testInfo: TestInfo): void {
-  testInfo.skip(!['desktop', 'terminal', 'perf'].includes(testInfo.project.name), 'terminaltester kjører bare i desktop/terminal/perf');
+  testInfo.skip(!['terminal', 'perf'].includes(testInfo.project.name), 'terminaltester kjører bare i prosjektene terminal og perf');
   // ADR-011 §8: mangler tmux, skal v3-testene FEILE med en tydelig melding – ikke hoppes over stille.
   if (!harTmux()) throw new Error('tmux (≥ 3.2) mangler – v3-terminaltestene krever tmux (macOS: brew install tmux). Se docs/test/testplan-v3.md §2.');
 }
 
 /**
- * Terminaltestene trenger ingen nettleser. De kjører i prosjektet `desktop` (og et fremtidig `terminal`-prosjekt,
- * testplanen §2.4) og hoppes over i `mobil`, så de ikke kjører dobbelt. Uten tmux hoppes de over med forklaring.
+ * Terminaltestene trenger ingen nettleser. De kjører i prosjektet `terminal` (PO-118) og `perf` (AK-3-12). Uten tmux hoppes de over med forklaring.
  */
 export const test = base.extend<TerminalFixtures>({
   // eslint-disable-next-line no-empty-pattern -- Playwright krever objektdestrukturering av fixtures

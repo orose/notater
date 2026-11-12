@@ -168,7 +168,7 @@ test.describe('TC-3-02-00 v3-fasiten', () => {
 // Kilden for rekkefølgen er v2: den nye fasiten for `Terminalkanter` må stemme med web-presentasjonen.
 webTest.describe('TC-3-02-00w Terminalkanter i web-presentasjonen (v2) == v3-fasiten', () => {
   webTest('samme lysbilderekkefølge, typer, agendapunkter og progresjon', async ({ page }, testInfo) => {
-    webTest.skip(testInfo.project.name !== 'desktop', 'kjøres én gang (desktop)');
+    webTest.skip(testInfo.project.name !== 'terminal', 'kjøres i terminal-prosjektet');
     await presenter(page, fasit3.kanter.sti);
     const lest = await lesAlleLysbilder(page);
     expect(lest).toEqual(fasit3.kanter.lysbilder.map((l) => somFasit(l as FasitLysbilde)));

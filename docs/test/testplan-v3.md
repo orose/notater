@@ -42,12 +42,9 @@ ikke**, de vises som plassholdere), **ADR-011** (særlig §3 evner og hygiene, �
 
 ### 2.2 Prosjekter og kjøring
 
-- Filene ligger i `e2e/terminal/`. De plukkes i dag opp av Playwright-prosjektene `desktop` og `mobil`; fixturene hopper
-  over alt utenom `desktop`/`terminal`/`perf`, så de kjører én gang. **Forslag til arkitekten:** eget prosjekt
-  `terminal` (`testMatch: /terminal\/v3-.*\.spec\.ts/`, uten nettleser) og `testIgnore: /terminal\//` i `desktop`/`mobil`
-  – da slipper terminaltestene globalSetup sitt web-bygg når de kjøres alene. QA endrer ikke `playwright.config.ts`.
+- Filene ligger i `e2e/terminal/` og kjører i Playwright-prosjektet **`terminal`** (PO-118: `testMatch: /terminal\/v3-.*\.spec\.ts$/`); `desktop`/`mobil` ignorerer dem. Ytelsestesten (`…-terminal-perf.spec.ts`) går i `perf`. Prosjektet bruker Desktop Chrome bare for TC-3-02-00w (fasiten mot web-presentasjonen).
 - Mangler tmux, **feiler** testene med en tydelig melding (ADR-011 §8), de hoppes ikke over stille.
-- Kjøring: `E2E_PORT=4810 npx playwright test e2e/terminal --project=desktop` (bare v3), hele suiten uten filter, ytelse
+- Kjøring: `E2E_PORT=4810 npx playwright test --project=terminal` (bare v3), hele suiten uten filter, ytelse
   `E2E_PORT=4810 npx playwright test --project=perf e2e/terminal`. Kjør **aldri** `playwright install`.
 - Mac: `brew install tmux`. Manuelt i ekte Ghostty: se §8.
 
@@ -156,7 +153,7 @@ Terminalen har ingen DOM; kontrakten er hvordan skjermen leses (riggen, §2.1). 
 - En annen terminal (Terminal.app: 256 farger, ingen OSC 8) for «degradere pent» (T2).
 - PO/kunde: skjermbilder mot UX' mockups i `docs/design/skjermbilder/v3/`.
 
-## 9. Spørsmål til PO (med forslag)
+## 9. Spørsmål til PO (med forslag) – alle QA-forslag godkjent (PO-118, PO-119)
 
 Avgjort av ADR-011/PO-106–112 (testene følger avgjørelsen): fargedybde-rekkefølgen (`--farger terminal` > `NO_COLOR` >
 truecolor > 256 > 16), lys/mørk via OSC 11 ellers mørk, E492 for ukjent kommando, fuzzy-terskelen 1,5 ×, «Notatet finnes
@@ -172,11 +169,11 @@ interne lenker (PO-109), ingen lagrede valg (PO-107).
 | Q-3-07 | `NO_COLOR` er ikke nevnt i spesifikasjonen; ADR-011 lar `--farger terminal` vinne over den. Greit? | Ja (det er eksplisitt brukervalg, i tråd med no-color.org). TC-3-09-06 følger ADR-en. |
 | Q-3-09 | Ukjent notat: exit-kode og hvor meldingen står? | Ingen alternativ skjerm før notatet er løst; melding på stderr «Fant ikke notatet «…». Prøv uten argument for å søke.», exit 2 (som ugyldig argument). Testen krever bare ≠ 0. |
 | Q-3-12 | AK-3-12 «lysbildebytte < 50 ms» måles i dag fra `send-keys` til nytt nummer i tmux-bufferet (polling, ~2–5 ms usikkerhet). Holder det? | Ja; med margin over 50 ms er det en øvre grense. Ingen tidskrok i appen (ADR-011: én testkrok). |
-| Q-3-13 | `playwright.config.ts`: eget `terminal`-prosjekt (§2.2)? | Ja – arkitekten legger det inn i 3-a; QA endrer ikke konfigfila. |
+| Q-3-13 | `playwright.config.ts`: eget `terminal`-prosjekt (§2.2)? | Avgjort (PO-118): lagt inn av QA. |
 | Q-3-14 | Gjeldende punkt i agendalinjen uten farge (`NO_COLOR`): hvilken markering? | Invers (som vim-tabline), samme i 16-fargers modus. |
 
 ## 10. Funn i skjelettet (før levering)
 
 | # | Funn | Status |
 |---|---|---|
-| F-1 | Når **tsx og appen** får SIGTERM/SIGHUP samtidig (som når et terminalvindu lukkes og hele forgrunnsgruppen får SIGHUP), henger prosessen: SIGTERM 4 av 4, SIGHUP 1 av 4 med `--repeat-each 4`. Signal bare til appen virker 8 av 8. | TC-3-11-03b er `fixme` til utvikleren har valgt løsning (f.eks. starte appen uten tsx-forelder – M2-bunten i ADR-011 – eller la forelderen ikke videresende et signal barnet allerede har fått). Ikke ført i `bugs.md` (ikke levert ennå). |
+| F-1 | Når **tsx og appen** får SIGTERM/SIGHUP samtidig (som når et terminalvindu lukkes og hele forgrunnsgruppen får SIGHUP), henger prosessen: SIGTERM 4 av 4, SIGHUP 1 av 4 med `--repeat-each 4`. Signal bare til appen virker 8 av 8. | PO-119 (bug): utvikleren retter i 3-a. TC-3-11-03b er `fixme` til da, og skal bli grønn. Tidligere forslag til løsning (f.eks. starte appen uten tsx-forelder – M2-bunten i ADR-011 – eller la forelderen ikke videresende et signal barnet allerede har fått). Ikke ført i `bugs.md` (ikke levert ennå). |
