@@ -252,7 +252,7 @@ export function normaliserRegister(register: unknown): NormalisertKommando[] {
 }
 
 /** Registeret (ADR-007): katalogen + `catalogBindings()` fra den rene TS-flaten `commands/model` (PO-72). */
-export const REGISTER_FIL = 'src/web/features/commands/model/index.ts'; // ren TS (index.ts drar inn React og CSS)
+export const REGISTER_FIL = 'src/core/commands/index.ts'; // ren TS i kjernen (ADR-011 K5); web-indeksen drar inn React og CSS
 
 interface KatalogModul {
   readonly catalogBindings: () => ReadonlyArray<{ readonly commandId: string; readonly mode: string; readonly keys: string }>;

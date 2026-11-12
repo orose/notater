@@ -414,3 +414,9 @@ Terminaldesignet (docs/design/terminal/, skjermbilder/v3) er **godkjent**. UX-av
 - **PO-115** Enkeregelen for «(forts.)» flyttes inn i den delte lysbildemodellen i `src/core` og gjelder også web. QA oppdaterer v2-fasiten hvis rekkefølgen endres.
 - **PO-116** Hintet om `Ctrl +` vises ikke på tittelsiden; det vises kun som kort melding ved oppstart (før første lysbilde).
 - **PO-117** `obsidian://`-lenker bruker vaultmappens navn som standard; kan overstyres med `obsidianVault` i vault-konfigen.
+
+## PO-avgjørelser etter QA-testplan v3
+
+Alle QAs forslag (Q-3-01, -02, -03, -06, -07, -09, -12, -14) er **godkjent** som foreslått. I tillegg:
+- **PO-118 (Q-3-13)** Eget Playwright-prosjekt `terminal`. QA får endre `playwright.config.ts` for dette.
+- **PO-119 (F-1, bug)** Prosessen henger når tsx og appen får SIGTERM/SIGHUP samtidig (lukking av Ghostty-vindu). Utvikler retter i 3-a – f.eks. bunt uten tsx som forelder (ADR-011 M2) – og TC-3-11-03b skal bli grønn.

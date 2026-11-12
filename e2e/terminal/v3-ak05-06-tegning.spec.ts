@@ -85,7 +85,7 @@ test.describe('AK-3-05 kode, tabeller, callouts, Bases-tabell', () => {
     });
   }
 
-  test.fixme('TC-3-05-05 kodeblokk bredere enn 80 kolonner: linjene brytes med fortsettelsesmerke, ingen tegn tapt (Q-3-04)', async ({ present }) => {
+  test.fixme('TC-3-05-05 kodeblokk bredere enn 80 kolonner: linjene brytes med fortsettelsesmerke ↪, ingen tegn tapt (ADR-011 §4)', async ({ present }) => {
     const k = f.innhold.kode[1]!;
     const t = await presenterNotat(present, fasitNotat(k.notat).sti, { størrelse: { cols: 80, rows: 24 } });
     await gåTilLysbilde(t, k.lysbilde);

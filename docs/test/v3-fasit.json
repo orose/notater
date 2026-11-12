@@ -1313,7 +1313,7 @@
     "internRulling": true,
     "bredereEnnTerminalVed": 80,
     "linje001": "export const linje001 = 'STOR-KODE 001 i en kodeblokk som er altfor lang for ett lysbilde';",
-    "$kommentar": "Kodelinjene er ~95 tegn: ved 80 kolonner brytes de med fortsettelsesmerke (Q-3-04); ingen tegn går tapt."
+    "$kommentar": "Kodelinjene er ~95 tegn: ved 80 kolonner brytes de med fortsettelsesmerke ↪ (ADR-011 §4); ingen tegn går tapt."
    }
   ],
   "tabeller": [
