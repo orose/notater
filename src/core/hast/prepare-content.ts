@@ -1,4 +1,5 @@
 import type { Element, ElementContent, Root, RootContent } from 'hast';
+import { inlineText } from './inline-text';
 
 // Klientside-tilpasninger av server-HAST før rendering. Ren og ikke-muterende
 // (dokumentet ligger i TanStack Query-cachen og kan rendres flere ganger).
@@ -88,12 +89,6 @@ function withSidenotes(nodes: ElementContent[], footnotes: Map<string, Footnote>
     out.push(cloneElement(node, { children: withSidenotes(node.children, footnotes) }));
   }
   return out;
-}
-
-function inlineText(node: ElementContent): string {
-  if (node.type === 'text') return node.value;
-  if (node.type === 'element') return node.children.map(inlineText).join('');
-  return '';
 }
 
 /** BUG-005: avkrysningsbokser i oppgavelister får punktets tekst som tilgjengelig navn. */

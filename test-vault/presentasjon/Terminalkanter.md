@@ -3,7 +3,7 @@ description: Kanttilfeller for presentasjon i terminalen – særtegn, bredde og
 ---
 # Terminalkanter
 
-## Særtegn
+## Særtegn 🙂
 
 ### Æøå og emoji 🚀
 

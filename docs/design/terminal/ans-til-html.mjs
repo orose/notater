@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* global process, console */
+/* global process, console, document */
 /**
  * ANSI-mockups → HTML → PNG (designsystem-terminal.md §9).
  *
@@ -62,7 +62,7 @@ function boxSvg(spec) {
   const end = { u: [cx, 0], d: [cx, H], l: [0, cy], r: [W, cy] };
   if (s.arc) {
     const v = dirs.find((d) => d === 'u' || d === 'd'), h = dirs.find((d) => d === 'l' || d === 'r');
-    const [vx, vy] = end[v], [hx, hy] = end[h];
+    const [vx, vy] = end[v], [hx] = end[h];
     const r = 4.5, sy = v === 'd' ? 1 : -1, sx = h === 'r' ? 1 : -1;
     p.push(`<path d="M${vx} ${vy}V${cy + sy * r}Q${cx} ${cy} ${cx + sx * r} ${cy}H${hx}" stroke="#000" stroke-width="${TL}" fill="none"/>`);
     return p.join('');
@@ -124,6 +124,7 @@ function maskeKlasse(ch) {
 }
 
 /* ---------- ANSI-tolking ---------- */
+const SGR = new RegExp(`^${String.fromCharCode(27)}\\[([\\d;:]*)m`);
 const idx256 = (n, tema) => {
   if (n < 16) return tema.ansi[n];
   if (n < 232) { n -= 16; const v = (k) => (k ? 55 + k * 40 : 0); return '#' + [Math.floor(n / 36), Math.floor(n / 6) % 6, n % 6].map((k) => v(k).toString(16).padStart(2, '0')).join(''); }
@@ -142,7 +143,7 @@ function tolk(tekst, cols, rows, tema) {
   for (let i = 0; i < tekst.length; i++) {
     const c = tekst[i];
     if (c === '\x1b' && tekst[i + 1] === '[') {
-      const m = /^\x1b\[([\d;:]*)m/.exec(tekst.slice(i, i + 64));
+      const m = SGR.exec(tekst.slice(i, i + 64));
       if (!m) continue;
       i += m[0].length - 1;
       const grupper = m[1] === '' ? ['0'] : m[1].split(';');

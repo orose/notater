@@ -1,17 +1,11 @@
-import type { ElementContent, Root, RootContent } from 'hast';
-import type { TocEntry } from '../../../shared/api-types';
+import type { Root, RootContent } from 'hast';
+import type { TocEntry } from '../../shared/api-types';
+import { inlineText } from './inline-text';
 
 interface TitledContent {
   readonly title: string;
   readonly content: Root;
   readonly toc: readonly TocEntry[];
-}
-
-/** Inline-tekst uten ekstra mellomrom mellom noder (`**Kaf**ka` → «Kafka»). */
-function inlineText(node: ElementContent): string {
-  if (node.type === 'text') return node.value;
-  if (node.type === 'element') return node.children.map(inlineText).join('');
-  return '';
 }
 
 function isBlankText(node: RootContent): boolean {

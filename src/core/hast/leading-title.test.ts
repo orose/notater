@@ -1,7 +1,7 @@
 import type { Element } from 'hast';
 import { describe, expect, it } from 'vitest';
-import type { TocEntry } from '../../../shared/api-types';
-import { h, root } from '../../test-support/hast';
+import type { TocEntry } from '../../shared/api-types';
+import { h, root } from '../test-support/hast';
 import { prepareContent } from './prepare-content';
 import { splitLeadingTitle } from './leading-title';
 

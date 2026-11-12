@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { FoldingContext, OutlineHostContext, type FoldingValue, type OutlineControl } from './folding-context';
 import type { Root } from 'hast';
-import type { SectionStats } from './build-outline';
+import type { SectionStats } from '../../../core/outline';
 
 /** Kontrollen for notatet som vises nå, eller null (ingen notatside). */
 export function useOutlineControl(): OutlineControl | null {

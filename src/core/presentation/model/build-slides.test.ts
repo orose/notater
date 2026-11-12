@@ -3,13 +3,13 @@
 // `npx tsx scripts/presentation-fixtures.ts` når testvaultet endres).
 import type { Root } from 'hast';
 import { describe, expect, it } from 'vitest';
-import type { TocEntry } from '../../../../shared/api-types';
+import type { TocEntry } from '../../../shared/api-types';
 import { buildOutline } from '../../outline';
-import { prepareContent, splitLeadingTitle } from '../../note-view';
+import { prepareContent, splitLeadingTitle } from '../../hast';
 import { buildSlideDrafts, fromOutline } from './build-slides';
 import { finalizeDeck } from './finalize-deck';
 import type { DeckFit, FlowBlock, HeadingLevel, Slide, SlideDeck, SlideDraftDeck } from './slide-types';
-import fasitJson from '../../../../../docs/test/v2-fasit.json';
+import fasitJson from '../../../../docs/test/v2-fasit.json';
 
 interface FasitSlide {
   readonly type: string;
@@ -43,7 +43,11 @@ interface Fixture {
   readonly toc: readonly TocEntry[];
 }
 
-const FIXTURES = import.meta.glob<Fixture>('./fixtures/*.json', { eager: true, import: 'default' });
+// `import.meta.glob` er Vite/Vitest; kjernen typesjekkes også uten `vite/client` (server-prosjektet), derav typen her.
+type GlobImportMeta = ImportMeta & {
+  glob<T>(pattern: string, options: { readonly eager: true; readonly import: 'default' }): Record<string, T>;
+};
+const FIXTURES = (import.meta as GlobImportMeta).glob<Fixture>('./fixtures/*.json', { eager: true, import: 'default' });
 
 function load(sti: string): Fixture {
   const fixture = FIXTURES[`./fixtures/${sti.replace(/^presentasjon\//, '')}.json`];

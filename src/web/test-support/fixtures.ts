@@ -1,5 +1,5 @@
 import type { BaseDocument, NoteDocument, TreeResponse, VaultsResponse } from '../../shared/api-types';
-import { h, root } from './hast';
+import { h, root } from '../../core/test-support/hast';
 
 export const vaultsFixture: VaultsResponse = {
   defaultVaultId: 'test',

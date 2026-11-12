@@ -8,7 +8,7 @@
 [0m                                                                                                                        [0m
 [0m      [0;90m  – [0mI produksjon siden 4. november                                                                                [0m
 [0m      [0;90m  – [0;1m0 doble ordre[0m siste uke (før: 3–5 per uke)                                                                    [0m
-[0m      [0;90m  – [0mBeslutningen står i [0;4:1;31;58:5:1mADR-014 Idempotens[0m                                                                        [0m
+[0m      [0;90m  – [0mBeslutningen står i ]8;;obsidian://open?vault=Arbeid&file=ADR-014%20Idempotens\[0;4:1;31;58:5:1mADR-014 Idempotens]8;;\[0m                                                                        [0m
 [0m                                                                                                                        [0m
 [0m          [0;31m●[0m [0;1mIdempotencyFilter.java[0m                                                                        [0;90mjava[0m          [0m
 [0m         [0;37m╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌[0m         [0m

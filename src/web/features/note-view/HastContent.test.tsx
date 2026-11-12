@@ -1,7 +1,7 @@
 import { fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { BaseResult } from '../../../shared/api-types';
-import { h, root } from '../../test-support/hast';
+import { h, root } from '../../../core/test-support/hast';
 import { renderWithProviders } from '../../test-support/render-with-providers';
 import { SearchProvider } from '../search';
 import { HastContent } from './HastContent';

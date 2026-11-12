@@ -57,11 +57,13 @@ test.describe('AK-3-11 terminalhygiene ved avslutning', () => {
     await forventGjenopprettet(t, [0, 130]);
   });
 
-  test.fixme('TC-3-11-05 ukjent feil (testkrok) gjenoppretter terminalen og skriver feilen til stderr etterpå (Q-3-11)', async ({ present }) => {
-    const t = await present({ args: [NOTAT], miljø: { VAULT_PRESENT_QA_KRASJ: '1' } });
+  test.fixme('TC-3-11-05 ukjent feil (testkroken i ADR-011 §8): gjenopprett, deretter stakk på hovedskjermen, exit 1', async ({ present }) => {
+    const t = await present({ args: [NOTAT], miljø: { VAULT_READER_TEST_CRASH: 'etter-første-ramme' } });
     await forventGjenopprettet(t, [1]);
-    // Feilmeldingen skal stå på hovedskjermen etter at alternativ skjerm er forlatt (ikke forsvinne med den).
-    expect(t.skjerm().join('\n')).toMatch(/feil|error/i);
+    // Feilen skal stå på hovedskjermen etter at alternativ skjerm er forlatt (ikke forsvinne med den).
+    expect(t.skjerm().join('\n')).toMatch(/Error|feil/i);
+    const rå = t.råstrøm();
+    expect(rå.slice(rå.lastIndexOf('\u001b[?1049l')), 'stakken skrives etter at alternativ skjerm er forlatt').toMatch(/Error|feil/i);
   });
 
   test.fixme('TC-3-11-06 Ctrl c på lysbilde 7 (kanban-plassholder) og i oversikten gjenoppretter', async ({ present }) => {

@@ -1,6 +1,6 @@
 import type { Element } from 'hast';
 import { describe, expect, it } from 'vitest';
-import { h, root } from '../../test-support/hast';
+import { h, root } from '../test-support/hast';
 import { prepareContent, readingMinutes } from './prepare-content';
 
 function el(node: unknown): Element {

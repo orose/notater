@@ -58,27 +58,104 @@ export function fasitNotat(nøkkel: string): V3Notat {
 
 export const STANDARDSTØRRELSER = fasit3.storrelser.standard;
 
-/** UX sine figlet-glyfer (docs/design/terminal/figlet-glyfer.json). */
-export const figletGlyfer = JSON.parse(readFileSync(join(REPO, 'docs/design/terminal/figlet-glyfer.json'), 'utf8')) as Record<
-  'stor' | 'kompakt',
-  { readonly hoyde: number; readonly glyfer: Readonly<Record<string, { readonly rader: readonly string[] }>> }
->;
+// ---------------------------------------------------------------------------------------------
+// Figlet (ADR-011 §5): UX sine .flf-fonter og fallback-kjeden, regnet ut uavhengig av appen
+// ---------------------------------------------------------------------------------------------
 
-/** Bredden på teksten i figlet-fonten (sum av glyfbreddene, store bokstaver), eller null hvis et tegn mangler. */
-export function figletBredde(tekst: string, font: 'stor' | 'kompakt'): number | null {
+export interface FlfFont {
+  readonly hoyde: number;
+  readonly glyfer: ReadonlyMap<string, readonly string[]>;
+}
+
+const TYSKE = [196, 214, 220, 228, 246, 252, 223];
+
+/** Minimal FIGlet-leser (flf2a): header, hardblank, endemerker, 32–126 + de 7 tyske, så kodemerkede tegn. Bredde 0 = mangler. */
+export function lesFlf(fil: string): FlfFont {
+  const linjer = readFileSync(fil, 'utf8').split('\n');
+  const [sig, h, , , , kommentarer] = linjer[0]!.split(' ');
+  const hard = sig!.at(-1)!;
+  const hoyde = Number(h);
+  const glyfer = new Map<string, string[]>();
+  let i = 1 + Number(kommentarer);
+  const les = (fra: number): string[] =>
+    linjer.slice(fra, fra + hoyde).map((r) => {
+      const ende = r.at(-1) ?? '@';
+      let x = r;
+      while (x.endsWith(ende)) x = x.slice(0, -1);
+      return x.split(hard).join(' ');
+    });
+  const legg = (kode: number, rader: string[]) => {
+    if (Math.max(...rader.map((r) => r.length)) > 0) glyfer.set(String.fromCodePoint(kode), rader);
+  };
+  for (const kode of [...Array.from({ length: 95 }, (_, k) => 32 + k), ...TYSKE]) {
+    legg(kode, les(i));
+    i += hoyde;
+  }
+  while (i < linjer.length && /^\d+/.test(linjer[i]!)) {
+    legg(Number(/^\d+/.exec(linjer[i]!)![0]), les(i + 1));
+    i += 1 + hoyde;
+  }
+  return { hoyde, glyfer };
+}
+
+export const FIGLET = {
+  blokk: lesFlf(join(REPO, 'docs/design/terminal/figlet/vr-blokk.flf')),
+  smal: lesFlf(join(REPO, 'docs/design/terminal/figlet/vr-smal.flf')),
+} as const;
+
+function glyfFor(font: FlfFont, tegn: string): readonly string[] | null {
+  const stor = tegn.toLocaleUpperCase('nb');
+  const utenAksent = stor.normalize('NFD').replace(/\p{M}/gu, '');
+  return font.glyfer.get(stor) ?? font.glyfer.get(tegn) ?? font.glyfer.get(utenAksent) ?? null;
+}
+
+/** Bredden på teksten i fonten (full width, ingen smushing), eller null hvis et tegn mangler. */
+export function figletBredde(tekst: string, font: FlfFont): number | null {
   let sum = 0;
-  for (const tegn of segmenter(tekst.toLocaleUpperCase('nb'))) {
-    const glyf = figletGlyfer[font].glyfer[tegn];
-    if (!glyf) return null;
-    sum += Math.max(...glyf.rader.map(visningsbredde));
+  for (const tegn of segmenter(tekst.normalize('NFC'))) {
+    const g = glyfFor(font, tegn);
+    if (!g) return null;
+    sum += Math.max(...g.map(visningsbredde));
   }
   return sum;
 }
 
-/** Tegner teksten med UX-glyfene (brukes av selvtesten av figlet-gjenkjenningen). */
-export function tegnFiglet(tekst: string, font: 'stor' | 'kompakt'): string[] {
-  const glyfer = segmenter(tekst.toLocaleUpperCase('nb')).map((t) => figletGlyfer[font].glyfer[t]!.rader);
-  return Array.from({ length: figletGlyfer[font].hoyde }, (_, r) => glyfer.map((g) => g[r] ?? '').join(''));
+/** Antall linjer med grådig ordbryting innenfor `rom`, eller null (tegn mangler / et ord er for bredt). */
+function figletLinjer(tekst: string, font: FlfFont, rom: number): number | null {
+  if (figletBredde(tekst, font) === null) return null;
+  let antall = 0;
+  let rad = '';
+  for (const ord of tekst.split(' ')) {
+    const kandidat = rad ? `${rad} ${ord}` : ord;
+    if (figletBredde(kandidat, font)! <= rom) rad = kandidat;
+    else {
+      if (figletBredde(ord, font)! > rom) return null;
+      antall++;
+      rad = ord;
+    }
+  }
+  return antall + (rad ? 1 : 0);
+}
+
+export type FigletValg = { readonly font: 'blokk' | 'smal' | 'fallback'; readonly linjer: number };
+
+/** Fallback-kjeden i ADR-011 §5 som ren funksjon (QAs egen implementasjon, brukes til å kontrollere fasiten). */
+export function figletKjede(tekst: string, s: Størrelse, tittel: boolean, marg: number): FigletValg {
+  const rom = s.cols - 2 * marg;
+  const maksHøyde = s.rows / 3;
+  const b = figletLinjer(tekst, FIGLET.blokk, rom);
+  if (b === 1 && FIGLET.blokk.hoyde <= maksHøyde) return { font: 'blokk', linjer: 1 };
+  const maksLinjer = tittel && s.rows >= 36 ? 3 : 2;
+  if (b !== null && b <= maksLinjer && FIGLET.blokk.hoyde * b <= maksHøyde) return { font: 'blokk', linjer: b };
+  const sm = figletLinjer(tekst, FIGLET.smal, rom);
+  if (sm !== null && sm <= 2 && FIGLET.smal.hoyde * sm <= maksHøyde) return { font: 'smal', linjer: sm };
+  return { font: 'fallback', linjer: 0 };
+}
+
+/** Tegner teksten med fonten (selvtesten av figlet-gjenkjenningen). */
+export function tegnFiglet(tekst: string, font: FlfFont): string[] {
+  const glyfer = segmenter(tekst).map((t) => glyfFor(font, t)!);
+  return Array.from({ length: font.hoyde }, (_, r) => glyfer.map((g) => g[r] ?? '').join(''));
 }
 
 /** UX sine fargeroller (docs/design/terminal/farger.json). */
@@ -107,7 +184,7 @@ export interface Miljø {
 
 /** Ghostty-lignende standard: truecolor, Unicode. */
 export const GHOSTTY: Miljø = { TERM: 'xterm-ghostty', COLORTERM: 'truecolor', TERM_PROGRAM: 'ghostty' };
-export const XTERM_256: Miljø = { TERM: 'xterm-256color', COLORTERM: '' };
+export const XTERM_256: Miljø = { TERM: 'xterm-256color', COLORTERM: '', TERM_PROGRAM: '' };
 
 export interface StartValg {
   /** Argumenter etter `npm run present --`. */
@@ -518,6 +595,13 @@ export function sgrIRåstrøm(rå: string): number[][] {
   return [...rå.matchAll(SGR_ALLE)].map((m) => (m[1] || '0').split(/[;:]/).map(Number));
 }
 
+const OSC8 = new RegExp(`${ESC}\\]8;[^;]*;([^${ESC}\\u0007]*)(?:${ESC}\\\\|\\u0007)`, 'g');
+
+/** Alle OSC 8-mål i råstrømmen (tomme mål = slutt på lenken er filtrert bort). */
+export function osc8Mål(rå: string): string[] {
+  return [...rå.matchAll(OSC8)].map((m) => m[1]!).filter(Boolean);
+}
+
 /** Fargekoder i en SGR-parameterliste (30–49, 90–107; 38/48 med undertype). */
 export function fargekoder(p: readonly number[]): string[] {
   const ut: string[] = [];
@@ -597,7 +681,8 @@ export interface TerminalFixtures {
  */
 export function hoppOverUtenforTerminal(testInfo: TestInfo): void {
   testInfo.skip(!['desktop', 'terminal', 'perf'].includes(testInfo.project.name), 'terminaltester kjører bare i desktop/terminal/perf');
-  testInfo.skip(!harTmux(), 'tmux mangler – terminaltestene krever tmux (testplanen §2)');
+  // ADR-011 §8: mangler tmux, skal v3-testene FEILE med en tydelig melding – ikke hoppes over stille.
+  if (!harTmux()) throw new Error('tmux (≥ 3.2) mangler – v3-terminaltestene krever tmux (macOS: brew install tmux). Se docs/test/testplan-v3.md §2.');
 }
 
 /**

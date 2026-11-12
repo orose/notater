@@ -2,7 +2,8 @@
 // klienten, før rendering. Ren og ikke-muterende (dokumentet ligger i query-cachen): urørte noder beholder identitet.
 
 import type { Element, ElementContent, Root, RootContent } from 'hast';
-import type { TocEntry } from '../../../shared/api-types';
+import type { TocEntry } from '../../shared/api-types';
+import { inlineText } from '../hast';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -93,12 +94,6 @@ function isOkEmbed(node: Node): node is Element {
 
 function isDiscreetEmbed(node: Node): boolean {
   return isOkEmbed(node) && node.properties.dataVrDiscreet === 'true';
-}
-
-export function inlineText(node: Node): string {
-  if (node.type === 'text') return node.value;
-  if (node.type === 'element') return node.children.map(inlineText).join('');
-  return '';
 }
 
 function clamp(level: number): HeadingLevel {

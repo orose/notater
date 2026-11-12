@@ -1,4 +1,4 @@
-import type { PropertyEntry } from '../../../shared/api-types';
+import type { PropertyEntry } from '../../shared/api-types';
 
 /** PO-21: ingress fra `description`, deretter `summary`. Brukes av notat-headeren og tittellysbildet (ADR-010 §6). */
 export function ingressOf(properties: readonly PropertyEntry[]): string | null {

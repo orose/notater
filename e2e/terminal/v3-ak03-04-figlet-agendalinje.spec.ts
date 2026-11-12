@@ -12,19 +12,22 @@ import {
   finnFiglet,
   gåTilLysbilde,
   lesAlleSkjermer,
+  lysbildenummer,
   presenterNotat,
   skjøtt,
+  STANDARDSTØRRELSER,
   test,
   visningsbredde,
   type Celle,
+  type FigletValg,
   type Størrelse,
 } from '../support/terminal';
 
 const f = fasit3 as unknown as {
   figlet: {
     lysbilder: Record<string, number[]>;
-    hoyde: Record<'stor' | 'kompakt', number>;
-    steder: { notat: string; lysbilde: number; tekst: string; '80': 'stor' | 'kompakt' | 'fallback'; '200': 'stor' | 'kompakt' | 'fallback' }[];
+    hoyde: Record<'blokk' | 'smal', number>;
+    hoder: ({ notat: string; lysbilde: number; type: string; tekst: string } & Record<string, FigletValg | 'avhengerAvMarg'>)[];
   };
   agendalinje: { ellipse: string; vedBredde: Record<string, Record<string, Record<string, AgendaForventning>>> };
   nummerering: { lysbilder: Record<string, Record<string, string | null>> };
@@ -44,27 +47,33 @@ const hodeFarger = (palett: string): Set<string> =>
   new Set((['light', 'dark'] as const).flatMap((m) => [fargeroller.truecolor[palett]![m].roller.hode!, fargeroller.truecolor[palett]![m].roller.hode_skygge!]));
 
 test.describe('AK-3-03 figlet-hode', () => {
-  for (const sted of f.figlet.steder) {
-    for (const b of ['80', '200'] as const) {
-      const forventet = sted[b];
-      test.fixme(`TC-3-03-01 ${sted.notat} lysbilde ${sted.lysbilde} «${sted.tekst.slice(0, 24)}» ved ${b} kolonner: ${forventet}`, async ({ present }) => {
-        const t = await presenterNotat(present, fasitNotat(sted.notat).sti, { størrelse: STØRRELSE[b], args: ['--palett', PALETT] });
-        await gåTilLysbilde(t, sted.lysbilde);
+  for (const h of f.figlet.hoder) {
+    for (const s of STANDARDSTØRRELSER) {
+      const forventet = h[`${s.cols}x${s.rows}`]!;
+      const navn = typeof forventet === 'string' ? 'figlet eller fallback' : forventet.font === 'fallback' ? 'fallback' : `${forventet.font} × ${forventet.linjer}`;
+      test.fixme(`TC-3-03-01 ${h.notat} ${h.lysbilde} «${h.tekst.slice(0, 24)}» ved ${s.cols}×${s.rows}: ${navn}`, async ({ present }) => {
+        const t = await presenterNotat(present, fasitNotat(h.notat).sti, { størrelse: s, args: ['--palett', PALETT] });
+        await gåTilLysbilde(t, h.lysbilde);
         const celler = t.celler();
         const blokker = finnFiglet(celler);
-        if (forventet === 'fallback') {
+        const rader = blokker.reduce((sum, b) => sum + b.til - b.fra + 1, 0);
+        if (typeof forventet !== 'string' && forventet.font === 'fallback') {
           expect(blokker, 'ingen figlet-blokk').toEqual([]);
-          const tekst = cellerFor(celler, sted.tekst.slice(0, 20)) ?? [];
+          const tekst = cellerFor(celler, h.tekst.slice(0, 12)) ?? [];
           expect(tekst.length, 'teksten står som vanlig tekst').toBeGreaterThan(0);
-          expect(tekst.every((c) => c.fet), 'fallback er fet (Q-3-03)').toBe(true);
+          expect(tekst.every((c) => c.fet), 'fallback er fet (ADR-011 §5)').toBe(true);
           // Ingenting kuttes: hele teksten finnes når radene skjøtes (også et 80 tegn langt ord ved 80 kolonner).
-          expect(t.skjerm().map((r) => r.trim()).join('').replace(/\s/g, '')).toContain(sted.tekst.replace(/\s/g, ''));
-        } else {
-          expect(blokker, 'nøyaktig én figlet-blokk').toHaveLength(1);
-          expect(blokker[0]!.til - blokker[0]!.fra + 1, `høyden til fonten «${forventet}»`).toBe(f.figlet.hoyde[forventet]);
+          expect(t.skjerm().map((r) => r.trim()).join('').replace(/\s/g, '')).toContain(h.tekst.replace(/\s/g, ''));
+        } else if (typeof forventet !== 'string') {
+          const høyde = f.figlet.hoyde[forventet.font as 'blokk' | 'smal'];
+          expect(rader, `${forventet.linjer} linje(r) i ${forventet.font}`).toBe(forventet.linjer * høyde);
           const lov = hodeFarger(PALETT);
-          for (const farge of blokker[0]!.farger) expect(lov, `figlet-farge ${farge} er rollen hode/hode_skygge`).toContain(farge);
+          for (const b of blokker) for (const farge of b.farger) expect(lov, `figlet-farge ${farge} er rollen hode/hode_skygge`).toContain(farge);
+        } else {
+          expect(rader % f.figlet.hoyde.blokk === 0 || rader % f.figlet.hoyde.smal === 0 || (cellerFor(celler, h.tekst.slice(0, 12)) ?? []).every((c) => c.fet)).toBe(true);
         }
+        // Høyde ≤ ⅓ av radene.
+        expect(rader).toBeLessThanOrEqual(s.rows / 3);
       });
     }
   }
@@ -90,13 +99,13 @@ test.describe('AK-3-03 figlet-hode', () => {
     }
   }
 
-  test.fixme('TC-3-03-03 resize fra 200 til 80 kolonner på tittellysbildet bytter stor → kompakt uten å bytte lysbilde', async ({ present }) => {
-    const t = await presenterNotat(present, fasitNotat('statusmote').sti, { størrelse: STØRRELSE['200'] });
-    expect(finnFiglet(t.celler())[0]).toMatchObject({ til: expect.any(Number) });
-    const høyde = (b: { fra: number; til: number }) => b.til - b.fra + 1;
-    expect(høyde(finnFiglet(t.celler())[0]!)).toBe(f.figlet.hoyde.stor);
+  test.fixme('TC-3-03-03 resize fra 200×50 til 80×24 på overgangen «Kundetilbakemeldinger og support»: blokk → fet fallback, samme lysbilde', async ({ present }) => {
+    const t = await presenterNotat(present, fasitNotat('mange').sti, { størrelse: STØRRELSE['200'] });
+    await gåTilLysbilde(t, 13);
+    expect(finnFiglet(t.celler()).map((b) => b.til - b.fra + 1)).toEqual([f.figlet.hoyde.blokk]);
     await t.endreStørrelse(STØRRELSE['80']);
-    await expect.poll(() => finnFiglet(t.celler()).map(høyde)).toEqual([f.figlet.hoyde.kompakt]);
+    await expect.poll(() => finnFiglet(t.celler())).toEqual([]);
+    expect(lysbildenummer(t.skjerm())?.n).toBe(13);
   });
 });
 

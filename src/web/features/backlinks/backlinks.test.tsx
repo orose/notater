@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import type { Backlink } from '../../../shared/api-types';
-import { h, root } from '../../test-support/hast';
+import { h, root } from '../../../core/test-support/hast';
 import { Backlinks } from './Backlinks';
 import { OutgoingLinks } from './OutgoingLinks';
 import { RailBacklinks } from './RailBacklinks';

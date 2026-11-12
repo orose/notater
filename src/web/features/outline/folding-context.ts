@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import type { Root } from 'hast';
-import type { SectionStats } from './build-outline';
+import type { SectionStats } from '../../../core/outline';
 
 /** Det overskriftskomponentene trenger for pilen og fold-linjen. */
 export interface FoldingValue {

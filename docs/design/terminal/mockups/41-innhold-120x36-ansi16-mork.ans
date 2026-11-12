@@ -11,12 +11,12 @@
 [0m        [0;90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m                                                    [0m
 [0m        [0;1;37mTjeneste[0m          [0;1;37mStatus[0m    [0;1;37mJava[0m      [0;1;37mEier[0m        [0;1;37m    Ferdig[0m                                                    [0m
 [0m        [0;90m────────────────────────────────────────────────────────────[0m                                                    [0m
-[0m        [0;4:1;92;58:5:10mordre-api[0m         [0;92m● done[0m    21        Kari        30.10.2026                                                    [0m
-[0m        [0;4:1;92;58:5:10mbetaling[0m          [0;93m◐ doing[0m   17 → 21   Ola         15.11.2026                                                    [0m
-[0m        [0;4:1;92;58:5:10mlager[0m             [0;93m◐ doing[0m   17 → 21   Sindre      20.11.2026                                                    [0m
-[0m        [0;4:1;92;58:5:10mfaktura[0m           [0;37m○ todo[0m    17        Ola         04.12.2026                                                    [0m
-[0m        [0;4:1;92;58:5:10mvarsling[0m          [0;37m○ todo[0m    11        [0;3;37mikke satt[0m   11.12.2026                                                    [0m
-[0m        [0;4:1;92;58:5:10mrapport-batch[0m     [0;37m○ todo[0m    11        Kari        18.12.2026                                                    [0m
+[0m        ]8;;obsidian://open?vault=Arbeid&file=ordre-api\[0;4:1;92;58:5:10mordre-api]8;;\[0m         [0;92m● done[0m    21        Kari        30.10.2026                                                    [0m
+[0m        ]8;;obsidian://open?vault=Arbeid&file=betaling\[0;4:1;92;58:5:10mbetaling]8;;\[0m          [0;93m◐ doing[0m   17 → 21   Ola         15.11.2026                                                    [0m
+[0m        ]8;;obsidian://open?vault=Arbeid&file=lager\[0;4:1;92;58:5:10mlager]8;;\[0m             [0;93m◐ doing[0m   17 → 21   Sindre      20.11.2026                                                    [0m
+[0m        ]8;;obsidian://open?vault=Arbeid&file=faktura\[0;4:1;92;58:5:10mfaktura]8;;\[0m           [0;37m○ todo[0m    17        Ola         04.12.2026                                                    [0m
+[0m        ]8;;obsidian://open?vault=Arbeid&file=varsling\[0;4:1;92;58:5:10mvarsling]8;;\[0m          [0;37m○ todo[0m    11        [0;3;37mikke satt[0m   11.12.2026                                                    [0m
+[0m        ]8;;obsidian://open?vault=Arbeid&file=rapport-batch\[0;4:1;92;58:5:10mrapport-batch]8;;\[0m     [0;37m○ todo[0m    11        Kari        18.12.2026                                                    [0m
 [0m        [0;90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m                                                    [0m
 [0m                                                                                                                        [0m
 [0m      [0;90m┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐[0m                                      [0m

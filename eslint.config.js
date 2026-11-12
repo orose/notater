@@ -50,6 +50,26 @@ export default tseslint.config(
     },
   },
   {
+    // ADR-011 §1 / AR-3-01: src/core er ren TS uten plattform. Ingen globals (verken browser eller node);
+    // tsc håndhever resten, fordi kjernen typesjekkes både i web-prosjektet (uten Node) og server-prosjektet (uten DOM).
+    files: ['src/core/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            { name: 'react', message: 'Kjernen er ren TS uten React (ADR-011 §1).' },
+            { name: 'react-dom', message: 'Kjernen er ren TS uten React (ADR-011 §1).' },
+          ],
+          patterns: [
+            { group: ['node:*'], message: 'Kjernen bruker ikke Node-API-er (ADR-011 §1).' },
+            { group: ['**/web/**', '**/web', '**/server/**', '**/server', '**/terminal/**', '**/terminal'], message: 'Kjernen importerer bare src/shared og rene pakker (ADR-011 §1).' },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['src/server/**/*.ts', '*.config.{ts,js}', 'e2e/**/*.ts', 'scripts/**/*.{js,mjs,ts}', 'test-vault-tools/**/*.{js,mjs}'],
     languageOptions: { globals: globals.node },
   },

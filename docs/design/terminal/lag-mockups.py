@@ -19,7 +19,36 @@ import unicodedata
 
 HER = os.path.dirname(os.path.abspath(__file__))
 FARGER = json.load(open(os.path.join(HER, 'farger.json'), encoding='utf-8'))
-FIGLET = json.load(open(os.path.join(HER, 'figlet-glyfer.json'), encoding='utf-8'))
+
+
+def les_flf(sti):
+    """Minimal FIGlet-leser (som ADR-011 beskriver): header, hardblank, endemerker, påkrevde tegn og kodemerkede tegn."""
+    linjer = open(sti, encoding='utf-8').read().split('\n')
+    hode = linjer[0].split()
+    hard, h, kom = hode[0][5], int(hode[1]), int(hode[5])
+    i = 1 + kom
+    koder = list(range(32, 127)) + [196, 214, 220, 228, 246, 252, 223]
+    glyfer = {}
+
+    def les():
+        nonlocal i
+        rader = []
+        for _ in range(h):
+            l = linjer[i]; i += 1
+            slutt = l[-1]
+            rader.append(l.rstrip(slutt).replace(hard, ' '))
+        return rader
+    for k in koder:
+        glyfer[chr(k)] = les()
+    while i < len(linjer) and linjer[i].strip():
+        kode = int(linjer[i].split()[0], 0); i += 1
+        glyfer[chr(kode)] = les()
+    glyfer = {c: g for c, g in glyfer.items() if max(len(r) for r in g) > 0}   # bredde 0 = mangler
+    return {'hoyde': h, 'glyfer': glyfer}
+
+
+FIGLET = {n: les_flf(os.path.join(HER, 'figlet', n + '.flf')) for n in ('vr-blokk', 'vr-smal')}
+OBSIDIAN = 'obsidian://open?vault=Arbeid&file='   # PO-109: interne lenker får OSC 8 til Obsidian
 UT = os.path.join(HER, 'mockups')
 
 
@@ -218,7 +247,7 @@ def md(tekst, basis=T):
         if m.group(1): ut.append((m.group(1), basis + S(b=1)))
         elif m.group(2): ut.append((m.group(2), basis + S(i=1)))
         elif m.group(3): ut.append((m.group(3), basis + KODE))
-        elif m.group(4): ut.append((m.group(4), basis + LENKE))
+        elif m.group(4): ut.append((m.group(4), basis + LENKE + S(link=OBSIDIAN + m.group(4).replace(' ', '%20'))))
         elif m.group(5): ut.append((m.group(5), basis + LENKE + S(link=m.group(6))))
         elif m.group(7): ut.append((''.join(SUP[int(d)] for d in m.group(7)), basis + S(fg='aksent', b=1)))
         else: ut.append((m.group(8), basis))
@@ -277,53 +306,43 @@ def bryt(spans, w, w2=None):
 
 def figlet_linje(tekst, sett):
     g = FIGLET[sett]['glyfer']
-    over = max((len(g[c].get('over', [])) for c in tekst if c in g), default=0)
-    h = FIGLET[sett]['hoyde']
-    rader = [''] * (over + h)
+    rader = [''] * FIGLET[sett]['hoyde']
     for c in tekst:
-        gl = g[c]
-        w = len(gl['rader'][0])
-        o = gl.get('over', [])
-        for i in range(over):
-            j = i - (over - len(o))
-            rader[i] += (o[j].ljust(w) if 0 <= j < len(o) else ' ' * w)
-        for i in range(h):
-            rader[over + i] += gl['rader'][i]
+        for i, r in enumerate(g[c]):
+            rader[i] += r.ljust(max(len(x) for x in g[c]))
     return [r.rstrip() for r in rader]
 
 
-def figlet(tekst, maks_w, maks_h, maks_linjer=2):
-    """Velger nivå: stor → kompakt → tekst. Bryter bare mellom ord. Returnerer (nivå, [linjer av rader])."""
-    tekst = tekst.upper()
-    for sett in ('stor', 'kompakt'):
+def figlet(tekst, maks_w, maks_h, tittelside=False):
+    """Fallback-kjeden i ADR-011 §5: vr-blokk én linje → vr-blokk ≤ 2 linjer (≤ 3 på tittelsiden ved ≥ 36 rader)
+    → vr-smal ≤ 2 linjer → fet tekst. Bryter bare mellom ord. Returnerer (font|'tekst', [linjer av rader])."""
+    tekst = unicodedata.normalize('NFC', ''.join(
+        c if c in 'ÆØÅæøå' else unicodedata.normalize('NFD', c)[0] for c in tekst)).upper()
+    trinn = [('vr-blokk', 1), ('vr-blokk', 3 if tittelside else 2), ('vr-smal', 2)]
+    for sett, maks_linjer in trinn:
         g = FIGLET[sett]['glyfer']
         if any(c not in g for c in tekst):
             continue  # tegn som ikke finnes i fonten (emoji, CJK …): aldri bland, gå videre
-        ord_ = tekst.split(' ')
-        linjer, cur = [], ''
-        ok = True
-        for o in ord_:
+        linjer, cur, ok = [], '', True
+        for o in tekst.split(' '):
             prøv = (cur + ' ' + o).strip()
-            if bredde(figlet_linje(prøv, sett)[-1]) <= maks_w and max(bredde(r) for r in figlet_linje(prøv, sett)) <= maks_w:
+            if max(len(r) for r in figlet_linje(prøv, sett)) <= maks_w:
                 cur = prøv
             else:
-                if not cur:
+                if not cur or max(len(r) for r in figlet_linje(o, sett)) > maks_w:
                     ok = False; break
                 linjer.append(cur); cur = o
-                if max(bredde(r) for r in figlet_linje(cur, sett)) > maks_w:
-                    ok = False; break
         if cur: linjer.append(cur)
         if not ok or len(linjer) > maks_linjer:
             continue
         blokker = [figlet_linje(l, sett) for l in linjer]
-        hoyde = sum(len(b) for b in blokker) + (len(blokker) - 1)
-        if hoyde <= maks_h:
+        if sum(len(b) for b in blokker) + len(blokker) - 1 <= maks_h:
             return sett, blokker
     return 'tekst', None
 
 
-def tegn_figlet(sk, x, y, tekst, maks_w, maks_h, maks_linjer=2):
-    nivaa, blokker = figlet(tekst, maks_w, maks_h, maks_linjer)
+def tegn_figlet(sk, x, y, tekst, maks_w, maks_h, tittelside=False):
+    nivaa, blokker = figlet(tekst, maks_w, min(maks_h, sk.H // 3), tittelside and sk.H >= 36)
     if nivaa == 'tekst':
         # Fallback: fet aksent, brytes på ord (hardt i ord lengre enn satsen), tung strek under.
         linjer = bryt([(tekst, A + S(b=1))], maks_w)
@@ -331,14 +350,13 @@ def tegn_figlet(sk, x, y, tekst, maks_w, maks_h, maks_linjer=2):
             sk.spans(x, y, l); y += 1
         sk.put(x, y, '━' * min(maks_w, max(bredde(''.join(t for t, _ in l)) for l in linjer)), S(fg='aksent'))
         return y + 1, nivaa
-    fyll = FIGLET[nivaa]['fyll']
     for b in blokker:
         for rad in b:
             for i, ch in enumerate(rad):
                 if ch == ' ':
                     continue
-                skygge = nivaa == 'stor' and ch not in fyll
-                sk.put(x + i, y, ch, S(fg='hode_skygge' if skygge else 'hode'))
+                # ▀▄█▌▐ = fyll i «hode»; andre tegn (skygge) i «hode_skygge». vr-fontene har ingen skygge.
+                sk.put(x + i, y, ch, S(fg='hode' if ch in '█▀▄▌▐' else 'hode_skygge'))
             y += 1
         y += 1
     return y - 1, nivaa
@@ -886,7 +904,7 @@ def tegn_tittel(sk, g, deck, slides):
     for k, s in enumerate(deck['sti']):
         e = sk.put(e, y, (' / ' if k else '') + s, D)
     y += 2
-    y, nivaa = tegn_figlet(sk, g.x, y, deck['tittel'], g.sats, max(3, (sk.H - 14) // 1), 2)
+    y, nivaa = tegn_figlet(sk, g.x, y, deck['tittel'], g.sats, sk.H, tittelside=True)
     y += 1
     for l in bryt(md(deck['ingress'], D + S(i=1)), g.maal):
         sk.spans(g.x, y, l); y += 1
@@ -955,7 +973,7 @@ def tegn_agenda(sk, g, deck, slides, cur=None):
         hode = deck['seksjoner'][cur][0]
     sk.spans(g.x, y, kicker); y += 2
     rest = sk.H - 3 - y - (len(deck['seksjoner']) * 2 + 4)
-    y, nivaa = tegn_figlet(sk, g.x, y, hode, g.sats, rest, 2)
+    y, nivaa = tegn_figlet(sk, g.x, y, hode, g.sats, rest)
     y += 2 if sk.H >= 30 else 1
     agendaliste(sk, g, deck, slides, y, cur)
     nr = [s for s in slides if (s['type'] == 'agenda' and cur is None) or (s['type'] == 'overgang' and s['sek'] == cur)][0]['nr']
@@ -1086,18 +1104,20 @@ def oversikt(W, H, cur_nr, markor_nr):
     # Brede terminaler: forhåndsvisning av lysbildet under markøren i høyre rute (som Telescope i nvim).
     px = g.x + w + 6
     pw = g.x + g.sats - px
-    if pw >= 80:
-        ph = min(H - 2 - g.topp, round(pw * 0.30) + 2)
+    if pw >= 60:
+        ph = H - 3 - g.topp
         flytevindu(sk, px, g.topp - 1, pw, ph, 'Forhåndsvisning', 'lysbilde %d' % markor_nr)
+        # Det EKTE lysbildet (samme deling og nummer), lagt ut i rutens bredde, uten agendalinje og statuslinje,
+        # klippet nederst. Forhåndsvisningen pagineres aldri på nytt (da ville tallene ljuge).
         mal = slides[markor_nr - 1]
-        pg = Rutenett(pw - 2, ph - 2)
-        for kand in paginer(DECK, pg):
-            if kand['type'] == mal['type'] and kand.get('sek') == mal.get('sek') and kand.get('tittel') == mal.get('tittel') and kand.get('forts') == mal.get('forts'):
-                sub, _, _ = tegn_lysbilde(pw - 2, ph - 2, kand['nr'])
-                for yy in range(ph - 2):
-                    for xx in range(pw - 2):
-                        sk.c[g.topp + yy][px + 1 + xx] = sub.c[yy][xx]
-                break
+        sub = Skjerm(pw - 2, ph)
+        pg = Rutenett(pw - 2, ph + 2)
+        if mal['type'] == 'innhold': tegn_innhold(sub, pg, DECK, slides, mal)
+        elif mal['type'] == 'tittel': tegn_tittel(sub, pg, DECK, slides)
+        else: tegn_agenda(sub, pg, DECK, slides, cur=mal.get('sek') if mal['type'] == 'overgang' else None)
+        for yy in range(ph - 2):
+            for xx in range(pw - 2):
+                sk.c[g.topp + yy][px + 1 + xx] = sub.c[yy + 1][xx]
     statuslinje(sk, g, DECK, slides, cur_nr, hint=[('j k', 'flytter'), ('↵', 'hopper'), ('Esc', 'lukker')], modus='OVERSIKT')
     return sk
 

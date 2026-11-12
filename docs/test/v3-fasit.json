@@ -103,7 +103,7 @@
   "sti": "presentasjon/Terminalkanter",
   "tittel": "Terminalkanter",
   "agenda": [
-   "Særtegn",
+   "Særtegn 🙂",
    "Blokker",
    "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
   ],
@@ -122,12 +122,12 @@
    {
     "type": "overgang",
     "overskrift": null,
-    "agendapunkt": "Særtegn"
+    "agendapunkt": "Særtegn 🙂"
    },
    {
     "type": "innhold",
     "overskrift": "Æøå og emoji 🚀",
-    "agendapunkt": "Særtegn",
+    "agendapunkt": "Særtegn 🙂",
     "progresjon": "1/1",
     "inneholder": [
      "TERM-SÆR",
@@ -236,8 +236,11 @@
   ]
  },
  "figlet": {
-  "$kommentar": "T5/AK-3-03: figlet-hode på tittel, agenda og overgang, aldri på innhold. Glyfene er UX sine: docs/design/terminal/figlet-glyfer.json (fontene 'stor' = ANSI Shadow, 6 rader, og 'kompakt' = Future, 3 rader). Regel (QAs forslag, Q-3-03): én linje, ingen orddeling; 'stor' hvis den får plass, ellers 'kompakt', ellers fallback (fet tekst i aksentfarge). Mangler et tegn i fonten (é, ä …) → fallback. Bredden = summen av glyfbreddene (store bokstaver). Testene regner bredden selv fra glyffila; 'garantert' er bare tilfeller med minst 12 kolonners slakk, så margen ikke avgjør.",
-  "glyfer": "docs/design/terminal/figlet-glyfer.json",
+  "$kommentar": "T5/AK-3-03 og ADR-011 §5: figlet-hode på tittel, agenda og overgang, aldri på innhold. Fontene er UX sine (docs/design/terminal/figlet/vr-blokk.flf, 4 rader, og vr-smal.flf, 3 rader; full width, ingen smushing). Fallback-kjeden avgjøres av bredden cols − 2·marg og høyde ≤ ⅓ av radene: 1) vr-blokk på én linje → 2) vr-blokk ordbrutt over ≤ 2 linjer (≤ 3 på tittellysbildet når rader ≥ 36) → 3) vr-smal ≤ 2 linjer → 4) fet tekst i aksent med strek under. Små bokstaver = store; andre bokstaver NFD uten aksent (é → E); mangler et tegn (emoji, CJK) → hele hodet fet. 'hoder' er regnet ut av riggen (e2e/support/terminal.ts › figletKjede) med marg 0 og 4; der svaret avhenger av margen står 'avhengerAvMarg', og da sjekkes bare invariantene.",
+  "fonter": {
+   "blokk": "docs/design/terminal/figlet/vr-blokk.flf",
+   "smal": "docs/design/terminal/figlet/vr-smal.flf"
+  },
   "typer": [
    "tittel",
    "agenda",
@@ -247,7 +250,14 @@
    "innhold"
   ],
   "agendaTekst": "Agenda",
-  "slakk": 12,
+  "margMellom": [
+   0,
+   4
+  ],
+  "hoyde": {
+   "blokk": 4,
+   "smal": 3
+  },
   "lysbilder": {
    "statusmote": [
     1,
@@ -309,134 +319,714 @@
     10
    ]
   },
-  "garantert": {
-   "80": {
-    "stor": [
-     "Agenda",
-     "Del to",
-     "Blokker",
-     "Særtegn"
-    ],
-    "kompakt": [
-     "Terminalkanter",
-     "Statusmøte uke 45",
-     "Relativt nær framtid",
-     "Månedsrapport oktober"
-    ],
-    "fallback": [
-     "Kundetilbakemeldinger og support",
-     "Opplæring og kompetanseheving",
-     "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
-    ],
-    "manglerTegn": [
-     "Del én",
-     "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
-    ]
-   },
-   "200": {
-    "stor": [
-     "Agenda",
-     "Del to",
-     "Blokker",
-     "Særtegn",
-     "Statusmøte uke 45",
-     "Terminalkanter",
-     "Månedsrapport oktober",
-     "Relativt nær framtid"
-    ],
-    "kompakt": [
-     "Kundetilbakemeldinger og support",
-     "Opplæring og kompetanseheving"
-    ],
-    "fallback": [
-     "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
-    ],
-    "manglerTegn": [
-     "Del én",
-     "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
-    ]
-   }
-  },
-  "steder": [
-   {
-    "notat": "kanter",
-    "lysbilde": 1,
-    "tekst": "Terminalkanter",
-    "80": "kompakt",
-    "200": "stor"
-   },
-   {
-    "notat": "kanter",
-    "lysbilde": 2,
-    "tekst": "Agenda",
-    "80": "stor",
-    "200": "stor"
-   },
-   {
-    "notat": "kanter",
-    "lysbilde": 3,
-    "tekst": "Særtegn",
-    "80": "stor",
-    "200": "stor",
-    "merknad": "Æ fra UX sine glyfer"
-   },
-   {
-    "notat": "kanter",
-    "lysbilde": 5,
-    "tekst": "Blokker",
-    "80": "stor",
-    "200": "stor"
-   },
-   {
-    "notat": "kanter",
-    "lysbilde": 10,
-    "tekst": "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft",
-    "80": "fallback",
-    "200": "fallback",
-    "merknad": "80 tegn i ett ord og ä mangler i fonten; fallback-teksten brytes hardt ved 80 kolonner, ingenting kuttes"
-   },
+  "hoder": [
    {
     "notat": "statusmote",
     "lysbilde": 1,
+    "type": "tittel",
     "tekst": "Statusmøte uke 45",
-    "80": "kompakt",
-    "200": "stor"
+    "80x24": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "statusmote",
+    "lysbilde": 2,
+    "type": "agenda",
+    "tekst": "Agenda",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "statusmote",
+    "lysbilde": 3,
+    "type": "overgang",
+    "tekst": "Siden sist",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "statusmote",
+    "lysbilde": 6,
+    "type": "overgang",
+    "tekst": "Jobbes med nå",
+    "80x24": "avhengerAvMarg",
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
    },
    {
     "notat": "statusmote",
     "lysbilde": 9,
+    "type": "overgang",
     "tekst": "Relativt nær framtid",
-    "80": "kompakt",
-    "200": "stor"
+    "80x24": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "120x36": "avhengerAvMarg",
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "rapport",
+    "lysbilde": 1,
+    "type": "tittel",
+    "tekst": "Månedsrapport oktober",
+    "80x24": "avhengerAvMarg",
+    "120x36": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "rapport",
+    "lysbilde": 2,
+    "type": "agenda",
+    "tekst": "Agenda",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "rapport",
+    "lysbilde": 3,
+    "type": "overgang",
+    "tekst": "Siden sist",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "rapport",
+    "lysbilde": 6,
+    "type": "overgang",
+    "tekst": "Jobbes med nå",
+    "80x24": "avhengerAvMarg",
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "rapport",
+    "lysbilde": 10,
+    "type": "overgang",
+    "tekst": "Relativt nær framtid",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "120x36": "avhengerAvMarg",
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "delte",
+    "lysbilde": 1,
+    "type": "tittel",
+    "tekst": "Delte lysbilder",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "delte",
+    "lysbilde": 2,
+    "type": "agenda",
+    "tekst": "Agenda",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
    },
    {
     "notat": "delte",
     "lysbilde": 3,
+    "type": "overgang",
     "tekst": "Del én",
-    "80": "fallback",
-    "200": "fallback",
-    "merknad": "é finnes ikke i glyffila (Q-3-03)"
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
    },
    {
     "notat": "delte",
     "lysbilde": 8,
+    "type": "overgang",
     "tekst": "Del to",
-    "80": "stor",
-    "200": "stor"
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "stor",
+    "lysbilde": 1,
+    "type": "tittel",
+    "tekst": "Stor kodeblokk",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "stor",
+    "lysbilde": 2,
+    "type": "agenda",
+    "tekst": "Agenda",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "stor",
+    "lysbilde": 3,
+    "type": "overgang",
+    "tekst": "Enkeltblokker",
+    "80x24": "avhengerAvMarg",
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "uten",
+    "lysbilde": 1,
+    "type": "tittel",
+    "tekst": "Uten overskrifter",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "forKort",
+    "lysbilde": 1,
+    "type": "tittel",
+    "tekst": "Innhold før agenda",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "forKort",
+    "lysbilde": 2,
+    "type": "agenda",
+    "tekst": "Agenda",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "forKort",
+    "lysbilde": 3,
+    "type": "overgang",
+    "tekst": "Første punkt",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "forKort",
+    "lysbilde": 5,
+    "type": "overgang",
+    "tekst": "Andre punkt",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "forLang",
+    "lysbilde": 1,
+    "type": "tittel",
+    "tekst": "Langt innhold før agenda",
+    "80x24": "avhengerAvMarg",
+    "120x36": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "forLang",
+    "lysbilde": 3,
+    "type": "agenda",
+    "tekst": "Agenda",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "forLang",
+    "lysbilde": 4,
+    "type": "overgang",
+    "tekst": "Første punkt",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "forLang",
+    "lysbilde": 6,
+    "type": "overgang",
+    "tekst": "Andre punkt",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "mange",
+    "lysbilde": 1,
+    "type": "tittel",
+    "tekst": "Mange agendapunkter",
+    "80x24": "avhengerAvMarg",
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "mange",
+    "lysbilde": 2,
+    "type": "agenda",
+    "tekst": "Agenda",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "mange",
+    "lysbilde": 3,
+    "type": "overgang",
+    "tekst": "Økonomi og budsjettoppfølging",
+    "80x24": "avhengerAvMarg",
+    "120x36": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "mange",
+    "lysbilde": 5,
+    "type": "overgang",
+    "tekst": "Rekruttering og bemanning",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "mange",
+    "lysbilde": 7,
+    "type": "overgang",
+    "tekst": "Drift og hendelseshåndtering",
+    "80x24": "avhengerAvMarg",
+    "120x36": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "mange",
+    "lysbilde": 9,
+    "type": "overgang",
+    "tekst": "Sikkerhet og personvern",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "mange",
+    "lysbilde": 11,
+    "type": "overgang",
+    "tekst": "Arkitektur og teknisk gjeld",
+    "80x24": "avhengerAvMarg",
+    "120x36": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
    },
    {
     "notat": "mange",
     "lysbilde": 13,
+    "type": "overgang",
     "tekst": "Kundetilbakemeldinger og support",
-    "80": "fallback",
-    "200": "kompakt"
+    "80x24": {
+     "font": "fallback",
+     "linjer": 0
+    },
+    "120x36": {
+     "font": "smal",
+     "linjer": 2
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "mange",
+    "lysbilde": 15,
+    "type": "overgang",
+    "tekst": "Leverandører og avtaler",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "mange",
+    "lysbilde": 17,
+    "type": "overgang",
+    "tekst": "Opplæring og kompetanseheving",
+    "80x24": {
+     "font": "smal",
+     "linjer": 2
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 2
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 1,
+    "type": "tittel",
+    "tekst": "Terminalkanter",
+    "80x24": {
+     "font": "smal",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 2,
+    "type": "agenda",
+    "tekst": "Agenda",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 3,
+    "type": "overgang",
+    "tekst": "Særtegn 🙂",
+    "80x24": {
+     "font": "fallback",
+     "linjer": 0
+    },
+    "120x36": {
+     "font": "fallback",
+     "linjer": 0
+    },
+    "200x50": {
+     "font": "fallback",
+     "linjer": 0
+    }
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 5,
+    "type": "overgang",
+    "tekst": "Blokker",
+    "80x24": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "120x36": {
+     "font": "blokk",
+     "linjer": 1
+    },
+    "200x50": {
+     "font": "blokk",
+     "linjer": 1
+    }
+   },
+   {
+    "notat": "kanter",
+    "lysbilde": 10,
+    "type": "overgang",
+    "tekst": "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft",
+    "80x24": {
+     "font": "fallback",
+     "linjer": 0
+    },
+    "120x36": {
+     "font": "fallback",
+     "linjer": 0
+    },
+    "200x50": {
+     "font": "fallback",
+     "linjer": 0
+    }
    }
   ],
-  "hoyde": {
-   "stor": 6,
-   "kompakt": 3
-  },
-  "farger": "rollene 'hode' (fyll) og 'hode_skygge' (skygge/kontur) i docs/design/terminal/farger.json; fallback: 'hode' + fet",
+  "farger": "tegn i █▀▄▌▐ får rollen 'hode', skyggetegn (░▒▓ og rammetegn) 'hode_skygge' (docs/design/terminal/farger.json); fallback: 'aksent' + fet + strek under",
   "heuristikk": "En figlet-blokk er ≥ 3 sammenhengende rader der < 20 % av blekket (tegn utenom mellomrom) er bokstaver/sifre. Se e2e/support/terminal.ts › finnFiglet()."
  },
  "agendalinje": {
@@ -511,7 +1101,7 @@
     "kanter": {
      "Æøå og emoji 🚀": {
       "synlige": [
-       "Særtegn",
+       "Særtegn 🙂",
        "Blokker"
       ],
       "før": false,
@@ -546,7 +1136,7 @@
     "kanter": {
      "alleLysbilder": {
       "synlige": [
-       "Særtegn",
+       "Særtegn 🙂",
        "Blokker",
        "Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft"
       ],
@@ -678,6 +1268,29 @@
     "tekst": "[bilde: arkitektur.png]"
    }
   ]
+ },
+ "lenker": {
+  "$kommentar": "OSC 8 (ADR-011 §4, PO-109): eksterne lenker til URL-en; interne lenker til obsidian://open?vault=…&file=… (klikk åpner notatet i Obsidian). Bare når terminalen støtter OSC 8 (Ghostty-profilen i riggen).",
+  "ekstern": {
+   "notat": "kanter",
+   "lysbilde": 11,
+   "url": "https://eksempel.invalid/dokumentasjon/presentasjon"
+  },
+  "intern": {
+   "notat": "statusmote",
+   "lysbilde": 10,
+   "tekst": "Månedsrapport oktober",
+   "prefiks": "obsidian://open?vault=",
+   "fil": "presentasjon/Månedsrapport oktober"
+  },
+  "utenStotte": {
+   "miljo": {
+    "TERM": "xterm-256color",
+    "COLORTERM": "",
+    "TERM_PROGRAM": ""
+   },
+   "forvent": "ingen OSC 8 i råstrømmen, lenketeksten vises"
+  }
  },
  "innhold": {
   "kode": [
@@ -817,7 +1430,7 @@
    "ugyldig": "E475",
    "tomt": "E486",
    "ukjentKommando": "E492",
-   "avklaring": "Q-3-08 (E492 for ukjent kommando, som vim)"
+   "kilde": "ADR-011 §6 (samme tekster og koder som web)"
   },
   "feil": [
    {
@@ -848,8 +1461,7 @@
    },
    {
     "kommando": "finnesikke",
-    "kode": "E492",
-    "avklaring": "Q-3-08"
+    "kode": "E492"
    }
   ]
  },
@@ -876,20 +1488,21 @@
    "stor": 3
   },
   "modus": {
-   "avklaring": "Q-3-06",
-   "forslag": "«system» = terminalens bakgrunn (OSC 11-svar innen 100 ms, så COLORFGBG), ellers mørk"
+   "kilde": "ADR-011 §3",
+   "regel": "«system» = OSC 11-svar (bakgrunnens luminans, 150 ms), ellers mørk. tmux uten klient svarer ikke → mørk i e2e"
   },
   "miljo": {
    "truecolor": {
     "TERM": "xterm-ghostty",
     "COLORTERM": "truecolor",
-    "forvent": "38;2/48;2-sekvenser; bakgrunnen males med rollen 'bg' (avklaring Q-3-06)"
+    "TERM_PROGRAM": "ghostty",
+    "forvent": "38;2-sekvenser; bakgrunnen males med rollen 'bg' (avklaring Q-3-06)"
    },
    "256": {
     "TERM": "xterm-256color",
     "COLORTERM": "",
-    "forvent": "ingen 38;2/48;2, bare 38;5;n/48;5;n (nærmeste farge) – eller ansi16 (avklaring Q-3-07)",
-    "avklaring": "Q-3-07"
+    "TERM_PROGRAM": "",
+    "forvent": "ingen 38;2/48;2, bare 38;5;n/48;5;n (nærmeste farge, rgbTo256, ADR-011 §3)"
    },
    "terminal16": {
     "flagg": [
@@ -903,8 +1516,7 @@
     "env": {
      "NO_COLOR": "1"
     },
-    "forvent": "ingen fargekoder (30–49, 90–107, 38;x, 48;x); fet/understreket/invertert er lov; --farger terminal overstyrer ikke NO_COLOR",
-    "avklaring": "Q-3-07"
+    "forvent": "ingen fargekoder (30–49, 90–107, 38;x, 48;x); fet/understreket/invertert er lov. --farger terminal vinner over NO_COLOR (ADR-011 §3: første treff vinner)"
    }
   }
  },
@@ -946,7 +1558,8 @@
   },
   "notatSlettet": {
    "notat": "statusmote",
-   "forvent": "Presentasjonen avsluttes med forklaring, terminalen gjenopprettes, exit-kode 0 (avklaring Q-3-10)"
+   "melding": "Notatet finnes ikke lenger",
+   "forvent": "meldingen vises, q avslutter; kommer notatet tilbake, vises det igjen (ADR-011 §7)"
   },
   "maksMs": 3000
  },
@@ -975,6 +1588,7 @@
     "notat": "kanter"
    }
   ],
+  "rekkefolge": "ADR-011 §7: 1) eksakt sti (med/uten .md) 2) eksakt tittel/alias 3) Obsidian-oppløsning 4) fuzzy; case-insensitivt, NFC",
   "flereTreff": {
    "arg": "rapport",
    "treff": [
@@ -982,7 +1596,7 @@
     "Årsrapport (NFD)",
     "Kvartalsrapport"
    ],
-   "forvent": "søkbar liste forhåndsfylt med «rapport», ingen presentasjon startet (avklaring Q-3-09)"
+   "forvent": "søkbar liste forhåndsfylt med «rapport», ingen presentasjon startet (ADR-011 §7: åpnes direkte bare når beste treff har ≥ 1,5 × poengsummen til nummer to)"
   },
   "ukjent": {
    "arg": "finnes-ikke-qa-xyz",
@@ -1003,6 +1617,8 @@
  },
  "ytelse": {
   "startMs": 3000,
+  "startMsContainer": 4500,
+  "kilde": "PO-106: måles fra prosessstart uten npm-overhead; < 3 s på kundens Mac, < 4,5 s i container/CI",
   "lysbildebytteMs": 50,
   "vault": {
    "generator": "test-vault-tools/generate-large-vault.mjs",
@@ -1021,9 +1637,10 @@
   ],
   "krasj": {
    "env": {
-    "VAULT_PRESENT_QA_KRASJ": "1"
+    "VAULT_READER_TEST_CRASH": "etter-første-ramme"
    },
-   "avklaring": "Q-3-11 (testkrok som kaster en ukjent feil etter første tegning)"
+   "exitkode": 1,
+   "kilde": "ADR-011 §8: eneste testkrok; gjenopprett, deretter stakk til stderr (synlig i hovedbufferen), exit 1"
   },
   "signaler": [
    "SIGTERM",

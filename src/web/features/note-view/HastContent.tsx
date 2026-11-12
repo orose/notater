@@ -24,7 +24,7 @@ import {
   Unsupported,
 } from './content-elements';
 import { useFoldedContent } from '../outline';
-import { prepareContent } from './prepare-content';
+import { prepareContent } from '../../../core/hast';
 
 /** Komponenter for HAST-elementer; overstyringer flettes over standard-mappingen (ADR-010 §6, AR-2-23). */
 export type ContentComponents = Partial<Components>;

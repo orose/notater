@@ -12,8 +12,10 @@ import {
   fasit2Rå,
   fasit3,
   fasitNotat,
+  FIGLET,
   figletBredde,
-  figletGlyfer,
+  figletKjede,
+  STANDARDSTØRRELSER,
   tegnFiglet,
   finnFiglet,
   kontrast,
@@ -82,9 +84,9 @@ test.describe('TC-3-00 terminalriggen (tmux-pty)', () => {
     const ramme = ['┌──────────┐', '│ R01K01   │', '├──────────┤', '│ R02K01   │', '└──────────┘'].join('\n');
     expect(finnFiglet(tolkSgr(ramme))).toEqual([]);
     // UX sine to fonter gjenkjennes, med og uten tekst rundt.
-    for (const font of ['stor', 'kompakt'] as const) {
+    for (const [navn, font] of Object.entries(FIGLET)) {
       const rader = ['  Statusmøte uke 45', '', ...tegnFiglet('Særtegn', font).map((r) => `  ${r}`), '', '  Neste: Blokker'];
-      expect(finnFiglet(tolkSgr(rader.join('\n'))), font).toEqual([expect.objectContaining({ fra: 2, til: 1 + figletGlyfer[font].hoyde })]);
+      expect(finnFiglet(tolkSgr(rader.join('\n'))), navn).toEqual([expect.objectContaining({ fra: 2, til: 1 + font.hoyde })]);
     }
     expect(kontrast('#000000', '#ffffff')).toBeCloseTo(21, 0);
   });
@@ -99,10 +101,9 @@ test.describe('TC-3-02-00 v3-fasiten', () => {
     rekkefolge: { v2Notater: string[] };
     figlet: {
       typer: string[];
-      slakk: number;
+      margMellom: number[];
       lysbilder: Record<string, number[]>;
-      garantert: Record<string, { stor: string[]; kompakt: string[]; fallback: string[]; manglerTegn: string[] }>;
-      steder: { notat: string; lysbilde: number; tekst: string; '80': string; '200': string }[];
+      hoder: ({ notat: string; lysbilde: number; type: string; tekst: string } & Record<string, unknown>)[];
     };
     nummerering: { lysbilder: Record<string, Record<string, string | null>> };
     plassholdere: { steder: { notat: string; lysbilde: number; type: string }[] };
@@ -125,27 +126,23 @@ test.describe('TC-3-02-00 v3-fasiten', () => {
     }
   });
 
-  test('garanterte figlet-tilfeller stemmer med UX sine glyfer (stor → kompakt → fallback, slakk 12)', () => {
-    for (const [bredde, g] of Object.entries(f.figlet.garantert)) {
-      const cols = Number(bredde);
-      const rom = cols - f.figlet.slakk;
-      for (const tekst of g.stor) expect(figletBredde(tekst, 'stor'), `${tekst} stor ved ${cols}`).toBeLessThanOrEqual(rom);
-      for (const tekst of g.kompakt) {
-        expect(figletBredde(tekst, 'stor') ?? Infinity, `${tekst} ikke stor ved ${cols}`).toBeGreaterThan(cols);
-        expect(figletBredde(tekst, 'kompakt'), `${tekst} kompakt ved ${cols}`).toBeLessThanOrEqual(rom);
-      }
-      for (const tekst of g.fallback) expect(figletBredde(tekst, 'kompakt') ?? Infinity, `${tekst} fallback ved ${cols}`).toBeGreaterThan(cols);
-      for (const tekst of g.manglerTegn) expect(figletBredde(tekst, 'kompakt'), `${tekst} mangler tegn`).toBeNull();
-    }
-    for (const s of f.figlet.steder) {
-      const fra = (s.notat === 'kanter' ? fasit3.kanter : fasitNotat(s.notat)).lysbilder[s.lysbilde - 1]!;
-      expect(fra.type === 'agenda' ? 'Agenda' : (fra.type === 'tittel' ? fra.overskrift : fra.agendapunkt), `${s.notat} ${s.lysbilde}`).toBe(s.tekst);
-      for (const cols of ['80', '200'] as const) {
-        const g = f.figlet.garantert[cols]!;
-        const forventet = g.stor.includes(s.tekst) ? 'stor' : g.kompakt.includes(s.tekst) ? 'kompakt' : 'fallback';
-        expect(s[cols], `${s.tekst} ved ${cols}`).toBe(forventet);
+  test('figlet-hodene i fasiten stemmer med fallback-kjeden i ADR-011 §5 regnet med UX sine .flf-fonter', () => {
+    for (const h of f.figlet.hoder) {
+      const l = fasitNotat(h.notat).lysbilder[h.lysbilde - 1]!;
+      expect(l.type, `${h.notat} ${h.lysbilde}`).toBe(h.type);
+      expect(l.type === 'agenda' ? 'Agenda' : l.type === 'tittel' ? l.overskrift : l.agendapunkt).toBe(h.tekst);
+      for (const s of STANDARDSTØRRELSER) {
+        const nøkkel = `${s.cols}x${s.rows}`;
+        const [lav, høy] = f.figlet.margMellom.map((m) => figletKjede(h.tekst, s, h.type === 'tittel', m));
+        const forventet = JSON.stringify(lav) === JSON.stringify(høy) ? lav : 'avhengerAvMarg';
+        expect(h[nøkkel], `${h.tekst} ved ${nøkkel}`).toEqual(forventet);
       }
     }
+    // Kanttilfellene som fasiten skal dekke: én linje, to linjer, smal font, fallback (bredde) og fallback (emoji).
+    const valg = new Set(f.figlet.hoder.flatMap((h) => STANDARDSTØRRELSER.map((s) => h[`${s.cols}x${s.rows}`])).filter((v) => typeof v === 'object').map((v) => JSON.stringify(v)));
+    for (const v of [{ font: 'blokk', linjer: 1 }, { font: 'blokk', linjer: 2 }, { font: 'smal', linjer: 1 }, { font: 'smal', linjer: 2 }, { font: 'fallback', linjer: 0 }]) expect(valg).toContain(JSON.stringify(v));
+    expect(figletBredde('Særtegn 🙂', FIGLET.blokk), 'emoji mangler i fonten').toBeNull();
+    expect(figletBredde('Del én', FIGLET.blokk), 'é → E').toBe(figletBredde('DEL EN', FIGLET.blokk));
   });
 
   test('nummereringen «0n /» følger agendapunktet, og plassholderne peker på riktige lysbilder', () => {

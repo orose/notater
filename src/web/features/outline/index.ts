@@ -1,4 +1,5 @@
-export { buildOutline, hiddenBlocks, inlineText, type FlowBlock, type FlowHeading, type Outline, type OutlineHeading, type SectionStats } from './build-outline';
+export { inlineText } from '../../../core/hast';
+export { buildOutline, hiddenBlocks, type FlowBlock, type FlowHeading, type Outline, type OutlineHeading, type SectionStats } from '../../../core/outline';
 export { FoldingProvider } from './FoldingProvider';
 export { FoldLine, FoldToggle } from './FoldToggle';
 export { OutlineHost } from './OutlineHost';

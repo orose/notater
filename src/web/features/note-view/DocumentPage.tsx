@@ -10,10 +10,9 @@ import { FoldingProvider, buildOutline } from '../outline';
 import { InlineToc, Toc } from '../toc';
 import { useViewSettings } from '../view-settings';
 import { HastContent } from './HastContent';
-import { splitLeadingTitle } from './leading-title';
 import { MissingNotePage } from './MissingNotePage';
 import { NoteHeader } from './NoteHeader';
-import { prepareContent, readingMinutes } from './prepare-content';
+import { prepareContent, readingMinutes, splitLeadingTitle } from '../../../core/hast';
 import { useRailDimming } from './rail-overlap';
 import { useDocumentScroll } from './use-document-scroll';
 
