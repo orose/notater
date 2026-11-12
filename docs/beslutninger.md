@@ -405,3 +405,12 @@ Se [ADR-011](arkitektur/ADR-011-terminalpresentasjon.md). Skjelett i `src/termin
 - **PO-111** `get-east-asian-width` flyttes til `dependencies` (sjekk mot ADR-006).
 - **PO-112** Flyttingen til `src/core/` gjøres først og alene i 3-a, i små commits; antall tester skal være likt før og etter.
 - Tetthetstrinn for terminal-tilpasning avgjøres av UX.
+
+## PO-avgjørelser etter UX-rapport v3
+
+Terminaldesignet (docs/design/terminal/, skjermbilder/v3) er **godkjent**. UX-avvikene fra ADR-011 (booktabs-tabeller, `▎` for sitater, tittel i tekstfarge, plassholderramme i `strek`, fotnoter som marginalia ved 200 kolonner, tetthet `[1]`, fonter med `▀▄█`, rollen `flate_bg`) godkjennes.
+- **PO-113** Plassholdere beholder den valgfrie detaljlinjen (f.eks. «flowchart LR · 7 noder», «11 kort: todo 3 · doing 3 …»).
+- **PO-114** Overgangslysbildet har seksjonsnavnet som hode (ikke «AGENDA»).
+- **PO-115** Enkeregelen for «(forts.)» flyttes inn i den delte lysbildemodellen i `src/core` og gjelder også web. QA oppdaterer v2-fasiten hvis rekkefølgen endres.
+- **PO-116** Hintet om `Ctrl +` vises ikke på tittelsiden; det vises kun som kort melding ved oppstart (før første lysbilde).
+- **PO-117** `obsidian://`-lenker bruker vaultmappens navn som standard; kan overstyres med `obsidianVault` i vault-konfigen.

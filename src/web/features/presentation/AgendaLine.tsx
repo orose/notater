@@ -2,7 +2,7 @@
 // Avkortes `full → kort → min` når den ikke får plass. Lerretet er logisk (1920 lp), så valget avhenger bare av teksten.
 
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { AgendaItem, SlideProgress } from './model';
+import type { AgendaItem, SlideProgress } from '../../../core/presentation';
 
 export type AgendaLineMode = 'full' | 'kort' | 'min';
 

@@ -12,19 +12,18 @@ import { useLocation, useNavigate } from 'react-router';
 import type { DocumentResponse, NoteDocument } from '../../../shared/api-types';
 import { isImagePath, isNotFound, queryKeys, useDocument } from '../../shared/api';
 import { safeLocalStorage } from '../../shared/storage';
-import { buildOutline, headingAtReadingPosition, READING_LINE } from '../outline';
-import { prepareContent, splitLeadingTitle } from '../note-view';
-import { ingressOf } from '../properties';
+import { headingAtReadingPosition, READING_LINE } from '../outline';
 import { useTheme } from '../theme';
-import { createFitCache } from './fit/fit-cache';
-import { baseIdsIn, cyrb53 } from './fit/fingerprint';
 import { LAYOUT_VERSION } from './fit/layout-version';
 import {
   agendaSubtitles,
   buildSlideDrafts,
+  createFitCache,
+  draftContentKey,
   finalizeDeck,
-  fromOutline,
   headingForSlide,
+  prepareSlideSource,
+  presentationLevelInfo,
   resolveSlide,
   slideForHeading,
   type DraftFit,
@@ -32,7 +31,7 @@ import {
   type SlideDeck,
   type SlideDraft,
   type SlideDraftDeck,
-} from './model';
+} from '../../../core/presentation';
 import { PresentationControlContext, PresentationViewContext, type MeasureRequest, type PresentationView } from './presentation-context';
 import type { LevelInfo, NoticeHandler, PresentationControl } from './presentation-control';
 import { levelIn, presentationKey, readLevels, setLevelIn, writeLevels } from './presentation-storage';
@@ -127,33 +126,9 @@ function makeRoomBelow(el: HTMLElement): void {
   }
 }
 
-interface Prepared {
-  readonly doc: NoteDocument;
-  readonly title: string;
-  readonly source: ReturnType<typeof fromOutline>;
-}
-
-const preparedCache = new WeakMap<NoteDocument, Prepared>();
-
-/** Dokument → disposisjon med diskré embedding alltid på (S1) → modellens kilde. Memoisert per dokumentobjekt. */
-function prepare(doc: NoteDocument): Prepared {
-  const hit = preparedCache.get(doc);
-  if (hit) return hit;
-  const display = splitLeadingTitle(doc);
-  const outline = buildOutline(prepareContent(display.content), display.toc, true);
-  const prepared = { doc, title: display.title, source: fromOutline(outline, display.title) };
-  preparedCache.set(doc, prepared);
-  return prepared;
-}
-
-/** Cachenøkkel for et utkast (AR-2-12): innhold + det som påvirker layout. Palett og lys/mørk er ikke med. */
+/** Cachenøkkel for et utkast (AR-2-12): innhold (core) + det som påvirker layout i web. Palett og lys/mørk er ikke med. */
 function draftKey(draft: SlideDraft, deck: SlideDraftDeck, subtitles: readonly string[][], doc: NoteDocument, typeset: string): string {
-  let context: unknown = null;
-  if (draft.kind === 'agenda' || draft.kind === 'transition') context = { agenda: deck.agenda.map((a) => a.text), subtitles };
-  if (draft.preamble || draft.kind === 'title') context = { title: deck.title, ingress: ingressOf(doc.properties), properties: doc.properties, aliases: doc.aliases, path: doc.path, mtime: doc.mtime };
-  const bases = draft.units.flatMap((u) => baseIdsIn(u.node)).map((id) => doc.bases[id] ?? null);
-  const content = JSON.stringify([draft.kind, draft.address.agenda, draft.heading, draft.continued, draft.units, bases, context]);
-  return `${LAYOUT_VERSION}|${typeset}|${cyrb53(content)}`;
+  return `${LAYOUT_VERSION}|${typeset}|${draftContentKey(draft, deck, subtitles, doc)}`;
 }
 
 export function PresentationProvider({ vaultId, docPath, children }: { readonly vaultId: string; readonly docPath: string; readonly children: ReactNode }) {
@@ -201,7 +176,7 @@ export function PresentationProvider({ vaultId, docPath, children }: { readonly 
   }, [vaultId, docPath, isNote, storedVersion]);
 
   // ------------------------------------------------------------------ kortstokken
-  const prepared = useMemo(() => (active && doc ? prepare(doc) : null), [active, doc]);
+  const prepared = useMemo(() => (active && doc ? prepareSlideSource(doc) : null), [active, doc]);
   const level = current?.level ?? null;
   const drafts = useMemo(() => (prepared ? buildSlideDrafts(prepared.source, { slideLevel: level }) : null), [prepared, level]);
   const subtitles = useMemo(() => (drafts ? agendaSubtitles(drafts) : []), [drafts]);
@@ -488,13 +463,7 @@ export function PresentationProvider({ vaultId, docPath, children }: { readonly 
   const levels = useCallback((): readonly LevelInfo[] => {
     const data = queryClient.getQueryData<DocumentResponse>(queryKeys.document(vaultId, docPath));
     if (data?.kind !== 'note') return [];
-    const p = prepare(data);
-    const auto = buildSlideDrafts(p.source, { slideLevel: null });
-    return auto.validLevels.map((l) => {
-      const d = buildSlideDrafts(p.source, { slideLevel: l });
-      const count = finalizeDeck(d, { drafts: {}, compactAgendaLine: false, complete: false }, { transitions: true }).slides.length;
-      return { level: l, agendaLevel: d.agendaLevel, slides: count };
-    });
+    return presentationLevelInfo(prepareSlideSource(data).source);
   }, [queryClient, vaultId, docPath]);
 
   const control = useMemo<PresentationControl>(

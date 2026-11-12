@@ -7,7 +7,7 @@ import type { BaseResult, NoteDocument, PropertyEntry } from '../../../shared/ap
 import { folderOf } from '../../shared/api';
 import { HastBlock, useContentComponents, type ComponentOverrides } from '../note-view';
 import { ALWAYS_HIDDEN, PropertyValue, formatDate, formatDateTime, ingressOf } from '../properties';
-import { CONTINUED_SUFFIX, type AgendaItem, type Slide, type SlideUnit } from './model';
+import { CONTINUED_SUFFIX, type AgendaItem, type Slide, type SlideUnit } from '../../../core/presentation';
 
 /** `view` = det publikum ser; `measure` = målelerret (A2); `thumb` = miniatyr i oversikten. */
 export type SlideMode = 'view' | 'measure' | 'thumb';
