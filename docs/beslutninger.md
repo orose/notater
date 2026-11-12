@@ -420,3 +420,4 @@ Terminaldesignet (docs/design/terminal/, skjermbilder/v3) er **godkjent**. UX-av
 Alle QAs forslag (Q-3-01, -02, -03, -06, -07, -09, -12, -14) er **godkjent** som foreslått. I tillegg:
 - **PO-118 (Q-3-13)** Eget Playwright-prosjekt `terminal`. QA får endre `playwright.config.ts` for dette.
 - **PO-119 (F-1, bug)** Prosessen henger når tsx og appen får SIGTERM/SIGHUP samtidig (lukking av Ghostty-vindu). Utvikler retter i 3-a – f.eks. bunt uten tsx som forelder (ADR-011 M2) – og TC-3-11-03b skal bli grønn.
+- **PO-120** Flyttingen til `src/core` (K1–K6) er ferdig og grønn (1042 → 1042 testnavn identiske, +7 nye i K6). Den havnet i WIP-commits sammen med annet arbeid; historikken skrives ikke om. PO-112 anses oppfylt i innhold. Endringen i `e2e/support/keymap-rules.ts` (peker til `src/core/commands`) godkjent. Utvikler oppdaterer `struktur.md` med `src/core`.
