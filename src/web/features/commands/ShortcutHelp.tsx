@@ -2,7 +2,7 @@ import { Fragment, useId, useMemo } from 'react';
 import { Modal } from '../../shared/ui/Modal';
 import { Icon } from '../../shared/ui/Icon';
 import { RESERVED_NORMAL_KEYS, type KeyMode } from '../keyboard';
-import { shortcutGroups } from './model/shortcut-docs';
+import { shortcutGroups } from '../../../core/commands';
 
 interface ShortcutHelpProps {
   readonly open: boolean;

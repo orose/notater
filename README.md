@@ -259,6 +259,6 @@ node test-vault-tools/generate-large-vault.mjs --out /tmp/vault-2000 --count 200
 PERF_VAULT=/tmp/vault-2000 npx playwright test --project=perf
 ```
 
-Kode: `src/server` (Hono, indeks, rendering), `src/web` (React), `src/shared` (API-typer).
+Kode: `src/server` (Hono, indeks, rendering), `src/web` (React), `src/core` (ren TS uten plattform: lysbildemodell, disposisjon, tastatur og kommandoer – delt av web og terminal), `src/terminal` (presentasjon i terminalen) og `src/shared` (API-typer).
 Arkitektur og beslutninger: [`docs/arkitektur/`](docs/arkitektur/) og
 [`docs/beslutninger.md`](docs/beslutninger.md). Testvaultets fasit: [`test-vault/README-QA.md`](test-vault/README-QA.md).

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { RESERVED_NORMAL_KEYS, validateBindings } from '../../keyboard';
+import { RESERVED_NORMAL_KEYS, validateBindings } from '../keyboard';
 import { COMMAND_CATALOG, COMMAND_IDS } from './catalog';
-import { catalogBindings, createCommandRegistry, type CommandHandlers } from './registry';
+import { SURFACES, type Surface } from './command-types';
+import { catalogBindings, createCommandRegistry, surfaceCommandIds, type CommandHandlers } from './registry';
 import { renderShortcutsMarkdown, shortcutGroups } from './shortcut-docs';
 
 describe('kommandokatalogen v1.1', () => {
@@ -61,8 +62,8 @@ describe('kommandokatalogen v1.1', () => {
   it('registeret bygger tastaturkart per modus og bevarer rekkefølgen', () => {
     const noop = { run: () => {} };
     const handlers = Object.fromEntries(COMMAND_IDS.map((id) => [id, noop])) as unknown as CommandHandlers;
-    const registry = createCommandRegistry(handlers);
-    expect(registry.commands.map((c) => c.id)).toEqual(COMMAND_IDS);
+    const registry = createCommandRegistry('web', handlers);
+    expect(registry.commands.map((c) => c.id)).toEqual(surfaceCommandIds('web'));
     expect(registry.keymap().normal.find((b) => b.commandId === 'view.toggleWidth')?.chords).toEqual(['Space', 'w']);
   });
 
@@ -116,5 +117,82 @@ describe('kommandokatalogen v1.1', () => {
     expect(md).toContain('| Søk og kommandoer | `⌘K` / `Ctrl K`, `/` | Søk i notater |');
     expect(md).toContain('|  | `gg`, `G` | Til toppen / bunnen |');
     expect(md).toContain('- `Tab`: Første trykk gir «Hopp til innhold».');
+  });
+});
+
+describe('flater: web og terminal (ADR-011 §6, K6)', () => {
+  const noopHandlers = (ids: readonly string[]) => Object.fromEntries(ids.map((id) => [id, { run: () => {} }]));
+  const keysOf = (surface: Surface, mode: 'normal' | 'present', id: string) =>
+    catalogBindings(surface)
+      .filter((b) => b.commandId === id && b.mode === mode)
+      .map((b) => b.keys);
+
+  it('bare web: present.start, present.fullscreen, theme.setType og appearance.open; bare terminal: terminal.colors', () => {
+    const web = surfaceCommandIds('web');
+    const terminal = surfaceCommandIds('terminal');
+    for (const id of ['present.start', 'present.fullscreen', 'theme.setType', 'appearance.open'] as const) {
+      expect(web).toContain(id);
+      expect(terminal).not.toContain(id);
+    }
+    expect(terminal).toContain('terminal.colors');
+    expect(web).not.toContain('terminal.colors');
+    for (const id of ['theme.setPalette', 'theme.light', 'theme.dark', 'theme.toggleMode', 'present.next', 'present.stop', 'system.escape', 'palette.commands', 'help.shortcuts'] as const) {
+      expect(terminal).toContain(id);
+    }
+    // Standard er begge flatene; rekkefølgen er katalogens.
+    expect([...new Set([...web, ...terminal])].sort()).toEqual([...COMMAND_IDS].sort());
+    expect(web).toEqual(COMMAND_IDS.filter((id) => (web as readonly string[]).includes(id)));
+  });
+
+  it('terminalen har v2-present-tastene pluss q og Ctrl c på present.stop; web er uendret', () => {
+    expect(keysOf('terminal', 'present', 'present.stop')).toEqual(['q', 'Ctrl+c']);
+    expect(keysOf('web', 'present', 'present.stop')).toEqual([]);
+    expect(catalogBindings()).toEqual(catalogBindings('web'));
+    for (const id of ['present.next', 'present.previous', 'present.first', 'present.last', 'present.overview', 'present.blackout', 'present.scrollDown', 'present.scrollUp', 'palette.commands', 'help.shortcuts', 'system.escape']) {
+      expect(keysOf('terminal', 'present', id), id).toEqual(keysOf('web', 'present', id));
+    }
+    expect(keysOf('terminal', 'present', 'present.fullscreen')).toEqual([]);
+  });
+
+  it('`:q` avslutter presentasjonen på begge flatene (PO-108); `:farger` bytter terminalfarger', () => {
+    expect(COMMAND_CATALOG['present.stop'].aliases).toEqual(['avslutt', 'q']);
+    expect(COMMAND_CATALOG['terminal.colors'].aliases).toContain('farger');
+    expect(COMMAND_CATALOG['terminal.colors'].args?.[0]?.name).toBe('farger');
+  });
+
+  it('tastepolicyen holder per flate og modus (AK-1.1-08, AK-3-08)', () => {
+    for (const surface of SURFACES) expect(validateBindings(catalogBindings(surface)), surface).toEqual([]);
+  });
+
+  it('registeret per flate: bare flatens kommandoer, tastaturkart med flatens ekstra taster', () => {
+    const terminal = createCommandRegistry('terminal', noopHandlers(surfaceCommandIds('terminal')) as unknown as CommandHandlers<'terminal'>);
+    expect(terminal.commands.map((c) => c.id)).toEqual(surfaceCommandIds('terminal'));
+    expect(terminal.keymap().present.filter((b) => b.commandId === 'present.stop').map((b) => b.chords)).toEqual([['q'], ['Ctrl+c']]);
+    expect(terminal.keymap().present.find((b) => b.commandId === 'present.fullscreen')).toBeUndefined();
+    const web = createCommandRegistry('web', noopHandlers(surfaceCommandIds('web')) as unknown as CommandHandlers);
+    expect(web.commands.map((c) => c.id)).not.toContain('terminal.colors');
+    expect(web.keymap().present.find((b) => b.commandId === 'present.stop')).toBeUndefined();
+  });
+
+  it('handlertypen krever bare flatens kommandoer (typesjekket)', () => {
+    const terminal = noopHandlers(surfaceCommandIds('terminal')) as unknown as CommandHandlers<'terminal'>;
+    const web = noopHandlers(surfaceCommandIds('web')) as unknown as CommandHandlers<'web'>;
+    expect(terminal['terminal.colors']).toBeDefined();
+    // @ts-expect-error present.start finnes ikke i terminalen
+    expect(terminal['present.start']).toBeUndefined();
+    // @ts-expect-error terminal.colors finnes ikke i web
+    expect(web['terminal.colors']).toBeUndefined();
+  });
+
+  it('?-kortet per flate: README og web uendret, terminalen viser q og :farger', () => {
+    expect(shortcutGroups('docs', 'present')).toEqual(shortcutGroups('docs', 'present', 'web'));
+    const terminal = shortcutGroups('other', 'present', 'terminal');
+    const stop = terminal.flatMap((g) => g.rows).find((r) => r.commands.some((c) => c.id === 'present.stop'));
+    expect(stop?.bindings.map((b) => b.keys)).toEqual(['q', 'Ctrl c']);
+    const ids = terminal.flatMap((g) => g.rows.flatMap((r) => r.commands.map((c) => c.id)));
+    expect(ids).not.toContain('present.fullscreen');
+    expect(terminal.find((g) => g.group === 'visning')?.commandOnly).toContain('farger');
+    expect(shortcutGroups('other', 'present', 'web').find((g) => g.group === 'visning')?.commandOnly ?? []).not.toContain('farger');
+    expect(terminal.find((g) => g.group === 'presentasjon')?.commandOnly).toEqual(['agenda']);
   });
 });

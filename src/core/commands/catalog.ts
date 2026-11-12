@@ -1,12 +1,12 @@
 // Kommandokatalogen for v1.1 (spesifikasjonens tastaturkart). ÉN kilde for id-er, navn, aliaser,
-// grupper og tastebindinger (P2). Handlere (isEnabled/run) kobles på i React-laget med
-// `createCommandRegistry(handlers)`, som krever en handler for hver id her (typesjekket).
+// grupper og tastebindinger (P2) for begge flatene (web og terminal, ADR-011 §6). Handlere (isEnabled/run) kobles
+// på per flate med `createCommandRegistry(flate, handlers)`, som krever en handler for hver id flaten har (typesjekket).
 //
 // Rekkefølgen her er rekkefølgen i `?`-oversikten, README og paletten (innen gruppe).
 // Alle kommandoer vises i paletten (AK-1.1-06: «alle registrerte kommandoer kan kjøres derfra»),
 // også `system.escape` og `palette.commands`; `inPalette` finnes for senere bruk.
 
-import type { KeyMode } from '../../keyboard';
+import type { KeyMode } from '../keyboard';
 import type { CommandSpecBody } from './command-types';
 
 export const COMMAND_CATALOG = {
@@ -171,6 +171,7 @@ export const COMMAND_CATALOG = {
     name: 'Typesett',
     aliases: ['tema', 'typesett'],
     group: 'visning',
+    surfaces: ['web'],
     description: 'Velger typesett (Tidsskrift, Terminal, Klartekst).',
     args: [{ name: 'type', label: 'Typesett' }],
     bindings: {},
@@ -183,10 +184,20 @@ export const COMMAND_CATALOG = {
     args: [{ name: 'palette', label: 'Palett' }],
     bindings: {},
   },
+  'terminal.colors': {
+    name: 'Terminalfarger',
+    aliases: ['farger'],
+    group: 'visning',
+    surfaces: ['terminal'],
+    description: 'Bytter mellom paletten og terminalens egne 16 farger.',
+    args: [{ name: 'farger', label: 'Farger' }],
+    bindings: {},
+  },
   'appearance.open': {
     name: 'Åpne Utseende',
     aliases: ['utseende'],
     group: 'visning',
+    surfaces: ['web'],
     description: 'Åpner dialogen for tema, bredde og visning.',
     bindings: { normal: [{ keys: 'Leader t' }] },
     hint: 'utseende',
@@ -230,6 +241,7 @@ export const COMMAND_CATALOG = {
     name: 'Presenter',
     aliases: ['presenter'],
     group: 'presentasjon',
+    surfaces: ['web'],
     description: 'Viser notatet som lysbilder fra seksjonen ved leseposisjonen. Valgfritt lysbildenivå (h2–h6, auto) huskes for notatet.',
     short: 'fra leseposisjonen',
     args: [{ name: 'nivå', label: 'Lysbildenivå', optional: true, match: 'prefix' }],
@@ -314,6 +326,7 @@ export const COMMAND_CATALOG = {
     aliases: ['fullskjerm'],
     group: 'presentasjon',
     modes: ['present'],
+    surfaces: ['web'],
     description: 'Slår nettleserens fullskjerm av og på uten å avslutte presentasjonen.',
     short: 'av/på',
     bindings: { present: [{ keys: 'f' }] },
@@ -329,11 +342,13 @@ export const COMMAND_CATALOG = {
   },
   'present.stop': {
     name: 'Avslutt presentasjon',
-    aliases: ['avslutt'],
+    aliases: ['avslutt', 'q'],
     group: 'presentasjon',
     modes: ['present'],
     description: 'Avslutter presentasjonen og viser seksjonen for gjeldende lysbilde i notatet.',
     bindings: {},
+    // Ctrl c bindes bare i terminalen (i nettleseren er det kopier), ADR-011 §6.
+    surfaceBindings: { terminal: { present: [{ keys: 'q' }, { keys: 'Ctrl+c' }] } },
   },
 } as const satisfies Readonly<Record<string, CommandSpecBody>>;
 

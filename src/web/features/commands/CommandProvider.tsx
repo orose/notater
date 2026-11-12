@@ -26,11 +26,21 @@ import { useOutlineControl } from '../outline';
 import { ZenHint, useViewSettings } from '../view-settings';
 import { CommandsContext, type CommandsContextValue } from './commands-context';
 import { createCommandHandlers } from './handlers';
-import { COMMAND_CATALOG, type CommandId } from './model/catalog';
-import type { CommandContext, CommandPorts, CommandRoute, PresentationPort, ViewSnapshot } from './model/command-context';
-import { GROUP_LABELS, type CommandSpecBody } from './model/command-types';
-import { commandPaletteOptions, paletteArgumentError, paletteArgumentHeading } from './model/palette-options';
-import { createCommandRegistry } from './model/registry';
+import {
+  COMMAND_CATALOG,
+  GROUP_LABELS,
+  commandPaletteOptions,
+  createCommandRegistry,
+  paletteArgumentError,
+  paletteArgumentHeading,
+  type CommandContext,
+  type CommandId,
+  type CommandPorts,
+  type CommandRoute,
+  type CommandSpecBody,
+  type PresentationPort,
+  type ViewSnapshot,
+} from '../../../core/commands';
 import { createScrollPort } from './scroll';
 import { ShortcutHelp } from './ShortcutHelp';
 import { WhichKey, type WhichKeyItem } from './WhichKey';
@@ -104,7 +114,7 @@ export function CommandProvider({ vaultId, docPath, onOpenAppearance, children }
   const [toast, setToast] = useState<{ readonly message: string; readonly keys: readonly string[]; readonly id: number } | null>(null);
   const viewSettings = useViewSettings();
 
-  const registry = useMemo(() => createCommandRegistry(createCommandHandlers()), []);
+  const registry = useMemo(() => createCommandRegistry('web', createCommandHandlers()), []);
   const scroll = useMemo(() => createScrollPort(), []);
 
   // BUG-014: en ny toast erstatter zen-hintet i varselsonen i stedet for å legge seg over det.

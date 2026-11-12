@@ -1,10 +1,10 @@
 // `?`-oversikten og README-avsnittet genereres fra samme funksjon (F6, AK-1.1-07). Ren TS.
 // Kommandoer med `pair` slås sammen til én rad («`j` / `k` Rull ned / opp», PO-69).
 
-import { formatKeySequence, parseKeySequence, type KeyMode, type LabelPlatform } from '../../keyboard';
+import { formatKeySequence, parseKeySequence, type KeyMode, type LabelPlatform } from '../keyboard';
 import { COMMAND_CATALOG, KEY_HINTS, type CommandId } from './catalog';
 import { catalogBindings } from './registry';
-import { GROUP_LABELS, MODE_GROUP_ORDER, type CommandGroup, type CommandSpecBody } from './command-types';
+import { GROUP_LABELS, MODE_GROUP_ORDER, type CommandGroup, type CommandSpecBody, type Surface } from './command-types';
 
 /** Én tastevariant: ferdig tekst (`⌘K`) og én etikett per akkord (`['Space', 'w']`). */
 export interface ShortcutBinding {
@@ -50,9 +50,10 @@ function variant(keys: string, platform: LabelPlatform): ShortcutBinding {
 /**
  * Alle bindinger i modusen (par slått sammen) + tastehint, gruppert i fast rekkefølge. Standard: normal-modus.
  * `present` gir presentasjonsmodusens kort (`?` under presentasjon, README «I presentasjon», ADR-010 §3).
+ * `surface` velger flatens kommandoer og taster (ADR-011 §6); standard er web (README og web-`?` er uendret).
  */
-export function shortcutGroups(platform: LabelPlatform, mode: KeyMode = 'normal'): ShortcutGroup[] {
-  const bindings = catalogBindings().filter((b) => b.mode === mode);
+export function shortcutGroups(platform: LabelPlatform, mode: KeyMode = 'normal', surface: Surface = 'web'): ShortcutGroup[] {
+  const bindings = catalogBindings(surface).filter((b) => b.mode === mode);
   const commandOf = (id: CommandId): ShortcutCommand => ({
     id,
     name: COMMAND_CATALOG[id].name,
@@ -66,7 +67,7 @@ export function shortcutGroups(platform: LabelPlatform, mode: KeyMode = 'normal'
     for (const [rawId, raw] of Object.entries(COMMAND_CATALOG)) {
       const id = rawId as CommandId;
       const spec: CommandSpecBody = raw;
-      if (spec.group !== group || (spec.modes && !spec.modes.includes(mode))) continue;
+      if (spec.group !== group || (spec.modes && !spec.modes.includes(mode)) || (spec.surfaces && !spec.surfaces.includes(surface))) continue;
       const first = commandOf(id);
       if (first.bindings.length === 0) {
         commandOnly.push(spec.aliases[0] ?? spec.name);

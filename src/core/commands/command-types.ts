@@ -1,7 +1,7 @@
 // Datamodellen for kommandoregisteret (P2, ADR-007 §1). Ren TS – importeres også av
 // `npm run docs:shortcuts` (Node), så ingen React, DOM-tilgang eller import av andre features.
 
-import type { KeyMode } from '../../keyboard';
+import type { KeyMode } from '../keyboard';
 import type { CommandContext } from './command-context';
 
 /** Grupper i fast rekkefølge (F6). Etikettene vises i `?`-oversikten, paletten og README. */
@@ -16,6 +16,10 @@ export const MODE_GROUP_ORDER: Readonly<Record<KeyMode, readonly CommandGroup[]>
   normal: COMMAND_GROUPS,
   present: ['presentasjon', 'visning', 'sok', 'navigasjon', 'lesing'],
 };
+
+/** Flatene som bruker katalogen (ADR-011 §6): nettleseren og terminalpresentasjonen. */
+export const SURFACES = ['web', 'terminal'] as const;
+export type Surface = (typeof SURFACES)[number];
 
 export const GROUP_LABELS: Readonly<Record<CommandGroup, string>> = {
   navigasjon: 'Navigasjon',
@@ -99,6 +103,10 @@ export interface CommandSpecBody {
    * presentasjon» / «Bare under presentasjon», og `?`-kortet viser den bare i sine modi.
    */
   readonly modes?: readonly KeyMode[];
+  /** Flatene kommandoen finnes på (ADR-011 §6). Standard: alle. */
+  readonly surfaces?: readonly Surface[];
+  /** Ekstra taster for én flate, i tillegg til `bindings` (terminalen: `q`/`Ctrl+c` på `present.stop`). */
+  readonly surfaceBindings?: Readonly<Partial<Record<Surface, Readonly<Partial<Record<KeyMode, readonly BindingSpec[]>>>>>>;
   /** `false` = vises ikke i paletten. Standard: vises (i v1.1 vises alle, AK-1.1-06). */
   readonly inPalette?: boolean;
 }

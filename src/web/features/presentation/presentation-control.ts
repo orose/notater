@@ -2,7 +2,7 @@
 // `PresentationProvider` monteres i `VaultLayout` over `CommandProvider` og eier URL-parameteren, modusbyttet og
 // fullskjerm; `commands` leser den med `usePresentationControl()` og importerer ikke resten.
 //
-// Strukturelt lik `PresentationPort` i `commands/model/command-context.ts` (den rene modellen importerer ikke hit).
+// Strukturelt lik `PresentationPort` i `src/core/commands/command-context.ts` (den rene modellen importerer ikke hit).
 
 import type { HeadingLevel, LevelInfo } from '../../../core/presentation';
 

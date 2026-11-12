@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { COMMAND_IDS } from './catalog';
 import type { CommandContext, CommandPorts } from './command-context';
 import { commandPaletteOptions, paletteArgumentError } from './palette-options';
-import { createCommandRegistry, type CommandHandlers } from './registry';
+import { createCommandRegistry, surfaceCommandIds, type CommandHandlers } from './registry';
 
 const TYPES = [
   { value: 'tidsskrift', label: 'Tidsskrift', current: true },
@@ -19,7 +19,7 @@ function registry() {
     argumentError: (_c: unknown, _n: string, input: string) => ({ code: input === 'h5' ? 'E486' : 'E475', title: input, detail: '' }),
   };
   handlers['view.toggleZen'] = { run: () => {}, isEnabled: () => ({ enabled: false, reason: 'Kommer snart' }) };
-  return createCommandRegistry(handlers as unknown as CommandHandlers);
+  return createCommandRegistry('web', handlers as unknown as CommandHandlers);
 }
 
 const ctx = {
@@ -34,7 +34,7 @@ const options = (q: string) => commandPaletteOptions(registry().commands, ctx, q
 describe('commandPaletteOptions', () => {
   it('tom spørring gir alle kommandoer gruppert: Visning, Lesing, Presentasjon, Søk og kommandoer, Navigasjon', () => {
     const all = options('');
-    expect([...all.map((o) => o.commandId)].sort()).toEqual([...COMMAND_IDS].sort());
+    expect([...all.map((o) => o.commandId)].sort()).toEqual([...surfaceCommandIds('web')].sort());
     const groups = all.map((o) => (o.kind === 'command' ? o.group : null));
     expect([...new Set(groups)]).toEqual(['visning', 'lesing', 'presentasjon', 'sok', 'navigasjon']);
     expect(all[0]?.commandId).toBe('view.toggleWidth');

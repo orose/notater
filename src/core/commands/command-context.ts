@@ -1,7 +1,7 @@
 // Konteksten kommandoene ser (ADR-007 §1). Kun typer. Portene implementeres i React-laget
 // (CommandProvider) mot eksisterende kontekster: router, søk/palett, tema, visningstilstand, disposisjon.
 
-import type { KeyMode } from '../../keyboard';
+import type { KeyMode } from '../keyboard';
 import type { ArgumentValue } from './command-types';
 
 export type RouteKind = 'home' | 'note' | 'base' | 'asset' | 'missing' | 'loading';

@@ -1,5 +1,5 @@
-// Ren TS-flate for kommandoregisteret: kan importeres i Node (README-generatoren, QAs registertest)
-// uten React, DOM eller CSS. React-delen eksporteres fra `../index.ts`.
+// Ren TS-flate for kommandoregisteret (ADR-007, ADR-011 §1): katalog, register, fuzzy, palettvalg og `?`-grupper.
+// Importeres av web (`src/web/features/commands`), terminalen, README-generatoren og QAs registertest.
 export { COMMAND_CATALOG, COMMAND_IDS, KEY_HINTS, type CommandId, type KeyHint } from './catalog';
 export {
   COMMAND_GROUPS,
@@ -9,6 +9,7 @@ export {
   ONLY_WHILE_PRESENTING,
   MODE_GROUP_ORDER,
   PALETTE_GROUP_ORDER,
+  SURFACES,
   type ArgumentError,
   type ArgumentSpec,
   type ArgumentValue,
@@ -17,9 +18,18 @@ export {
   type CommandGroup,
   type CommandHandler,
   type CommandSpecBody,
+  type Surface,
 } from './command-types';
 export type { CommandContext, CommandPorts, CommandRoute, PresentationLevelInfo, PresentationPort, RouteKind, ViewSnapshot } from './command-context';
-export { catalogBindings, createCommandRegistry, type Command, type CommandHandlers, type CommandRegistry } from './registry';
+export {
+  catalogBindings,
+  createCommandRegistry,
+  surfaceCommandIds,
+  type Command,
+  type CommandHandlers,
+  type CommandRegistry,
+  type SurfaceCommandId,
+} from './registry';
 export {
   README_MARKERS,
   README_PRESENT_MARKERS,

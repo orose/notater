@@ -4,9 +4,15 @@
 // Alle funksjonene i v1.1 er levert (1.1-a–d). `pending` brukes for funksjoner som registreres før de leveres:
 // de vises deaktivert med begrunnelsen «Kommer snart».
 
-import type { CommandContext } from './model/command-context';
-import { ENABLED, type ArgumentError, type ArgumentValue, type Availability, type CommandHandler } from './model/command-types';
-import type { CommandHandlers } from './model/registry';
+import {
+  ENABLED,
+  type ArgumentError,
+  type ArgumentValue,
+  type Availability,
+  type CommandContext,
+  type CommandHandler,
+  type CommandHandlers,
+} from '../../../core/commands';
 
 /** Visningsfunksjoner fra senere slices. Fjern fra settet når funksjonen er levert. */
 export type PendingFeature = 'width' | 'zen' | 'folding' | 'discreet';

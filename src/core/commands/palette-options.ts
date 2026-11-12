@@ -1,6 +1,6 @@
 // Valgene i paletten i kommandomodus (F5, ADR-007 §4). Ren TS: testbar uten DOM.
 
-import { formatKeySequence, parseKeySequence, type LabelPlatform } from '../../keyboard';
+import { formatKeySequence, parseKeySequence, type LabelPlatform } from '../keyboard';
 import type { CommandContext } from './command-context';
 import { PALETTE_GROUP_ORDER, type ArgumentError, type ArgumentSpec } from './command-types';
 import { fuzzyMatch, normalizeForSearch } from './fuzzy';
