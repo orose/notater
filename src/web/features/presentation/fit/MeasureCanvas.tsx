@@ -3,11 +3,21 @@
 // ny React-render per pass). Resultatet går til cachen via `onMeasured`.
 
 import { useLayoutEffect, useMemo, useRef } from 'react';
-import { CONTINUED_SUFFIX, footnotesOf, type DraftFit, type Slide, type SlideDraft, type UnitOverflow } from '../../../../core/presentation';
+import {
+  CONTINUED_SUFFIX,
+  DEFAULT_FIT_STEP,
+  DEFAULT_MIN_FONT_SCALE,
+  fitDraft,
+  fontScaleSteps,
+  footnotesOf,
+  type DraftFit,
+  type Geometry,
+  type Slide,
+  type SlideDraft,
+  type UnitOverflow,
+} from '../../../../core/presentation';
 import type { MeasureRequest } from '../presentation-context';
 import { SlideView, type DeckInfo } from '../SlideView';
-import { fitDraft, type Geometry } from './fit-algorithm';
-import { DEFAULT_FIT_STEP, DEFAULT_MIN_FONT_SCALE, fontScaleSteps } from './fit-types';
 
 /** Et utkast som lysbilde (alle enheter, alle fotnoter). */
 export function draftAsSlide(draft: SlideDraft): Slide {

@@ -1,5 +1,5 @@
 // Henter serverens HAST for test-vault/presentasjon/ til fixtures for lysbildemodellens enhetstester
-// (src/web/features/presentation/model/fixtures). Kjør mot en server som peker på test-vault:
+// (src/core/presentation/model/fixtures). Kjør mot en server som peker på test-vault:
 //   npx tsx scripts/presentation-fixtures.ts http://127.0.0.1:4317
 // Kjøres på nytt når QA endrer notatene i test-vault/presentasjon/.
 
@@ -20,7 +20,7 @@ const NOTES = [
   'Lysbildenivå',
 ];
 
-const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'src/web/features/presentation/model/fixtures');
+const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'src/core/presentation/model/fixtures');
 
 async function main(base: string): Promise<void> {
   for (const name of NOTES) {
