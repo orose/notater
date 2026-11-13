@@ -1,0 +1,250 @@
+── 1 ──────────────────────────────────────────────────────────────────────────
+
+
+     ~/presentasjon
+
+      ▄▄▄▄ ▄▄▄▄▄  ▄▄▄  ▄▄▄▄▄ ▄   ▄  ▄▄▄▄ ▄   ▄  ▄▄▄  ▄▄▄▄▄ ▄▄▄▄▄
+     █       █   █   █   █   █   █ █     █▀▄▀█ █  ▄█   █   █
+      ▀▀▀▄   █   █▀▀▀█   █   █   █  ▀▀▀▄ █ ▀ █ █▄▀ █   █   █▀▀▀
+     ▄▄▄▄▀   █   █   █   █   ▀▄▄▄▀ ▄▄▄▄▀ █   █ ▀▄▄▄▀   █   █▄▄▄▄
+
+     ▄   ▄ ▄   ▄ ▄▄▄▄▄        ▄  ▄▄▄▄▄
+     █   █ █ ▄▀  █          ▄▀█  █▄▄▄
+     █   █ █▀▄   █▀▀▀      █▄▄█▄     █
+     ▀▄▄▄▀ █  ▀▄ █▄▄▄▄        █  ▀▄▄▄▀
+
+     Status for leseren og presentasjonsmodus, uke 45.
+
+     Endret 9. nov. 2026, 07.01
+
+
+
+
+
+
+     Presentasjon         → neste  ·  o oversikt  ·  ? taster  ·  q avslutt
+── 2 ──────────────────────────────────────────────────────────────────────────
+
+
+     Statusmøte uke 45 · 3 punkter
+
+      ▄▄▄   ▄▄▄  ▄▄▄▄▄ ▄   ▄ ▄▄▄▄   ▄▄▄
+     █   █ █   ▀ █     █▀▄ █ █   █ █   █
+     █▀▀▀█ █ ▀▀█ █▀▀▀  █ ▀▄█ █   █ █▀▀▀█
+     █   █ ▀▄▄▄█ █▄▄▄▄ █   █ █▄▄▄▀ █   █
+
+                                                                   lysbilde
+     01  Siden sist  · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
+
+     02  Jobbes med nå   · · · · · · · · · · · · · · · · · · · · · · · ·  6
+
+     03  Relativt nær framtid  · · · · · · · · · · · · · · · · · · · · ·  9
+
+
+
+
+
+
+
+
+     Statusmøte uke 45                        ? hjelp   ━━ ─── ─── ──  2/10
+── 3 ──────────────────────────────────────────────────────────────────────────
+
+
+     01 / 03  du er her
+
+      ▄▄▄▄ ▄▄▄ ▄▄▄▄  ▄▄▄▄▄ ▄   ▄      ▄▄▄▄ ▄▄▄  ▄▄▄▄ ▄▄▄▄▄
+     █      █  █   █ █     █▀▄ █     █      █  █       █
+      ▀▀▀▄  █  █   █ █▀▀▀  █ ▀▄█      ▀▀▀▄  █   ▀▀▀▄   █
+     ▄▄▄▄▀ ▄█▄ █▄▄▄▀ █▄▄▄▄ █   █     ▄▄▄▄▀ ▄█▄ ▄▄▄▄▀   █
+
+                                                                   lysbilde
+     01  Siden sist  · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
+         ├── Leveranse A – lesekomfort
+         └── Leveranse B – tastaturmotor
+     02  Jobbes med nå   · · · · · · · · · · · · · · · · · · · · · · · ·  6
+     03  Relativt nær framtid  · · · · · · · · · · · · · · · · · · · · ·  9
+
+
+
+
+
+
+
+
+     Statusmøte uke 45                        ? hjelp   ━━ ━── ─── ──  3/10
+── 4 ──────────────────────────────────────────────────────────────────────────
+     1 Siden sist 1/2 │ 2 Jobbes med nå │ 3 Relativt nær framtid
+
+     01 /
+     Leveranse A – lesekomfort  ───────────────────────────────────────────
+
+     Lesekomfort (v1.1) er levert og akseptansetestet.
+
+   – Diskré embedding per notat
+   – Folding med za, zM og zR
+   – Zen-modus og lesebredde
+
+     Markør STATUS-A.
+
+
+
+
+
+
+
+
+
+
+
+     Statusmøte uke 45                        ? hjelp   ━━ ━━─ ─── ──  4/10
+── 5 ──────────────────────────────────────────────────────────────────────────
+     1 Siden sist 2/2 │ 2 Jobbes med nå │ 3 Relativt nær framtid
+
+     01 /
+     Leveranse B – tastaturmotor  ─────────────────────────────────────────
+
+     Tastaturmotoren har egne moduser. Utdrag fra registeret:
+
+       ●                                                               ts
+      ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+       1  export const PRESENT_BINDINGS = {
+       2    next: ['j', 'ArrowRight', 'n', 'Space', 'PageDown'],
+       3    previous: ['k', 'ArrowLeft', 'p', 'PageUp'],
+       4    first: ['g g'],
+       5    last: ['G'],
+       6  };
+
+
+     Markør STATUS-B.
+
+
+
+
+
+     Statusmøte uke 45                        ? hjelp   ━━ ━━━ ─── ──  5/10
+── 6 ──────────────────────────────────────────────────────────────────────────
+
+
+     02 / 03  du er her
+
+         ▄  ▄▄▄  ▄▄▄▄  ▄▄▄▄  ▄▄▄▄▄  ▄▄▄▄     ▄   ▄ ▄▄▄▄▄ ▄▄▄▄
+         █ █   █ █   █ █   █ █     █         █▀▄▀█ █     █   █
+     ▄   █ █   █ █▀▀▀▄ █▀▀▀▄ █▀▀▀   ▀▀▀▄     █ ▀ █ █▀▀▀  █   █
+     ▀▄▄▄▀ ▀▄▄▄▀ █▄▄▄▀ █▄▄▄▀ █▄▄▄▄ ▄▄▄▄▀     █   █ █▄▄▄▄ █▄▄▄▀
+
+     ▄   ▄  █▀█
+     █▀▄ █ ▄▀▀▀▄
+     █ ▀▄█ █▄▄▄█
+     █   █ █   █
+
+                                                                   lysbilde
+     01  Siden sist  · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
+     02  Jobbes med nå   · · · · · · · · · · · · · · · · · · · · · · · ·  6
+         ├── Oppgaver
+         └── Flyt i presentasjonen
+     03  Relativt nær framtid  · · · · · · · · · · · · · · · · · · · · ·  9
+
+
+
+     Statusmøte uke 45                        ? hjelp   ━━ ━━━ ━── ──  6/10
+── 7 ──────────────────────────────────────────────────────────────────────────
+     1 Siden sist │ 2 Jobbes med nå 1/2 │ 3 Relativt nær framtid
+
+     02 /
+     Oppgaver  ────────────────────────────────────────────────────────────
+
+     Tavlen under er Kanban-viewet i Oppgaver-basen, med levende data fra
+     oppgavemappen.
+
+   ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐
+   ┆ Kanban: Kanban – vises i web-leseren                                   ┆
+   ┆ Oppgaver.base · 17 kort: todo 7 · doing 3 · done 4 · blocked 1 · Todo… ┆
+   └╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘
+
+
+
+
+
+
+
+
+
+
+
+     Statusmøte uke 45                        ? hjelp   ━━ ━━━ ━━─ ──  7/10
+── 8 ──────────────────────────────────────────────────────────────────────────
+     1 Siden sist │ 2 Jobbes med nå 2/2 │ 3 Relativt nær framtid
+
+     02 /
+     Flyt i presentasjonen  ───────────────────────────────────────────────
+
+   ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐
+   ┆ Mermaid-diagram – vises i web-leseren                                  ┆
+   ┆ flowchart LR · 4 noder                                                 ┆
+   └╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘
+
+     Markør STATUS-FLYT.
+
+
+
+
+
+
+
+
+
+
+
+
+     Statusmøte uke 45                        ? hjelp   ━━ ━━━ ━━━ ──  8/10
+── 9 ──────────────────────────────────────────────────────────────────────────
+
+
+     03 / 03  du er her
+
+     ▄▄▄▄  ▄▄▄▄▄ ▄      ▄▄▄  ▄▄▄▄▄ ▄▄▄ ▄   ▄ ▄▄▄▄▄     ▄   ▄  ▄▄▄▄▄▄ ▄▄▄▄
+     █   █ █     █     █   █   █    █  █   █   █       █▀▄ █ █  █    █   █
+     █▀█▀  █▀▀▀  █     █▀▀▀█   █    █  █   █   █       █ ▀▄█ █▀▀█▀▀  █▀█▀
+     █  ▀▄ █▄▄▄▄ █▄▄▄▄ █   █   █   ▄█▄  ▀▄▀    █       █   █ █  █▄▄▄ █  ▀▄
+
+     ▄▄▄▄▄ ▄▄▄▄   ▄▄▄  ▄   ▄ ▄▄▄▄▄ ▄▄▄ ▄▄▄▄
+     █     █   █ █   █ █▀▄▀█   █    █  █   █
+     █▀▀▀  █▀█▀  █▀▀▀█ █ ▀ █   █    █  █   █
+     █     █  ▀▄ █   █ █   █   █   ▄█▄ █▄▄▄▀
+
+                                                                   lysbilde
+     01  Siden sist  · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
+     02  Jobbes med nå   · · · · · · · · · · · · · · · · · · · · · · · ·  6
+     03  Relativt nær framtid  · · · · · · · · · · · · · · · · · · · · ·  9
+         └── Plan Q1
+
+
+
+
+     Statusmøte uke 45                        ? hjelp   ━━ ━━━ ━━━ ━─  9/10
+── 10 ──────────────────────────────────────────────────────────────────────────
+     1 Siden sist │ 2 Jobbes med nå │ 3 Relativt nær framtid 1/1
+
+     03 /
+     Plan Q1  ─────────────────────────────────────────────────────────────
+
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     Måned     Leveranse                         Ansvarlig
+     ─────────────────────────────────────────────────────
+     Januar    Presentasjonsmodus i produksjon   Kari
+     Februar   PDF-eksport (forstudie)           Ola
+     Mars      Presentatørvisning (forstudie)    Per
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+     Planen er foreløpig.¹ Detaljer i Månedsrapport oktober.
+
+     Markør STATUS-PLAN.
+
+
+
+
+     ────────
+     ¹ Avhenger av kapasitet i plattformteamet.
+
+     Statusmøte uke 45                       ? hjelp   ━━ ━━━ ━━━ ━━  10/10

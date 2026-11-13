@@ -8,7 +8,7 @@
 //   node scripts/present.mjs --bygg            bare bygg (tvunget)
 
 import './check-node.js';
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -18,6 +18,9 @@ export const PRESENT_INPUTS = ['src/terminal', 'src/core', 'src/server', 'src/sh
 export const OUT_DIR = 'dist/terminal';
 export const BUNDLE = `${OUT_DIR}/present.mjs`;
 export const WORKER = `${OUT_DIR}/meta-worker.cjs`;
+/** Figlet-fontene leses ved siden av bunten (`new URL('./fonts/…', import.meta.url)`, ADR-011 §5). */
+export const FONTS_SRC = 'src/terminal/features/figlet/fonts';
+export const FONTS_OUT = `${OUT_DIR}/fonts`;
 const STAMP = `${OUT_DIR}/stamp.json`;
 const IGNORED = /(^|[\\/])(node_modules|\.DS_Store|__snapshots__)$|\.test\.tsx?$/;
 
@@ -46,7 +49,7 @@ export function sourceStamp(root) {
 }
 
 export function needsBuild(root, stamp) {
-  if (!existsSync(join(root, BUNDLE)) || !existsSync(join(root, WORKER))) return true;
+  if (!existsSync(join(root, BUNDLE)) || !existsSync(join(root, WORKER)) || !existsSync(join(root, FONTS_OUT))) return true;
   try {
     return JSON.parse(readFileSync(join(root, STAMP), 'utf8')).stamp !== stamp;
   } catch {
@@ -64,6 +67,8 @@ export async function buildPresent(root) {
     // Workerne kjører koden som tekst (`new Worker(kode, { eval: true })`), så den bundles helt, som i serveren.
     build({ ...common, entryPoints: ['src/server/features/vault-index/meta-worker.ts'], outfile: WORKER, format: 'cjs' }),
   ]);
+  mkdirSync(join(root, FONTS_OUT), { recursive: true });
+  for (const file of readdirSync(join(root, FONTS_SRC))) copyFileSync(join(root, FONTS_SRC, file), join(root, FONTS_OUT, file));
 }
 
 export async function ensureBuilt(root, force = false) {

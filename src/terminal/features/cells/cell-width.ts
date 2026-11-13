@@ -5,8 +5,9 @@
 //   - 2: emoji med emojipresentasjon (eller VS16), regionale flagg, øst-asiatisk «Wide»/«Fullwidth».
 //   - 0: kontrolltegn og rene kombinerende tegn uten base.
 //   - 1: alt annet – også East Asian «Ambiguous» (rammetegn, blokktegn), som i vestlige terminaler (Ghostty).
-// Skjelettet bruker en kompakt tabell for Wide/Fullwidth; slice 3-b bytter den mot `get-east-asian-width`
-// (allerede i lockfila via utviklingsavhengigheter, flyttes til `dependencies`, ADR-006).
+// Wide/Fullwidth kommer fra `get-east-asian-width` (Unicode-tabellen, i `dependencies` etter PO-111).
+
+import { eastAsianWidthType } from 'get-east-asian-width';
 
 export type CellWidth = 0 | 1 | 2;
 
@@ -21,24 +22,10 @@ const REGIONAL = /\p{Regional_Indicator}/u;
 const VS16 = '\ufe0f';
 const ZWJ = '\u200d';
 
-/** Wide/Fullwidth (Unicode EastAsianWidth W/F), kompakt utvalg. Erstattes av `get-east-asian-width` i 3-b. */
-const WIDE_RANGES: ReadonlyArray<readonly [number, number]> = [
-  [0x1100, 0x115f],
-  [0x2e80, 0x303e],
-  [0x3041, 0x33ff],
-  [0x3400, 0x4dbf],
-  [0x4e00, 0x9fff],
-  [0xa000, 0xa4cf],
-  [0xac00, 0xd7a3],
-  [0xf900, 0xfaff],
-  [0xfe30, 0xfe4f],
-  [0xff00, 0xff60],
-  [0xffe0, 0xffe6],
-  [0x20000, 0x3fffd],
-];
-
+/** Wide/Fullwidth etter Unicode EastAsianWidth (`get-east-asian-width`, AR-3-13, PO-111). Ambiguous = 1. */
 function isWideCodePoint(cp: number): boolean {
-  return WIDE_RANGES.some(([lo, hi]) => cp >= lo && cp <= hi);
+  const type = eastAsianWidthType(cp);
+  return type === 'wide' || type === 'fullwidth';
 }
 
 /** Grafemklynger i lesefølge. */

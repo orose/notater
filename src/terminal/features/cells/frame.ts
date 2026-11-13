@@ -16,6 +16,12 @@ export interface CellStyle {
   readonly dim?: boolean;
   readonly italic?: boolean;
   readonly underline?: boolean;
+  /** Prikket understrek (SGR 4:4, brutte lenker); terminaler uten støtte viser vanlig understrek. */
+  readonly underlineStyle?: 'single' | 'dotted';
+  /** Understrekfarge (SGR 58), f.eks. aksent under gjeldende agendapunkt. */
+  readonly underlineColor?: Color;
+  /** Gjennomstreket (SGR 9). */
+  readonly strike?: boolean;
   readonly inverse?: boolean;
   /** OSC 8-hyperlenke (bare eksterne URL-er, ADR-011 §4). */
   readonly link?: string;

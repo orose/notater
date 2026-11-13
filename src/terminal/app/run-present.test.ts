@@ -24,7 +24,8 @@ function environment(argv: string[], isTTY: boolean, size = { columns: 120, rows
     stderr: (t) => err.push(t),
     openVault: (vault, options) => openTerminalVault(vault, { ...options, watch: false, createInitialExtractor: createInlineMetaExtractor }),
   };
-  const screen = () => out.join('');
+  // eslint-disable-next-line no-control-regex -- fjerner SGR, markørflytting og OSC fra utdata
+  const screen = () => out.join('').replace(/\u001b\[[0-9;:?]*[A-Za-z]|\u001b\][^\u001b]*\u001b\\/g, '');
   const waitFor = async (pattern: RegExp, timeout = 20_000) => {
     const start = Date.now();
     while (!pattern.test(screen())) {
@@ -49,7 +50,8 @@ describe('runPresent', () => {
     const done = runPresent(t.env);
     expect(t.out[0]).toContain(SEQ.altScreenOn);
     await t.waitFor(/Leser vaultet/);
-    await t.waitFor(/1\/\d+/);
+    // Tittelsiden har bare starthintet, ingen folio (PO-95).
+    await t.waitFor(/Presentasjon/);
     t.input.emit('data', 'j');
     // Diff-tegningen skriver bare endrede celler; en resize tegner alt på nytt.
     await new Promise((r) => setTimeout(r, 20));
@@ -73,7 +75,7 @@ describe('runPresent', () => {
     await t.waitFor(/velg notatet du vil presentere/);
     t.input.emit('data', 'Statusmøte uke 45');
     t.input.emit('data', '\r');
-    await t.waitFor(/1\/\d+/);
+    await t.waitFor(/Presentasjon/);
     t.input.emit('data', '\x03');
     expect(await done).toBe(0);
   }, 30_000);

@@ -44,6 +44,13 @@ describe('resolveConfig – fil', () => {
     });
   });
 
+  it('obsidianVault (PO-117) leses når den er satt, ellers utelatt', () => {
+    const files = { '/repo/vault-reader.config.json': JSON.stringify({ vaults: [{ id: 'a', path: 'x', obsidianVault: ' Arbeid ' }, { id: 'b', path: 'y' }] }) };
+    const config = resolveConfig(sources({ files }));
+    expect(config.vaults[0]?.obsidianVault).toBe('Arbeid');
+    expect(config.vaults[1]).not.toHaveProperty('obsidianVault');
+  });
+
   it('.local.json erstatter den sjekkede fila helt', () => {
     const local = JSON.stringify({ vaults: [{ id: 'lokal', path: '/data/v' }] });
     const config = resolveConfig(sources({ files: { '/repo/vault-reader.config.json': BASE_FILE, '/repo/vault-reader.config.local.json': local } }));
@@ -111,6 +118,7 @@ describe('resolveConfig – validering (norske feilmeldinger)', () => {
   it('ukjent defaultVault', () => fails(withFile({ defaultVault: 'nei', vaults: [{ id: 'a', path: 'x' }] }), /defaultVault/));
   it('ugyldig port', () => fails({ argv: ['--port', '99999'] }, /port/i));
   it('ukjent --vault-id', () => fails({ argv: ['--vault-id', 'nei'] }, /nei/));
+  it('ugyldig obsidianVault', () => fails(withFile({ vaults: [{ id: 'a', path: 'x', obsidianVault: 3 }] }), /obsidianVault/));
   it('ugyldig hiddenProperties', () => fails(withFile({ vaults: [{ id: 'a', path: 'x', hiddenProperties: 'nei' }] }), /hiddenProperties/));
   it('ukjent flagg', () => fails({ argv: ['--host', '0.0.0.0'] }, /Ukjent/));
   it('ugyldig lan i fil', () => fails(withFile({ lan: 'ja', vaults: [{ id: 'a', path: 'x' }] }), /lan/));

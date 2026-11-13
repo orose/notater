@@ -16,7 +16,8 @@ import { createPicker, pickerKey, pickerPaste, pickerRows, pickerView, type Pick
 import { isTooSmall, startupView, tooSmallView, type StartupProgress } from '../features/overlays';
 import { NotATerminalError, SEQ, openTerminalSession, type ProcessHooks, type TerminalSession, type TerminalSize, type TtyInput, type TtyOutput } from '../features/screen';
 import { goTo, levelsOf, rebuild, startPresent, step, toggleBlackout, type PresentState } from '../features/session';
-import { plainSlideView } from '../features/slides';
+import { slideView } from '../features/slides';
+import { DEFAULT_PALETTE, PALETTES, createTheme, isPalette, modeFromOsc11, type PaletteName, type TerminalTheme, type ThemeMode } from '../features/theme';
 import { openTerminalVault, type TerminalVault, type TerminalVaultOptions } from '../features/vault';
 
 export { MIN_SIZE } from '../features/overlays';
@@ -43,6 +44,9 @@ type Screen =
   | { readonly kind: 'picker'; readonly picker: PickerState }
   | { readonly kind: 'present'; readonly docPath: string; readonly state: PresentState }
   | { readonly kind: 'missing'; readonly docPath: string; readonly state: PresentState };
+
+/** Spør etter terminalens bakgrunnsfarge (svaret leses av dekoderen som `reply`). */
+const OSC11_QUERY = '\u001b]11;?\u001b\\';
 
 /** Svar på `CSI ?u`: `CSI ? flagg u` (kitty-tastaturet støttes). */
 function isKittyReply(sequence: string): boolean {
@@ -87,6 +91,11 @@ export function runPresent(env: PresentEnvironment): Promise<number> {
     return Promise.resolve(1);
   }
   const capabilities = detectCapabilities(env.config.env, args.colors);
+  if (args.palette !== null && !isPalette(args.palette)) {
+    env.stderr(`E475: Ukjent palett «${args.palette}». Gyldige paletter: ${PALETTES.join(', ')}.\n`);
+    return Promise.resolve(2);
+  }
+  const palette: PaletteName = args.palette ?? DEFAULT_PALETTE;
 
   return new Promise<number>((resolve) => {
     let finished = false;
@@ -108,7 +117,7 @@ export function runPresent(env: PresentEnvironment): Promise<number> {
       resolve(1);
       return;
     }
-    const app = createApp({ env, args, vaultConfig, capabilities, session, finish });
+    const app = createApp({ env, args, vaultConfig, capabilities, palette, session, finish });
     try {
       vault = (env.openVault ?? openTerminalVault)(vaultConfig, { ...env.vaultOptions, onProgress: app.progress });
     } catch (error) {
@@ -128,28 +137,34 @@ interface AppDeps {
   readonly args: PresentArgs;
   readonly vaultConfig: VaultConfig;
   readonly capabilities: TerminalCapabilities;
+  readonly palette: PaletteName;
   readonly session: TerminalSession;
   readonly finish: (code: number, error?: unknown, message?: string) => void;
 }
 
-function createApp({ env, args, vaultConfig, capabilities, session, finish }: AppDeps) {
+function createApp({ env, args, vaultConfig, capabilities, palette, session, finish }: AppDeps) {
   let screen: Screen = { kind: 'startup', progress: { done: 0, total: null } };
   let shown: Frame | null = null;
   let scheduled = false;
   let firstSlideDrawn = false;
   let vault: TerminalVault | null = null;
+  // «system»: lys eller mørk fra terminalens bakgrunn (OSC 11), ellers mørk (AR-3-11).
+  let mode: ThemeMode = 'dark';
+  let theme: TerminalTheme = createTheme(palette, mode, capabilities.depth);
+  /** PO-117: vaultmappens navn, eller `obsidianVault` fra konfigen. */
+  const obsidianVault = vaultConfig.obsidianVault ?? vaultConfig.root.split(/[\\/]/).filter(Boolean).pop() ?? vaultConfig.name;
   const options = { level: (typeof args.level === 'number' ? args.level : null) as HeadingLevel | null, transitions: args.transitions };
 
   const view = (size: TerminalSize): Frame => {
-    if (isTooSmall(size)) return tooSmallView(size);
+    if (isTooSmall(size)) return tooSmallView(size, theme);
     switch (screen.kind) {
       case 'startup':
-        return startupView(size, screen.progress);
+        return startupView(size, screen.progress, theme);
       case 'picker':
-        return pickerView(screen.picker, size.cols, size.rows, { vaultName: vaultConfig.name });
+        return pickerView(screen.picker, size.cols, size.rows, { vaultName: vaultConfig.name, theme });
       case 'present':
       case 'missing':
-        return plainSlideView(screen.state.deck, screen.state.index, size.cols, size.rows, { blackout: screen.state.blackout });
+        return slideView({ deck: screen.state.deck, doc: screen.state.doc, theme, obsidianVault }, screen.state.index, size.cols, size.rows, { blackout: screen.state.blackout });
     }
   };
 
@@ -240,6 +255,15 @@ function createApp({ env, args, vaultConfig, capabilities, session, finish }: Ap
         screen = { kind: 'picker', picker: pickerPaste(screen.picker, input.text) };
         redraw();
       } else if (input.kind === 'reply' && isKittyReply(input.sequence)) session.enableKittyKeys();
+      else if (input.kind === 'reply') {
+        const detected = modeFromOsc11(input.sequence);
+        if (detected && detected !== mode) {
+          mode = detected;
+          theme = createTheme(palette, mode, capabilities.depth);
+          shown = null;
+          redraw();
+        }
+      }
     },
   });
   session.onData((chunk) => decoder.feed(chunk));
@@ -248,7 +272,7 @@ function createApp({ env, args, vaultConfig, capabilities, session, finish }: Ap
     redraw();
   });
   // Kitty-tastaturet (ADR-011 §6): svarer terminalen på `CSI ?u` før DA1, slås det på.
-  session.write(SEQ.kittyKeysQuery);
+  session.write(`${OSC11_QUERY}${SEQ.kittyKeysQuery}`);
   draw();
 
   const present = async (docPath: string): Promise<void> => {

@@ -10,6 +10,7 @@ export type ColorDepth = 'truecolor' | 'ansi256' | 'ansi16' | 'none';
 const ESC = '\x1b';
 const CSI = `${ESC}[`;
 const OSC8_CLOSE = `${ESC}]8;;${ESC}\\`;
+const DEFAULT: Color = { kind: 'default' };
 
 function sameColor(a: Color, b: Color): boolean {
   if (a.kind !== b.kind) return false;
@@ -26,6 +27,9 @@ export function sameStyle(a: CellStyle, b: CellStyle): boolean {
     !a.dim === !b.dim &&
     !a.italic === !b.italic &&
     !a.underline === !b.underline &&
+    (a.underlineStyle ?? 'single') === (b.underlineStyle ?? 'single') &&
+    sameColor(a.underlineColor ?? DEFAULT, b.underlineColor ?? DEFAULT) &&
+    !a.strike === !b.strike &&
     !a.inverse === !b.inverse &&
     (a.link ?? null) === (b.link ?? null)
   );
@@ -64,15 +68,27 @@ function colorParams(color: Color, layer: 'fg' | 'bg', depth: ColorDepth): strin
   return [layer === 'fg' ? '38' : '48', '5', String(rgbTo256(color.rgb))];
 }
 
+/** SGR 58 (understrekfarge). Kolonform (`58:2::r:g:b`) som Ghostty, kitty og iTerm forstår. */
+function underlineColorParams(color: Color, depth: ColorDepth): string[] {
+  if (depth === 'none' || color.kind === 'default') return [];
+  if (color.kind === 'ansi') return [`58:5:${color.index}`];
+  const r = (color.rgb >> 16) & 0xff;
+  const g = (color.rgb >> 8) & 0xff;
+  const b = color.rgb & 0xff;
+  return depth === 'truecolor' ? [`58:2::${r}:${g}:${b}`] : [`58:5:${rgbTo256(color.rgb)}`];
+}
+
 /** Full SGR for en stil (nullstiller først – enkelt og robust; løpene er lange nok til at det ikke merkes). */
 export function sgr(style: CellStyle, depth: ColorDepth): string {
   const params = ['0'];
   if (style.bold) params.push('1');
   if (style.dim) params.push('2');
   if (style.italic) params.push('3');
-  if (style.underline) params.push('4');
+  if (style.underline) params.push(style.underlineStyle === 'dotted' ? '4:4' : '4');
   if (style.inverse) params.push('7');
+  if (style.strike) params.push('9');
   params.push(...colorParams(style.fg, 'fg', depth), ...colorParams(style.bg, 'bg', depth));
+  if (style.underline && style.underlineColor) params.push(...underlineColorParams(style.underlineColor, depth));
   return `${CSI}${params.join(';')}m`;
 }
 

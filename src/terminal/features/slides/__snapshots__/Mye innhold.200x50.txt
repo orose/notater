@@ -1,0 +1,255 @@
+── 1 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    ~/presentasjon
+
+                    ▄   ▄ ▄   ▄ ▄▄▄▄▄     ▄▄▄ ▄   ▄ ▄   ▄ ▄   ▄  ▄▄▄  ▄     ▄▄▄▄
+                    █▀▄▀█ ▀▄ ▄▀ █          █  █▀▄ █ █▀▄ █ █   █ █   █ █     █   █
+                    █ ▀ █   █   █▀▀▀       █  █ ▀▄█ █ ▀▄█ █▀▀▀█ █   █ █     █   █
+                    █   █   █   █▄▄▄▄     ▄█▄ █   █ █   █ █   █ ▀▄▄▄▀ █▄▄▄▄ █▄▄▄▀
+
+                    Endret 8. nov. 2026, 21.34
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Presentasjon                                                                                                   → neste  ·  o oversikt  ·  ? taster  ·  q avslutt
+── 2 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+                    Mye innhold · 1 punkter
+
+                     ▄▄▄   ▄▄▄  ▄▄▄▄▄ ▄   ▄ ▄▄▄▄   ▄▄▄
+                    █   █ █   ▀ █     █▀▄ █ █   █ █   █
+                    █▀▀▀█ █ ▀▀█ █▀▀▀  █ ▀▄█ █   █ █▀▀▀█
+                    █   █ ▀▄▄▄█ █▄▄▄▄ █   █ █▄▄▄▀ █   █
+
+
+                                                                                            lysbilde
+
+                    01  Bakgrunn  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Mye innhold                                                                                     j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ───  2/5
+── 3 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+                    01 / 01  du er her
+
+                    ▄▄▄▄   ▄▄▄  ▄   ▄  ▄▄▄  ▄▄▄▄  ▄   ▄ ▄   ▄ ▄   ▄
+                    █   █ █   █ █ ▄▀  █   ▀ █   █ █   █ █▀▄ █ █▀▄ █
+                    █▀▀▀▄ █▀▀▀█ █▀▄   █ ▀▀█ █▀█▀  █   █ █ ▀▄█ █ ▀▄█
+                    █▄▄▄▀ █   █ █  ▀▄ ▀▄▄▄█ █  ▀▄ ▀▄▄▄▀ █   █ █   █
+
+
+                                                                                            lysbilde
+
+                    01  Bakgrunn  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
+                        ├── Lang gjennomgang
+                        └── Kort oppsummering
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Mye innhold                                                                                     j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ━──  3/5
+── 4 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+                    1 Bakgrunn 1/2
+
+
+
+                    01 /
+                    Lang gjennomgang  ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+                    Markør MYE-01. Presentasjonen skal aldri kutte innhold usynlig, og
+                    teksten her er lang nok til at lysbildet må krympe skriften og deretter
+                    fortsette på et nytt lysbilde merket forts. Hvert avsnitt har en unik
+                    markør slik at testen kan sjekke at alt vises nøyaktig én gang og i
+                    riktig rekkefølge, uansett hvor mange deler lysbildet blir delt i.
+
+                    Markør MYE-02. Presentasjonen skal aldri kutte innhold usynlig, og
+                    teksten her er lang nok til at lysbildet må krympe skriften og deretter
+                    fortsette på et nytt lysbilde merket forts. Hvert avsnitt har en unik
+                    markør slik at testen kan sjekke at alt vises nøyaktig én gang og i
+                    riktig rekkefølge, uansett hvor mange deler lysbildet blir delt i.
+
+                    Markør MYE-03. Presentasjonen skal aldri kutte innhold usynlig, og
+                    teksten her er lang nok til at lysbildet må krympe skriften og deretter
+                    fortsette på et nytt lysbilde merket forts. Hvert avsnitt har en unik
+                    markør slik at testen kan sjekke at alt vises nøyaktig én gang og i
+                    riktig rekkefølge, uansett hvor mange deler lysbildet blir delt i.
+
+                    Markør MYE-04. Presentasjonen skal aldri kutte innhold usynlig, og
+                    teksten her er lang nok til at lysbildet må krympe skriften og deretter
+                    fortsette på et nytt lysbilde merket forts. Hvert avsnitt har en unik
+                    markør slik at testen kan sjekke at alt vises nøyaktig én gang og i
+                    riktig rekkefølge, uansett hvor mange deler lysbildet blir delt i.
+
+                    Markør MYE-05. Presentasjonen skal aldri kutte innhold usynlig, og
+                    teksten her er lang nok til at lysbildet må krympe skriften og deretter
+                    fortsette på et nytt lysbilde merket forts. Hvert avsnitt har en unik
+                    markør slik at testen kan sjekke at alt vises nøyaktig én gang og i
+                    riktig rekkefølge, uansett hvor mange deler lysbildet blir delt i.
+
+                    Markør MYE-06. Presentasjonen skal aldri kutte innhold usynlig, og
+                    teksten her er lang nok til at lysbildet må krympe skriften og deretter
+                    fortsette på et nytt lysbilde merket forts. Hvert avsnitt har en unik
+                    markør slik at testen kan sjekke at alt vises nøyaktig én gang og i
+                    riktig rekkefølge, uansett hvor mange deler lysbildet blir delt i.
+
+                    Markør MYE-07. Presentasjonen skal aldri kutte innhold usynlig, og
+                    teksten her er lang nok til at lysbildet må krympe skriften og deretter
+                    fortsette på et nytt lysbilde merket forts. Hvert avsnitt har en unik
+                    markør slik at testen kan sjekke at alt vises nøyaktig én gang og i
+
+
+                    Mye innhold                                                                                     j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ━━─  4/5
+── 5 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+                    1 Bakgrunn 2/2
+
+
+
+                    01 /
+                    Kort oppsummering  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+                    Ett kort avsnitt som får plass. Markør MYE-KORT.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Mye innhold                                                                                     j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ━━━  5/5

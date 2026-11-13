@@ -1,0 +1,275 @@
+── 1 ──────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+     ~/presentasjon
+
+     ▄▄▄ ▄▄▄ ▄▄  ▄   ▄ ▄▄▄ ▄  ▄  ▄  ▄   ▄ ▄  ▄  ▄  ▄ ▄▄▄ ▄▄▄ ▄▄
+      █  █▄  █▄▀ █▀▄▀█  █  █▀▄█ █▄█ █   █▄▀ █▄█ █▀▄█  █  █▄  █▄▀
+      █  █▄▄ █ █ █   █ ▄█▄ █  █ █ █ █▄▄ █ █ █ █ █  █  █  █▄▄ █ █
+
+     Kanttilfeller for presentasjon i terminalen – særtegn, bredde og
+     plassholdere.
+
+     Endret 11. nov. 2026, 23.53
+
+
+
+
+
+
+
+
+     Presentasjon         → neste  ·  o oversikt  ·  ? taster  ·  q avslutt
+── 2 ──────────────────────────────────────────────────────────────────────────
+
+
+     Terminalkanter · 3 punkter
+
+      ▄▄▄   ▄▄▄  ▄▄▄▄▄ ▄   ▄ ▄▄▄▄   ▄▄▄
+     █   █ █   ▀ █     █▀▄ █ █   █ █   █
+     █▀▀▀█ █ ▀▀█ █▀▀▀  █ ▀▄█ █   █ █▀▀▀█
+     █   █ ▀▄▄▄█ █▄▄▄▄ █   █ █▄▄▄▀ █   █
+
+                                                                   lysbilde
+     01  Særtegn 🙂  · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
+
+     02  Blokker   · · · · · · · · · · · · · · · · · · · · · · · · · · ·  5
+
+     03  Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunter…  10
+
+
+
+
+
+
+
+
+     Terminalkanter                          ? hjelp   ━━ ── ───── ──  2/11
+── 3 ──────────────────────────────────────────────────────────────────────────
+
+
+     01 / 03  du er her
+
+     Særtegn 🙂
+     ━━━━━━━━━━
+
+                                                                   lysbilde
+     01  Særtegn 🙂  · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
+         └── Æøå og emoji 🚀
+     02  Blokker   · · · · · · · · · · · · · · · · · · · · · · · · · · ·  5
+     03  Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunter…  10
+
+
+
+
+
+
+
+
+
+
+
+     Terminalkanter                          ? hjelp   ━━ ━─ ───── ──  3/11
+── 4 ──────────────────────────────────────────────────────────────────────────
+     1 Særtegn 🙂 1/1 │ 2 Blokker │ …
+
+     01 /
+     Æøå og emoji 🚀  ─────────────────────────────────────────────────────
+
+     Blåbærsyltetøy fra Ærøskøbing på skjærgårdsøya ved Åsgårdstrand.
+     Bredde-2-tegn: 漢字テスト og 한국어 midt i en setning som må brytes
+     riktig. Emoji: 🙂 🚀 👩‍💻 🇳🇴. Kombinerende tegn: «Ä» (A + U+0308).
+
+     Markør TERM-SÆR.
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Terminalkanter                          ? hjelp   ━━ ━━ ───── ──  4/11
+── 5 ──────────────────────────────────────────────────────────────────────────
+
+
+     02 / 03  du er her
+
+     ▄▄▄▄  ▄      ▄▄▄  ▄   ▄ ▄   ▄ ▄▄▄▄▄ ▄▄▄▄
+     █   █ █     █   █ █ ▄▀  █ ▄▀  █     █   █
+     █▀▀▀▄ █     █   █ █▀▄   █▀▄   █▀▀▀  █▀█▀
+     █▄▄▄▀ █▄▄▄▄ ▀▄▄▄▀ █  ▀▄ █  ▀▄ █▄▄▄▄ █  ▀▄
+
+                                                                   lysbilde
+     01  Særtegn 🙂  · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
+     02  Blokker   · · · · · · · · · · · · · · · · · · · · · · · · · · ·  5
+         ├── Callouts
+         ├── Bases-tabell
+         ├── Bilde
+         └── Ti kolonner
+     03  Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunter…  10
+
+
+
+
+
+
+     Terminalkanter                          ? hjelp   ━━ ━━ ━──── ──  5/11
+── 6 ──────────────────────────────────────────────────────────────────────────
+     1 Særtegn 🙂 │ 2 Blokker 1/4 │ 3 Donaudampfsch…
+
+     02 /
+     Callouts  ────────────────────────────────────────────────────────────
+
+   ╭─ i Merk ───────────────────────────────────────────────────────────────╮
+   │ Merk deg                                                               │
+   │                                                                        │
+   │ En vanlig callout med ramme og etikett. Markør TERM-CALLOUT-NOTE.      │
+   ╰────────────────────────────────────────────────────────────────────────╯
+
+   ╭─ ! Advarsel ───────────────────────────────────────────────────────────╮
+   │ Advarsel med æøå                                                       │
+   │                                                                        │
+   │ Callouten har en lang linje som må brytes innenfor rammen og aldri     │
+   │ flyte over kanten på en smal terminal. Markør TERM-CALLOUT-WARN.       │
+   ╰────────────────────────────────────────────────────────────────────────╯
+
+
+
+
+
+
+     Terminalkanter                          ? hjelp   ━━ ━━ ━━─── ──  6/11
+── 7 ──────────────────────────────────────────────────────────────────────────
+     1 Særtegn 🙂 │ 2 Blokker 2/4 │ 3 Donaudampfsch…
+
+     02 /
+     Bases-tabell  ────────────────────────────────────────────────────────
+
+     base  ›  Kritisk  ·  4 rader                          ● live
+
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     Navn                                    status           due
+     ────────────────────────────────────────────────────────────
+     Oppgrader Spring Boot til 3.3           ○ todo    20.11.2026
+     Avklar (GDPR) sletting av kundedata     ○ todo    18.11.2026
+     Migrer til Java 21                      ◐ doing   08.11.2026
+     Fiks flaky test i BetalingServiceTest   ● done    15.10.2026
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+     Markør TERM-BASE.
+
+
+
+
+
+
+     Terminalkanter                          ? hjelp   ━━ ━━ ━━━── ──  7/11
+── 8 ──────────────────────────────────────────────────────────────────────────
+     1 Særtegn 🙂 │ 2 Blokker 3/4 │ 3 Donaudampfsch…
+
+     02 /
+     Bilde  ───────────────────────────────────────────────────────────────
+
+     [bilde: arkitektur.png]
+
+     Markør TERM-BILDE.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Terminalkanter                          ? hjelp   ━━ ━━ ━━━━─ ──  8/11
+── 9 ──────────────────────────────────────────────────────────────────────────
+     1 Særtegn 🙂 │ 2 Blokker 4/4 │ 3 Donaudampfsch…
+
+     02 /
+     Ti kolonner  ─────────────────────────────────────────────────────────
+
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     Kol01  Kol02  Kol03  Kol04  Kol05  Kol06  Kol07  Kol08  Kol09  Kol10
+     ────────────────────────────────────────────────────────────────────
+     T1K01  T1K02  T1K03  T1K04  T1K05  T1K06  T1K07  T1K08  T1K09  T1K10
+     T2K01  T2K02  Ærlig  T2K04  T2K05  T2K06  T2K07  T2K08  T2K09  T2K10
+     T3K01  T3K02  T3K03  T3K04  T3K05  T3K06  T3K07  T3K08  T3K09  T3K10
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+     Markør TERM-TABELL.
+
+
+
+
+
+
+
+
+
+     Terminalkanter                          ? hjelp   ━━ ━━ ━━━━━ ──  9/11
+── 10 ──────────────────────────────────────────────────────────────────────────
+
+
+     03 / 03  du er her
+
+     Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtenge
+     sellschaft
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                                                                   lysbilde
+     01  Særtegn 🙂  · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
+     02  Blokker   · · · · · · · · · · · · · · · · · · · · · · · · · · ·  5
+     03  Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunter…  10
+         └── Lange ord og lenker
+
+
+
+
+
+
+
+
+
+
+     Terminalkanter                         ? hjelp   ━━ ━━ ━━━━━ ━─  10/11
+── 11 ──────────────────────────────────────────────────────────────────────────
+     … │ 2 Blokker │ 3 Donaudampfschifffahrts… 1/1
+
+     03 /
+     Lange ord og lenker  ─────────────────────────────────────────────────
+
+     Ordet over har 80 tegn – like bredt som en terminal på 80 kolonner.
+     Dette har enda flere:
+     Personvernkonsekvensvurderingsprosessdokumentasjonsmalverktøyleverandø
+     ravtalereforhandlingsmøtereferatet.
+
+     En lang adresse:
+     https://eksempel.invalid/sti/som/er/mye/lengre/enn/en/terminal/på/åtti
+     /kolonner/og/derfor/må/brytes?side=2
+
+     En lenke med tekst: presentasjonsdokumentasjonen.
+
+     Markør TERM-LANG.
+
+
+
+
+
+
+     Terminalkanter                         ? hjelp   ━━ ━━ ━━━━━ ━━  11/11

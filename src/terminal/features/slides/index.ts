@@ -1,2 +1,4 @@
-/** slides: lysbildetegningen. 3-a: enkel tekst; 3-b: tegning etter designsystem-terminal.md. */
-export { plainSlideView, wrapWords, type PlainViewOptions } from './plain-view';
+/** slides: lysbildet etter designsystem-terminal.md (rutenett, krom, tittel, agenda, overgang, innhold). */
+export { paintAgendaLine, paintStatusLine, progressRuns, type StatusOptions } from './chrome';
+export { MAAL, SATS_MAX, gridFor, type Grid } from './grid';
+export { bodyRows, contentRows, slideView, type SlideViewContext, type SlideViewOptions } from './slide-view';

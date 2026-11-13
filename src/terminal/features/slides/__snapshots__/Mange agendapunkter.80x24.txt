@@ -1,0 +1,450 @@
+── 1 ──────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+     ~/presentasjon
+
+     ▄   ▄  ▄  ▄  ▄  ▄▄ ▄▄▄
+     █▀▄▀█ █▄█ █▀▄█ █ ▄ █▄
+     █   █ █ █ █  █ ▀▄█ █▄▄
+
+      ▄   ▄▄ ▄▄▄ ▄  ▄ ▄▄   ▄  ▄▄  ▄ ▄ ▄  ▄ ▄ ▄ ▄▄▄ ▄▄▄ ▄▄
+     █▄█ █ ▄ █▄  █▀▄█ █ █ █▄█ █▄▀ █ █ █▀▄█ █▄▀  █  █▄  █▄▀
+     █ █ ▀▄█ █▄▄ █  █ █▄▀ █ █ █   █▄█ █  █ █ █  █  █▄▄ █ █
+
+     Endret 8. nov. 2026, 21.34
+
+
+
+
+
+
+
+     Presentasjon         → neste  ·  o oversikt  ·  ? taster  ·  q avslutt
+── 2 ──────────────────────────────────────────────────────────────────────────
+
+
+     Mange agendapunkter · 8 punkter
+
+      ▄▄▄   ▄▄▄  ▄▄▄▄▄ ▄   ▄ ▄▄▄▄   ▄▄▄
+     █   █ █   ▀ █     █▀▄ █ █   █ █   █
+     █▀▀▀█ █ ▀▀█ █▀▀▀  █ ▀▄█ █   █ █▀▀▀█
+     █   █ ▀▄▄▄█ █▄▄▄▄ █   █ █▄▄▄▀ █   █
+
+                                                                   lysbilde
+     01  Økonomi og budsjettoppfølging   · · · · · · · · · · · · · · · ·  3
+     02  Rekruttering og bemanning   · · · · · · · · · · · · · · · · · ·  5
+     03  Drift og hendelseshåndtering  · · · · · · · · · · · · · · · · ·  7
+     04  Sikkerhet og personvern   · · · · · · · · · · · · · · · · · · ·  9
+     05  Arkitektur og teknisk gjeld   · · · · · · · · · · · · · · · · · 11
+     06  Kundetilbakemeldinger og support  · · · · · · · · · · · · · · · 13
+     07  Leverandører og avtaler   · · · · · · · · · · · · · · · · · · · 15
+     08  Opplæring og kompetanseheving   · · · · · · · · · · · · · · · · 17
+
+
+
+
+
+     Mange agendapunkter         ? hjelp   ━━ ── ── ── ── ── ── ── ──  2/18
+── 3 ──────────────────────────────────────────────────────────────────────────
+
+
+     01 / 08  du er her
+
+     Økonomi og budsjettoppfølging
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                                                                   lysbilde
+     01  Økonomi og budsjettoppfølging   · · · · · · · · · · · · · · · ·  3
+         └── Status 1
+     02  Rekruttering og bemanning   · · · · · · · · · · · · · · · · · ·  5
+     03  Drift og hendelseshåndtering  · · · · · · · · · · · · · · · · ·  7
+     04  Sikkerhet og personvern   · · · · · · · · · · · · · · · · · · ·  9
+     05  Arkitektur og teknisk gjeld   · · · · · · · · · · · · · · · · · 11
+     06  Kundetilbakemeldinger og support  · · · · · · · · · · · · · · · 13
+     07  Leverandører og avtaler   · · · · · · · · · · · · · · · · · · · 15
+     08  Opplæring og kompetanseheving   · · · · · · · · · · · · · · · · 17
+
+
+
+
+
+
+     Mange agendapunkter         ? hjelp   ━━ ━─ ── ── ── ── ── ── ──  3/18
+── 4 ──────────────────────────────────────────────────────────────────────────
+     1 Økonomi og budsjettoppfølging 1/1 │ 2 Rekruttering… │ …
+
+     01 /
+     Status 1  ────────────────────────────────────────────────────────────
+
+     Kort status for punkt 1. Markør MANGE-1.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Mange agendapunkter         ? hjelp   ━━ ━━ ── ── ── ── ── ── ──  4/18
+── 5 ──────────────────────────────────────────────────────────────────────────
+
+
+     02 / 08  du er her
+
+     ▄▄▄▄  ▄▄▄▄▄ ▄   ▄ ▄▄▄▄  ▄   ▄ ▄▄▄▄▄ ▄▄▄▄▄ ▄▄▄▄▄ ▄▄▄▄  ▄▄▄ ▄   ▄  ▄▄▄
+     █   █ █     █ ▄▀  █   █ █   █   █     █   █     █   █  █  █▀▄ █ █   ▀
+     █▀█▀  █▀▀▀  █▀▄   █▀█▀  █   █   █     █   █▀▀▀  █▀█▀   █  █ ▀▄█ █ ▀▀█
+     █  ▀▄ █▄▄▄▄ █  ▀▄ █  ▀▄ ▀▄▄▄▀   █     █   █▄▄▄▄ █  ▀▄ ▄█▄ █   █ ▀▄▄▄█
+
+      ▄▄▄   ▄▄▄      ▄▄▄▄  ▄▄▄▄▄ ▄   ▄  ▄▄▄  ▄   ▄ ▄   ▄ ▄▄▄ ▄   ▄  ▄▄▄
+     █   █ █   ▀     █   █ █     █▀▄▀█ █   █ █▀▄ █ █▀▄ █  █  █▀▄ █ █   ▀
+     █   █ █ ▀▀█     █▀▀▀▄ █▀▀▀  █ ▀ █ █▀▀▀█ █ ▀▄█ █ ▀▄█  █  █ ▀▄█ █ ▀▀█
+     ▀▄▄▄▀ ▀▄▄▄█     █▄▄▄▀ █▄▄▄▄ █   █ █   █ █   █ █   █ ▄█▄ █   █ ▀▄▄▄█
+
+                                                                   lysbilde
+     01  Økonomi og budsjettoppfølging   · · · · · · · · · · · · · · · ·  3
+     02  Rekruttering og bemanning   · · · · · · · · · · · · · · · · · ·  5
+         └── Status 2
+     03  Drift og hendelseshåndtering  · · · · · · · · · · · · · · · · ·  7
+     04  Sikkerhet og personvern   · · · · · · · · · · · · · · · · · · ·  9
+     05  Arkitektur og teknisk gjeld   · · · · · · · · · · · · · · · · · 11
+     06  Kundetilbakemeldinger og support  · · · · · · · · · · · · · · · 13
+
+     Mange agendapunkter         ? hjelp   ━━ ━━ ━─ ── ── ── ── ── ──  5/18
+── 6 ──────────────────────────────────────────────────────────────────────────
+     1 Økonomi… │ 2 Rekruttering og bemann… 1/1 │ 3 Drift o… │ …
+
+     02 /
+     Status 2  ────────────────────────────────────────────────────────────
+
+     Kort status for punkt 2. Markør MANGE-2.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Mange agendapunkter         ? hjelp   ━━ ━━ ━━ ── ── ── ── ── ──  6/18
+── 7 ──────────────────────────────────────────────────────────────────────────
+
+
+     03 / 08  du er her
+
+     Drift og hendelseshåndtering
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                                                                   lysbilde
+     01  Økonomi og budsjettoppfølging   · · · · · · · · · · · · · · · ·  3
+     02  Rekruttering og bemanning   · · · · · · · · · · · · · · · · · ·  5
+     03  Drift og hendelseshåndtering  · · · · · · · · · · · · · · · · ·  7
+         └── Status 3
+     04  Sikkerhet og personvern   · · · · · · · · · · · · · · · · · · ·  9
+     05  Arkitektur og teknisk gjeld   · · · · · · · · · · · · · · · · · 11
+     06  Kundetilbakemeldinger og support  · · · · · · · · · · · · · · · 13
+     07  Leverandører og avtaler   · · · · · · · · · · · · · · · · · · · 15
+     08  Opplæring og kompetanseheving   · · · · · · · · · · · · · · · · 17
+
+
+
+
+
+
+     Mange agendapunkter         ? hjelp   ━━ ━━ ━━ ━─ ── ── ── ── ──  7/18
+── 8 ──────────────────────────────────────────────────────────────────────────
+     … │ 2 Rekrutt… │ 3 Drift og hendelseshånd… 1/1 │ 4 Sikkerh… │ …
+
+     03 /
+     Status 3  ────────────────────────────────────────────────────────────
+
+     Kort status for punkt 3. Markør MANGE-3.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Mange agendapunkter         ? hjelp   ━━ ━━ ━━ ━━ ── ── ── ── ──  8/18
+── 9 ──────────────────────────────────────────────────────────────────────────
+
+
+     04 / 08  du er her
+
+      ▄▄▄▄ ▄▄▄ ▄   ▄ ▄   ▄ ▄▄▄▄▄ ▄▄▄▄  ▄   ▄ ▄▄▄▄▄ ▄▄▄▄▄      ▄▄▄   ▄▄▄
+     █      █  █ ▄▀  █ ▄▀  █     █   █ █   █ █       █       █   █ █   ▀
+      ▀▀▀▄  █  █▀▄   █▀▄   █▀▀▀  █▀█▀  █▀▀▀█ █▀▀▀    █       █   █ █ ▀▀█
+     ▄▄▄▄▀ ▄█▄ █  ▀▄ █  ▀▄ █▄▄▄▄ █  ▀▄ █   █ █▄▄▄▄   █       ▀▄▄▄▀ ▀▄▄▄█
+
+     ▄▄▄▄  ▄▄▄▄▄ ▄▄▄▄   ▄▄▄▄  ▄▄▄  ▄   ▄ ▄   ▄ ▄▄▄▄▄ ▄▄▄▄  ▄   ▄
+     █   █ █     █   █ █     █   █ █▀▄ █ █   █ █     █   █ █▀▄ █
+     █▀▀▀  █▀▀▀  █▀█▀   ▀▀▀▄ █   █ █ ▀▄█ █   █ █▀▀▀  █▀█▀  █ ▀▄█
+     █     █▄▄▄▄ █  ▀▄ ▄▄▄▄▀ ▀▄▄▄▀ █   █  ▀▄▀  █▄▄▄▄ █  ▀▄ █   █
+
+                                                                   lysbilde
+     01  Økonomi og budsjettoppfølging   · · · · · · · · · · · · · · · ·  3
+     02  Rekruttering og bemanning   · · · · · · · · · · · · · · · · · ·  5
+     03  Drift og hendelseshåndtering  · · · · · · · · · · · · · · · · ·  7
+     04  Sikkerhet og personvern   · · · · · · · · · · · · · · · · · · ·  9
+         └── Status 4
+     05  Arkitektur og teknisk gjeld   · · · · · · · · · · · · · · · · · 11
+     06  Kundetilbakemeldinger og support  · · · · · · · · · · · · · · · 13
+
+     Mange agendapunkter         ? hjelp   ━━ ━━ ━━ ━━ ━─ ── ── ── ──  9/18
+── 10 ──────────────────────────────────────────────────────────────────────────
+     … │ 3 Drift o… │ 4 Sikkerhet og personvern 1/1 │ 5 Arkitek… │ …
+
+     04 /
+     Status 4  ────────────────────────────────────────────────────────────
+
+     Kort status for punkt 4. Markør MANGE-4.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Mange agendapunkter        ? hjelp   ━━ ━━ ━━ ━━ ━━ ── ── ── ──  10/18
+── 11 ──────────────────────────────────────────────────────────────────────────
+
+
+     05 / 08  du er her
+
+      ▄  ▄▄  ▄ ▄ ▄▄▄ ▄▄▄ ▄▄▄ ▄ ▄ ▄▄▄ ▄ ▄ ▄▄     ▄▄▄  ▄▄
+     █▄█ █▄▀ █▄▀  █   █  █▄  █▄▀  █  █ █ █▄▀    █ █ █ ▄
+     █ █ █ █ █ █ ▄█▄  █  █▄▄ █ █  █  █▄█ █ █    █▄█ ▀▄█
+
+     ▄▄▄ ▄▄▄ ▄ ▄ ▄  ▄ ▄▄▄  ▄▄ ▄ ▄     ▄▄   ▄ ▄▄▄ ▄   ▄▄
+      █  █▄  █▄▀ █▀▄█  █  ▀▄  █▄▀    █ ▄   █ █▄  █   █ █
+      █  █▄▄ █ █ █  █ ▄█▄ ▄▄▀ █ █    ▀▄█ ▀▄▀ █▄▄ █▄▄ █▄▀
+
+                                                                   lysbilde
+     01  Økonomi og budsjettoppfølging   · · · · · · · · · · · · · · · ·  3
+     02  Rekruttering og bemanning   · · · · · · · · · · · · · · · · · ·  5
+     03  Drift og hendelseshåndtering  · · · · · · · · · · · · · · · · ·  7
+     04  Sikkerhet og personvern   · · · · · · · · · · · · · · · · · · ·  9
+     05  Arkitektur og teknisk gjeld   · · · · · · · · · · · · · · · · · 11
+         └── Status 5
+     06  Kundetilbakemeldinger og support  · · · · · · · · · · · · · · · 13
+     07  Leverandører og avtaler   · · · · · · · · · · · · · · · · · · · 15
+     08  Opplæring og kompetanseheving   · · · · · · · · · · · · · · · · 17
+
+     Mange agendapunkter        ? hjelp   ━━ ━━ ━━ ━━ ━━ ━─ ── ── ──  11/18
+── 12 ──────────────────────────────────────────────────────────────────────────
+     … │ 4 Sikkerh… │ 5 Arkitektur og teknisk… 1/1 │ 6 Kundeti… │ …
+
+     05 /
+     Status 5  ────────────────────────────────────────────────────────────
+
+     Kort status for punkt 5. Markør MANGE-5.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Mange agendapunkter        ? hjelp   ━━ ━━ ━━ ━━ ━━ ━━ ── ── ──  12/18
+── 13 ──────────────────────────────────────────────────────────────────────────
+
+
+     06 / 08  du er her
+
+     Kundetilbakemeldinger og support
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                                                                   lysbilde
+     01  Økonomi og budsjettoppfølging   · · · · · · · · · · · · · · · ·  3
+     02  Rekruttering og bemanning   · · · · · · · · · · · · · · · · · ·  5
+     03  Drift og hendelseshåndtering  · · · · · · · · · · · · · · · · ·  7
+     04  Sikkerhet og personvern   · · · · · · · · · · · · · · · · · · ·  9
+     05  Arkitektur og teknisk gjeld   · · · · · · · · · · · · · · · · · 11
+     06  Kundetilbakemeldinger og support  · · · · · · · · · · · · · · · 13
+         └── Status 6
+     07  Leverandører og avtaler   · · · · · · · · · · · · · · · · · · · 15
+     08  Opplæring og kompetanseheving   · · · · · · · · · · · · · · · · 17
+
+
+
+
+
+
+     Mange agendapunkter        ? hjelp   ━━ ━━ ━━ ━━ ━━ ━━ ━─ ── ──  13/18
+── 14 ──────────────────────────────────────────────────────────────────────────
+     … │ 5 Arkitek… │ 6 Kundetilbakemeldinger… 1/1 │ 7 Leveran… │ …
+
+     06 /
+     Status 6  ────────────────────────────────────────────────────────────
+
+     Kort status for punkt 6. Markør MANGE-6.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Mange agendapunkter        ? hjelp   ━━ ━━ ━━ ━━ ━━ ━━ ━━ ── ──  14/18
+── 15 ──────────────────────────────────────────────────────────────────────────
+
+
+     07 / 08  du er her
+
+     ▄   ▄▄▄ ▄ ▄ ▄▄▄ ▄▄   ▄  ▄  ▄ ▄▄  ▄▄▄▄ ▄▄  ▄▄▄ ▄▄     ▄▄▄  ▄▄
+     █   █▄  █ █ █▄  █▄▀ █▄█ █▀▄█ █ █ █▄▀█ █▄▀ █▄  █▄▀    █ █ █ ▄
+     █▄▄ █▄▄ ▀▄▀ █▄▄ █ █ █ █ █  █ █▄▀ █▄▄█ █ █ █▄▄ █ █    █▄█ ▀▄█
+
+      ▄  ▄ ▄ ▄▄▄  ▄  ▄   ▄▄▄ ▄▄
+     █▄█ █ █  █  █▄█ █   █▄  █▄▀
+     █ █ ▀▄▀  █  █ █ █▄▄ █▄▄ █ █
+
+                                                                   lysbilde
+     01  Økonomi og budsjettoppfølging   · · · · · · · · · · · · · · · ·  3
+     02  Rekruttering og bemanning   · · · · · · · · · · · · · · · · · ·  5
+     03  Drift og hendelseshåndtering  · · · · · · · · · · · · · · · · ·  7
+     04  Sikkerhet og personvern   · · · · · · · · · · · · · · · · · · ·  9
+     05  Arkitektur og teknisk gjeld   · · · · · · · · · · · · · · · · · 11
+     06  Kundetilbakemeldinger og support  · · · · · · · · · · · · · · · 13
+     07  Leverandører og avtaler   · · · · · · · · · · · · · · · · · · · 15
+         └── Status 7
+     08  Opplæring og kompetanseheving   · · · · · · · · · · · · · · · · 17
+
+     Mange agendapunkter        ? hjelp   ━━ ━━ ━━ ━━ ━━ ━━ ━━ ━─ ──  15/18
+── 16 ──────────────────────────────────────────────────────────────────────────
+     … │ 6 Kundeti… │ 7 Leverandører og avtaler 1/1 │ 8 Opplæri…
+
+     07 /
+     Status 7  ────────────────────────────────────────────────────────────
+
+     Kort status for punkt 7. Markør MANGE-7.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Mange agendapunkter        ? hjelp   ━━ ━━ ━━ ━━ ━━ ━━ ━━ ━━ ──  16/18
+── 17 ──────────────────────────────────────────────────────────────────────────
+
+
+     08 / 08  du er her
+
+     ▄▄▄ ▄▄  ▄▄  ▄    ▄▄▄▄ ▄▄  ▄▄▄ ▄  ▄  ▄▄    ▄▄▄  ▄▄
+     █ █ █▄▀ █▄▀ █   █▄█▄  █▄▀  █  █▀▄█ █ ▄    █ █ █ ▄
+     █▄█ █   █   █▄▄ █ █▄▄ █ █ ▄█▄ █  █ ▀▄█    █▄█ ▀▄█
+
+     ▄ ▄ ▄▄▄ ▄   ▄ ▄▄  ▄▄▄ ▄▄▄  ▄  ▄  ▄  ▄▄ ▄▄▄ ▄ ▄ ▄▄▄ ▄ ▄ ▄▄▄ ▄  ▄  ▄▄
+     █▄▀ █ █ █▀▄▀█ █▄▀ █▄   █  █▄█ █▀▄█ ▀▄  █▄  █▄█ █▄  █ █  █  █▀▄█ █ ▄
+     █ █ █▄█ █   █ █   █▄▄  █  █ █ █  █ ▄▄▀ █▄▄ █ █ █▄▄ ▀▄▀ ▄█▄ █  █ ▀▄█
+
+                                                                   lysbilde
+     01  Økonomi og budsjettoppfølging   · · · · · · · · · · · · · · · ·  3
+     02  Rekruttering og bemanning   · · · · · · · · · · · · · · · · · ·  5
+     03  Drift og hendelseshåndtering  · · · · · · · · · · · · · · · · ·  7
+     04  Sikkerhet og personvern   · · · · · · · · · · · · · · · · · · ·  9
+     05  Arkitektur og teknisk gjeld   · · · · · · · · · · · · · · · · · 11
+     06  Kundetilbakemeldinger og support  · · · · · · · · · · · · · · · 13
+     07  Leverandører og avtaler   · · · · · · · · · · · · · · · · · · · 15
+     08  Opplæring og kompetanseheving   · · · · · · · · · · · · · · · · 17
+         └── Status 8
+
+     Mange agendapunkter        ? hjelp   ━━ ━━ ━━ ━━ ━━ ━━ ━━ ━━ ━─  17/18
+── 18 ──────────────────────────────────────────────────────────────────────────
+     … │ 7 Leverandører og avtaler │ 8 Opplæring og kompetanseheving 1/1
+
+     08 /
+     Status 8  ────────────────────────────────────────────────────────────
+
+     Kort status for punkt 8. Markør MANGE-8.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Mange agendapunkter        ? hjelp   ━━ ━━ ━━ ━━ ━━ ━━ ━━ ━━ ━━  18/18
