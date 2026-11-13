@@ -35,9 +35,8 @@ test.describe('AK-3-11 terminalhygiene ved avslutning', () => {
     });
   }
 
-  // Funn F-1 (testplanen §10): i skjelettet henger prosessen når tsx og appen får signalet samtidig (SIGTERM 4 av 4,
-  // SIGHUP 1 av 4 ved --repeat-each 4). Det er det Ghostty gjør når vinduet lukkes. fixme til ADR-011/utvikler har
-  // valgt løsning (f.eks. starte appen uten tsx-forelder, eller la forelderen ignorere signalet barnet håndterer).
+  // Funn F-1 / PO-119 (testplanen §10): i skjelettet hang prosessen når tsx og appen fikk signalet samtidig – det
+  // Ghostty gjør når vinduet lukkes. Rettet i 3-a: `npm run present` kjører bunten (scripts/present.mjs) i én prosess.
   for (const sig of ['SIGHUP', 'SIGTERM'] as const) {
     test(`TC-3-11-03b ${sig} til hele forgrunnsgruppen (vinduet lukkes) gjenoppretter terminalen`, async ({ present }) => {
       const t = await present({ args: [NOTAT] });

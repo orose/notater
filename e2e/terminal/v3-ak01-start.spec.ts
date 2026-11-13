@@ -76,17 +76,25 @@ test.describe('AK-3-01 start og notatvalg', () => {
     expect(t.stty().etter).toBe(t.stty().før);
   });
 
-  test.fixme('TC-3-01-07 uten argument: søkbar notatliste, filter, Enter starter, Esc i lista avslutter rent', async ({ present }) => {
+  // PO-122: lista sorterer nyeste først, deretter alfabetisk; vault-kopien har mange like mtime, så testen søker
+  // seg fram til notatene i stedet for å anta hva som står øverst.
+  test('TC-3-01-07 uten argument: søkbar notatliste, søk finner notatene, Enter starter, Esc i lista avslutter rent', async ({ present }) => {
     const { inneholder, filter, treffEtterFilter } = valg.notatvalg.listeUtenArgument;
     const t = await present();
-    for (const navn of inneholder) await t.ventPåTekst(navn, 20_000);
+    await t.ventPåTekst('Notater', 20_000);
+    expect(lysbildenummer(t.skjerm()), 'ingen presentasjon før valg').toBeNull();
+    for (const navn of inneholder) {
+      await t.skriv(navn);
+      await t.ventPåTekst(navn);
+      await t.trykk('C-u');
+    }
     await t.skriv(filter);
     await t.ventPåTekst(treffEtterFilter);
     await t.trykk('Enter');
-    await ventPåLysbilde(t, 1);
+    await ventPåLysbilde(t, 1, 20_000);
     await t.ventPåTekst(tittel('kanter'));
     const t2 = await present();
-    await t2.ventPåTekst(inneholder[0]!, 20_000);
+    await t2.ventPåTekst('Notater', 20_000);
     await t2.trykk('Escape');
     await forventGjenopprettet(t2);
   });
