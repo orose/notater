@@ -427,3 +427,15 @@ Alle QAs forslag (Q-3-01, -02, -03, -06, -07, -09, -12, -14) er **godkjent** som
 - **PO-121** Slice 3-a godkjent. Oppstart 2,36 s (median, fra prosessstart, 2000 notater) – innenfor både container- og Mac-krav. M4 (to-fase-start) droppes.
 - **PO-122** TC-3-01-07: testen skal filtrere i notatlisten (skrive et søk) i stedet for å anta sortering ved like mtime. Notatlisten sorterer nyeste først, deretter alfabetisk – som i dag. QA justerer.
 - **PO-123** PO-117 (`obsidian://`) flyttes til 3-b. QAs fil-endringer fra utvikler (`APP_INNGANGER`, fixme fjernet på TC-3-11-03b) godkjent.
+
+## PO-avgjørelser etter slice 3-b (konflikter test/design)
+
+Designet og PO-beslutningene gjelder; QA tilpasser tester og fasit:
+- **PO-124** Ingen `n/N` på tittelsiden i terminalen heller (PO-95 står). QA-hjelperne gjenkjenner tittelsiden på annen måte og tar totalen fra lysbilde 2.
+- **PO-125** Figlet-høyde måles uten den tomme raden mellom linjene (ADR-011/QA); ved 80×24 blir «Statusmøte uke 45» vr-blokk på to linjer. UX oppdaterer tabellen i designet.
+- **PO-126** Satsbredde maks 160 kolonner (design §1); QAs figlet-kjede bruker samme grense.
+- **PO-127** Plassholdere: detaljlinjen beholdes (PO-113, også «flowchart …»), teksten er fet og dempet (§4.10).
+- **PO-128** Fotnoter som marginalia ved 200 kolonner (§4.8).
+- **PO-129** OSC 8-URL-er er prosentkodet; QA dekoder før sammenligning.
+- **PO-130** `--farger terminal` vinner over NO_COLOR (Q-3-07); TC-3-09-06 rettes.
+- **PO-131** Kontrasttesten bruker lysbildets bakgrunn (`bg`), ikke den hyppigste fargen.
