@@ -155,6 +155,32 @@ describe('ytelse: lat Shiki, forhåndsrendering og ledig tid (BUG-008/009)', () 
     expect(index.search('ord79', 10).map((h) => h.path)).toContain('N79');
   }, 30_000);
 
+  it('background: false (terminalen, SV1): ingen søkeindeks eller forhåndsrendering i bakgrunnen; søk bygges ved behov', async () => {
+    const vault = createVaultRuntime(config(), { ...deps, prerenderCount: 1, background: false });
+    const first = await vault.renderReady();
+    await new Promise((r) => setTimeout(r, 100));
+    expect(first.renderCache.has('B.md')).toBe(false);
+    await writeFile(join(root, 'A.md'), '# A\nSe [[B]] igjen.');
+    await vault.applyChanges(['A.md']);
+    const next = await vault.ready();
+    await new Promise((r) => setTimeout(r, 100));
+    expect(next.renderCache.size).toBe(0);
+    vault.prefetchLinks('A');
+    await new Promise((r) => setTimeout(r, 100));
+    expect(next.renderCache.size).toBe(0);
+    const { index } = await vault.searchIndex();
+    expect(index.search('B', 10).length).toBeGreaterThan(0);
+  }, 30_000);
+
+  it('onProgress (SV3): fremdrift under indekseringen, monotont, til alle notater er lest', async () => {
+    const seen: Array<[number, number]> = [];
+    const vault = createVaultRuntime(config(), { ...deps, onProgress: (done, total) => seen.push([done, total]) });
+    await vault.ready();
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen.at(-1)).toEqual([2, 2]);
+    for (let i = 1; i < seen.length; i++) expect(seen[i]![0]).toBeGreaterThanOrEqual(seen[i - 1]![0]);
+  }, 30_000);
+
   it('codeLanguages: kodeblokkspråk etter hyppighet', async () => {
     await writeFile(join(root, 'Kode.md'), '```java\na\n```\n\n```ts\nb\n```\n\n~~~java\nc\n~~~\n\n```\nuten språk\n```');
     const vault = createVaultRuntime(config(), deps);

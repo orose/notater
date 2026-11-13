@@ -110,6 +110,13 @@ export interface VaultRuntimeDeps {
    */
   readonly renameWindowMs?: number;
   readonly log?: (message: string) => void;
+  /**
+   * SV1 (ADR-011): `false` = ingen søkeindeks og ingen forhåndsrendering i bakgrunnen (terminalen viser ett notat).
+   * Søkeindeksen bygges da først når `searchIndex()` kalles. Standard `true`.
+   */
+  readonly background?: boolean;
+  /** SV3: fremdrift under første indeksering (notater ferdige av totalt). */
+  readonly onProgress?: (done: number, total: number) => void;
 }
 
 export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps): VaultRuntime {
@@ -126,6 +133,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
   let earlyBatches: string[][] | null = [];
   const listeners = new Set<(event: ChangedEvent) => void>();
   const idle = deps.idle ?? yieldToEventLoop;
+  const background = deps.background ?? true;
   // Når noen søker, skal resten av søkeindeksen bygges uten å vente på ledig tid – søket selv er jo en
   // pågående forespørsel, så å vente på «ledig» ville aldri slippe (vranglås).
   let markSearchUrgent!: () => void;
@@ -149,6 +157,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
     highlight: (code, lang) => loaded().highlight(code, lang),
     isSupported: (lang) => loaded().isSupported(lang),
     warmUp: (between) => loaded().warmUp(between),
+    ensureLanguages: (langs) => loadHighlighter().then((h) => h.ensureLanguages(langs)),
   };
 
   const derive = (snapshot: VaultSnapshot, revision: Revision): VaultState => {
@@ -252,6 +261,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
       let missed: string[] = [];
       const watch = deps.watch;
       let snapshot = await buildSnapshot(config.root, config.ignore, extractor, {
+        ...(deps.onProgress ? { onProgress: deps.onProgress } : {}),
         ...(watch
           ? {
               whileExtracting: async (files) => {
@@ -280,7 +290,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
       // Shiki (~0,5 s CPU på hovedtråden) lastes etter at indeksen er klar: parallelt kostet det ~0,4 s
       // indekseringstid (workerne bruker alle kjerner). Rendering venter på den via renderReady().
       void loadHighlighter().catch((error: unknown) => deps.log?.(`Kunne ikke laste Shiki: ${String(error)}`));
-      void startBackground();
+      if (background) void startBackground();
       return state;
     } catch (error) {
       void watcher?.close();
@@ -322,6 +332,7 @@ export function createVaultRuntime(config: VaultConfig, deps: VaultRuntimeDeps):
   let pumping = false;
 
   const enqueue = (filePaths: readonly FilePath[], urgent: boolean): void => {
+    if (!background) return;
     const fresh = filePaths.filter((p) => !queued.has(p));
     for (const p of fresh) queued.add(p);
     if (urgent) prerenderQueue.unshift(...fresh);

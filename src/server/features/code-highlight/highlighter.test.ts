@@ -75,3 +75,30 @@ describe('createCodeHighlighter', () => {
     expect(text(highlighter.highlight('\tfoo\n    bar', ''))).toBe('\tfoo\n    bar');
   });
 });
+
+describe('createCodeHighlighter({ preload }) + ensureLanguages (SV2, ADR-011 M1)', () => {
+  it('laster bare språkene som er bedt om; andre gir ren tekst til de er lastet (også via alias)', async () => {
+    const few = await createCodeHighlighter({ preload: ['java'] });
+    expect(few.isSupported('java')).toBe(true);
+    expect(few.isSupported('python')).toBe(false);
+    expect(styles(few.highlight('def f(): return 1', 'python')).some((s) => s.includes('--shiki-token-keyword'))).toBe(false);
+    await few.ensureLanguages(['py', 'ts', 'finnes-ikke', '']);
+    expect(few.isSupported('python')).toBe(true);
+    expect(few.isSupported('py')).toBe(true);
+    expect(few.isSupported('typescript')).toBe(true);
+    expect(few.isSupported('finnes-ikke')).toBe(false);
+    expect(styles(few.highlight('def f(): return 1', 'python')).some((s) => s.includes('--shiki-token-keyword'))).toBe(true);
+    expect(text(few.highlight('def f(): return 1', 'python'))).toBe('def f(): return 1');
+  }, 30_000);
+
+  it('språk utenfor det faste språksettet (ADR-002) lastes ikke', async () => {
+    const few = await createCodeHighlighter({ preload: [] });
+    await few.ensureLanguages(['haskell']);
+    expect(few.isSupported('haskell')).toBe(false);
+  }, 30_000);
+
+  it('uten valg: hele språksettet som før', () => {
+    expect(highlighter.isSupported('python')).toBe(true);
+    expect(highlighter.isSupported('terraform')).toBe(true);
+  });
+});
