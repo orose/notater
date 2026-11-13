@@ -439,3 +439,4 @@ Designet og PO-beslutningene gjelder; QA tilpasser tester og fasit:
 - **PO-129** OSC 8-URL-er er prosentkodet; QA dekoder før sammenligning.
 - **PO-130** `--farger terminal` vinner over NO_COLOR (Q-3-07); TC-3-09-06 rettes.
 - **PO-131** Kontrasttesten bruker lysbildets bakgrunn (`bg`), ikke den hyppigste fargen.
+- **PO-132 (kundeønske)** **Terminalens eget fargetema er standard** i terminalpresentasjonen (endrer T4). Rollene mappes til terminalens ANSI-farger (16 + forgrunn/bakgrunn) etter `farger.json`-kartet; bakgrunnen males ikke. Våre paletter er opt-in med `--palett <navn>` / `:palett <navn>`, og `:farger terminal` går tilbake. Kodefarger mappes til ANSI-fargene. Valgfritt: hvis terminalen svarer på OSC 4/10/11 (Ghostty gjør det), kan nyanser (dempet tekst, flater) avledes fra temaets faktiske farger – men aldri farger utenfor temaet.

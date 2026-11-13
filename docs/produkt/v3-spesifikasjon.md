@@ -13,7 +13,7 @@ Kunden vil kunne holde statusmøter direkte fra terminalen (Ghostty), f.eks. ved
 | T1 | **Kun presentasjon** i v3 (ingen terminal-leser for vanlig lesing/navigasjon mellom notater). |
 | T2 | Primær terminal: **Ghostty** (truecolor, Unicode). Skal degradere pent i andre terminaler. |
 | T3 | **Ingen Mermaid- eller kanbanstøtte.** Mermaid-blokker og kanban-views vises som en diskret plassholder («Mermaid-diagram – vises i web-leseren», «Kanban: ‹view› – vises i web-leseren»). Bilder vises som plassholder `[bilde: navn]`. Ingen grafikkprotokoll i v3. |
-| T4 | **Farger:** våre paletter (truecolor) som standard, med valg om å bruke terminalens egne farger (16-fargers ANSI). |
+| T4 | **Farger:** terminalens eget fargetema som standard (endret av kunden, PO-132). Våre paletter (truecolor) som valg med `--palett`. |
 | T5 | **ASCII-hode** (figlet-stil, i aksentfarge) på tittel-, agenda- og overgangslysbilder – ikke på innholdslysbilder. |
 | T6 | **Agendalinjen alltid synlig** øverst på innholdslysbilder, diskret, med gjeldende punkt uthevet og progresjon. |
 | T7 | **Frittstående:** krever ikke at web-serveren kjører. Leser vaultet direkte. |
