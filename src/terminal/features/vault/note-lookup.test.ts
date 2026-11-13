@@ -31,6 +31,12 @@ describe('notatoppslag (ADR-011 §7, AR-3-26)', () => {
     expect(lookupNote(NOTES, 'meldingskø', noObsidian)).toEqual({ kind: 'note', docPath: 'lesekomfort/Kafka' });
   });
 
+  it('2. samme tittel i flere mapper: notatlisten med søket utfylt', () => {
+    const twins = [...NOTES, note('teknisk/Kafka', 'Kafka', [], 9)];
+    expect(lookupNote(twins, 'Kafka', noObsidian)).toEqual({ kind: 'list', query: 'Kafka' });
+    expect(lookupNote(twins, 'teknisk/Kafka', noObsidian)).toEqual({ kind: 'note', docPath: 'teknisk/Kafka' });
+  });
+
   it('3. Obsidian-oppløsning av navnet (korteste unike sti)', () => {
     const resolve = (q: string) => (q === 'lesekomfort/kafka-lenke' ? 'lesekomfort/Kafka' : null);
     expect(lookupNote(NOTES, 'lesekomfort/kafka-lenke', resolve)).toEqual({ kind: 'note', docPath: 'lesekomfort/Kafka' });

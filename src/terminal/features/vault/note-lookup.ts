@@ -39,8 +39,11 @@ export function lookupNote(notes: readonly NoteCandidate[], query: string, resol
   const path = withoutMd(q);
   const byPath = notes.find((n) => key(n.docPath) === path || key(withoutMd(n.filePath)) === path);
   if (byPath) return { kind: 'note', docPath: byPath.docPath };
-  const byName = notes.find((n) => key(n.title) === q) ?? notes.find((n) => n.aliases.some((a) => key(a) === q));
-  if (byName) return { kind: 'note', docPath: byName.docPath };
+  const byTitle = notes.filter((n) => key(n.title) === q);
+  const byName = byTitle.length > 0 ? byTitle : notes.filter((n) => n.aliases.some((a) => key(a) === q));
+  // Flere notater med samme navn (i hver sin mappe): notatlisten med søket utfylt, så man velger selv.
+  if (byName.length > 1) return { kind: 'list', query };
+  if (byName[0]) return { kind: 'note', docPath: byName[0].docPath };
   const resolved = resolveObsidian(query.normalize('NFC').trim());
   if (resolved !== null && notes.some((n) => n.docPath === resolved)) return { kind: 'note', docPath: resolved };
   const ranked = rankNotes(notes, query);

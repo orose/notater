@@ -52,6 +52,7 @@ Varig oppsett: lag **`vault-reader.config.local.json`** i prosjektmappa. Den er 
 | `vaults[].path` | Sti til vault-mappa. `~` og relative stier (fra konfigfila) virker. |
 | `vaults[].ignore` | Mapper (relativt til vaultet) som ikke skal indekseres. Valgfritt. |
 | `vaults[].hiddenProperties` | Egenskaper som skjules i notat-headeren. Valgfritt. |
+| `vaults[].obsidianVault` | Vaultets navn i Obsidian, for lenker fra terminalpresentasjonen (`obsidian://`). Valgfritt; standard er mappenavnet. |
 | `defaultVault` | Vaultet som åpnes på `/`. Standard = første i lista. |
 | `port` | Standard `4317`. |
 
@@ -184,6 +185,7 @@ npm run present -- --hjelp                  # alle flagg
   `Enter` presenterer og `Esc` avslutter.
 - `j`/`k` (og piltaster, `Space`, `PageDown`/`PageUp`) blar, `gg`/`G` går til første og siste, `b` gir svart skjerm.
   `q`, `Esc` og `Ctrl c` avslutter, og terminalen blir alltid som før (også ved krasj eller når vinduet lukkes).
+- Lenker kan Cmd-klikkes i Ghostty: interne lenker åpner notatet i Obsidian (`obsidian://`), eksterne åpner nettleseren.
 - Terminalen må være minst 80 × 24. Del et vindu på 100–130 kolonner i Teams/Zoom; `Ctrl +` i Ghostty gir større tekst.
 - Første start bygger presentasjonen (`dist/terminal/`, under ett sekund); senere starter går rett på.
 

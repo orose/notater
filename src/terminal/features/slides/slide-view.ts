@@ -128,7 +128,7 @@ function paintTitle(canvas: Canvas, grid: Grid, ctx: SlideViewContext, slide: Sl
   const block = 2 + headH + 1 + (ingressRows.length ? ingressRows.length + 1 : 0) + (preamble.length ? preamble.length + 1 : 0) + (props.length ? props.length + 1 : 0) + 1;
   let y = Math.max(grid.top, Math.round((grid.rows - block) * 0.38));
   const folders = ctx.doc.path.split('/').slice(0, -1);
-  let x = canvas.put(grid.x, y, '~/', { fg: 'aksent', bold: true });
+  let x = canvas.put(grid.x, y, '~/ ', { fg: 'aksent', bold: true });
   folders.forEach((f, k) => (x = canvas.put(x, y, `${k > 0 ? ' / ' : ''}${f}`, { fg: 'dempet' })));
   y += 2;
   y = paintHeader(canvas, grid, grid.x, y, ctx.deck.title, header) + 1;
