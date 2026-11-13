@@ -167,6 +167,26 @@ skrives til notatet, og ingenting leses fra frontmatter: lysbildene utledes av o
   Nettleseren bruker første `Esc` til å gå ut av fullskjerm; neste `Esc` avslutter presentasjonen.
 - **Live:** endringer i vaultet (også Bases-data) vises med en gang, og du blir stående på samme lysbilde.
 
+### Presentasjon i terminalen
+
+Samme lysbilder kan vises direkte i terminalen (v3, laget for Ghostty), uten at web-leseren kjører:
+
+```sh
+npm run present -- "Statusmøte uke 45"      # navn, alias eller sti; fuzzy-treff
+npm run present -- Statusmøte uke 45        # uten anførselstegn virker også
+npm run present                             # søkbar notatliste
+npm run present -- --hjelp                  # alle flagg
+```
+
+- Flaggene `--vault`, `--config` og `--vault-id` virker som for `npm start`. I tillegg `--niva h<n>`, `--palett <navn>`,
+  `--farger terminal` og `--uten-agenda`.
+- Er navnet tvetydig (f.eks. «rapport»), åpnes notatlisten med søket utfylt. Skriv for å filtrere, `↑`/`↓` flytter,
+  `Enter` presenterer og `Esc` avslutter.
+- `j`/`k` (og piltaster, `Space`, `PageDown`/`PageUp`) blar, `gg`/`G` går til første og siste, `b` gir svart skjerm.
+  `q`, `Esc` og `Ctrl c` avslutter, og terminalen blir alltid som før (også ved krasj eller når vinduet lukkes).
+- Terminalen må være minst 80 × 24. Del et vindu på 100–130 kolonner i Teams/Zoom; `Ctrl +` i Ghostty gir større tekst.
+- Første start bygger presentasjonen (`dist/terminal/`, under ett sekund); senere starter går rett på.
+
 ### Temaer
 
 Åpne **Utseende** nederst i sidepanelet (ikonet øverst til høyre på mobil):

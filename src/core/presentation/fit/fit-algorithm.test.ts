@@ -75,4 +75,26 @@ describe('A2-tilpasning (ADR-010 §2, §12.7)', () => {
     const g: Geometry = { available: 800, fits: false, units: [{ top: 0, bottom: 1200 }] };
     expect(packUnits(g, ['scale'])).toEqual({ breaks: [], scrollUnits: [], oversized: 0 });
   });
+
+  describe('enkeregelen (PO-115, designsystem-terminal §2.6.4)', () => {
+    const geo = (heights: readonly number[], available = 800, gap = 20): Geometry => fake(heights, available, gap).measure(1);
+
+    it('siste del lavere enn ¼: blokken foran flyttes over når delen foran beholder minst ¼ og begge får plass', () => {
+      expect(packUnits(geo([380, 380, 60]), flow(3)).breaks).toEqual([1]);
+    });
+
+    it('delen foran ville blitt tom eller lavere enn ¼: ingen flytting', () => {
+      expect(packUnits(geo([790, 60]), flow(2)).breaks).toEqual([1]);
+      expect(packUnits(geo([150, 600, 60]), flow(3)).breaks).toEqual([2]);
+    });
+
+    it('får ikke de to blokkene plass sammen: ingen flytting', () => {
+      expect(packUnits(geo([100, 680, 150]), flow(3)).breaks).toEqual([2]);
+    });
+
+    it('siste del på minst ¼ eller en rullende blokk: uendret', () => {
+      expect(packUnits(geo([380, 380, 300]), flow(3)).breaks).toEqual([2]);
+      expect(packUnits(geo([380, 2000, 60]), ['flow', 'scroll', 'flow']).breaks).toEqual([2]);
+    });
+  });
 });

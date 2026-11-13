@@ -38,7 +38,7 @@ export type {
   SlideUnit,
   UnitOverflow,
 } from './model/slide-types';
-export { fitDraft, packUnits, ORPHAN_ROOM, type FitInput, type Geometry } from './fit/fit-algorithm';
+export { fitDraft, packUnits, ORPHAN_ROOM, WIDOW_ROOM, type FitInput, type Geometry } from './fit/fit-algorithm';
 export { createFitCache, fitKeyString, FIT_CACHE_MAX } from './fit/fit-cache';
 export {
   DEFAULT_FIT_STEP,

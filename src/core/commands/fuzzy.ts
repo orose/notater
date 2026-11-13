@@ -29,14 +29,30 @@ function merge(indices: readonly number[]): Array<[number, number]> {
   return out;
 }
 
-export function fuzzyMatch(query: string, target: string): FuzzyMatch | null {
-  const q = [...normalizeForSearch(query.trim())];
-  if (q.length === 0) return { score: 0, ranges: [] };
-  const t = [...normalizeForSearch(target)];
-  const text = t.join('');
-  // Indeksene i `t` er tegn (kodepunkter); regn om til UTF-16-posisjoner i originalen for utheving.
+/** Et søkemål som er normalisert én gang (notatlisten søker i tusenvis av titler per tast). */
+export interface SearchTarget {
+  readonly chars: readonly string[];
+  readonly text: string;
+  /** UTF-16-posisjon i originalen for hvert tegn (og slutten). */
+  readonly offsets: readonly number[];
+}
+
+export function prepareSearchTarget(target: string): SearchTarget {
+  const chars = [...normalizeForSearch(target)];
   const offsets: number[] = [0];
   for (const ch of target) offsets.push((offsets[offsets.length - 1] as number) + ch.length);
+  return { chars, text: chars.join(''), offsets };
+}
+
+/** `query` kan være forhåndsnormalisert med `prepareSearchTarget(query.trim())` (samme søk mot mange mål). */
+export function fuzzyMatch(query: string | SearchTarget, target: string | SearchTarget): FuzzyMatch | null {
+  const q = typeof query === 'string' ? [...normalizeForSearch(query.trim())] : query.chars;
+  if (q.length === 0) return { score: 0, ranges: [] };
+  const prepared = typeof target === 'string' ? prepareSearchTarget(target) : target;
+  const t = prepared.chars;
+  const text = prepared.text;
+  // Indeksene i `t` er tegn (kodepunkter); regn om til UTF-16-posisjoner i originalen for utheving.
+  const offsets = prepared.offsets;
   const toRanges = (ranges: ReadonlyArray<readonly [number, number]>) =>
     ranges.map(([s, e]) => [offsets[s] as number, offsets[e] as number] as const);
   const lengthPenalty = Math.min(100, t.length - q.length);

@@ -208,6 +208,8 @@ const sh = (s: string): string => `'${s.replace(/'/g, `'\\''`)}'`;
 
 /** Inngangen til terminalappen (ADR-011): brukes for å finne prosessene som skal få signaler. */
 export const APP_INNGANG = 'src/terminal/main.ts';
+/** `npm run present` kjører bunten fra `scripts/present.mjs` i én prosess (ADR-011 M2, PO-119); tsx-veien har `APP_INNGANG`. */
+export const APP_INNGANGER: readonly string[] = [APP_INNGANG, 'scripts/present.mjs'];
 
 export class Terminal {
   readonly dir: string;
@@ -378,7 +380,7 @@ export class Terminal {
           endret = true;
         }
     }
-    const app = rader.filter((r) => etterkommere.has(r.pid) && /node/.test(r.args) && r.args.includes(APP_INNGANG));
+    const app = rader.filter((r) => etterkommere.has(r.pid) && /node/.test(r.args) && APP_INNGANGER.some((inngang) => r.args.includes(inngang)));
     // 'appen' = `kill <pid>` på den innerste Node-prosessen (tsx starter appen i en barneprosess); 'gruppen' = tsx og
     // appen samtidig, slik terminalen gjør med forgrunnsgruppen når vinduet lukkes (SIGHUP).
     const mål = hvem === 'gruppen' ? app : app.filter((r) => !app.some((a) => a.ppid === r.pid));

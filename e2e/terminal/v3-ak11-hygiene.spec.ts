@@ -39,7 +39,7 @@ test.describe('AK-3-11 terminalhygiene ved avslutning', () => {
   // SIGHUP 1 av 4 ved --repeat-each 4). Det er det Ghostty gjør når vinduet lukkes. fixme til ADR-011/utvikler har
   // valgt løsning (f.eks. starte appen uten tsx-forelder, eller la forelderen ignorere signalet barnet håndterer).
   for (const sig of ['SIGHUP', 'SIGTERM'] as const) {
-    test.fixme(`TC-3-11-03b ${sig} til hele forgrunnsgruppen (vinduet lukkes) gjenoppretter terminalen`, async ({ present }) => {
+    test(`TC-3-11-03b ${sig} til hele forgrunnsgruppen (vinduet lukkes) gjenoppretter terminalen`, async ({ present }) => {
       const t = await present({ args: [NOTAT] });
       await t.ventPåTekst(SKJELETT_ELLER_LYSBILDE, 20_000);
       t.signal(sig, 'gruppen');

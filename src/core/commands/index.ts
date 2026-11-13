@@ -40,7 +40,7 @@ export {
   type ShortcutGroup,
   type ShortcutRow,
 } from './shortcut-docs';
-export { fuzzyMatch, normalizeForSearch, type FuzzyMatch } from './fuzzy';
+export { fuzzyMatch, normalizeForSearch, prepareSearchTarget, type FuzzyMatch, type SearchTarget } from './fuzzy';
 export { commandPaletteOptions, paletteArgumentError, paletteArgumentHeading, shortcutChords } from './palette-options';
 export {
   paletteModeOf,

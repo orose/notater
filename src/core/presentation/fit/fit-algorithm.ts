@@ -69,7 +69,30 @@ export function packUnits(g: Geometry, overflow: readonly UnitOverflow[]): Packi
       start = i;
     }
   });
+  widowRule(g, breaks, scrollUnits);
   return { breaks, scrollUnits, oversized };
+}
+
+/** Siste del lavere enn denne andelen av høyden er en «enke» (PO-115). */
+export const WIDOW_ROOM = 1 / 4;
+
+/**
+ * Enkeregelen (PO-115, designsystem-terminal §2.6.4): blir siste del lavere enn ¼ av høyden, flyttes blokken foran
+ * over til den – bare hvis delen foran fortsatt er minst ¼, begge får plass og ingen av dem ruller. Endrer `breaks`.
+ */
+function widowRule(g: Geometry, breaks: number[], scrollUnits: readonly number[]): void {
+  const last = breaks.at(-1);
+  if (last === undefined) return;
+  const H = g.available + 1;
+  const height = (from: number, to: number) => (g.units[to - 1]?.bottom ?? 0) - (g.units[from]?.top ?? 0);
+  const end = g.units.length;
+  const prevStart = breaks.at(-2) ?? 0;
+  const moved = last - 1;
+  if (moved <= prevStart) return;
+  if (scrollUnits.some((i) => i >= prevStart)) return;
+  if (height(last, end) >= H * WIDOW_ROOM) return;
+  if (height(prevStart, moved) < H * WIDOW_ROOM || height(moved, end) > H) return;
+  breaks[breaks.length - 1] = moved;
 }
 
 /** Største skala (lavest indeks) i `[lo, hi]` der `ok` er sann, gitt at `ok(hi)` er sann og `ok` er monoton. */
