@@ -117,6 +117,16 @@ export function createTheme(palette: PaletteName, mode: ThemeMode, depth: ColorD
   };
 }
 
+/**
+ * BUG-017: reserve når terminalen ikke svarer på OSC 11. `COLORFGBG` (rxvt, Konsole, iTerm, mange tmux-oppsett) er
+ * «forgrunn;bakgrunn» som ANSI-indekser; siste tall er bakgrunnen. 7 og 9–15 er lyse farger, resten mørke.
+ */
+export function modeFromColorFgBg(value: string | undefined): ThemeMode | null {
+  const bg = Number((value ?? '').split(';').at(-1));
+  if (!Number.isInteger(bg) || (value ?? '').trim() === '' || bg < 0 || bg > 15) return null;
+  return bg === 7 || bg >= 9 ? 'light' : 'dark';
+}
+
 /** Lys eller mørk fra terminalens svar på OSC 11 (`rgb:RRRR/GGGG/BBBB`), ellers `null`. */
 export function modeFromOsc11(reply: string): ThemeMode | null {
   const m = /rgb:([0-9a-f]+)\/([0-9a-f]+)\/([0-9a-f]+)/i.exec(reply);

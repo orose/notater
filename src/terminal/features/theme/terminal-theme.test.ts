@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createTheme, isPalette, modeFromOsc11, PALETTES } from './terminal-theme';
+import { createTheme, isPalette, modeFromColorFgBg, modeFromOsc11, PALETTES } from './terminal-theme';
 
 describe('temaet (farger.json, designsystem-terminal §6)', () => {
   it('truecolor: rollene fra paletten, også kode og kulører', () => {
@@ -37,5 +37,14 @@ describe('temaet (farger.json, designsystem-terminal §6)', () => {
     expect(modeFromOsc11('\x1b]11;rgb:ffff/ffff/ffff\x1b\\')).toBe('light');
     expect(modeFromOsc11('\x1b]11;rgb:1a1a/1717/1212\x07')).toBe('dark');
     expect(modeFromOsc11('tull')).toBeNull();
+  });
+
+  it('COLORFGBG som reserve uten OSC 11-svar (BUG-017): siste tall er bakgrunnen', () => {
+    expect(modeFromColorFgBg('0;15')).toBe('light');
+    expect(modeFromColorFgBg('0;default;7')).toBe('light');
+    expect(modeFromColorFgBg('15;0')).toBe('dark');
+    expect(modeFromColorFgBg('7;8')).toBe('dark');
+    expect(modeFromColorFgBg(undefined)).toBeNull();
+    expect(modeFromColorFgBg('tull')).toBeNull();
   });
 });

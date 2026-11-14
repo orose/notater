@@ -19,7 +19,7 @@
         Kanttilfeller for presentasjon i terminalen – særtegn, bredde og
         plassholdere.
 
-        Endret 11. nov. 2026, 23.53
+        Endret 1. nov. 2026, 13.00
 
 
 

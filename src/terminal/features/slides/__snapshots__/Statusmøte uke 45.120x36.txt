@@ -22,7 +22,7 @@
         │ agenda         av
         │ presenter      {"niva":2,"overganger":false}
 
-        Endret 9. nov. 2026, 07.01
+        Endret 1. nov. 2026, 13.00
 
 
 

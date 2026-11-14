@@ -196,7 +196,7 @@ Reproduksjon generelt: `E2E_PORT=4418 npx playwright test` (porten kan velges fr
   «+ k til»), eller egenskapskolonnen avsluttes over bunnlinjen.
 
 
-## BUG-016 – rammesnapshotene i terminalen avhenger av filenes mtime og tidssonen – ÅPEN
+## BUG-016 – rammesnapshotene i terminalen avhenger av filenes mtime og tidssonen – RETTET
 
 - **Alvorlighet:** Middels (bare tester, men gjør `npm test` rød på andre maskiner) · **AK:** AK-3-13 · **Eier:** utvikler (terminal)
 - **Funn (avsluttende akseptansetest v3):** `src/terminal/features/slides/slide-view.test.ts` (nivå 2 i ADR-011 §8)
@@ -206,7 +206,7 @@ Reproduksjon generelt: `E2E_PORT=4418 npx playwright test` (porten kan velges fr
 - **Forslag:** bygg kjøretiden over en kopi med fixture-mtimes (`docs/test/fixture-mtimes.json`, som e2e gjør), eller
   injiser en fast klokke/mtime i `render-note`, og sett `TZ=Europe/Oslo` i testoppsettet.
 
-## BUG-017 – dempet tekst nesten usynlig i lyst terminaltema når terminalen ikke svarer på OSC 11 – ÅPEN
+## BUG-017 – dempet tekst nesten usynlig i lyst terminaltema når terminalen ikke svarer på OSC 11 – RETTET
 
 - **Alvorlighet:** Lav (gjelder terminaler/multipleksere som ikke svarer på OSC 11; Ghostty svarer) · **AK:** AK-3-09 · **Eier:** utvikler/UX
 - **Funn (skjermbilder, `v3-aksept/png/*-ansi16-lys.png`):** uten OSC 11-svar velger appen mørkt kart (ADR-011 §3).

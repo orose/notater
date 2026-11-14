@@ -19,7 +19,7 @@ import { helpView, isTooSmall, overviewView, startupView, tooSmallView, type Sta
 import { NotATerminalError, SEQ, openTerminalSession, type ProcessHooks, type TerminalSession, type TerminalSize, type TtyInput, type TtyOutput } from '../features/screen';
 import { currentSlide, goTo, levelsOf, rebuild, startPresent, step, toggleBlackout, type DeckFitter, type PresentState } from '../features/session';
 import { createTerminalFitter, scrollInfo, slideView } from '../features/slides';
-import { DEFAULT_PALETTE, PALETTES, createTheme, isPalette, modeFromOsc11, type PaletteName, type TerminalTheme, type ThemeMode } from '../features/theme';
+import { DEFAULT_PALETTE, PALETTES, createTheme, isPalette, modeFromColorFgBg, modeFromOsc11, type PaletteName, type TerminalTheme, type ThemeMode } from '../features/theme';
 import { resolveSlide, type DraftFit } from '../../core/presentation';
 import { createFrame } from '../features/cells';
 import { openTerminalVault, type TerminalVault, type TerminalVaultOptions } from '../features/vault';
@@ -171,7 +171,8 @@ function createApp({ env, args, vaultConfig, capabilities, palette: initialPalet
   /** Rulleposisjon per lysbilde-id i økten (ADR-011 §4). */
   const scrolls = new Map<string, number>();
   // «system»: lys eller mørk fra terminalens bakgrunn (OSC 11), ellers mørk (AR-3-11).
-  let mode: ThemeMode = 'dark';
+  // Uten svar på OSC 11: `COLORFGBG` som reserve før mørk (BUG-017).
+  let mode: ThemeMode = modeFromColorFgBg(env.config.env.COLORFGBG) ?? 'dark';
   let palette: PaletteName = initialPalette;
   let colors: ColorChoice = initialColors;
   /** Fargedybden miljøet tåler for paletten (uten `--farger`). */

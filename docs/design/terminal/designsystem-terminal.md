@@ -187,8 +187,9 @@ Formen (invertering og tre) bærer tilstanden, ikke fargen (WCAG 1.4.1). I ansi1
    men bare hvis delen foran fortsatt er minst ¼ og begge delene får plass. Uten regelen ble «Outbox-mønsteret
    (forts.)» ett ensomt avsnitt (se §11, spørsmål 3).
 5. Mermaid, kanban og bilder er plassholdere med fast høyde og deles eller rulles aldri.
-6. Lysbildeantallet avhenger av størrelsen. Statusmøtet har 12 lysbilder ved 80 × 24, 10 ved 120 × 36 og 9 ved
-   200 × 50 (= v2-modellen). Det samsvarer med QAs fasit (eksakt ved 200 × 50, «modulo forts.» under).
+6. Lysbildeantallet kan avhenge av størrelsen. Statusmøtet i `test-vault` har 10 lysbilder ved 80 × 24, 120 × 36 og
+   200 × 50 (= v2-modellen). «Mye innhold» har 16, 10 og 8 (flere «(forts.)» jo mindre terminalen er). Det samsvarer med QAs
+   fasit (eksakt ved 200 × 50, «modulo forts.» under).
 
 ### 2.7 Statuslinjen = vim-statusline (alle unntatt tittel)
 

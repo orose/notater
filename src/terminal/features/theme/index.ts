@@ -4,6 +4,7 @@ export {
   PALETTES,
   createTheme,
   isPalette,
+  modeFromColorFgBg,
   modeFromOsc11,
   type CodeToken,
   type ColorRole,

@@ -2,6 +2,7 @@
 // for et notat med samme kode som kjøringen, uten terminal.
 
 import { fileURLToPath } from 'node:url';
+import fixtureMtimes from '../../../docs/test/fixture-mtimes.json';
 import type { NoteDocument } from '../../shared/api-types';
 import { createInlineMetaExtractor } from '../../server/features/vault-index';
 import type { ColorDepth, Frame } from '../features/cells';
@@ -19,10 +20,18 @@ export function testVault(): TerminalVault {
   return vault;
 }
 
+/**
+ * BUG-016: filenes ekte mtime avhenger av utsjekkingen. Tittelsidens «Endret …» bruker derfor fixture-mtimene (som e2e,
+ * `docs/test/fixture-mtimes.json`); tidssonen settes i `vitest.config.ts`.
+ */
+function fixtureMtime(filePath: string): string {
+  return (fixtureMtimes.filer as Record<string, string>)[filePath] ?? fixtureMtimes.standard;
+}
+
 export async function loadNote(docPath: string): Promise<NoteDocument> {
   const doc = await testVault().document(docPath);
   if (!doc) throw new Error(`Fant ikke ${docPath} i test-vault`);
-  return doc;
+  return { ...doc, mtime: fixtureMtime(doc.filePath) };
 }
 
 export interface RenderOptions {
