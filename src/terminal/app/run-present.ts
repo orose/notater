@@ -10,7 +10,7 @@ import { ConfigError, resolveConfig } from '../../server/features/config';
 import { detectCapabilities, type TerminalCapabilities } from '../features/capabilities';
 import { renderFrame, textWidth, writeText, type Frame } from '../features/cells';
 import { PRESENT_USAGE, PresentArgsError, parsePresentArgs, type PresentArgs } from '../features/cli-args';
-import { EMPTY_LINE, commandLineKey, insertText, lineOptions, paintCommandError, paintCommandLine, paintNotice, resolveLine, type CommandLineState } from '../features/command-line';
+import { EMPTY_LINE, commandLineKey, insertText, lineOptions, paintCommandError, paintCommandLine, resolveLine, type CommandLineState } from '../features/command-line';
 import type { ArgumentError } from '../../core/commands';
 import { TERMINAL_CONTEXT, createTerminalKeys, type ColorChoice, type TerminalKeys } from '../features/commands';
 import { createKeyDecoder, type DecodedKey, type DecoderTimers } from '../features/keys';
@@ -18,7 +18,7 @@ import { createPicker, pickerKey, pickerPaste, pickerRows, pickerView, type Pick
 import { helpView, isTooSmall, overviewView, startupView, tooSmallView, type StartupProgress } from '../features/overlays';
 import { NotATerminalError, SEQ, openTerminalSession, type ProcessHooks, type TerminalSession, type TerminalSize, type TtyInput, type TtyOutput } from '../features/screen';
 import { currentSlide, goTo, levelsOf, rebuild, startPresent, step, toggleBlackout, type DeckFitter, type PresentState } from '../features/session';
-import { createTerminalFitter, scrollMax, slideView } from '../features/slides';
+import { createTerminalFitter, scrollInfo, slideView } from '../features/slides';
 import { DEFAULT_PALETTE, PALETTES, createTheme, isPalette, modeFromOsc11, type PaletteName, type TerminalTheme, type ThemeMode } from '../features/theme';
 import { resolveSlide, type DraftFit } from '../../core/presentation';
 import { createFrame } from '../features/cells';
@@ -228,11 +228,10 @@ function createApp({ env, args, vaultConfig, capabilities, palette: initialPalet
         const state = screen.state;
         if (overlay?.kind === 'overview') return overviewView(state.deck, state.index, overlay.cursor, size.cols, size.rows, theme);
         const slide = currentSlide(state);
-        let frame = slideView(slideCtx(state), state.index, size.cols, size.rows, { blackout: state.blackout, scroll: slide ? (scrolls.get(slide.id) ?? 0) : 0 });
+        let frame = slideView(slideCtx(state), state.index, size.cols, size.rows, { blackout: state.blackout, scroll: slide ? (scrolls.get(slide.id) ?? 0) : 0, notice });
         if (overlay?.kind === 'help') frame = helpView(frame, theme);
         else if (overlay?.kind === 'command') frame = paintCommandLine(frame, theme, overlay.line, lineOptions(commands(), TERMINAL_CONTEXT, overlay.line.text));
         else if (overlay?.kind === 'error') frame = paintCommandError(frame, theme, overlay.error);
-        else if (notice && !state.blackout) frame = paintNotice(frame, theme, notice);
         return frame;
       }
     }
@@ -318,9 +317,9 @@ function createApp({ env, args, vaultConfig, capabilities, palette: initialPalet
         const slide = currentSlide(screen.state);
         if (!slide) return;
         const { cols, rows } = session.size();
-        const max = scrollMax(slideCtx(screen.state), screen.state.index, cols, rows);
+        const { max, step: by } = scrollInfo(slideCtx(screen.state), screen.state.index, cols, rows);
         const now = scrolls.get(slide.id) ?? 0;
-        const next = Math.max(0, Math.min(max, now + direction));
+        const next = Math.max(0, Math.min(max, now + direction * by));
         if (next !== now) {
           scrolls.set(slide.id, next);
           redraw();

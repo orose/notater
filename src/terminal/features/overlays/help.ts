@@ -37,8 +37,9 @@ export function helpView(background: Frame, theme: TerminalTheme): Frame {
     for (const r of g.rows) lines.push({ keys: r.bindings.map((b) => b.keys).join('  '), label: r.label });
     if (g.commandOnly.length > 0) lines.push({ keys: g.commandOnly.map((c) => `:${c}`).join(' '), label: 'som kommando' });
   }
-  const kw = Math.min(28, Math.max(...lines.map((l) => (l && 'keys' in l ? textWidth(l.keys) : 0))));
   const lw = Math.max(...lines.map((l) => (l && 'label' in l ? textWidth(l.label) : l && 'group' in l ? textWidth(l.group) : 0)));
+  // Tastene får plassen de trenger; forklaringen kuttes heller (alle tastene skal kunne leses, AK-3-08).
+  const kw = Math.min(Math.max(...lines.map((l) => (l && 'keys' in l ? textWidth(l.keys) : 0))), Math.max(20, frame.cols - 12 - Math.min(lw, 30)));
   const w = Math.min(frame.cols - 4, kw + lw + 8);
   const h = Math.min(frame.rows - 2, lines.length + 2);
   const x = Math.floor((frame.cols - w) / 2);

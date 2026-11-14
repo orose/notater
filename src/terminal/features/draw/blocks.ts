@@ -376,7 +376,8 @@ export function layoutNode(node: Element, ctx: BlockContext, width = ctx.maal): 
 function image(node: Element, ctx: BlockContext): Row {
   const name = imageName(node);
   const alt = String(node.properties.alt ?? '');
-  const runs: Run[] = [{ text: `[bilde: ${name}]`, style: { fg: 'dempet' } }];
+  // Plassholder (T3, PO-127): fet og dempet.
+  const runs: Run[] = [{ text: `[bilde: ${name}]`, style: { fg: 'dempet', bold: true } }];
   if (alt && alt !== name) runs.push({ text: `  ${alt}`, style: { fg: 'dempet', italic: true } });
   return rowOf(0, wrapRuns(runs, ctx.maal)[0] ?? runs);
 }

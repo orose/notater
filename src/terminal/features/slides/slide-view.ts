@@ -24,6 +24,8 @@ export interface SlideViewOptions {
   readonly blackout?: boolean;
   /** Rulleposisjonen i en for stor blokk (linjer, PO-94/§4.5). Begrenses til blokken. */
   readonly scroll?: number;
+  /** Kort melding i statuslinjen (bekreftelse, live endring). */
+  readonly notice?: string | null;
 }
 
 export function blockContext(ctx: SlideViewContext, grid: Grid): BlockContext {
@@ -318,8 +320,16 @@ function contentLayout(ctx: SlideViewContext, grid: Grid, slide: Slide): Content
 
 /** Hvor mange linjer den rullende blokken på lysbildet kan rulles (0 = ingen rulling). */
 export function scrollMax(ctx: SlideViewContext, index: number, cols: number, rows: number): number {
+  return scrollInfo(ctx, index, cols, rows).max;
+}
+
+/**
+ * Rulling i lysbildets for store blokk: hvor langt (`max`) og hvor mye ett trykk på `↑`/`↓` flytter (`step`, et halvt
+ * vindu – en linje om gangen er for tregt for kode på flere hundre linjer i et møte).
+ */
+export function scrollInfo(ctx: SlideViewContext, index: number, cols: number, rows: number): { readonly max: number; readonly step: number } {
   const slide = ctx.deck.slides[index];
-  if (!slide || slide.kind !== 'content') return 0;
+  if (!slide || slide.kind !== 'content') return { max: 0, step: 1 };
   const grid = gridFor(cols, rows);
   const layout = contentLayout(ctx, grid, slide);
   let y = layout.top;
@@ -327,12 +337,12 @@ export function scrollMax(ctx: SlideViewContext, index: number, cols: number, ro
     if (b.gapBefore) y += 1;
     const room = layout.bottom - y + 1;
     if (b.scroll || b.rows.length > room) {
-      const window = room - b.sticky - 1;
-      return Math.max(0, b.rows.length - b.sticky - Math.max(1, window));
+      const window = Math.max(1, room - b.sticky - 1);
+      return { max: Math.max(0, b.rows.length - b.sticky - window), step: Math.max(1, Math.floor(window / 2)) };
     }
     y += b.rows.length;
   }
-  return 0;
+  return { max: 0, step: 1 };
 }
 
 /** En for stor blokk: faste hoderader, et vindu med linjer, hintlinje og rullefelt (designsystem-terminal §4.5). */
@@ -426,6 +436,6 @@ export function slideView(ctx: SlideViewContext, index: number, cols: number, ro
   if (slide.kind === 'title') paintTitle(canvas, grid, ctx, slide);
   else if (slide.kind === 'agenda' || slide.kind === 'transition') paintAgenda(canvas, grid, ctx.deck, slide);
   else paintContent(canvas, grid, ctx, slide, options.scroll ?? 0);
-  paintStatusLine(canvas, grid, ctx.deck, index);
+  paintStatusLine(canvas, grid, ctx.deck, index, options.notice ? { notice: options.notice } : {});
   return frame;
 }

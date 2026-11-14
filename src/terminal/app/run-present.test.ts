@@ -101,7 +101,7 @@ describe('runPresent', () => {
     plain.input.emit('data', 'q');
     expect(await done).toBe(0);
     const raw = plain.out.join('');
-    expect(raw).not.toMatch(/\u001b\[[0-9;]*;(38|48);2;/);
+    expect(raw).not.toMatch(/\[[0-9;]*;(38|48);2;/);
     expect(raw).not.toMatch(/;4[0-7]m|;10[0-7]m/);
 
     const fosfor = environment(['Statusmøte uke 45', '--vault', VAULT, '--palett', 'fosfor'], true);

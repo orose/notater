@@ -90,6 +90,8 @@ export interface StatusOptions {
   readonly mode?: string;
   /** Overstyr tastehintet. */
   readonly hint?: ReadonlyArray<readonly [string, string]>;
+  /** Kort melding (bekreftelse, live) i stedet for tittel og hint; fremdrift og folio står (§5.3, §5.6). */
+  readonly notice?: string;
 }
 
 /** Statuslinjen. Tittelsiden har bare starthintet, ingen folio eller fremdrift (PO-95). */
@@ -112,7 +114,7 @@ export function paintStatusLine(canvas: Canvas, grid: Grid, deck: SlideDeck, ind
     if (right - width(hint) > x + 16) canvas.runs(right - width(hint), y, hint);
     return;
   }
-  const titleEnd = canvas.put(x + 1, y, deck.title, { ...L, fg: 'dempet' }, right - 8);
+  const titleEnd = options.notice ? x : canvas.put(x + 1, y, deck.title, { ...L, fg: 'dempet' }, right - 8);
   const folio: Run[] = [
     { text: String(index + 1), style: { ...L, fg: 'tekst', bold: true } },
     { text: `/${deck.slides.length}`, style: { ...L, fg: 'dempet' } },
@@ -121,8 +123,10 @@ export function paintStatusLine(canvas: Canvas, grid: Grid, deck: SlideDeck, ind
   canvas.runs(right - fw, y, folio);
   const bar = progressRuns(deck, index).map((r) => ({ ...r, style: { ...L, ...r.style } }));
   const bx = right - fw - 2 - width(bar);
+  if (options.notice) canvas.put(x + 1, y, options.notice, { ...L, fg: 'tekst' }, (bx > x + 20 ? bx : right - fw) - 3);
   if (bx <= titleEnd + 2) return;
   canvas.runs(bx, y, bar);
+  if (options.notice) return;
   const keys = options.hint ?? (grid.sats >= 100 ? ([['j k', 'blar'], ['o', 'oversikt'], [':', 'kommando'], ['?', 'hjelp']] as const) : ([['?', 'hjelp']] as const));
   const hint = hintRuns(keys);
   const hx = bx - 3 - width(hint);
