@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { Modal } from '../../shared/ui/Modal';
-import type { SlideDeck } from './model';
+import type { SlideDeck } from '../../../core/presentation';
 import { SlideView, type DeckInfo } from './SlideView';
 
 interface Props {

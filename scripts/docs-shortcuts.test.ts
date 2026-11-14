@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { shortcutGroups } from '../src/web/features/commands/model/shortcut-docs';
+import { shortcutGroups } from '../src/core/commands';
 import { README_PATH, updateReadme } from './docs-shortcuts';
 
 describe('docs:shortcuts (AK-1.1-07)', () => {

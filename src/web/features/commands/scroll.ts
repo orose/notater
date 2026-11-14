@@ -3,7 +3,7 @@
 // `gg`/`G` hopper alltid (som i vim): en animasjon over hele dokumentet gir bare ventetid, og posisjonen
 // må være endelig med en gang (sidenoter, scroll-spy og `g Esc g` måles mot den).
 
-import type { CommandPorts } from './model/command-context';
+import type { CommandPorts } from '../../../core/commands';
 
 function reducedMotion(): boolean {
   try {

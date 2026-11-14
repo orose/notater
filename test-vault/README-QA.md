@@ -7,7 +7,7 @@ Eier: QA. Dette er **fasiten** utviklerne tester mot. Hvert kanttilfelle har en 
 
 Endrer du et notat i `test-vault/`, oppdater fasiten her og i `docs/test/bases-fasit.md` i samme endring.
 
-Alle tidligere **(PO?)**-punkter er avgjort (PO-1 til PO-38 i `docs/beslutninger.md`). Der en PO-avgjørelse har endret fasiten, står PO-nummeret i raden. Endringslogg for fasiten står i §18. Fasit for v1.1 (lesekomfort og tastatur) står i §19, for v2 (presentasjonsmodus) i §20.
+Alle tidligere **(PO?)**-punkter er avgjort (PO-1 til PO-38 i `docs/beslutninger.md`). Der en PO-avgjørelse har endret fasiten, står PO-nummeret i raden. Endringslogg for fasiten står i §18. Fasit for v1.1 (lesekomfort og tastatur) står i §19, for v2 (presentasjonsmodus) i §20, for v3 (presentasjon i terminalen) i §21.
 
 ---
 
@@ -15,7 +15,7 @@ Alle tidligere **(PO?)**-punkter er avgjort (PO-1 til PO-38 i `docs/beslutninger
 
 | ID | Hva | Forventet |
 |----|-----|-----------|
-| QA-IDX-01 | Antall notater | **105** `.md`-filer indekseres (104 testnotater + denne fila). 11 av dem ligger i `lesekomfort/` (v1.1, §19), 14 i `presentasjon/` (v2, §20). |
+| QA-IDX-01 | Antall notater | **106** `.md`-filer indekseres (105 testnotater + denne fila). 11 av dem ligger i `lesekomfort/` (v1.1, §19), 15 i `presentasjon/` (v2 §20, v3 §21). |
 | QA-IDX-02 | Andre filer | 9 ikke-md-filer er synlige for lenker, embeds og Bases: `Domene.base`, `Oppgaver.base`, `Tegning.canvas`, `attachments/arkitektur.png`, `attachments/bred.png`, `attachments/diagram med mellomrom.png`, `attachments/logo.svg`, `attachments/ondsinnet.svg`, `domene/domenemodell.svg`. |
 | QA-IDX-03 | `.obsidian/` | Ignoreres helt. `.obsidian/plugins/dataview/README.md` (som inneholder `#task`) skal **ikke** finnes i fil-tre, søk, lenkeoppløsning eller baser. |
 | QA-IDX-04 | `.trash/` | Ignoreres helt. `.trash/Slettet notat.md` (tagget `task`) skal ikke vises noe sted. Lenken `[[Slettet notat]]` er brutt. Generelt: alle mapper/filer som starter med `.` ignoreres. |
@@ -388,6 +388,7 @@ Alle forslag i tabellen er **godkjent** av PO slik de står (PO-7 til PO-17), me
 | 2026-11-05 | Alias-hint (PO-7/PO-25), tvetydighetsindikator (PO-8/PO-26), property-backlinks (PO-9), tagger case-insensitive (PO-10), norske callout-titler og `<br>` (PO-14), embed-dybde 5 og TOC ≥ 3 (PO-15), CSP (PO-16), ingress/skjulte properties/lesetid (PO-21–23, PO-29), tags-endepunkt og 404 for ukjent API-rute (PO-24), `frontmatterError` (PO-27, ny QA-FM-04), «Lenket fra» på manglende notat (PO-28), «Fotnoter»/sidenoter (PO-20, PO-30). Alle **(PO?)**-merker fjernet. | PO-1–PO-31 |
 | 2026-11-06 | Ny mappe `lesekomfort/` (11 notater) og §19 for v1.1: diskré embedding, folding, bredde, zen. QA-IDX-01: 80 → 91. Ingen tagger, ingen lenker til notater med fasit for tilbakelenker, ingen påvirkning på baser eller søkefasit. | v1.1, PO-53/54 |
 | 2026-11-08 | Ny mappe `presentasjon/` (10 notater + 4 kilder) og §20 for v2: presentasjonsmodus. QA-IDX-01: 91 → 105. Ingen tagger og ingen lenker ut av mappa, bortsett fra `![[Oppgaver.base#Kanban]]` i statusmøtet: `Oppgaver.base` får 7 tilbakelenker (6 → 7). Base- og søkefasiten er uendret. | v2, PO-100 |
+| 2026-11-12 | Nytt notat `presentasjon/Terminalkanter.md` og §21 for v3: terminalkanttilfeller (æøå/emoji/bredde-2-tegn, emoji i agendapunkt, 80 tegn langt ord som agendapunkt, lang URL og ekstern lenke, callouts, inline Bases-tabell, bilde, tabell med 10 kolonner). QA-IDX-01: 105 → 106. Ingen tagger og ingen wikilenker; bildeembed `![[arkitektur.png]]` (bildet har ingen tilbakelenkefasit). Base-, søke- og tilbakelenkefasiten er uendret; den inline basen er en kopi av Sprintoversikt blokk 1 («Kritisk»). | v3 |
 
 ## 19. v1.1 – lesekomfort og tastatur
 
@@ -493,3 +494,20 @@ Lysbildenotasjon under: **T** tittel · **A** agenda · **O(x)** overgang til ag
 | QA-V2-24 | Live (i en vault-kopi): `## Jobbes med nå` → `## Pågår nå` mens «Oppgaver» (7) vises → agendalinjen viser «Pågår nå», fortsatt lysbilde 7. Sletting av «Leveranse B» mens den vises → overgangen til «Jobbes med nå», 5 / 9 (nærmeste nabo, etterfølger før forgjenger, ADR-010 §5). `oppgaver/Refaktorer logging.md` `status: todo` → `doing` → kortet flytter kolonne på «Oppgaver». |
 | QA-V2-25 | Start fra leseposisjon i statusmøtet: toppen → 1, «Jobbes med nå» → 6 (overgangen), «Oppgaver» → 7, «Plan Q1» → 10. `Esc` går til seksjonen for gjeldende lysbilde (PO-87). |
 | QA-V2-26 | URL (ADR-010 §4): `?lysbilde=<id>` med id-er `tittel`, `agenda`, `overgang.siden-sist` (3), `overgang.jobbes-med-nå` (6), `oppgaver` (7), `plan-q1` (10); i «Delte lysbilder» `arkitektur` (4), `arkitektur.del2` (5), `arkitektur.del3` (6). Ukjent id ved ny lasting → tittellysbildet (PO-91). Lenken «Månedsrapport oktober» på «Plan Q1» forlater presentasjonen; Tilbake går inn igjen (PO-89). |
+
+## 21. v3 – presentasjon i terminalen
+
+Testplan: `docs/test/testplan-v3.md`. Maskinlesbar fasit: `docs/test/v3-fasit.json` (terminalspesifikke forventninger) – lysbilderekkefølgen er **den samme** som i §20 / `v2-fasit.json` (AK-3-02). Testene leser begge filene og UX sine `docs/design/terminal/farger.json` og `figlet/*.flf`.
+
+| Notat | Formål |
+|-------|--------|
+| `presentasjon/Terminalkanter.md` | Agendapunkter «Særtegn 🙂» (emoji → figlet faller tilbake til fet tekst), «Blokker» og et 80 tegn langt ord (like bredt som terminalen; aldri figlet, agendalinjen må avkortes). Lysbilder: æøå + emoji (👩‍💻, 🇳🇴) + bredde-2-tegn (漢字テスト, 한국어) + kombinerende tegn (A + U+0308); callouts (note, warning med lang linje); inline Bases-tabell (view «Kritisk», 4 rader, samme definisjon som Sprintoversikt blokk 1); bilde `![[arkitektur.png]]` (plassholder `[bilde: arkitektur.png]`); tabell med 10 kolonner (bredere enn 80 kolonner); lange ord, lang URL og en ekstern markdown-lenke (OSC 8). |
+
+| ID | Forventet |
+|----|-----------|
+| QA-V3-01 | Terminalkanter: T · A · O(Særtegn 🙂) · Æøå og emoji 🚀 [1/1] · O(Blokker) · Callouts [1/4] · Bases-tabell [2/4] · Bilde [3/4] · Ti kolonner [4/4] · O(Donau…) · Lange ord og lenker [1/1] = **11** (sjekkes mot web-presentasjonen i TC-3-02-00w). |
+| QA-V3-02 | Rekkefølgen i terminalen == §20 for alle v2-notatene, eksakt ved 200×50; ved 80×24/120×36 kan ekstra «(forts.)» komme i tillegg. |
+| QA-V3-03 | Figlet på T/A/O etter fallback-kjeden i ADR-011 §5 (vr-blokk 1 linje → vr-blokk ≤ 2 linjer → vr-smal ≤ 2 linjer → fet). Utregnet per lysbilde og størrelse i `v3-fasit.json › figlet.hoder`. |
+| QA-V3-04 | Plassholdere: «Mermaid-diagram – vises i web-leseren» (statusmøtet 8, Stor kodeblokk 5), «Kanban: Kanban – vises i web-leseren» (statusmøtet 7), «[bilde: arkitektur.png]» (Terminalkanter 8). |
+| QA-V3-05 | Live (kopi): `## Jobbes med nå` → `## Pågår nå` på lysbilde 7 → samme lysbilde 7/10; sletting av «Leveranse B» på lysbilde 5 → overgangen «Jobbes med nå», 5/9; `status: doing` → `blocked` i `oppgaver/Migrer til Java 21.md` → raden i Bases-tabellen (Terminalkanter 7) oppdateres. |
+

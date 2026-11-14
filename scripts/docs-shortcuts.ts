@@ -1,11 +1,11 @@
 // `npm run docs:shortcuts` (F6, ADR-007 §5): skriver hurtigtast-tabellen i README.md fra kommandoregisteret,
 // mellom `<!-- hurtigtaster:start -->` og `<!-- hurtigtaster:end -->`. `--check` endrer ingenting og
-// avslutter med kode 1 hvis README er utdatert. Importerer bare ren TS (commands/model og keyboard).
+// avslutter med kode 1 hvis README er utdatert. Importerer bare ren TS (src/core/commands og src/core/keyboard).
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { README_MARKERS, README_PRESENT_MARKERS, renderShortcutsMarkdown, shortcutGroups } from '../src/web/features/commands/model/shortcut-docs';
+import { README_MARKERS, README_PRESENT_MARKERS, renderShortcutsMarkdown, shortcutGroups } from '../src/core/commands';
 
 export const README_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', 'README.md');
 

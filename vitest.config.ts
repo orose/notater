@@ -1,6 +1,9 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
+// BUG-016: samme tidssone som e2e (teststrategi §1.4), uansett maskin. Arves av testprosessene.
+process.env.TZ = 'Europe/Oslo';
+
 // Vitest krever default export i konfigfilen (unntak fra regelen om named exports).
 export default defineConfig({
   plugins: [react()],
@@ -11,7 +14,7 @@ export default defineConfig({
         test: {
           name: 'server',
           environment: 'node',
-          include: ['src/server/**/*.test.ts', 'src/shared/**/*.test.ts', 'scripts/**/*.test.ts'],
+          include: ['src/server/**/*.test.ts', 'src/shared/**/*.test.ts', 'src/core/**/*.test.ts', 'src/terminal/**/*.test.ts', 'scripts/**/*.test.ts'],
         },
       },
       {

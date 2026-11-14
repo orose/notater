@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createCommandHandlers, presentLevelError, COMING_SOON, NOTES_ONLY, NOT_ON_BASE, NO_HEADINGS } from './handlers';
-import { COMMAND_IDS, NOT_WHILE_PRESENTING, ONLY_WHILE_PRESENTING, createCommandRegistry, type CommandContext, type CommandPorts, type RouteKind } from './index';
+import { NOT_WHILE_PRESENTING, surfaceCommandIds, ONLY_WHILE_PRESENTING, createCommandRegistry, type CommandContext, type CommandPorts, type RouteKind } from './index';
 
 function fakePorts() {
   const fn = () => vi.fn();
@@ -63,10 +63,10 @@ function context(kind: RouteKind = 'note', foldableHeadings = 3, mode: CommandCo
 }
 
 describe('kommandohandlere', () => {
-  const registry = createCommandRegistry(createCommandHandlers());
+  const registry = createCommandRegistry('web', createCommandHandlers());
 
   it('har en handler for hver kommando i katalogen', () => {
-    expect(registry.commands.map((c) => c.id)).toEqual(COMMAND_IDS);
+    expect(registry.commands.map((c) => c.id)).toEqual(surfaceCommandIds('web'));
   });
 
   it.each([
@@ -125,7 +125,7 @@ describe('kommandohandlere', () => {
   });
 
   it('en funksjon i pending vises deaktivert med «Kommer snart»', () => {
-    const early = createCommandRegistry(createCommandHandlers({ pending: new Set(['discreet']) }));
+    const early = createCommandRegistry('web', createCommandHandlers({ pending: new Set(['discreet']) }));
     expect(early.get('view.toggleDiscreet').isEnabled(context().ctx)).toEqual({ enabled: false, reason: COMING_SOON });
   });
 
@@ -136,7 +136,7 @@ describe('kommandohandlere', () => {
   });
 
   it('når funksjonene er levert, styres tilgjengeligheten av konteksten', () => {
-    const delivered = createCommandRegistry(createCommandHandlers({ pending: new Set() }));
+    const delivered = createCommandRegistry('web', createCommandHandlers({ pending: new Set() }));
     const { ctx, ports } = context('note', 0);
     expect(delivered.get('view.toggleWidth').isEnabled(ctx)).toEqual({ enabled: true });
     expect(delivered.get('outline.foldAll').isEnabled(ctx)).toEqual({ enabled: false, reason: NO_HEADINGS });

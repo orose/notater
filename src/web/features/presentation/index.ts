@@ -17,9 +17,9 @@ export {
   type Slide,
   type SlideDeck,
   type SlideKind,
-} from './model';
+} from '../../../core/presentation';
+export { CANVAS } from './fit/canvas';
 export {
-  CANVAS,
   DEFAULT_FIT_STEP,
   DEFAULT_MIN_FONT_SCALE,
   UNMEASURED,
@@ -27,7 +27,7 @@ export {
   type FitCache,
   type FitKey,
   type FitProgress,
-} from './fit/fit-types';
+} from '../../../core/presentation';
 export {
   PRESENTATION_LEVELS_MAX,
   PRESENTATION_STORAGE_KEY,

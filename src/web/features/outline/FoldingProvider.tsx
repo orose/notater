@@ -2,7 +2,7 @@ import './outline.css';
 import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { onlyOverlayChanged, type Place } from '../../shared/overlay-params';
 import { useLocation, useNavigationType } from 'react-router';
-import type { Outline } from './build-outline';
+import type { Outline } from '../../../core/outline';
 import { FoldingContext, OutlineHostContext, type FoldingValue, type OutlineControl } from './folding-context';
 import { headingAtReadingPosition, isRendered } from './reading-position';
 

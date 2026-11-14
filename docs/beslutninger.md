@@ -357,3 +357,95 @@ Alle QAs forslag (Q-03, Q-11, Q-13–Q-16, Q-21, Q-23) er **godkjent** som fores
 - **PO-103** Frontendens tolkninger 1–6 godkjent: PO-93 vs Q-21 (kort forløp < 1/3 høyde → blokken blir stående og ruller; ellers deles det), full bredde for lysbilder uten overskrift, inntoning (ikke krysstoning), demping med farge, datoer som tekst på tittellysbildet, Esc slår av svart skjerm.
 - **PO-104** QA-testendringene frontend gjorde (TC-2-05-05, -04-02, -08-04, -09-01, -11-05, -07-05, -12-02, -12-14, perf) godkjennes med forbehold om QAs gjennomgang i sluttesten.
 - **PO-105 (backlog)** «● live»-merke og kanban-glød i base-hodet (prototype) er ikke laget – lav prioritet, vurderes etter kundens test. Kanban med intern rulling i statusmøtet forelegges kunden.
+
+## Arkitektur v3 – presentasjon i terminalen (2026-11-11, arkitekt)
+
+Se [ADR-011](arkitektur/ADR-011-terminalpresentasjon.md). Skjelett i `src/terminal/` og `npm run present`.
+
+| # | Beslutning / antakelse | Begrunnelse | Status |
+|---|---|---|---|
+| AR-3-01 | Ny mappe `src/core/` for ren TS uten plattform (ingen DOM, Node eller React). Ligger i både web- og server-tsconfig, har egen ESLint-blokk uten globals og testes i Vitests node-prosjekt. `src/shared` forblir kun API-typer. | «Én lysbildemodell» uten duplisering; renheten håndheves av kompilatoren. | Vedtatt |
+| AR-3-02 | Flyttes til `src/core` (K1–K6, én commit per trinn, uendret testantall): `hast/` (splitLeadingTitle, prepareContent, én felles `inlineText`), `outline/` (buildOutline), `presentation/` (modell, fit-algoritme, fit-typer uten `CANVAS`, fingeravtrykk, cache), `format/` (ingress, datoformat, `formatBaseDate`), `keyboard/` (uten `dom-guard`), `commands/` (katalog, register, fuzzy, palettvalg, `?`-grupper). Web-featurenes `index.ts` re-eksporterer. | Alt dette er allerede ren TS; terminalen skal ikke importere `src/web`. | Vedtatt |
+| AR-3-03 | `prepare()`/`levels()` i `PresentationProvider` flyttes til `core/presentation/prepare-source.ts` (`prepareSlideSource`, `presentationLevelInfo`); innholdsdelen av cachenøkkelen til `draftContentKey`. | Veien NoteDocument → kilde finnes ett sted; web og terminal kan ikke divergere. | Vedtatt |
+| AR-3-04 | Flyttingen tas først i slice 3-a som egen, kort PR; QA oppdaterer `REGISTER_FIL` i `e2e/support/keymap-rules.ts` i samme PR. | Mange importer endres mens UX/QA jobber parallelt. | Vedtatt |
+| AR-3-05 | Terminalen er en egen komposisjonsrot (`src/terminal/app/`) som bruker server-featurene direkte: `resolveConfig`, `createVaultRuntime` (ett vault), worker-uttrekk, `watchVault`, `getDocument`, `createBaseEvaluator`. Ingen HTTP. | T7; samme indeks, rendering og Bases som web. | Vedtatt |
+| AR-3-06 | Serverendringer (bakoverkompatible): `VaultRuntimeDeps.background` (av i terminalen), `createCodeHighlighter({ preload })` + `ensureLanguages`, valgfri `onProgress` ved indeksering. | Oppstartstid; ingen søkeindeks/forhåndsrendering trengs for ett notat. | Vedtatt |
+| AR-3-07 | Oppstart målt til 3,2–3,3 s (+ npm) med 2000 notater uten tiltak (indeks 2,3 s, Shiki 0,44 s, tsx-import 0,35 s). Tiltak: Shiki med bare notatets språk startet ved t0 (M1), esbuild-bunt bygget ved endring i stedet for tsx (`scripts/present.mjs`, M2), oppstartsskjerm med fremdrift (M3). To-fase-start (M4) er reserve. | AK-3-12 brytes uten tiltak; anslag etter M1–M3 ≈ 2,75 s. | Vedtatt (M4: reserve) |
+| AR-3-08 | Egen tynn renderer på rå ANSI, ikke Ink. `view(tilstand) → Frame` (celler med stil) og `renderFrame(forrige, ny)` som skriver bare endrede celleløp. | A2 krever eksakte høyder før tegning (Ink gir dem først etter render); full kontroll på bredde, tabeller og figlet; ingen nye pakker (ADR-006); rammer er testbare data. | Vedtatt |
+| AR-3-09 | Terminalhygiene: inn = raw mode → alternativ buffer → skjul markør → autowrap av → bracketed paste → kitty-tastatur (hvis støttet); ut i omvendt rekkefølge, skrevet synkront med `writeSync`, idempotent, også fra signal-, feil- og exit-krokene. Exit 0/130/143/129/1. Ikke-TTY avvises. | AK-3-11; asynkrone skriv går tapt ved krasj. | Vedtatt |
+| AR-3-10 | Ctrl c er en vanlig binding (raw mode slår av ISIG). Ctrl z (suspend) støttes ikke i v3. | Spesifikasjonen; suspend er utenfor scope. | Antakelse (PO) |
+| AR-3-11 | Fargedybde: `--farger terminal` ⇒ 16 · `NO_COLOR` ⇒ ingen · kjente truecolor-terminaler/`COLORTERM` ⇒ truecolor · `256color` ⇒ 256 (nærmeste) · ellers 16. Fargene kommer fra UX' `docs/design/terminal/farger.json` (roller, kode-tokens, ANSI-16-kart). Lys/mørk «system» via OSC 11, ellers mørk. | T2/T4; UX eier fargene. | Vedtatt |
+| AR-3-12 | HAST → terminalblokker → linjer (rene funksjoner av enhet, bredde og tema) → maling i rammen. Ukjente elementer tegnes som tekst, ukjente `vr-*` som plassholder – aldri krasj. | Målbar, testbar tegning uten DOM. | Vedtatt |
+| AR-3-13 | Bredde per grafemklynge (`Intl.Segmenter`): emoji/VS16/ZWJ/flagg og East Asian Wide = 2, kombinerende = 0, Ambiguous (rammetegn, blokktegn) = 1. Wide-tabellen byttes mot `get-east-asian-width` (fra lockfila) i 3-b. | Ghostty og vestlige terminaler; æøå, emoji og CJK (Terminalkanter.md). | Vedtatt |
+| AR-3-14 | Kode tegnes fra serverens Shiki-HAST: `var(--shiki-token-X)` → palettens `kode.X` (truecolor) eller ANSI-16-kartet. Ingen ny highlighting i terminalen. Lange kodelinjer brytes mykt med `↪` i gutteren. | Samme tokenisering som web; ingen kode kuttes. | Vedtatt |
+| AR-3-15 | Tabeller og Bases-tabell med rammetegn; kolonnebredder krympes til minimum og celletekst brytes; får minimum ikke plass, vises raden som kort (`Kolonne: verdi`). Bases viser første view som web, med fanelinje. Horisontal overflyt deler aldri et lysbilde. | AK-3-05 ved 80 kolonner. | Vedtatt |
+| AR-3-16 | Plassholdere (T3): Mermaid, kanban-view, bilder og `vr-unsupported` som stiplet boks med fast høyde (1–3 rader) og spesifikasjonens tekst. | AK-3-06. | Vedtatt |
+| AR-3-17 | OSC 8 bare for eksterne lenker (http, https, mailto) og bare i terminaler som støtter det. Interne lenker får lenkefarge uten mål. | Ingen ødelagt utdata i andre terminaler; interne mål finnes ikke i terminalen. | Antakelse (PO) |
+| AR-3-18 | A2 i terminalen bruker samme `fitDraft`/`packUnits` (core) med `Geometry` i rader. Skalatrinnene betyr tetthet: `[1, 0.5]` = normal luft / tett. Kontrollpass og intern rulling som ADR-010. Cachenøkkel = `draftContentKey` + `cols×rows` + layoutversjon. | Én algoritme; terminalen har ingen skriftstørrelse. | Vedtatt (trinnene: UX) |
+| AR-3-19 | Figlet: egne fonter i FIGlet-format (`vr-blokk` 4 rader, `vr-smal` 3 rader) laget av UX, prosjektets lisens, bundlet, egen liten `.flf`-leser (ingen `figlet`-pakke). Versaler, ÆØÅ, sifre og vanlig tegnsetting; andre aksenter strippes; mangler et tegn, brukes fet tekst for hele hodet. | Lisens og æøå; standardfontene mangler æøå. | Vedtatt |
+| AR-3-20 | Fallback for hodet: `vr-blokk` én linje → `vr-blokk` ≤ 2 linjer (≤ 3 på tittel ved ≥ 36 rader) → `vr-smal` ≤ 2 linjer → fet tekst. Høyde ≤ ⅓ av radene. | AK-3-03. | Vedtatt |
+| AR-3-21 | Tastedekoder for stdin til `KeyInput` (ADR-007): CSI, SS3, CSI u (kitty, flagg 1, slås på når terminalen svarer på `CSI ?u`), Alt som `ESC x`, bracketed paste, terminalsvar som egne hendelser. Ensom ESC = Escape etter 30 ms uten CSI u. | Samme motor og akkorder som web; entydig Esc i Ghostty. | Vedtatt |
+| AR-3-22 | Katalogen får `surfaces` (standard begge) og `surfaceBindings.terminal`. `createCommandRegistry(surface, handlers)`; policy, keymap og `?` per flate og modus; README uendret. Terminalen: v2-present-bindingene + `q`/`Ctrl+c` på `present.stop` (kun terminal), `:farger`, `:palett`, `:lys`/`:mørk`. Bare web: `present.start`, `present.fullscreen`, `theme.setType`, `appearance.open`. | Gjenbruk av katalogen (P2) uten å endre web-tastene. | Vedtatt |
+| AR-3-23 | `present.stop` får aliaset `q`, så `:q` virker – også i web-paletten. | Spesifikasjonens `:q`; vim-konsistent. | Antakelse (PO) |
+| AR-3-24 | `:`-linjen i nederste rad bruker samme `commandPaletteOptions`, fuzzy og `argumentError` som web-paletten; E475/E486/E492 med samme tekster (E492-teksten flyttes til `core/commands`). | AK-3-08; ingen egen kommandoparser. | Vedtatt |
+| AR-3-25 | CLI: `--vault`, `--config`, `--vault-id` går uendret til `resolveConfig`; terminalflaggene `--niva`, `--palett`, `--farger`, `--uten-agenda`, `-h/--hjelp`; `--port`/`--lan` avvises; posisjonsargumenter settes sammen. | ADR-005-presedens; enkel bruk uten anførselstegn. | Vedtatt |
+| AR-3-26 | Notatoppslag: eksakt sti → eksakt tittel/alias → Obsidian-oppløsning → fuzzy (klart beste treff åpnes, ellers notatlisten med søket utfylt). Notatlisten: nyeste først, fuzzy med `core/commands/fuzzy`. | AK-3-01; forutsigbart ved tvetydige navn. | Vedtatt |
+| AR-3-27 | Live: chokidar i prosessen via `VaultRuntime` (samme debounce og slettehold som serveren); ny kortstokk + `resolveSlide`; omdøping følges, sletting gir melding. | AK-3-10; ingen ny live-logikk. | Vedtatt |
+| AR-3-28 | Ingen valg huskes i v3 (palett, farger, nivå); terminalen skriver ingenting til disk. | P1/read-only; enkleste trygge variant. | Antakelse (PO) |
+| AR-3-29 | Test: snapshot av rendret buffer (`frameToLines`) per lysbilde ved 80×24, 120×36, 200×50 for `test-vault/presentasjon/`, målrettede stilsjekker og invarianter (ingenting kuttes, ingen kontrolltegn). | AK-3-02–07 uten terminal. | Vedtatt |
+| AR-3-30 | E2e i ekte pty via QAs headless tmux-rigg (`capture-pane`, `send-keys`, `resize-window`, `pipe-pane`, `stty -g` før/etter). Ikke node-pty (native, install-skript, Nexus) og ikke rør + `@xterm/headless` (arkitektens første forslag, forkastet). Eneste testkrok i appen: `VAULT_READER_TEST_CRASH=etter-første-ramme`. tmux ≥ 3.2 er systemkrav for e2e; mangler den, feiler testene tydelig. | Ekte termios og SIGWINCH uten npm-avhengigheter eller testmodus i produksjonskoden. | Vedtatt |
+
+## PO-avgjørelser etter arkitektrapport v3
+
+- **PO-106** AK-3-12 «start < 3 s» måles fra prosessstart (uten `npm`-overhead) på kundens Mac. I container/CI (4 kjerner, last) er grensen < 4,5 s, som for AK17.
+- **PO-107** Ingen lokal lagring av terminalvalg i v3 (AR-3-28).
+- **PO-108** `:q` som alias for å avslutte presentasjon også i web-paletten – godkjent (AR-3-23).
+- **PO-109** Interne lenker i terminalen får OSC 8 til `obsidian://open?vault=…&file=…` slik at et klikk åpner notatet i Obsidian. Eksterne lenker som før.
+- **PO-110** Ctrl z (suspend) støttes ikke i v3.
+- **PO-111** `get-east-asian-width` flyttes til `dependencies` (sjekk mot ADR-006).
+- **PO-112** Flyttingen til `src/core/` gjøres først og alene i 3-a, i små commits; antall tester skal være likt før og etter.
+- Tetthetstrinn for terminal-tilpasning avgjøres av UX.
+
+## PO-avgjørelser etter UX-rapport v3
+
+Terminaldesignet (docs/design/terminal/, skjermbilder/v3) er **godkjent**. UX-avvikene fra ADR-011 (booktabs-tabeller, `▎` for sitater, tittel i tekstfarge, plassholderramme i `strek`, fotnoter som marginalia ved 200 kolonner, tetthet `[1]`, fonter med `▀▄█`, rollen `flate_bg`) godkjennes.
+- **PO-113** Plassholdere beholder den valgfrie detaljlinjen (f.eks. «flowchart LR · 7 noder», «11 kort: todo 3 · doing 3 …»).
+- **PO-114** Overgangslysbildet har seksjonsnavnet som hode (ikke «AGENDA»).
+- **PO-115** Enkeregelen for «(forts.)» flyttes inn i den delte lysbildemodellen i `src/core` og gjelder også web. QA oppdaterer v2-fasiten hvis rekkefølgen endres.
+- **PO-116** Hintet om `Ctrl +` vises ikke på tittelsiden; det vises kun som kort melding ved oppstart (før første lysbilde).
+- **PO-117** `obsidian://`-lenker bruker vaultmappens navn som standard; kan overstyres med `obsidianVault` i vault-konfigen.
+
+## PO-avgjørelser etter QA-testplan v3
+
+Alle QAs forslag (Q-3-01, -02, -03, -06, -07, -09, -12, -14) er **godkjent** som foreslått. I tillegg:
+- **PO-118 (Q-3-13)** Eget Playwright-prosjekt `terminal`. QA får endre `playwright.config.ts` for dette.
+- **PO-119 (F-1, bug)** Prosessen henger når tsx og appen får SIGTERM/SIGHUP samtidig (lukking av Ghostty-vindu). Utvikler retter i 3-a – f.eks. bunt uten tsx som forelder (ADR-011 M2) – og TC-3-11-03b skal bli grønn.
+- **PO-120** Flyttingen til `src/core` (K1–K6) er ferdig og grønn (1042 → 1042 testnavn identiske, +7 nye i K6). Den havnet i WIP-commits sammen med annet arbeid; historikken skrives ikke om. PO-112 anses oppfylt i innhold. Endringen i `e2e/support/keymap-rules.ts` (peker til `src/core/commands`) godkjent. Utvikler oppdaterer `struktur.md` med `src/core`.
+
+## PO-avgjørelser etter slice 3-a
+
+- **PO-121** Slice 3-a godkjent. Oppstart 2,36 s (median, fra prosessstart, 2000 notater) – innenfor både container- og Mac-krav. M4 (to-fase-start) droppes.
+- **PO-122** TC-3-01-07: testen skal filtrere i notatlisten (skrive et søk) i stedet for å anta sortering ved like mtime. Notatlisten sorterer nyeste først, deretter alfabetisk – som i dag. QA justerer.
+- **PO-123** PO-117 (`obsidian://`) flyttes til 3-b. QAs fil-endringer fra utvikler (`APP_INNGANGER`, fixme fjernet på TC-3-11-03b) godkjent.
+
+## PO-avgjørelser etter slice 3-b (konflikter test/design)
+
+Designet og PO-beslutningene gjelder; QA tilpasser tester og fasit:
+- **PO-124** Ingen `n/N` på tittelsiden i terminalen heller (PO-95 står). QA-hjelperne gjenkjenner tittelsiden på annen måte og tar totalen fra lysbilde 2.
+- **PO-125** Figlet-høyde måles uten den tomme raden mellom linjene (ADR-011/QA); ved 80×24 blir «Statusmøte uke 45» vr-blokk på to linjer. UX oppdaterer tabellen i designet.
+- **PO-126** Satsbredde maks 160 kolonner (design §1); QAs figlet-kjede bruker samme grense.
+- **PO-127** Plassholdere: detaljlinjen beholdes (PO-113, også «flowchart …»), teksten er fet og dempet (§4.10).
+- **PO-128** Fotnoter som marginalia ved 200 kolonner (§4.8).
+- **PO-129** OSC 8-URL-er er prosentkodet; QA dekoder før sammenligning.
+- **PO-130** `--farger terminal` vinner over NO_COLOR (Q-3-07); TC-3-09-06 rettes.
+- **PO-131** Kontrasttesten bruker lysbildets bakgrunn (`bg`), ikke den hyppigste fargen.
+- **PO-132 (kundeønske)** **Terminalens eget fargetema er standard** i terminalpresentasjonen (endrer T4). Rollene mappes til terminalens ANSI-farger (16 + forgrunn/bakgrunn) etter `farger.json`-kartet; bakgrunnen males ikke. Våre paletter er opt-in med `--palett <navn>` / `:palett <navn>`, og `:farger terminal` går tilbake. Kodefarger mappes til ANSI-fargene. Valgfritt: hvis terminalen svarer på OSC 4/10/11 (Ghostty gjør det), kan nyanser (dempet tekst, flater) avledes fra temaets faktiske farger – men aldri farger utenfor temaet.
+- **PO-133 (Q-3-15)** S6 avgjøres av plass: får innledningen plass på tittelsiden ved 200×50, blir det ett lysbilde færre enn i v2. Godkjent.
+
+## PO-avgjørelser etter slice 3-c
+
+- **PO-134** Utviklerens avvik 1–5 godkjent: `present.start`/`:presenter` på begge flater; feil fra `:`-linjen på radene over statuslinjen (vims meldingsområde); bekreftelser og live-meldinger i statuslinjen; `↑`/`↓` ruller et halvt vindu; bildeplassholder fet og dempet.
+- **PO-135 (TC-3-08-09)** Etter en feilmelding fra `:`-linjen fjerner neste tast meldingen **og utføres** (som vim med korte meldinger). Ingen ekstra tastetrykk under et møte. Design §5.3 og appen endres; testen beholdes.
+- **PO-136** De øvrige 12 feilende terminaltestene (TC-3-07-04/06, -08-06/07/08, -09-08) og fasiten for TC-3-03-03 rettes av QA (venting på omtegning, sentrert sats over 160 kolonner, ingen `n/N` på tittelsiden, avgrensning av råstrømmen).
+- **PO-137** Avledning av nyanser fra OSC 4/10/11 (PO-132, valgfri) tas ikke i v3.
+- **PO-138 (PO-funn, terminalfarger)** I standard terminalfarger (revers-linjer): (a) gjeldende agendapunkt i aksentfarge på revers bakgrunn har for lav kontrast – bruk fet + understrek i reversfargen (ingen aksent på revers); (b) fremdriftsindikatoren i statuslinjen skiller ikke gjeldende/fullførte segmenter fra resten – bruk tykk `━` for fullført og tynn `─` for resten, uten avhengighet av farge.

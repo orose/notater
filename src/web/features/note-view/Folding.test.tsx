@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { renderWithProviders } from '../../test-support/render-with-providers';
 import { FoldingProvider, OutlineHost, buildOutline, useOutlineControl } from '../outline';
 import { HastContent } from './HastContent';
-import { prepareContent } from './prepare-content';
+import { prepareContent } from '../../../core/hast';
 
 const h = (level: number, id: string, text: string): Element => ({ type: 'element', tagName: `h${level}`, properties: { id }, children: [{ type: 'text', value: text }] });
 const p = (text: string, id?: string): Element => ({ type: 'element', tagName: 'p', properties: id ? { id } : {}, children: [{ type: 'text', value: text }] });

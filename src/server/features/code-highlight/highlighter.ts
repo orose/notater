@@ -1,5 +1,5 @@
 import type { Element } from 'hast';
-import { createCssVariablesTheme, createHighlighter } from 'shiki';
+import { bundledLanguagesInfo, createCssVariablesTheme, createHighlighter } from 'shiki';
 import type { ThemeRegistration } from 'shiki';
 
 /** Syntax highlighting av én kodeblokk. Synkron etter at highlighteren er opprettet. */
@@ -13,6 +13,16 @@ export interface CodeHighlighter {
    * vent til ingen forespørsler pågår), så forespørsler ikke blokkeres (AK17, BUG-008).
    */
   warmUp(between?: () => Promise<void>, preferred?: readonly string[]): Promise<void>;
+  /**
+   * Laster grammatikkene for språkene (id eller alias) som er med i `SUPPORTED_LANGUAGES` og ikke er lastet (SV2,
+   * ADR-011 M1). Ukjente språk ignoreres; de gir ren tekst i `highlight` som før.
+   */
+  ensureLanguages(langs: readonly string[]): Promise<void>;
+}
+
+export interface CodeHighlighterOptions {
+  /** Språkene som lastes ved start. Standard: hele `SUPPORTED_LANGUAGES` (web-serveren). */
+  readonly preload?: readonly string[];
 }
 
 /** Fast språksett (ADR-002). Alias (ts, sh, yml …) følger med fra Shiki. */
@@ -114,18 +124,40 @@ export function createVaultReaderTheme(): ThemeRegistration {
   };
 }
 
-export async function createCodeHighlighter(): Promise<CodeHighlighter> {
-  const highlighter = await createHighlighter({ themes: [createVaultReaderTheme()], langs: [...SUPPORTED_LANGUAGES] });
-  const loaded = new Set(highlighter.getLoadedLanguages().map((l) => l.toLowerCase()));
+const SUPPORTED = new Set<string>(SUPPORTED_LANGUAGES);
+
+/** Språk-id eller alias → id i det faste språksettet, ellers `null`. */
+function supportedLanguageId(lang: string): string | null {
+  const key = lang.trim().toLowerCase();
+  if (key === '') return null;
+  if (SUPPORTED.has(key)) return key;
+  const info = bundledLanguagesInfo.find((l) => l.id === key || l.aliases?.includes(key));
+  return info && SUPPORTED.has(info.id) ? info.id : null;
+}
+
+export async function createCodeHighlighter(options: CodeHighlighterOptions = {}): Promise<CodeHighlighter> {
+  const initial = options.preload ? [...new Set(options.preload.map(supportedLanguageId).filter((l): l is string => l !== null))] : [...SUPPORTED_LANGUAGES];
+  const highlighter = await createHighlighter({ themes: [createVaultReaderTheme()], langs: initial });
+  const loaded = new Set<string>();
+  const refreshLoaded = () => {
+    for (const l of highlighter.getLoadedLanguages()) loaded.add(l.toLowerCase());
+  };
+  refreshLoaded();
   const isSupported = (lang: string): boolean => lang !== '' && loaded.has(lang.toLowerCase());
 
   return {
     isSupported,
+    async ensureLanguages(langs) {
+      const missing = [...new Set(langs.map(supportedLanguageId).filter((l): l is string => l !== null && !loaded.has(l)))];
+      if (missing.length === 0) return;
+      await highlighter.loadLanguage(...(missing as Parameters<typeof highlighter.loadLanguage>));
+      refreshLoaded();
+    },
     async warmUp(between = nextTick, preferred = []) {
       // Språkene vaultet faktisk bruker varmes opp først og uten å vente på ledig tid (de trengs straks;
       // ellers kompileres grammatikken midt i en forespørsel, ~100–300 ms). Resten venter på `between`.
       const first = [...new Set(preferred.filter(isSupported).map((l) => l.toLowerCase()))];
-      const rest = SUPPORTED_LANGUAGES.filter((l) => !first.includes(l));
+      const rest = SUPPORTED_LANGUAGES.filter((l) => !first.includes(l) && isSupported(l));
       // Én linje per bit: hele prøven på én gang kompilerte opptil ~300 ms per språk i én blokk
       // (cpp, javascript); linje for linje er største bit ~60–130 ms, og totalen er den samme.
       for (const [lang, wait] of [...first.map((l) => [l, nextTick] as const), ...rest.map((l) => [l, between] as const)]) {

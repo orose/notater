@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { Link } from 'react-router';
 import type { VaultId, VaultValue } from '../../../shared/api-types';
 import { docUrl } from '../../shared/api';
-import { formatDate, statusKind } from './format';
+import { formatDate, statusKind } from '../../../core/format';
 
 interface PropertyValueProps {
   readonly vaultId: VaultId;

@@ -1,0 +1,200 @@
+── 1 ──────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+     ~/ presentasjon
+
+     ▄    ▄  ▄  ▄  ▄▄ ▄▄▄    ▄▄▄ ▄  ▄ ▄  ▄ ▄ ▄ ▄▄▄ ▄   ▄▄     ▄▄▄ ▄▄▄▄ ▄▄
+     █   █▄█ █▀▄█ █ ▄  █      █  █▀▄█ █▀▄█ █▄█ █ █ █   █ █    █▄  █▄▀█ █▄▀
+     █▄▄ █ █ █  █ ▀▄█  █     ▄█▄ █  █ █  █ █ █ █▄█ █▄▄ █▄▀    █   █▄▄█ █ █
+
+      ▄   ▄▄ ▄▄▄ ▄  ▄ ▄▄   ▄
+     █▄█ █ ▄ █▄  █▀▄█ █ █ █▄█
+     █ █ ▀▄█ █▄▄ █  █ █▄▀ █ █
+
+     Endret 1. nov. 2026, 13.00
+
+
+
+
+
+
+
+     Presentasjon         → neste  ·  o oversikt  ·  ? taster  ·  q avslutt
+── 2 ──────────────────────────────────────────────────────────────────────────
+
+
+
+     Markør LANGFØR-1. Dette er et langt innledende avsnitt før første
+     agendaoverskrift. Det er for langt til å få plass på tittellysbildet
+     sammen med tittel, ingress og egenskaper, og skal derfor bli et eget
+     lysbilde før agendaen.
+
+     Markør LANGFØR-2. Dette er et langt innledende avsnitt før første
+     agendaoverskrift. Det er for langt til å få plass på tittellysbildet
+     sammen med tittel, ingress og egenskaper, og skal derfor bli et eget
+     lysbilde før agendaen.
+
+     Markør LANGFØR-3. Dette er et langt innledende avsnitt før første
+     agendaoverskrift. Det er for langt til å få plass på tittellysbildet
+     sammen med tittel, ingress og egenskaper, og skal derfor bli et eget
+     lysbilde før agendaen.
+
+
+
+
+
+
+     Langt innhold før agenda                     ? hjelp   ━━── ── ──  2/8
+── 3 ──────────────────────────────────────────────────────────────────────────
+
+
+
+     Markør LANGFØR-4. Dette er et langt innledende avsnitt før første
+     agendaoverskrift. Det er for langt til å få plass på tittellysbildet
+     sammen med tittel, ingress og egenskaper, og skal derfor bli et eget
+     lysbilde før agendaen.
+
+     Markør LANGFØR-5. Dette er et langt innledende avsnitt før første
+     agendaoverskrift. Det er for langt til å få plass på tittellysbildet
+     sammen med tittel, ingress og egenskaper, og skal derfor bli et eget
+     lysbilde før agendaen.
+
+
+
+
+
+
+
+
+
+
+
+     Langt innhold før agenda                     ? hjelp   ━━━─ ── ──  3/8
+── 4 ──────────────────────────────────────────────────────────────────────────
+
+
+     Langt innhold før agenda · 2 punkter
+
+      ▄▄▄   ▄▄▄  ▄▄▄▄▄ ▄   ▄ ▄▄▄▄   ▄▄▄
+     █   █ █   ▀ █     █▀▄ █ █   █ █   █
+     █▀▀▀█ █ ▀▀█ █▀▀▀  █ ▀▄█ █   █ █▀▀▀█
+     █   █ ▀▄▄▄█ █▄▄▄▄ █   █ █▄▄▄▀ █   █
+
+                                                                   lysbilde
+     01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · ·  5
+
+     02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · ·  7
+
+
+
+
+
+
+
+
+
+
+     Langt innhold før agenda                     ? hjelp   ━━━━ ── ──  4/8
+── 5 ──────────────────────────────────────────────────────────────────────────
+
+
+     01 / 02  du er her
+
+     ▄▄▄▄▄  ▄▄▄  ▄▄▄▄   ▄▄▄▄ ▄▄▄▄▄ ▄▄▄▄▄     ▄▄▄▄  ▄   ▄ ▄   ▄ ▄   ▄ ▄▄▄▄▄
+     █     █  ▄█ █   █ █       █   █         █   █ █   █ █▀▄ █ █ ▄▀    █
+     █▀▀▀  █▄▀ █ █▀█▀   ▀▀▀▄   █   █▀▀▀      █▀▀▀  █   █ █ ▀▄█ █▀▄     █
+     █     ▀▄▄▄▀ █  ▀▄ ▄▄▄▄▀   █   █▄▄▄▄     █     ▀▄▄▄▀ █   █ █  ▀▄   █
+
+                                                                   lysbilde
+     01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · ·  5
+         └── Lysbilde én
+     02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · ·  7
+
+
+
+
+
+
+
+
+
+
+     Langt innhold før agenda                     ? hjelp   ━━━━ ━─ ──  5/8
+── 6 ──────────────────────────────────────────────────────────────────────────
+     1 Første punkt 1/1 │ 2 Andre punkt
+
+     01 /
+     Lysbilde én  ─────────────────────────────────────────────────────────
+
+     Innhold. Markør LANGFØR-PUNKT.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Langt innhold før agenda                     ? hjelp   ━━━━ ━━ ──  6/8
+── 7 ──────────────────────────────────────────────────────────────────────────
+
+
+     02 / 02  du er her
+
+      ▄▄▄  ▄   ▄ ▄▄▄▄  ▄▄▄▄  ▄▄▄▄▄     ▄▄▄▄  ▄   ▄ ▄   ▄ ▄   ▄ ▄▄▄▄▄
+     █   █ █▀▄ █ █   █ █   █ █         █   █ █   █ █▀▄ █ █ ▄▀    █
+     █▀▀▀█ █ ▀▄█ █   █ █▀█▀  █▀▀▀      █▀▀▀  █   █ █ ▀▄█ █▀▄     █
+     █   █ █   █ █▄▄▄▀ █  ▀▄ █▄▄▄▄     █     ▀▄▄▄▀ █   █ █  ▀▄   █
+
+                                                                   lysbilde
+     01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · ·  5
+     02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · ·  7
+         └── Andre punkt
+
+
+
+
+
+
+
+
+
+
+     Langt innhold før agenda                     ? hjelp   ━━━━ ━━ ━─  7/8
+── 8 ──────────────────────────────────────────────────────────────────────────
+     1 Første punkt │ 2 Andre punkt 1/1
+
+     02 /
+     Andre punkt  ─────────────────────────────────────────────────────────
+
+     Innhold i andre punkt. Markør LANGFØR-PUNKT2.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Langt innhold før agenda                     ? hjelp   ━━━━ ━━ ━━  8/8

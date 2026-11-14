@@ -1,6 +1,5 @@
 import { createContext } from 'react';
-import type { CommandId } from './model/catalog';
-import type { Availability } from './model/command-types';
+import type { Availability, CommandId } from '../../../core/commands';
 
 export interface CommandsContextValue {
   /** Åpner `?`-oversikten (fra Utseende og `:hjelp`). */

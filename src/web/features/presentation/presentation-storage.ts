@@ -2,7 +2,7 @@
 // `{ "v": 1, "levels": [["<vaultId>\n<docPath>", 3], …] }`, kun overstyrte notater, nyeste sist, maks 500.
 // P1: tar aldri notatinnhold eller frontmatter som inndata. All tilgang i try/catch.
 
-import type { HeadingLevel } from './model';
+import type { HeadingLevel } from '../../../core/presentation';
 
 export const PRESENTATION_STORAGE_KEY = 'vault-leser.presentasjon';
 export const PRESENTATION_LEVELS_MAX = 500;

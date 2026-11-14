@@ -2,9 +2,9 @@
 // `PresentationProvider` monteres i `VaultLayout` over `CommandProvider` og eier URL-parameteren, modusbyttet og
 // fullskjerm; `commands` leser den med `usePresentationControl()` og importerer ikke resten.
 //
-// Strukturelt lik `PresentationPort` i `commands/model/command-context.ts` (den rene modellen importerer ikke hit).
+// Strukturelt lik `PresentationPort` i `src/core/commands/command-context.ts` (den rene modellen importerer ikke hit).
 
-import type { HeadingLevel } from './model';
+import type { HeadingLevel, LevelInfo } from '../../../core/presentation';
 
 export interface PresentationStatus {
   /** `?lysbilde` finnes på et notat som finnes: tastaturmotoren er i modus `present`. */
@@ -20,11 +20,7 @@ export interface PresentationStatus {
   readonly fullscreen: boolean;
 }
 
-export interface LevelInfo {
-  readonly level: HeadingLevel;
-  readonly agendaLevel: HeadingLevel | null;
-  readonly slides: number;
-}
+export type { LevelInfo } from '../../../core/presentation';
 
 /** Kort melding i appens varselsone (toast), valgfritt med tasttegn. Registreres av `CommandProvider`. */
 export type NoticeHandler = (message: string, keys?: readonly string[]) => void;

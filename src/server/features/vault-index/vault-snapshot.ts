@@ -51,6 +51,8 @@ export interface BuildSnapshotOptions {
    * de ble skannet. Brukes til å starte filovervåkeren uten å konkurrere med lesingen (BUG-012).
    */
   readonly whileExtracting?: (files: ReadonlyMap<FilePath, VaultFile>) => Promise<void>;
+  /** Fremdrift i metadata-uttrekket: notater ferdige av totalt (oppstartsskjermen i terminalen, SV3). */
+  readonly onProgress?: (done: number, total: number) => void;
 }
 
 export async function buildSnapshot(
@@ -89,7 +91,10 @@ export async function buildSnapshot(
       noteSources.push(texts[i]!);
     }
   });
-  const [metas] = await Promise.all([extractor.extractMany(noteSources), options.whileExtracting?.(files)]);
+  const total = noteSources.length;
+  options.onProgress?.(0, total);
+  const progress = options.onProgress ? (done: number) => options.onProgress?.(done, total) : undefined;
+  const [metas] = await Promise.all([extractor.extractMany(noteSources, progress), options.whileExtracting?.(files)]);
   noteFiles.forEach((file, i) => {
     notes.set(file.filePath, { file, meta: metas[i]!, body: splitFrontmatter(noteSources[i]!).body });
   });

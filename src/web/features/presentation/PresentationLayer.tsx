@@ -5,9 +5,9 @@
 import './presentation.css';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { AgendaLine } from './AgendaLine';
-import { CANVAS } from './fit/fit-types';
+import { CANVAS } from './fit/canvas';
 import { MeasureCanvas } from './fit/MeasureCanvas';
-import { agendaStartNumbers, agendaSubtitles, type Slide, type SlideDeck } from './model';
+import { agendaStartNumbers, agendaSubtitles, type Slide, type SlideDeck } from '../../../core/presentation';
 import { Overview } from './Overview';
 import { usePresentationControl, usePresentationView } from './presentation-context';
 import { SlideView, type DeckInfo } from './SlideView';

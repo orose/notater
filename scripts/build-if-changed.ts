@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 /** Alt `vite build` leser fra repoet (avhengigheter dekkes av package-lock.json). */
 export const BUILD_INPUTS: readonly string[] = [
   'src/web',
+  'src/core',
   'src/shared',
   'docs/design',
   'vite.config.ts',

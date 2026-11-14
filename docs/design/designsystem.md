@@ -16,6 +16,7 @@ Eier: UX/webdesign. Bindende grunnlag: `docs/produkt/brief.md` (særlig B9, B10,
 | `prototype-v2.html` | **v2** (§12), **generert** fra `prototype-v2/src.html` med `prototype-v2/build.py` (se README der, PO-98): presentasjonsmodus. Et realistisk statusmøte på 13 lysbilder, oversikt, svart skjerm, palett med feilkoder, alle typesett/paletter. Selvstendig, interaktiv. |
 | `kontrast-v2.mjs` | Kontrollskript for v2-fargene (letterbox, agendalinje, oversikt …): `node docs/design/kontrast-v2.mjs` |
 | `skjermbilder/v2/` | 1920×1080, 1280×720, 1440×900 (letterbox) og 390×844 |
+| `terminal/` | **v3 – presentasjon i terminalen**: `terminal/designsystem-terminal.md` (alle regler), `farger.json` (fargeroller), figlet-fontene `vr-blokk`/`vr-smal`, ANSI-mockups og skript. Skjermbilder i `skjermbilder/v3/`. |
 
 Prototypen kan styres med URL-parametre: `prototype.html?type=terminal&palette=fosfor&mode=dark`, og har tre «sider»: `#notat` (standard), `#komponenter` (alle callouts, lenketyper, tomtilstander/feil) og `#ukjent` (ukjent notat). `⌘K`/`Ctrl+K` åpner søk, `⌘.` bytter lys/mørk.
 

@@ -52,6 +52,7 @@ Varig oppsett: lag **`vault-reader.config.local.json`** i prosjektmappa. Den er 
 | `vaults[].path` | Sti til vault-mappa. `~` og relative stier (fra konfigfila) virker. |
 | `vaults[].ignore` | Mapper (relativt til vaultet) som ikke skal indekseres. Valgfritt. |
 | `vaults[].hiddenProperties` | Egenskaper som skjules i notat-headeren. Valgfritt. |
+| `vaults[].obsidianVault` | Vaultets navn i Obsidian, for lenker fra terminalpresentasjonen (`obsidian://`). Valgfritt; standard er mappenavnet. |
 | `defaultVault` | Vaultet som åpnes på `/`. Standard = første i lista. |
 | `port` | Standard `4317`. |
 
@@ -167,6 +168,40 @@ skrives til notatet, og ingenting leses fra frontmatter: lysbildene utledes av o
   Nettleseren bruker første `Esc` til å gå ut av fullskjerm; neste `Esc` avslutter presentasjonen.
 - **Live:** endringer i vaultet (også Bases-data) vises med en gang, og du blir stående på samme lysbilde.
 
+### Presentasjon i terminalen
+
+Samme lysbilder kan vises direkte i terminalen (v3, laget for Ghostty), uten at web-leseren kjører:
+
+```sh
+npm run present -- "Statusmøte uke 45"      # navn, alias eller sti; fuzzy-treff
+npm run present -- Statusmøte uke 45        # uten anførselstegn virker også
+npm run present                             # søkbar notatliste
+npm run present -- --palett fosfor          # vaultleserens palett i stedet for terminalens farger
+npm run present -- --hjelp                  # alle flagg
+```
+
+- Flaggene `--vault`, `--config` og `--vault-id` virker som for `npm start`. I tillegg `--niva h<n>`, `--palett <navn>`,
+  `--farger terminal|palett` og `--uten-agenda`.
+- **Farger:** standard er terminalens eget fargetema (de 16 ANSI-fargene, forgrunn og bakgrunn); bakgrunnen males
+  ikke. Våre paletter (`papir`, `cyanotypi`, `fosfor`, `signal`) er valgfrie: `--palett fosfor` eller `:palett fosfor`.
+  `:farger terminal` går tilbake til terminalens farger. `NO_COLOR` gir ingen farger, bare fet, kursiv og revers.
+- Er navnet tvetydig (f.eks. «rapport»), åpnes notatlisten med søket utfylt. Skriv for å filtrere, `↑`/`↓` flytter,
+  `Enter` presenterer og `Esc` avslutter.
+- **Taster:** `j`/`k` (og piltaster, `Space`, `PageDown`/`PageUp`) blar, `gg`/`G` går til første og siste, `↑`/`↓`
+  ruller en blokk som er for stor for lysbildet, `o` viser oversikten, `b` eller `.` gir svart skjerm og `?` viser
+  alle taster. `q`, `Esc` og `Ctrl c` avslutter, og terminalen blir alltid som før (også ved krasj eller når vinduet
+  lukkes).
+- **Kommandolinjen `:`** (som i vim): `:presenter h3` bytter lysbildenivå, `:agenda av` fjerner overgangene,
+  `:palett papir`, `:farger terminal`, `:lys`/`:mørk` og `:q`. `Tab` fullfører. Feil gir vim-koder: E475 ugyldig
+  argument, E486 nivå som ikke finnes i notatet, E492 ukjent kommando. Ingenting huskes til neste gang.
+- **For mye innhold** fortsetter på et «(forts.)»-lysbilde; en kodeblokk eller tabell som er for stor alene, ruller
+  internt med hint om hvor mye som er igjen. Endret vindus- eller skriftstørrelse legger lysbildene ut på nytt, og du
+  blir stående på samme lysbilde.
+- **Live:** endringer i vaultet (Obsidian) vises med en gang, og posisjonen beholdes.
+- Lenker kan Cmd-klikkes i Ghostty: interne lenker åpner notatet i Obsidian (`obsidian://`), eksterne åpner nettleseren.
+- Terminalen må være minst 80 × 24. Del et vindu på 100–130 kolonner i Teams/Zoom; `Ctrl +` i Ghostty gir større tekst.
+- Første start bygger presentasjonen (`dist/terminal/`, under ett sekund); senere starter går rett på.
+
 ### Temaer
 
 Åpne **Utseende** nederst i sidepanelet (ikonet øverst til høyre på mobil):
@@ -259,6 +294,6 @@ node test-vault-tools/generate-large-vault.mjs --out /tmp/vault-2000 --count 200
 PERF_VAULT=/tmp/vault-2000 npx playwright test --project=perf
 ```
 
-Kode: `src/server` (Hono, indeks, rendering), `src/web` (React), `src/shared` (API-typer).
+Kode: `src/server` (Hono, indeks, rendering), `src/web` (React), `src/core` (ren TS uten plattform: lysbildemodell, disposisjon, tastatur og kommandoer – delt av web og terminal), `src/terminal` (presentasjon i terminalen) og `src/shared` (API-typer).
 Arkitektur og beslutninger: [`docs/arkitektur/`](docs/arkitektur/) og
 [`docs/beslutninger.md`](docs/beslutninger.md). Testvaultets fasit: [`test-vault/README-QA.md`](test-vault/README-QA.md).

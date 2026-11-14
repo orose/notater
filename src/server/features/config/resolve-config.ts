@@ -11,6 +11,11 @@ export interface VaultConfig {
   readonly ignore: readonly string[];
   /** PO-22: property-nøkler som ikke sendes i dokument-API-et (i tillegg til de som alltid skjules). */
   readonly hiddenProperties: readonly string[];
+  /**
+   * PO-117: vaultets navn i Obsidian, for `obsidian://open?vault=…`-lenker i terminalen. Utelatt = mappenavnet
+   * (Obsidian kjenner vaultet ved mappenavnet).
+   */
+  readonly obsidianVault?: string;
 }
 
 export interface AppConfig {
@@ -170,7 +175,7 @@ function parseVaults(raw: unknown, file: string, expand: (path: string) => strin
   return raw.map((entry, index) => {
     const where = `vaults[${index}] i ${file}`;
     if (!entry || typeof entry !== 'object') throw new ConfigError(`${where} må være et objekt.`);
-    const { id, name, path, ignore, hiddenProperties } = entry as Record<string, unknown>;
+    const { id, name, path, ignore, hiddenProperties, obsidianVault } = entry as Record<string, unknown>;
     if (typeof id !== 'string' || !VAULT_ID.test(id)) {
       throw new ConfigError(`${where}: «id» må bestå av små bokstaver, tall og bindestrek (fikk ${JSON.stringify(id)}).`);
     }
@@ -184,8 +189,12 @@ function parseVaults(raw: unknown, file: string, expand: (path: string) => strin
     if (hiddenProperties !== undefined && (!Array.isArray(hiddenProperties) || hiddenProperties.some((i) => typeof i !== 'string'))) {
       throw new ConfigError(`${where}: «hiddenProperties» må være en liste med property-navn.`);
     }
+    if (obsidianVault !== undefined && (typeof obsidianVault !== 'string' || obsidianVault.trim() === '')) {
+      throw new ConfigError(`${where}: «obsidianVault» må være vaultets navn i Obsidian (tekst).`);
+    }
     const root = expand(path);
     return {
+      ...(typeof obsidianVault === 'string' ? { obsidianVault: obsidianVault.trim() } : {}),
       id,
       name: (name as string | undefined) ?? id,
       root: isAbsolute(root) ? root : resolve(root),

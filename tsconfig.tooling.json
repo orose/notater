@@ -14,7 +14,7 @@
     "scripts",
     "src/shared/api-types.ts",
     "docs/design/shiki-tema.ts",
-    "src/web/features/commands/model",
-    "src/web/features/keyboard"
+    "src/core/commands",
+    "src/core/keyboard"
   ]
 }

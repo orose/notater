@@ -16,9 +16,9 @@ bibliotek), er `src/server/features/bases` allerede isolert nok til å flyttes u
 ├── vault-reader.config.json     standardkonfig (peker på ./test-vault)
 ├── tsconfig.json                kun referanser → tre prosjekter under
 ├── tsconfig.base.json           felles strenge kompilatorvalg
-├── tsconfig.server.json         src/server + src/shared (Node-typer, ingen DOM)
+├── tsconfig.server.json         src/server + src/shared + src/core + src/terminal (Node-typer, ingen DOM)
 ├── tsconfig.web.json            src/web + src/shared (DOM, JSX)
-├── tsconfig.tooling.json        *.config.ts + e2e/
+├── tsconfig.tooling.json        *.config.ts + e2e/ + scripts/ (+ src/core/commands og src/core/keyboard)
 ├── vite.config.ts               root = src/web, bygger til dist/web, proxy /api i dev
 ├── vitest.config.ts             prosjekter «server» (node) og «web» (jsdom)
 ├── playwright.config.ts         e2e mot `npm start -- --vault ./test-vault --port 4318`
@@ -158,3 +158,28 @@ src/web/features/presentation/
 Avhengighetsretning: `app` → `presentation` → `note-view` (`HastContent`), `outline`, `properties`, `shared/api`;
 `commands` → `presentation` (kun kontrollporten og typer). `presentation` importerer ikke `commands`, og
 `note-view`/`outline` importerer ikke `presentation`.
+
+## Tillegg v3 (arkitekt, ADR-011)
+
+```
+src/core/            ren TS uten plattform (ingen DOM, Node eller React), delt av web og terminal (flyttet i K1–K6, PO-120):
+├── hast/            splitLeadingTitle, prepareContent, inlineText, textContent
+├── outline/         buildOutline, hiddenBlocks
+├── presentation/    model/ (S1–S8, id-er, resolveSlide), fit/ (A2: fitDraft, packUnits, enkeregel PO-115),
+│                    prepare-source.ts (NoteDocument → kilde, nivåinfo), fingeravtrykk (draftContentKey)
+├── format/          ingress, datoer, formatBaseDate
+├── keyboard/        notasjon, akkorder, policy, motor (dom-guard blir i web)
+├── commands/        katalog med flater (web/terminal), register, fuzzy, palettvalg, `?`-grupper
+└── test-support/    hast-bygger for tester (h, root)
+src/terminal/        `npm run present` – frittstående presentasjon i terminalen (T7)
+├── main.ts          inngang
+├── app/             komposisjonsrot: konfig, VaultRuntime, økt (bruker server-features direkte, ingen HTTP)
+└── features/        cli-args, screen, keys, cells (skjelett) · capabilities, vault, note-picker, session,
+                     commands, slides, overlays (3-a) · theme, draw, figlet, command-line (3-b–3-c)
+scripts/present.mjs  `npm run present` (M2): ren JS, bygger `dist/terminal/present.mjs` + `meta-worker.cjs` med esbuild
+                     når kilden er endret, og kjører bunten i samme prosess (`exec`, ingen tsx-forelder, PO-119)
+```
+
+Avhengighetsretning: `web → core`, `terminal → core + server/features/*/index`, `core → shared`. `core` importerer aldri
+`web`, `server`, `terminal`, `react` eller `node:*` (håndheves av at mappa ligger i både web- og server-tsconfig, og av
+ESLint). `terminal` importerer aldri `web` eller `react` (ESLint). Regel 5 står fast: `src/shared` er kun API-typer.

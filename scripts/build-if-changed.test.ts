@@ -14,7 +14,7 @@ function fixture() {
 
 describe('build-if-changed (PO-4)', () => {
   it('hasher kildene til nettsiden', () => {
-    expect(BUILD_INPUTS).toEqual(expect.arrayContaining(['src/web', 'src/shared', 'docs/design', 'vite.config.ts', 'package-lock.json']));
+    expect(BUILD_INPUTS).toEqual(expect.arrayContaining(['src/web', 'src/core', 'src/shared', 'docs/design', 'vite.config.ts', 'package-lock.json']));
   });
 
   it('samme kilde gir samme hash; endret fil gir ny hash', () => {

@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { BaseResult, NoteDocument } from '../../../shared/api-types';
-import type { DraftFit, SlideDeck, SlideDraft, SlideDraftDeck } from './model';
+import type { DraftFit, SlideDeck, SlideDraft, SlideDraftDeck } from '../../../core/presentation';
 import type { PresentationControl } from './presentation-control';
 
 /** Et utkast som skal måles (A2), med cachenøkkelen resultatet lagres under. */

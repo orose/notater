@@ -1,4 +1,5 @@
-export { DEFAULT_MODE, KEY_MODES, type KeyMode } from './modes';
+// Tastaturet i web: kjernens motor (src/core/keyboard) og DOM-vaktene.
+export { DEFAULT_MODE, KEY_MODES, type KeyMode } from '../../../core/keyboard';
 export {
   LEADER_KEY,
   NAMED_KEYS,
@@ -14,8 +15,8 @@ export {
   type LabelPlatform,
   type Modifier,
   type NamedKey,
-} from './key-notation';
-export { chordCandidates, type KeyInput } from './key-input';
+} from '../../../core/keyboard';
+export { chordCandidates, type KeyInput } from '../../../core/keyboard';
 export {
   ESCAPE_COMMAND_ID,
   P5_SAFE_CHARACTERS,
@@ -23,7 +24,7 @@ export {
   validateBindings,
   type BindingToCheck,
   type PolicyViolation,
-} from './key-policy';
+} from '../../../core/keyboard';
 export {
   createKeyEngine,
   SEQUENCE_TIMEOUT_MS,
@@ -36,5 +37,5 @@ export {
   type KeyEngineState,
   type KeyResult,
   type PendingSequence,
-} from './key-engine';
+} from '../../../core/keyboard';
 export { effectiveKeyTarget, hasOpenModal, isSpaceActivationTarget, isTextEntryTarget } from './dom-guard';

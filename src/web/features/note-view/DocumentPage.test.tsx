@@ -2,7 +2,7 @@ import { act, fireEvent, screen, within } from '@testing-library/react';
 import { Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { baseDocFixture, noteFixture, vaultsFixture } from '../../test-support/fixtures';
-import { h, root } from '../../test-support/hast';
+import { h, root } from '../../../core/test-support/hast';
 import { mockApi } from '../../test-support/mock-api';
 import { renderWithProviders } from '../../test-support/render-with-providers';
 import { INITIAL_LIVE_STATE, LiveContext } from '../live-reload/live-context';
