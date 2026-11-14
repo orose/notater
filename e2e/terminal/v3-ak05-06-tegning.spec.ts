@@ -186,8 +186,8 @@ test.describe('AK-3-06 plassholdere for Mermaid, kanban og bilder', () => {
         // Design §4.10 / PO-127: teksten er fet og dempet; detaljlinjen (diagramtype, base) er lov.
         const celler = (cellerFor(t.celler(), sted.tekst.slice(0, 10)) ?? []).filter((c) => c.tegn.trim());
         expect(celler.length).toBeGreaterThan(0);
-        // Bilde-plassholderen er én dempet linje uten ramme og ikke fet (design §4.10).
-        if (sted.type !== 'bilde') expect(celler.every((c) => c.fet), 'fet').toBe(true);
+        // PO-134: også bildeplassholderen er fet og dempet.
+        expect(celler.every((c) => c.fet), 'fet').toBe(true);
         // «Dempet» = SGR 2 eller en annen forgrunnsfarge enn lysbildetittelen (rollen tekst).
         const overskrift = notat.lysbilder[sted.lysbilde - 1]!.overskrift!;
         const tekstFarge = fargeNøkkel(cellerFor(t.celler(), overskrift.slice(0, 6))![0]!.fg);
