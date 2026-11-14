@@ -3,6 +3,7 @@
 // Testplan: TC-3-03-*, TC-3-04-*. Fasit: v3-fasit.json › figlet, agendalinje, nummerering; UX: docs/design/terminal/.
 import {
   agendalinje,
+  erInnholdsside,
   cellerFor,
   expect,
   fargeNøkkel,
@@ -102,7 +103,8 @@ test.describe('AK-3-03 figlet-hode', () => {
   test('TC-3-03-03 resize fra 200×50 til 80×24 på overgangen «Kundetilbakemeldinger og support»: blokk → fet fallback, samme lysbilde', async ({ present }) => {
     const t = await presenterNotat(present, fasitNotat('mange').sti, { størrelse: STØRRELSE['200'] });
     await gåTilFasit(t, 'mange', 13);
-    expect(finnFiglet(t.celler()).map((b) => b.til - b.fra + 1)).toEqual([f.figlet.hoyde.blokk]);
+    const ved200 = f.figlet.hoder.find((h) => h.notat === 'mange' && h.lysbilde === 13)!['200x50']!;
+    expect(finnFiglet(t.celler()).map((b) => b.til - b.fra + 1)).toEqual(Array(ved200.linjer).fill(f.figlet.hoyde.blokk));
     await t.endreStørrelse(STØRRELSE['80']);
     await expect.poll(() => finnFiglet(t.celler())).toEqual([]);
     expect(lysbildenummer(t.skjerm())?.n).toBe(13);
@@ -123,7 +125,7 @@ test.describe('AK-3-04 agendalinjen', () => {
         for (const i of [0, 1]) if (notat.lysbilder[i]?.type !== 'innhold') expect(agendalinje(skjermer[i]!, agenda), `lysbilde ${i + 1}`).toBeNull();
         for (const l of notat.lysbilder.filter((x) => x.type === 'innhold' && x.overskrift && x.agendapunkt)) {
           // Første skjerm med overskriften (ekstra «(forts.)» ved 80×24 forskyver nummereringen).
-          const rader = skjermer.find((r) => skjøtt(r.slice(1)).includes(l.overskrift!));
+          const rader = skjermer.find((r) => erInnholdsside(r) && skjøtt(r.slice(1)).includes(l.overskrift!));
           expect(rader, `fant «${l.overskrift}»`).toBeDefined();
           const linje = agendalinje(rader!, agenda);
           expect(linje, `«${l.overskrift}» har agendalinje`).not.toBeNull();
@@ -135,8 +137,9 @@ test.describe('AK-3-04 agendalinjen', () => {
           for (const p of e.synlige ?? []) expect(linje, `synlig: ${p}`).toContain(p);
           if (e.gjeldendeHel) expect(linje).toContain(e.gjeldendeHel);
           if (e.forkortet || e.gjeldendeForkortet) expect(linje).toContain(f.agendalinje.ellipse);
-          if (e.før !== undefined) expect(linje!.trimStart().startsWith(f.agendalinje.ellipse), 'ellipse før').toBe(e.før);
-          if (e.etter !== undefined) expect(linje!.trimEnd().endsWith(f.agendalinje.ellipse), 'ellipse etter').toBe(e.etter);
+          // Skjulte punkter = « … » som eget element (design §2.5), ikke et forkortet navn som slutter på «…».
+          if (e.før !== undefined) expect(/^\s*…(\s|$)/.test(linje!), 'skjulte punkter før').toBe(e.før);
+          if (e.etter !== undefined) expect(/(^|\s)…\s*$/.test(linje!), 'skjulte punkter etter').toBe(e.etter);
         }
         // Overgangene: agendalinjen er skjult (TC-3-04-05 sjekker hver overgang ved nummer i eksakt størrelse).
       });
@@ -163,7 +166,7 @@ test.describe('AK-3-04 agendalinjen', () => {
     const t = await presenterNotat(present, mange.sti, { størrelse: STØRRELSE['200'] });
     const skjermer = await lesAlleSkjermer(t);
     for (const [overskrift, e] of Object.entries(mange.avkortet)) {
-      const rader = skjermer.find((r) => skjøtt(r).includes(overskrift))!;
+      const rader = skjermer.find((r) => erInnholdsside(r) && skjøtt(r).includes(overskrift))!;
       const linje = agendalinje(rader, mange.agenda)!;
       for (const p of e.synlige) expect(linje).toContain(p);
       for (const p of mange.agenda.filter((x) => !e.synlige.includes(x))) expect(linje).not.toContain(p);

@@ -31,11 +31,12 @@ const utenfor16 = (koder: readonly string[]) => koder.filter((x) => x.includes('
 const bakgrunner = (koder: readonly string[]) => koder.filter((x) => /^(4[0-7]|10[0-7]|48;\d)$/.test(x));
 
 /** Kontrast for alle celler med blekk mot cellens bakgrunn, eller mot rollen `bg` der cellen ikke har egen (PO-131). */
-function kontrastbrudd(celler: readonly (readonly Celle[])[], bg: string, krav: { tekst: number; stor: number }, figletRader: Set<number>): string[] {
+function kontrastbrudd(celler: readonly (readonly Celle[])[], bg: string, krav: { tekst: number; stor: number }, figletRader: Set<number>, unntatt: ReadonlySet<string>): string[] {
   const brudd: string[] = [];
   celler.forEach((rad, y) =>
     rad.forEach((c, x) => {
-      if (!c.tegn.trim() || c.fg.kind !== 'rgb') return;
+      // Design §6.2: rollen `dekor` (ledere, tittelstrek, skillestreker, fremdriftsspor) er bare dekor og har ikke krav.
+      if (!c.tegn.trim() || c.fg.kind !== 'rgb' || unntatt.has(c.fg.hex)) return;
       const bak = c.bg.kind === 'rgb' ? c.bg.hex : bg;
       const [fg, b] = c.invertert ? [bak, c.fg.hex] : [c.fg.hex, bak];
       const erTekst = /[\p{L}\p{N}]/u.test(c.tegn) && !figletRader.has(y);
@@ -47,7 +48,7 @@ function kontrastbrudd(celler: readonly (readonly Celle[])[], bg: string, krav: 
 }
 
 test.describe('AK-3-09 farger', () => {
-  test.fixme('TC-3-09-01 standard (PO-132): terminalens eget tema – bare ANSI-indekser, bakgrunnen males ikke', async ({ present }) => {
+  test('TC-3-09-01 standard (PO-132): terminalens eget tema – bare ANSI-indekser, bakgrunnen males ikke', async ({ present }) => {
     const t = await presenterNotat(present, status.sti);
     for (const n of UTVALG) await gåTilFasit(t, 'statusmote', n);
     const koder = koderI(t.råstrøm());
@@ -75,7 +76,9 @@ test.describe('AK-3-09 farger', () => {
         expect(modus, `lysbilde ${n}: bakgrunnen er malt med rollen bg i ${palett}`).toBeDefined();
         const bg = fargeroller.truecolor[palett]![modus!].roller.bg!;
         const figlet = new Set(finnFiglet(celler).flatMap((b) => Array.from({ length: b.til - b.fra + 1 }, (_, i) => b.fra + i)));
-        brudd.push(...kontrastbrudd(celler, bg, { tekst: 4.5, stor: 3 }, figlet).map((b) => `lysbilde ${n}: ${b}`));
+        const roller = fargeroller.truecolor[palett]![modus!].roller;
+        const dekor = new Set([roller.dekor!, roller.fremdrift_spor!].filter(Boolean));
+        brudd.push(...kontrastbrudd(celler, bg, { tekst: 4.5, stor: 3 }, figlet, dekor).map((b) => `lysbilde ${n}: ${b}`));
       }
       expect(koderI(t.råstrøm())).toContain('38;2');
       expect(brudd).toEqual([]);

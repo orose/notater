@@ -440,3 +440,4 @@ Designet og PO-beslutningene gjelder; QA tilpasser tester og fasit:
 - **PO-130** `--farger terminal` vinner over NO_COLOR (Q-3-07); TC-3-09-06 rettes.
 - **PO-131** Kontrasttesten bruker lysbildets bakgrunn (`bg`), ikke den hyppigste fargen.
 - **PO-132 (kundeønske)** **Terminalens eget fargetema er standard** i terminalpresentasjonen (endrer T4). Rollene mappes til terminalens ANSI-farger (16 + forgrunn/bakgrunn) etter `farger.json`-kartet; bakgrunnen males ikke. Våre paletter er opt-in med `--palett <navn>` / `:palett <navn>`, og `:farger terminal` går tilbake. Kodefarger mappes til ANSI-fargene. Valgfritt: hvis terminalen svarer på OSC 4/10/11 (Ghostty gjør det), kan nyanser (dempet tekst, flater) avledes fra temaets faktiske farger – men aldri farger utenfor temaet.
+- **PO-133 (Q-3-15)** S6 avgjøres av plass: får innledningen plass på tittelsiden ved 200×50, blir det ett lysbilde færre enn i v2. Godkjent.

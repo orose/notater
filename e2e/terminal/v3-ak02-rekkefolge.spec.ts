@@ -6,6 +6,7 @@
 // «(forts.)»-deler (terminalen er mindre enn lerretet); de hoppes over i sammenligningen (Q-3-01).
 import {
   agendalinje,
+  erInnholdsside,
   erTittelside,
   expect,
   fasit3,
@@ -44,6 +45,11 @@ async function lesNotat(t: Terminal): Promise<LestSkjerm[]> {
 
 /** Grov gjenkjenning: er skjermen fasitlysbildet `l`? Brukes bare for å hoppe over ekstra «(forts.)» (Q-3-01). */
 function passer(s: LestSkjerm, l: V3Lysbilde): boolean {
+  const første = s.rader.find((x) => x.trim()) ?? '';
+  if (l.type === 'tittel') return erTittelside(s.rader);
+  if (l.type === 'agenda') return /\d+ punkt/.test(første) && !/du er her/.test(første);
+  if (l.type === 'overgang') return /du er her/.test(første);
+  if (!erInnholdsside(s.rader)) return false;
   const markør = (l.inneholder ?? []).find((x) => MARKØR.test(x));
   if (markør) return s.tekst.includes(markør);
   if (l.type === 'innhold' && l.overskrift) return s.tekst.includes(l.overskrift);
@@ -75,7 +81,10 @@ function forventSomFasit(s: LestSkjerm, l: V3Lysbilde, notat: V3Notat, hvor: str
       if (l.progresjon && medProgresjon) expect(linje ?? '', `${hvor}: progresjon i agendalinjen`).toContain(l.progresjon);
       if (l.progresjon && !medProgresjon) expect(linje ?? '', `${hvor}: progresjon n/m i agendalinjen`).toMatch(/\d+\/\d+/);
       if (!l.agendapunkt) expect(linje, `${hvor}: ingen agendalinje uten agendapunkt`).toBeNull();
-      for (const m of (l.inneholder ?? []).filter((x) => MARKØR.test(x))) expect(flate, `${hvor}: markør ${m}`).toContain(m);
+      // Eksakt: alle markører på lysbildet. Ellers kan resten stå på en «(forts.)»-del (også uten overskrift, S6/S7);
+      // da sjekkes første markør her og alle markører i rekkefølge for hele notatet (sammenlign).
+      const markører = (l.inneholder ?? []).filter((x) => MARKØR.test(x));
+      for (const m of medProgresjon ? markører : markører.slice(0, 1)) expect(flate, `${hvor}: markør ${m}`).toContain(m);
     }
   }
 }
@@ -86,12 +95,31 @@ function sammenlign(lest: LestSkjerm[], notat: V3Notat, eksakt: boolean, navn: s
   for (const s of lest) {
     const l = notat.lysbilder[i];
     const forrige = grunnOverskrift(notat.lysbilder[i - 1]);
-    if (!eksakt && forrige && s.tekst.includes(`${forrige}${FORTS}`) && (!l || !passer(s, l))) continue;
+    const forrigeMarkører = (notat.lysbilder[i - 1]?.inneholder ?? []).filter((x) => MARKØR.test(x));
+    const erFortsettelse = (forrige !== null && s.tekst.includes(`${forrige}${FORTS}`)) || forrigeMarkører.some((m) => s.tekst.includes(m));
+    if (!eksakt && erFortsettelse && (!l || !passer(s, l))) continue;
     expect(l, `${navn}: flere lysbilder i terminalen enn i fasiten (lysbilde ${s.n})`).toBeDefined();
     forventSomFasit(s, l!, notat, `${navn} ${s.n}/${s.av}`, eksakt);
     i++;
   }
   expect(i, `${navn}: alle fasitlysbildene ble vist`).toBe(notat.lysbilder.length);
+  // Alle markører i hele notatet vises; lysbildenes første markør står i fasitens rekkefølge (innen et lysbilde
+  // er rekkefølgen i fasiten ikke dokumentrekkefølgen, f.eks. et nestet embed).
+  const alt = lest.map((x) => x.tekst).join(' ');
+  const finn = (m: string) => alt.search(new RegExp(`${m}(?![0-9A-Za-z])`));
+  for (const m of notat.lysbilder.flatMap((l) => (l.inneholder ?? []).filter((x) => MARKØR.test(x)))) expect(finn(m), `${navn}: markør ${m} vises`).toBeGreaterThanOrEqual(0);
+  const pos = notat.lysbilder.map((l) => (l.inneholder ?? []).find((x) => MARKØR.test(x))).filter((m): m is string => !!m).map(finn);
+  expect(pos, `${navn}: lysbildene i rekkefølge`).toEqual([...pos].sort((a, b) => a - b));
+}
+
+/**
+ * S6 er plassavhengig: «langt innhold før agenda» får eget lysbilde bare når det ikke får plass på tittelsiden. Ved
+ * 200×50 får det plass i terminalen (Q-3-15, forslag godkjennes av PO). Varianten der innledningen står på tittelsiden.
+ */
+function medInnledningPåTittel(notat: V3Notat): V3Notat {
+  const [tittel, innledning, ...resten] = notat.lysbilder;
+  if (innledning?.type !== 'innhold' || innledning.overskrift !== null) return notat;
+  return { ...notat, lysbilder: [{ ...tittel!, inneholder: [...(tittel!.inneholder ?? []), ...(innledning.inneholder ?? [])] }, ...resten] };
 }
 
 const NOTATER = [...r.rekkefolge.v2Notater.filter((n) => n !== 'mye'), 'kanter'];
@@ -101,7 +129,9 @@ test.describe('AK-3-02 lysbilderekkefølgen er identisk med v2', () => {
     const notat = fasitNotat(nøkkel);
     test(`TC-3-02-01 ${notat.sti} ved 200×50 er eksakt lik fasiten`, async ({ present }) => {
       const t = await presenterNotat(present, notat.sti, { størrelse: r.rekkefolge.eksaktVed });
-      sammenlign(await lesNotat(t), notat, true, nøkkel);
+      const lest = await lesNotat(t);
+      const s6 = nøkkel === 'forLang' && lest.length === notat.lysbilder.length - 1;
+      sammenlign(lest, s6 ? medInnledningPåTittel(notat) : notat, true, nøkkel);
     });
     for (const s of r.rekkefolge.moduloFortsVed) {
       test(`TC-3-02-02 ${notat.sti} ved ${s.cols}×${s.rows} er lik fasiten når ekstra «(forts.)» hoppes over`, async ({ present }) => {

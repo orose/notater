@@ -116,9 +116,7 @@ test.describe('AK-3-01 start og notatvalg', () => {
   test('TC-3-01-10 read-only: ingenting i vaultet endres av en hel presentasjon (sjekksum)', async ({ present, vault }) => {
     const før = sjekksum(vault.dir, '.');
     const t = await presenterNotat(present, 'Statusmøte uke 45');
-    await t.trykk('G', ':');
-    await t.skriv('presenter h4');
-    await t.trykk('Enter', 'q');
+    await t.trykk('G', 'g g', 'q');
     await t.ventPåExit();
     expect(sjekksum(vault.dir, '.')).toEqual(før);
   });

@@ -1059,7 +1059,7 @@
   "heuristikk": "En figlet-blokk er ≥ 3 sammenhengende rader der < 20 % av blekket (tegn utenom mellomrom) er bokstaver/sifre. Se e2e/support/terminal.ts › finnFiglet()."
  },
  "agendalinje": {
-  "$kommentar": "T6/AK-3-04: øverste ikke-tomme rad på innholdslysbilder; skjult på T/A/O og på lysbilder uten agendapunkt. Gjeldende punkt er uthevet (andre SGR-attributter enn naboene) og har progresjon n/m rett etter navnet. Avkorting i trinn (Q-3-02): alle → forrige · nåværende · neste med «…» → naboene forkortes med «…» → nåværende forkortes med «…». Progresjonen vises alltid.",
+  "$kommentar": "T6/AK-3-04: øverste ikke-tomme rad på innholdslysbilder; skjult på T/A/O og på lysbilder uten agendapunkt. Gjeldende punkt er uthevet (andre SGR-attributter enn naboene) og har progresjon n/m rett etter navnet. Avkorting etter design §2.5 (Q-3-02): alle → forrige · nåværende · neste med « … » foran/bak når noe er skjult → naboene forkortet til 14 tegn → naboene til 8 og nåværende til ⅓ av satsen → bare nåværende. 'før'/'etter' gjelder skjulte punkter (« … » som eget element), ikke et forkortet navn som slutter på «…». Progresjonen vises alltid.",
   "ellipse": "…",
   "vedBredde": {
    "80": {
@@ -1097,34 +1097,29 @@
     },
     "mange": {
      "Status 1": {
-      "synlige": [
-       "Økonomi og budsjettoppfølging",
-       "Rekruttering og bemanning"
-      ],
+      "gjeldendeHel": "Økonomi og budsjettoppfølging",
+      "forkortet": true,
       "før": false,
-      "etter": true
+      "etter": true,
+      "kilde": "design §2.5 trinn 3: naboene forkortes til 14 tegn"
      },
      "Status 8": {
-      "synlige": [
-       "Leverandører og avtaler",
-       "Opplæring og kompetanseheving"
-      ],
+      "gjeldendeHel": "Opplæring og kompetanseheving",
+      "forkortet": true,
       "før": true,
       "etter": false
      },
      "Status 5": {
-      "gjeldendeHel": "Arkitektur og teknisk gjeld",
-      "forkortet": true,
+      "gjeldendeForkortet": true,
       "før": true,
       "etter": true,
-      "avklaring": "Q-3-02"
+      "kilde": "design §2.5 trinn 4: nåværende forkortes til ⅓ av satsen (23 tegn ved 80)"
      },
      "Status 2": {
-      "gjeldendeHel": "Rekruttering og bemanning",
-      "forkortet": true,
+      "gjeldendeForkortet": true,
       "før": false,
       "etter": true,
-      "avklaring": "Q-3-02"
+      "kilde": "design §2.5 trinn 4"
      }
     },
     "kanter": {

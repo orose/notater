@@ -177,3 +177,26 @@ interne lenker (PO-109), ingen lagrede valg (PO-107).
 | # | Funn | Status |
 |---|---|---|
 | F-1 | Når **tsx og appen** får SIGTERM/SIGHUP samtidig (som når et terminalvindu lukkes og hele forgrunnsgruppen får SIGHUP), henger prosessen: SIGTERM 4 av 4, SIGHUP 1 av 4 med `--repeat-each 4`. Signal bare til appen virker 8 av 8. | **Rettet i 3-a** (PO-119, PO-123): `npm run present` kjører bunten `scripts/present.mjs` i én prosess; riggen signalerer begge innganger (`APP_INNGANGER`). TC-3-11-03b er grønn (SIGTERM og SIGHUP, 3 av 3 hver). |
+
+## 11. Tilpasninger etter slice 3-b (PO-124 til PO-132)
+
+| Beslutning | Endring i testene/fasiten |
+|---|---|
+| PO-124 Ingen `n/N` på tittelsiden | `erTittelside()` (statuslinjen «Presentasjon … → neste»), `antallLysbilder()` leser totalen fra lysbilde 2, `forventNotat()` leser notattittelen i statuslinjen på lysbilde 2. `lysbildenummer()` gir `{ n: 1, av: null }` på tittelsiden. |
+| PO-125 Figlet-høyde uten tomrader | Høyden summeres over figlet-blokkene (én per linje); `figlet.hoder` regnet om. |
+| PO-126 Sats maks 160 | `geometri(cols)` etter design §1.1; figlet-kjeden bruker satsen (ikke marg 0–4); folioen sjekkes mot satsens høyre kant. |
+| PO-127 Plassholdere | Mermaid/kanban: fet og dempet, detaljlinjen (`flowchart LR`, `Oppgaver.base`) er lov, aldri kilde/korttitler. Bilde: én dempet linje, ikke fet (design §4.10). |
+| PO-128 Marginalia ved 200 | TC-3-05-02: noten i høyre spalte (kolonne ≥ marg + mål) ved 200, nederst ved 80/120. |
+| PO-129 Prosentkodet OSC 8 | `osc8Mål()` dekoder med `decodeURI` før sammenligning. |
+| PO-130 `--farger terminal` > NO_COLOR | TC-3-09-06 forventer 16 farger. |
+| PO-131 Kontrast mot `bg` | TC-3-09-02 måler mot rollen `bg` (lys/mørk) og unntar rollen `dekor`/`fremdrift_spor` (design §6.2: dekor har ikke krav). |
+| PO-132 Terminalens tema som standard | TC-3-09-01: standard har bare ANSI-indekser, ingen bakgrunn, aksent fra `ansi16.aksentAvPalett`; truecolor-tester bruker `--palett`. |
+
+Andre tilpasninger: `gåTilFasit()` finner fasitlysbildet på innholdet (ekstra «(forts.)» forskyver nummeret ved
+80×24/120×36), `erInnholdsside()` skiller innhold fra overgangene (som viser seksjonens titler som tre); agendalinjens
+«…»-sjekker følger design §2.5 (skjulte punkter = « … » som eget element; naboer forkortes til 14 tegn, nåværende til
+⅓ av satsen). AK-3-02 i «modulo forts.»-modus godtar fortsettelser uten overskrift (S6/S7) og sjekker alle markører.
+
+**Q-3-15 (ny):** S6 er plassavhengig. «Langt innhold før agenda» får eget lysbilde i v2, men ved 200×50 får innledningen
+plass på tittelsiden i terminalen (6 lysbilder i stedet for 7). **Forslag:** godta det – S6 er definert av plassen, som
+«(forts.)». TC-3-02-01 godtar varianten der innledningen står på tittelsiden, og sjekker at alle markørene vises i rekkefølge.

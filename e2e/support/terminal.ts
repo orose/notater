@@ -506,6 +506,12 @@ export function erTittelside(rader: readonly string[]): boolean {
   return /^\s*Presentasjon\b/.test(linje) && /→ neste/.test(linje) && !/\d+\s*\/\s*\d+\s*$/.test(linje);
 }
 
+/** Innholdsside: verken tittelsiden, agendaen («… · N punkter») eller en overgang («0k / 0N  du er her»). */
+export function erInnholdsside(rader: readonly string[]): boolean {
+  const første = rader.find((x) => x.trim()) ?? '';
+  return !erTittelside(rader) && !/\d+ punkt|du er her/.test(første);
+}
+
 /** Antall lysbilder: fra folioen, eller (på tittelsiden) fra lysbilde 2 – deretter tilbake (PO-124). */
 export async function antallLysbilder(t: Terminal): Promise<number> {
   const nå = lysbildenummer(t.skjerm());
@@ -701,7 +707,7 @@ export async function gåTilFasit(t: Terminal, nøkkel: string, nr: number): Pro
       return m !== null && Number(m[1]) === agenda.indexOf(l.agendapunkt ?? '') + 1;
     }
     // Innhold: ikke tittel-, agenda- eller overgangssiden (overgangen viser seksjonens lysbildetitler som tre).
-    if (erTittelside(r) || /\d+ punkt|du er her/.test(første(r))) return false;
+    if (!erInnholdsside(r)) return false;
     const flate = skjøtt(innholdsflate(r, agenda));
     if (l.overskrift) return flate.includes(l.overskrift) && !flate.includes(`${l.overskrift} (forts.)`);
     const markør = (l.inneholder ?? []).find((x) => /^[A-ZÆØÅ]+-[A-ZÆØÅ0-9-]+$/.test(x));
@@ -733,7 +739,7 @@ export async function lesAlleSkjermer(t: Terminal): Promise<string[][]> {
 }
 
 /** Ruller en for stor blokk med `↓` til skjermen slutter å endre seg; returnerer alle unike skjermer. */
-export async function rullHeleBlokken(t: Terminal, maks = 400): Promise<string[][]> {
+export async function rullHeleBlokken(t: Terminal, maks = 2000): Promise<string[][]> {
   const ut = [t.skjerm()];
   for (let i = 0; i < maks; i++) {
     await t.trykk('Down');
