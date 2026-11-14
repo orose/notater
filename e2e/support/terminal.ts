@@ -758,8 +758,9 @@ export async function rullHeleBlokken(t: Terminal, maks = 2000): Promise<string[
   for (let i = 0; i < maks; i++) {
     await t.trykk('Down');
     let neste = t.skjerm();
-    for (let forsøk = 0; forsøk < 10 && neste.join('\n') === ut.at(-1)!.join('\n'); forsøk++) {
-      await new Promise((r) => setTimeout(r, 15));
+    // Opptil ~600 ms per tast: under last kan omtegningen komme sent, og da ville rullingen stoppet for tidlig.
+    for (let forsøk = 0; forsøk < 30 && neste.join('\n') === ut.at(-1)!.join('\n'); forsøk++) {
+      await new Promise((r) => setTimeout(r, 20));
       neste = t.skjerm();
     }
     if (neste.join('\n') === ut.at(-1)!.join('\n')) break;

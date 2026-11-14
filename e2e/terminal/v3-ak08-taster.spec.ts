@@ -104,9 +104,12 @@ test.describe('AK-3-08 taster', () => {
     await t.kommando('palett signal');
     await expect.poll(() => sgrIRåstrøm(t.råstrøm()).flatMap(fargekoder).includes('38;2')).toBe(true);
     // Avgrens råstrømmen (PO-136): bare det som skrives etter at omtegningen med paletten er ferdig.
+    // Kommandolinjen tegnes i paletten mens man skriver; avgrens til det som skrives etter Enter.
+    await t.trykk(':');
+    await t.skriv('farger terminal');
     await ventPåRo(t);
     const før = t.råstrøm().length;
-    await t.kommando('farger terminal');
+    await t.trykk('Enter');
     await ventPåRo(t);
     const koder = sgrIRåstrøm(t.råstrøm().slice(før)).flatMap(fargekoder);
     expect(koder.length, 'tegnet på nytt med farger').toBeGreaterThan(0);

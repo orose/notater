@@ -157,6 +157,8 @@ Fasit: `README-QA.md` §21, `docs/test/v3-fasit.json` (terminalspesifikt) og `v2
 Tester: `e2e/terminal/v3-*.spec.ts` – presentasjonen kjøres i en ekte pty i headless tmux (`e2e/support/terminal.ts`,
 godkjent i ADR-011 §8); TDD med `test.fixme` til funksjonen er levert. Riggens selvtest, fasitsjekken og hygienen i
 skjelettet kjører nå. Rammesnapshots (nivå 2 i ADR-011 §8) skriver utviklerne i `src/terminal/` mot samme fasit.
+**Avsluttende akseptansetest v3, 2026-11-14:** alle AK-3-01..13 bestått, ingen `fixme` igjen i `e2e/terminal/`, to åpne
+feil (BUG-016 testdeterminisme, BUG-017 lav); rapport `docs/test/akseptanserapport-v3.md`.
 
 ## 4. Definition of Done per slice
 

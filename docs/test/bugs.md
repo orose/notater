@@ -194,3 +194,23 @@ Reproduksjon generelt: `E2E_PORT=4418 npx playwright test` (porten kan velges fr
 - **Test:** TC-2-05-10 (`test.fail`) i `e2e/v2-ak05-07-agenda.spec.ts`.
 - **Forslag:** tittellysbildet måles som andre lysbilder (krymp egenskapslisten, eller begrens den til N rader med
   «+ k til»), eller egenskapskolonnen avsluttes over bunnlinjen.
+
+
+## BUG-016 – rammesnapshotene i terminalen avhenger av filenes mtime og tidssonen – ÅPEN
+
+- **Alvorlighet:** Middels (bare tester, men gjør `npm test` rød på andre maskiner) · **AK:** AK-3-13 · **Eier:** utvikler (terminal)
+- **Funn (avsluttende akseptansetest v3):** `src/terminal/features/slides/slide-view.test.ts` (nivå 2 i ADR-011 §8)
+  tegner tittelsiden med «Endret …» fra den **ekte** mtime-en til filene i `test-vault/` (tidspunktet for utsjekkingen),
+  formatert i prosessens tidssone. Med `TZ=Europe/Oslo` (teststrategi §1.4) feiler 33 tekstsnapshots («21.34» mot
+  «22.34»). I en ny klone (annen mtime) feiler de uansett tidssone.
+- **Forslag:** bygg kjøretiden over en kopi med fixture-mtimes (`docs/test/fixture-mtimes.json`, som e2e gjør), eller
+  injiser en fast klokke/mtime i `render-note`, og sett `TZ=Europe/Oslo` i testoppsettet.
+
+## BUG-017 – dempet tekst nesten usynlig i lyst terminaltema når terminalen ikke svarer på OSC 11 – ÅPEN
+
+- **Alvorlighet:** Lav (gjelder terminaler/multipleksere som ikke svarer på OSC 11; Ghostty svarer) · **AK:** AK-3-09 · **Eier:** utvikler/UX
+- **Funn (skjermbilder, `v3-aksept/png/*-ansi16-lys.png`):** uten OSC 11-svar velger appen mørkt kart (ADR-011 §3).
+  I standard terminalfarger (PO-132) er `dempet` da ANSI 7 (lys grå). På en lys bakgrunn blir tabellhoder, fotnoter og
+  datoer nesten usynlige. Lyst kart bruker ANSI 8.
+- **Forslag:** les `COLORFGBG` som reserve før «mørk», eller bruk samme ANSI-indeks for `dempet` i begge kart (8), som
+  er lesbar på både lys og mørk bakgrunn i vanlige temaer.

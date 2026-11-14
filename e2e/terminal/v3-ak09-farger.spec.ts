@@ -13,6 +13,7 @@ import {
   gåTilFasit,
   gåTilLysbilde,
   kontrast,
+  lysbildenummer,
   presenterNotat,
   sgrIRåstrøm,
   test,
@@ -135,12 +136,17 @@ test.describe('AK-3-09 farger', () => {
     await expect.poll(() => koderI(t.råstrøm().slice(før)).includes('38;2')).toBe(true);
     // Avgrens råstrømmen (PO-136): vent til omtegningen med paletten er ferdig skrevet.
     await ventPåRo(t);
+    // Kommandolinjen tegnes i paletten mens man skriver; avgrens til det som skrives etter Enter.
+    await t.trykk(':');
+    await t.skriv('farger terminal');
+    await ventPåRo(t);
     før = t.råstrøm().length;
-    await t.kommando('farger terminal');
+    await t.trykk('Enter');
     await ventPåRo(t);
     const etter = koderI(t.råstrøm().slice(før));
     expect(etter.length).toBeGreaterThan(0);
     expect(utenfor16(etter)).toEqual([]);
-    expect(t.skjerm().at(-1)).toBe(nr);
+    // Bekreftelsen står i statuslinjen en stund (PO-134); samme lysbilde = samme folio.
+    expect(lysbildenummer(t.skjerm())).toEqual(lysbildenummer([nr ?? '']));
   });
 });
