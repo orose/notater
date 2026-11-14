@@ -16,6 +16,7 @@ import {
   presenterNotat,
   sgrIRåstrøm,
   test,
+  ventPåRo,
   XTERM_256,
   type Celle,
 } from '../support/terminal';
@@ -132,9 +133,11 @@ test.describe('AK-3-09 farger', () => {
     let før = t.råstrøm().length;
     await t.kommando('palett signal');
     await expect.poll(() => koderI(t.råstrøm().slice(før)).includes('38;2')).toBe(true);
+    // Avgrens råstrømmen (PO-136): vent til omtegningen med paletten er ferdig skrevet.
+    await ventPåRo(t);
     før = t.råstrøm().length;
     await t.kommando('farger terminal');
-    await new Promise((r) => setTimeout(r, 200));
+    await ventPåRo(t);
     const etter = koderI(t.råstrøm().slice(før));
     expect(etter.length).toBeGreaterThan(0);
     expect(utenfor16(etter)).toEqual([]);

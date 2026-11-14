@@ -534,9 +534,23 @@ export async function forventNotat(t: Terminal, tittel: string): Promise<void> {
 
 /** Satsgeometrien i design §1.1 (PO-126): marg = max(4, round(kol × 0,067)), sats = min(kol − 2·marg, 160), mål = min(sats, 72). */
 export function geometri(cols: number): { marg: number; sats: number; mål: number; venstre: number; høyre: number } {
-  const marg = Math.max(4, Math.round(cols * 0.067));
+  let marg = Math.max(4, Math.round(cols * 0.067));
   const sats = Math.min(cols - 2 * marg, 160);
+  // Bredere terminal: satsen sentreres og margen vokser (design §1.1, PO-136).
+  if (cols - 2 * marg > 160) marg = Math.floor((cols - sats) / 2);
   return { marg, sats, mål: Math.min(sats, 72), venstre: marg, høyre: marg + sats };
+}
+
+/** Venter til råstrømmen har vært uendret i `ro` ms (en omtegning er ferdig skrevet). */
+export async function ventPåRo(t: Terminal, ro = 250, maks = 5_000): Promise<void> {
+  const slutt = Date.now() + maks;
+  let lengde = -1;
+  while (Date.now() < slutt) {
+    const nå = t.råstrøm().length;
+    if (nå === lengde) return;
+    lengde = nå;
+    await new Promise((r) => setTimeout(r, ro));
+  }
 }
 
 /**

@@ -1,6 +1,6 @@
 // AK-3-08 Alle taster i tabellen virker; `?` viser dem; `:`-kommandoene virker med vim-feilkoder (E475/E486) ved feil.
 // Testplan: TC-3-08-*. Fasit: v3-fasit.json › taster.
-import { expect, fargekoder, fasit3, fasitNotat, forventGjenopprettet, gåTilFasit, gåTilLysbilde, lysbildenummer, presenterNotat, sgrIRåstrøm, skjøtt, test, ventPåLysbilde } from '../support/terminal';
+import { antallLysbilder, expect, fargekoder, fasit3, fasitNotat, forventGjenopprettet, gåTilFasit, gåTilLysbilde, lysbildenummer, presenterNotat, sgrIRåstrøm, skjøtt, test, ventPåLysbilde, ventPåRo } from '../support/terminal';
 
 const k = fasit3 as unknown as {
   taster: Record<'neste' | 'forrige' | 'forste' | 'siste' | 'oversikt' | 'svart' | 'hjelp' | 'avslutt', string[]> & {
@@ -76,7 +76,8 @@ test.describe('AK-3-08 taster', () => {
   test('TC-3-08-06 «?» viser hurtigtastene (alle fra tabellen), Esc/«?» lukker', async ({ present }) => {
     const t = await presenterNotat(present, status.sti, { størrelse: { cols: 120, rows: 36 } });
     await t.trykk('?');
-    const tekst = skjøtt(await t.ventPåTekst(/Neste|neste/));
+    // Vent på selve hjelpevinduet (tittelen «Hurtigtaster»), ikke på «→ neste» i starthintet (PO-136).
+    const tekst = skjøtt(await t.ventPåTekst('Hurtigtaster'));
     for (const navn of ['j', 'k', 'gg', 'G', 'o', 'b', ':', 'q', 'Esc', 'Ctrl c', 'PageDown', 'PageUp', 'Space']) expect(tekst, navn).toContain(navn);
     await t.trykk('Escape');
     await ventPåLysbilde(t, 1);
@@ -87,9 +88,11 @@ test.describe('AK-3-08 taster', () => {
     const niva = fasitNotat('niva') as unknown as { sti: string; h4: { lysbilder: unknown[] } };
     const t = await presenterNotat(present, niva.sti);
     await t.kommando('presenter h4');
-    await expect.poll(() => lysbildenummer(t.skjerm())?.av).toBe(niva.h4.lysbilder.length);
+    await ventPåRo(t);
+    // Tittelsiden har ingen folio (PO-124): totalen leses fra lysbilde 2.
+    expect(await antallLysbilder(t)).toBe(niva.h4.lysbilder.length);
     const t2 = await presenterNotat(present, status.sti);
-    await gåTilLysbilde(t2, 7);
+    await gåTilFasit(t2, 'statusmote', 7);
     await t2.kommando('agenda av');
     await expect.poll(() => lysbildenummer(t2.skjerm())).toEqual({ n: 5, av: 7 });
     await t2.ventPåTekst('Oppgaver');
@@ -98,10 +101,13 @@ test.describe('AK-3-08 taster', () => {
   test('TC-3-08-08 «:palett signal» og «:farger terminal» bytter farger uten å bytte lysbilde', async ({ present }) => {
     const t = await presenterNotat(present, status.sti);
     await gåTilFasit(t, 'statusmote', 5);
-    const før = t.råstrøm().length;
     await t.kommando('palett signal');
+    await expect.poll(() => sgrIRåstrøm(t.råstrøm()).flatMap(fargekoder).includes('38;2')).toBe(true);
+    // Avgrens råstrømmen (PO-136): bare det som skrives etter at omtegningen med paletten er ferdig.
+    await ventPåRo(t);
+    const før = t.råstrøm().length;
     await t.kommando('farger terminal');
-    await new Promise((r) => setTimeout(r, 200));
+    await ventPåRo(t);
     const koder = sgrIRåstrøm(t.råstrøm().slice(før)).flatMap(fargekoder);
     expect(koder.length, 'tegnet på nytt med farger').toBeGreaterThan(0);
     expect(koder.filter((x) => x.startsWith('38;') || x.startsWith('48;')), 'bare 16 farger etter :farger terminal').toEqual([]);

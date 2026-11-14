@@ -71,12 +71,14 @@ test.describe('AK-3-07 tilpasning', () => {
       await t.endreStørrelse(s);
       await t.ventPåTekst('Oppgaver');
       await expect.poll(() => t.skjerm().length).toBe(s.rows);
+      // Vent på omtegningen for den nye bredden (PO-136): folioen står høyrejustert mot satsens høyre kant, som
+      // sentreres når terminalen er bredere enn 160 + marger (design §1.1).
+      await expect.poll(() => statuslinje(t.skjerm()).trimEnd().length, { message: `omtegnet for ${s.cols}×${s.rows}` }).toBe(geometri(s.cols).høyre);
       const rader = t.skjerm();
       // Samme lysbilde (id): nummeret kan endre seg når «(forts.)»-delene før det endres med størrelsen.
       expect(skjøtt(rader), 'samme lysbilde').toContain('Kanban: Kanban – vises i web-leseren');
       expect(statuslinje(rader)).toBe(rader.filter((r) => r.trim()).at(-1));
       // Tegnet for den nye bredden: folioen står høyrejustert mot satsen (design §1.1/§2.7, maks 160, PO-126).
-      expect(statuslinje(rader).trimEnd().length).toBe(geometri(s.cols).høyre);
     }
   });
 
@@ -94,8 +96,14 @@ test.describe('AK-3-07 tilpasning', () => {
     for (let c = 120; c >= 80; c -= 2) await t.endreStørrelse({ cols: c, rows: 24 + (c % 7) });
     await t.endreStørrelse({ cols: 90, rows: 28 });
     await expect.poll(() => t.skjerm().length).toBe(28);
-    await t.ventPåTekst('Plan Q1');
-    expect(lysbildenummer(t.skjerm())?.n).toBe(10);
+    // «Plan Q1» er siste lysbilde; nummeret kan endre seg med «(forts.)»-delene før det, så sjekk n = N etter omtegning.
+    await expect
+      .poll(() => {
+        const r = t.skjerm();
+        const nr = lysbildenummer(r);
+        return skjøtt(r).includes('Plan Q1') && nr !== null && nr.n === nr.av && statuslinje(r).trimEnd().length === geometri(90).høyre;
+      }, { message: 'omtegnet ved 90×28 på siste lysbilde' })
+      .toBe(true);
     expect(t.exitkode()).toBeNull();
   });
 });
