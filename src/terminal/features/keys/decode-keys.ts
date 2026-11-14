@@ -209,6 +209,12 @@ export function createKeyDecoder(options: KeyDecoderOptions): KeyDecoder {
     feed(chunk) {
       if (escTimer !== null) options.timers.clearTimeout(escTimer);
       escTimer = null;
+      // Alt+tegn kommer i én skriving (`ESC x`). En ensom ESC fra en tidligere skriving fulgt av et vanlig tegn er
+      // Escape og deretter tegnet – ellers ble raske `Esc o` til Alt+o (tmux med escape-time 0, rask skriving).
+      if (buffer === '\x1b' && chunk !== '' && !'[O]\x1b'.includes(chunk[0]!)) {
+        emitKey(key('Escape'));
+        buffer = '';
+      }
       buffer += chunk;
       drain();
     },

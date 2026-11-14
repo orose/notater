@@ -15,7 +15,7 @@ function skrivAtomisk(path: string, innhold: string): void {
 }
 
 test.describe('AK-3-10 live oppdatering', () => {
-  test.fixme('TC-3-10-01 endret agendaoverskrift: agendalinjen får nytt navn, samme lysbilde og nummer', async ({ present, vault }) => {
+  test('TC-3-10-01 endret agendaoverskrift: agendalinjen får nytt navn, samme lysbilde og nummer', async ({ present, vault }) => {
     const e = live.overskrift as { fra: string; til: string; lysbilde: number; forvent: { lysbilde: number; av: number; agendalinje: string } };
     const t = await presenterNotat(present, status.sti, { størrelse: { cols: 120, rows: 36 } });
     await gåTilLysbilde(t, e.lysbilde);
@@ -26,7 +26,7 @@ test.describe('AK-3-10 live oppdatering', () => {
     expect(skjøtt(t.skjerm())).toContain('Oppgaver');
   });
 
-  test.fixme('TC-3-10-02 sletting av lysbildet man står på: nærmeste nabo, etterfølger først (ADR-010 §5)', async ({ present, vault }) => {
+  test('TC-3-10-02 sletting av lysbildet man står på: nærmeste nabo, etterfølger først (ADR-010 §5)', async ({ present, vault }) => {
     const e = live.slett as { seksjon: string; lysbilde: number; forvent: { lysbilde: number; av: number; agendapunkt: string } };
     const t = await presenterNotat(present, status.sti, { størrelse: { cols: 120, rows: 36 } });
     await gåTilLysbilde(t, e.lysbilde);
@@ -40,7 +40,7 @@ test.describe('AK-3-10 live oppdatering', () => {
     expect(skjøtt(t.skjerm())).not.toContain('STATUS-B');
   });
 
-  test.fixme('TC-3-10-03 endrede Bases-data: raden i Bases-tabellen oppdateres, samme lysbilde', async ({ present, vault }) => {
+  test('TC-3-10-03 endrede Bases-data: raden i Bases-tabellen oppdateres, samme lysbilde', async ({ present, vault }) => {
     const e = live.base as { fil: string; fra: string; til: string; lysbilde: number; rad: string; forvent: { lysbilde: number; verdi: string } };
     const t = await presenterNotat(present, fasit3.kanter.sti, { størrelse: { cols: 120, rows: 36 } });
     await gåTilLysbilde(t, e.lysbilde);
@@ -51,7 +51,7 @@ test.describe('AK-3-10 live oppdatering', () => {
     expect(lysbildenummer(t.skjerm())?.n).toBe(e.forvent.lysbilde);
   });
 
-  test.fixme('TC-3-10-04 nytt lysbilde før gjeldende: samme overskrift vises, nummeret øker', async ({ present, vault }) => {
+  test('TC-3-10-04 nytt lysbilde før gjeldende: samme overskrift vises, nummeret øker', async ({ present, vault }) => {
     const t = await presenterNotat(present, status.sti, { størrelse: { cols: 120, rows: 36 } });
     await gåTilLysbilde(t, 10);
     const sti = fil(vault.dir, status.sti);
@@ -60,7 +60,7 @@ test.describe('AK-3-10 live oppdatering', () => {
     expect(skjøtt(t.skjerm())).toContain('Plan Q1');
   });
 
-  test.fixme('TC-3-10-05 notatet slettes: «Notatet finnes ikke lenger»; kommer det tilbake, vises det igjen; q avslutter rent', async ({ present, vault }) => {
+  test('TC-3-10-05 notatet slettes: «Notatet finnes ikke lenger»; kommer det tilbake, vises det igjen; q avslutter rent', async ({ present, vault }) => {
     const melding = (live.notatSlettet as unknown as { melding: string }).melding;
     const t = await presenterNotat(present, status.sti);
     await gåTilLysbilde(t, 4);
@@ -76,7 +76,7 @@ test.describe('AK-3-10 live oppdatering', () => {
     await forventGjenopprettet(t);
   });
 
-  test.fixme('TC-3-10-06 mange raske lagringer (debounce) gir riktig sluttilstand og ingen flimring av feilmeldinger', async ({ present, vault }) => {
+  test('TC-3-10-06 mange raske lagringer (debounce) gir riktig sluttilstand og ingen flimring av feilmeldinger', async ({ present, vault }) => {
     const t = await presenterNotat(present, status.sti, { størrelse: { cols: 120, rows: 36 } });
     await gåTilLysbilde(t, 7);
     const sti = fil(vault.dir, status.sti);

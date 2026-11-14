@@ -49,11 +49,14 @@ export function paintCommandLine(frame: Frame, theme: TerminalTheme, state: Comm
   return frame;
 }
 
-/** Feil vim-stil: lett strek, `E475:` fet i `feil` med kortmeldingen, forklaringen dempet og «trykk en tast». */
+/**
+ * Feil vim-stil: lett strek, `E475:` fet i `feil` med kortmeldingen, forklaringen dempet og «trykk en tast». Står på
+ * de to radene rett over statuslinjen, så lysbildenummeret fortsatt vises (som vims meldingsområde over cmdline).
+ */
 export function paintCommandError(frame: Frame, theme: TerminalTheme, error: ArgumentError): Frame {
   const canvas = createCanvas(frame, theme, 'bg', false);
   const grid = gridFor(frame.cols, frame.rows);
-  const y = frame.rows - 2;
+  const y = frame.rows - 3;
   canvas.fill(0, y - 1, frame.cols, 3, 'bg');
   canvas.put(0, y - 1, '─'.repeat(frame.cols), { fg: 'dekor' });
   const x = canvas.put(grid.x - 1, y, `${error.code}:`, { fg: 'feil', bold: true });

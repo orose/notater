@@ -21,7 +21,7 @@ const stor = fasitNotat('stor');
 const status = fasitNotat('statusmote');
 
 test.describe('AK-3-07 tilpasning', () => {
-  test.fixme('TC-3-07-01 listepunkter deles aldri mellom to deler (80×24)', async ({ present }) => {
+  test('TC-3-07-01 listepunkter deles aldri mellom to deler (80×24)', async ({ present }) => {
     const t = await presenterNotat(present, mye.sti, { størrelse: { cols: 80, rows: 24 } });
     const av = await antallLysbilder(t);
     const sett = new Map<string, number>();
@@ -33,7 +33,7 @@ test.describe('AK-3-07 tilpasning', () => {
     expect(sett.size).toBe(20);
   });
 
-  test.fixme('TC-3-07-02 for stor kodeblokk ruller internt med ↑/↓ og hint; alle 120 linjer kan ses (80×24)', async ({ present }) => {
+  test('TC-3-07-02 for stor kodeblokk ruller internt med ↑/↓ og hint; alle 120 linjer kan ses (80×24)', async ({ present }) => {
     const t = await presenterNotat(present, stor.sti, { størrelse: { cols: 80, rows: 24 } });
     const først = await gåTilLysbilde(t, 4);
     expect(skjøtt(først), 'hint om rulling').toMatch(/[↓↑]/);
@@ -60,7 +60,7 @@ test.describe('AK-3-07 tilpasning', () => {
     }
   });
 
-  test.fixme('TC-3-07-04 resize midt i presentasjonen: samme lysbilde, tegnet for ny størrelse', async ({ present }) => {
+  test('TC-3-07-04 resize midt i presentasjonen: samme lysbilde, tegnet for ny størrelse', async ({ present }) => {
     const t = await presenterNotat(present, status.sti, { størrelse: { cols: 120, rows: 36 } });
     await gåTilLysbilde(t, 7);
     for (const s of [
@@ -80,7 +80,7 @@ test.describe('AK-3-07 tilpasning', () => {
     }
   });
 
-  test.fixme('TC-3-07-05 resize på en «(forts.)»-del: innholdet øverst på delen er fortsatt synlig etterpå', async ({ present }) => {
+  test('TC-3-07-05 resize på en «(forts.)»-del: innholdet øverst på delen er fortsatt synlig etterpå', async ({ present }) => {
     const t = await presenterNotat(present, mye.sti, { størrelse: { cols: 80, rows: 24 } });
     const rader = await gåTilLysbilde(t, 5);
     const markør = /MYE-(L?\d{2})/.exec(skjøtt(rader))![0];
@@ -88,7 +88,7 @@ test.describe('AK-3-07 tilpasning', () => {
     await expect.poll(() => skjøtt(t.skjerm()).includes(markør), { message: `${markør} synlig etter resize` }).toBe(true);
   });
 
-  test.fixme('TC-3-07-06 mange raske resize-hendelser (vindu dras) gir riktig sluttilstand og ingen krasj', async ({ present }) => {
+  test('TC-3-07-06 mange raske resize-hendelser (vindu dras) gir riktig sluttilstand og ingen krasj', async ({ present }) => {
     const t = await presenterNotat(present, status.sti, { størrelse: { cols: 120, rows: 36 } });
     await gåTilLysbilde(t, 10);
     for (let c = 120; c >= 80; c -= 2) await t.endreStørrelse({ cols: c, rows: 24 + (c % 7) });

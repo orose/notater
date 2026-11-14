@@ -47,7 +47,7 @@ test.describe('AK-3-08 taster', () => {
     expect(t.exitkode(), '«g Esc» avslutter ikke').toBeNull();
   });
 
-  test.fixme('TC-3-08-04 oversikt: «o» viser alle lysbildene, j/k/↓/↑ flytter, ↵ hopper, Esc lukker uten å avslutte', async ({ present }) => {
+  test('TC-3-08-04 oversikt: «o» viser alle lysbildene, j/k/↓/↑ flytter, ↵ hopper, Esc lukker uten å avslutte', async ({ present }) => {
     const t = await presenterNotat(present, status.sti, { størrelse: { cols: 120, rows: 36 } });
     await t.trykk('o');
     for (const l of status.lysbilder.filter((x) => x.type === 'innhold')) await t.ventPåTekst(l.overskrift!);
@@ -61,7 +61,7 @@ test.describe('AK-3-08 taster', () => {
   });
 
   for (const tast of k.taster.svart) {
-    test.fixme(`TC-3-08-05 svart skjerm med «${tast}»; neste/forrige gir bildet tilbake uten å bla`, async ({ present }) => {
+    test(`TC-3-08-05 svart skjerm med «${tast}»; neste/forrige gir bildet tilbake uten å bla`, async ({ present }) => {
       const t = await presenterNotat(present, status.sti);
       await gåTilFasit(t, 'statusmote', 4);
       await t.trykk(tast);
@@ -73,7 +73,7 @@ test.describe('AK-3-08 taster', () => {
     });
   }
 
-  test.fixme('TC-3-08-06 «?» viser hurtigtastene (alle fra tabellen), Esc/«?» lukker', async ({ present }) => {
+  test('TC-3-08-06 «?» viser hurtigtastene (alle fra tabellen), Esc/«?» lukker', async ({ present }) => {
     const t = await presenterNotat(present, status.sti, { størrelse: { cols: 120, rows: 36 } });
     await t.trykk('?');
     const tekst = skjøtt(await t.ventPåTekst(/Neste|neste/));
@@ -83,7 +83,7 @@ test.describe('AK-3-08 taster', () => {
     expect(t.exitkode(), 'Esc lukker hjelpen først').toBeNull();
   });
 
-  test.fixme('TC-3-08-07 «:presenter h4» i Lysbildenivå gir h4-rekkefølgen; «:agenda av» beholder lysbildet', async ({ present }) => {
+  test('TC-3-08-07 «:presenter h4» i Lysbildenivå gir h4-rekkefølgen; «:agenda av» beholder lysbildet', async ({ present }) => {
     const niva = fasitNotat('niva') as unknown as { sti: string; h4: { lysbilder: unknown[] } };
     const t = await presenterNotat(present, niva.sti);
     await t.kommando('presenter h4');
@@ -95,7 +95,7 @@ test.describe('AK-3-08 taster', () => {
     await t2.ventPåTekst('Oppgaver');
   });
 
-  test.fixme('TC-3-08-08 «:palett signal» og «:farger terminal» bytter farger uten å bytte lysbilde', async ({ present }) => {
+  test('TC-3-08-08 «:palett signal» og «:farger terminal» bytter farger uten å bytte lysbilde', async ({ present }) => {
     const t = await presenterNotat(present, status.sti);
     await gåTilFasit(t, 'statusmote', 5);
     const før = t.råstrøm().length;
@@ -109,7 +109,7 @@ test.describe('AK-3-08 taster', () => {
   });
 
   for (const f of k.taster.feil) {
-    test.fixme(`TC-3-08-09 «:${f.kommando}» gir ${f.kode} med norsk forklaring, presentasjonen fortsetter`, async ({ present }) => {
+    test(`TC-3-08-09 «:${f.kommando}» gir ${f.kode} med norsk forklaring, presentasjonen fortsetter`, async ({ present }) => {
       const t = await presenterNotat(present, fasitNotat(f.notat ?? 'statusmote').sti);
       await gåTilLysbilde(t, 2);
       await t.kommando(f.kommando);
@@ -120,7 +120,7 @@ test.describe('AK-3-08 taster', () => {
     });
   }
 
-  test.fixme('TC-3-08-10 «:» og Esc avbryter kommandolinjen uten å avslutte; «:q» avslutter', async ({ present }) => {
+  test('TC-3-08-10 «:» og Esc avbryter kommandolinjen uten å avslutte; «:q» avslutter', async ({ present }) => {
     const t = await presenterNotat(present, status.sti);
     await t.trykk(':');
     await t.skriv('presenter');

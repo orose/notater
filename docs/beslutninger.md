@@ -441,3 +441,10 @@ Designet og PO-beslutningene gjelder; QA tilpasser tester og fasit:
 - **PO-131** Kontrasttesten bruker lysbildets bakgrunn (`bg`), ikke den hyppigste fargen.
 - **PO-132 (kundeønske)** **Terminalens eget fargetema er standard** i terminalpresentasjonen (endrer T4). Rollene mappes til terminalens ANSI-farger (16 + forgrunn/bakgrunn) etter `farger.json`-kartet; bakgrunnen males ikke. Våre paletter er opt-in med `--palett <navn>` / `:palett <navn>`, og `:farger terminal` går tilbake. Kodefarger mappes til ANSI-fargene. Valgfritt: hvis terminalen svarer på OSC 4/10/11 (Ghostty gjør det), kan nyanser (dempet tekst, flater) avledes fra temaets faktiske farger – men aldri farger utenfor temaet.
 - **PO-133 (Q-3-15)** S6 avgjøres av plass: får innledningen plass på tittelsiden ved 200×50, blir det ett lysbilde færre enn i v2. Godkjent.
+
+## PO-avgjørelser etter slice 3-c
+
+- **PO-134** Utviklerens avvik 1–5 godkjent: `present.start`/`:presenter` på begge flater; feil fra `:`-linjen på radene over statuslinjen (vims meldingsområde); bekreftelser og live-meldinger i statuslinjen; `↑`/`↓` ruller et halvt vindu; bildeplassholder fet og dempet.
+- **PO-135 (TC-3-08-09)** Etter en feilmelding fra `:`-linjen fjerner neste tast meldingen **og utføres** (som vim med korte meldinger). Ingen ekstra tastetrykk under et møte. Design §5.3 og appen endres; testen beholdes.
+- **PO-136** De øvrige 12 feilende terminaltestene (TC-3-07-04/06, -08-06/07/08, -09-08) og fasiten for TC-3-03-03 rettes av QA (venting på omtegning, sentrert sats over 160 kolonner, ingen `n/N` på tittelsiden, avgrensning av råstrømmen).
+- **PO-137** Avledning av nyanser fra OSC 4/10/11 (PO-132, valgfri) tas ikke i v3.

@@ -125,7 +125,7 @@ test.describe('AK-3-09 farger', () => {
     expect(koder.filter((x) => x.endsWith(';2'))).toEqual([]);
   });
 
-  test.fixme('TC-3-09-08 «:palett signal» gir truecolor, «:farger terminal» går tilbake; lysbildet beholdes', async ({ present }) => {
+  test('TC-3-09-08 «:palett signal» gir truecolor, «:farger terminal» går tilbake; lysbildet beholdes', async ({ present }) => {
     const t = await presenterNotat(present, status.sti);
     const rader = await gåTilFasit(t, 'statusmote', 5);
     const nr = rader.at(-1);

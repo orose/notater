@@ -37,6 +37,14 @@ export function helpView(background: Frame, theme: TerminalTheme): Frame {
     for (const r of g.rows) lines.push({ keys: r.bindings.map((b) => b.keys).join('  '), label: r.label });
     if (g.commandOnly.length > 0) lines.push({ keys: g.commandOnly.map((c) => `:${c}`).join(' '), label: 'som kommando' });
   }
+  // For lav terminal: tipsradene (komponentenes egne taster) og tomme rader viker før noe annet.
+  if (lines.length + 2 > frame.rows - 2) {
+    const hints = new Set(groups.flatMap((g) => g.rows.filter((r) => r.kind === 'hint').map((r) => r.label)));
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const l = lines[i];
+      if (l === null || (l && 'label' in l && hints.has(l.label))) lines.splice(i, 1);
+    }
+  }
   const lw = Math.max(...lines.map((l) => (l && 'label' in l ? textWidth(l.label) : l && 'group' in l ? textWidth(l.group) : 0)));
   // Tastene får plassen de trenger; forklaringen kuttes heller (alle tastene skal kunne leses, AK-3-08).
   const kw = Math.min(Math.max(...lines.map((l) => (l && 'keys' in l ? textWidth(l.keys) : 0))), Math.max(20, frame.cols - 12 - Math.min(lw, 30)));

@@ -20,7 +20,7 @@ test.describe('AK-3-11 terminalhygiene ved avslutning', () => {
     });
   }
 
-  test.fixme('TC-3-11-02 «:q» avslutter og gjenoppretter', async ({ present }) => {
+  test('TC-3-11-02 «:q» avslutter og gjenoppretter', async ({ present }) => {
     const t = await presenterNotat(present, NOTAT);
     await t.kommando('q');
     await forventGjenopprettet(t);
@@ -65,7 +65,7 @@ test.describe('AK-3-11 terminalhygiene ved avslutning', () => {
     expect(rå.slice(rå.lastIndexOf('\u001b[?1049l')), 'stakken skrives etter at alternativ skjerm er forlatt').toMatch(/Error|feil/i);
   });
 
-  test.fixme('TC-3-11-06 Ctrl c på lysbilde 7 (kanban-plassholder) og i oversikten gjenoppretter', async ({ present }) => {
+  test('TC-3-11-06 Ctrl c på lysbilde 7 (kanban-plassholder) og i oversikten gjenoppretter', async ({ present }) => {
     const t = await presenterNotat(present, NOTAT);
     await t.trykk('G');
     await ventPåLysbilde(t, 10);
@@ -102,7 +102,7 @@ test.describe('AK-3-11 under 80×24 vises en melding', () => {
     await forventGjenopprettet(t);
   });
 
-  test.fixme('TC-3-11-12 meldingen viser ikke lysbildeinnhold, og samme lysbilde kommer tilbake etter resize', async ({ present }) => {
+  test('TC-3-11-12 meldingen viser ikke lysbildeinnhold, og samme lysbilde kommer tilbake etter resize', async ({ present }) => {
     const t = await presenterNotat(present, NOTAT, { størrelse: { cols: 120, rows: 36 } });
     await t.trykk('j', 'j', 'j');
     await ventPåLysbilde(t, 4);

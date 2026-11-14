@@ -59,4 +59,27 @@ describe('tastedekoder (ADR-011 §6)', () => {
     ]);
     expect(keys()).toEqual(['q']);
   });
+
+  it('ensom ESC i én skriving og et tegn i neste er Escape + tegnet, ikke Alt (tmux, rask skriving)', () => {
+    const { keys, decoder } = setupForAlt();
+    decoder.feed('\x1b');
+    decoder.feed('o');
+    expect(keys).toEqual([{ key: 'Escape', alt: false }, { key: 'o', alt: false }]);
+    decoder.feed('\x1bo');
+    expect(keys.at(-1)).toEqual({ key: 'o', alt: true });
+    decoder.feed('\x1b');
+    decoder.feed('[A');
+    expect(keys.at(-1)).toEqual({ key: 'ArrowUp', alt: false });
+  });
 });
+
+function setupForAlt() {
+  const keys: Array<{ key: string; alt: boolean }> = [];
+  const decoder = createKeyDecoder({
+    timers: { setTimeout: () => 0, clearTimeout: () => undefined },
+    onInput: (i) => {
+      if (i.kind === 'key') keys.push({ key: i.key.key, alt: i.key.altKey });
+    },
+  });
+  return { keys, decoder };
+}
