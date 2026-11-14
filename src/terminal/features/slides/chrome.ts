@@ -48,13 +48,20 @@ export function paintAgendaLine(canvas: Canvas, grid: Grid, deck: SlideDeck, sli
   const candidates = [build(all), build(near), build(near, 14), build(near, 8, Math.floor(grid.sats / 3)), build([current], undefined, grid.sats - 16)];
   const tabs = candidates.find((c) => length(c) <= grid.sats) ?? candidates.at(-1)!;
   let x = grid.x - 1;
+  const rich = canvas.theme.depth === 'truecolor' || canvas.theme.depth === 'ansi256';
   tabs.forEach((t, k) => {
     if (k > 0) x = canvas.put(x, 0, '│', { fg: 'dekor', bg: 'linje_bg' });
     if (t.index === null) {
       x = canvas.put(x, 0, ' … ', { fg: 'dempet', bg: 'linje_bg' });
       return;
     }
-    if (t.index === current) {
+    if (t.index === current && !rich) {
+      // PO-138: med terminalens farger står hele linjen i revers; aksent på revers gir for lav kontrast. Gjeldende
+      // punkt markeres med fet og understrek i reversfargen.
+      x = canvas.put(x, 0, ` ${t.index + 1} `, { bg: 'linje_bg', bold: true });
+      x = canvas.put(x, 0, t.text, { bg: 'linje_bg', bold: true, underline: true });
+      x = canvas.put(x, 0, ` ${progress} `, { bg: 'linje_bg', bold: true });
+    } else if (t.index === current) {
       // Valgt fane står på lerretet (vims TabLineSel): nummer i aksent, navn fet med aksentstrek, progresjon dempet.
       x = canvas.put(x, 0, ' ', { bg: 'bg' });
       x = canvas.put(x, 0, `${t.index + 1} `, { fg: 'aksent', bg: 'bg', bold: true });
@@ -121,7 +128,12 @@ export function paintStatusLine(canvas: Canvas, grid: Grid, deck: SlideDeck, ind
   ];
   const fw = width(folio);
   canvas.runs(right - fw, y, folio);
-  const bar = progressRuns(deck, index).map((r) => ({ ...r, style: { ...L, ...r.style } }));
+  // PO-138: med terminalens farger (revers) bærer formen alt: fullførte segmenter er tykke `━` i fet, resten tynne `─`
+  // dempet. Fremdriften står da utenfor reversen, så strekene skiller seg tydelig fra hverandre.
+  const rich = canvas.theme.depth === 'truecolor' || canvas.theme.depth === 'ansi256';
+  const bar = progressRuns(deck, index).map((r) =>
+    rich ? { ...r, style: { ...L, ...r.style } } : { ...r, style: r.text === '━' ? { fg: 'fremdrift' as const, bg: 'bg' as const, bold: true } : r.text === '─' ? { fg: 'fremdrift_spor' as const, bg: 'bg' as const } : { bg: 'bg' as const } },
+  );
   const bx = right - fw - 2 - width(bar);
   if (options.notice) canvas.put(x + 1, y, options.notice, { ...L, fg: 'tekst' }, (bx > x + 20 ? bx : right - fw) - 3);
   if (bx <= titleEnd + 2) return;
