@@ -22,9 +22,11 @@ export interface SlideViewContext {
 
 export interface SlideViewOptions {
   readonly blackout?: boolean;
+  /** Rulleposisjonen i en for stor blokk (linjer, PO-94/§4.5). Begrenses til blokken. */
+  readonly scroll?: number;
 }
 
-function blockContext(ctx: SlideViewContext, grid: Grid): BlockContext {
+export function blockContext(ctx: SlideViewContext, grid: Grid): BlockContext {
   return {
     theme: ctx.theme,
     inline: { obsidianVault: ctx.obsidianVault, plainInlineCode: ctx.theme.depth === 'ansi16' || ctx.theme.depth === 'none' },
@@ -35,7 +37,7 @@ function blockContext(ctx: SlideViewContext, grid: Grid): BlockContext {
 }
 
 /** Én enhet: listepunkter tegnes med listens markør og start (A2-deler beholder `start`). */
-function unitRows(unit: SlideUnit, ctx: BlockContext): Row[] {
+export function unitRows(unit: SlideUnit, ctx: BlockContext): Row[] {
   const node = unit.node;
   if (node.type !== 'element') return layoutBlocks([node], ctx);
   if (unit.list) {
@@ -115,6 +117,15 @@ function propertyRuns(value: VaultValue, key: string, ctx: BlockContext): Run[] 
       return [{ text: value.value, style: {} }];
     }
   }
+}
+
+/** Rader tittelsiden har til innledningen (S6) når sti, hode, ingress og «Endret» er tegnet (egenskapene viker). */
+export function titleRoomForPreamble(title: string, doc: NoteDocument, grid: Grid): number {
+  const header = chooseHeader(title, { width: grid.sats, height: Math.floor(grid.rows / 3), threeLines: grid.rows >= 36 });
+  const ingress = ingressOf(doc.properties);
+  const ingressLines = ingress ? wrapRuns([{ text: ingress, style: {} }], grid.maal).length + 1 : 0;
+  const used = grid.top + 2 + drawnHeight(header, textHeaderLines(title, grid)) + 1 + ingressLines + 1 + 1;
+  return grid.rows - 2 - used;
 }
 
 function paintTitle(canvas: Canvas, grid: Grid, ctx: SlideViewContext, slide: Slide): void {
@@ -242,22 +253,121 @@ function paintAgenda(canvas: Canvas, grid: Grid, deck: SlideDeck, slide: Slide):
 
 // ------------------------------------------------------------------------------------- innhold
 
-function footnoteRows(slide: Slide, ctx: BlockContext, width: number): Row[] {
+export function footnoteRows(footnotes: Slide['footnotes'], ctx: BlockContext, width: number): Row[] {
   const rows: Row[] = [];
-  for (const f of slide.footnotes) {
+  for (const f of footnotes) {
     const lines = wrapRuns(inlineRuns(f.content as ElementContent[], ctx.inline, { fg: 'dempet' }), width - 2);
     lines.forEach((l, k) => rows.push({ segs: [...(k === 0 ? [{ x: 0, text: `${superscript(f.number)} `, style: { fg: 'aksent', bold: true } as StyleSpec }] : []), ...rowOf(2, l).segs] }));
   }
   return rows;
 }
 
-/** Rader innholdet kan bruke under nummer, tittel og én tom rad (til tilpasningen i 3-c). */
-export function contentRows(grid: Grid, headingLines: number): number {
-  return grid.bottom - (grid.top + 1 + headingLines + 1) + 1;
+/** Overskriftens linjer på et innholdslysbilde (brutt ved `sats − 12`, «(forts.)» på siste linje). */
+export function headingLines(heading: string | null, grid: Grid): number {
+  if (!heading) return 0;
+  return wrapRuns([{ text: heading, style: {} }], Math.max(10, grid.sats - 12)).length;
 }
 
-function paintContent(canvas: Canvas, grid: Grid, ctx: SlideViewContext, slide: Slide): void {
+/** Første rad for innholdet under nummer, overskrift og én tom rad. */
+export function bodyTop(grid: Grid, heading: string | null): number {
+  const lines = headingLines(heading, grid);
+  return grid.top + 1 + (lines > 0 ? lines + 1 : 0);
+}
+
+/** Fotnotene står i høyre marg når det er minst 34 kolonner der (§4.8, PO-128). */
+export function usesMarginalia(grid: Grid): boolean {
+  return grid.x + grid.sats - (grid.x + grid.maal + 6) >= 34;
+}
+
+interface BodyBlock {
+  readonly rows: Row[];
+  readonly gapBefore: boolean;
+  readonly scroll: boolean;
+  /** Rader øverst som står fast ved rulling (kodehodet). */
+  readonly sticky: number;
+}
+
+function bodyBlocks(slide: Slide, ctx: BlockContext): BodyBlock[] {
+  const out: BodyBlock[] = [];
+  slide.units.forEach((unit, i) => {
+    const rows = unitRows(unit, ctx);
+    if (rows.length === 0) return;
+    const sameList = i > 0 && unit.listKey !== null && slide.units[i - 1]?.listKey === unit.listKey;
+    const code = unit.node.type === 'element' && unit.node.tagName === 'vr-code';
+    out.push({ rows, gapBefore: out.length > 0 && !sameList, scroll: slide.scrollUnits.includes(i), sticky: code ? 2 : 0 });
+  });
+  return out;
+}
+
+interface ContentLayout {
+  readonly bctx: BlockContext;
+  readonly top: number;
+  readonly bottom: number;
+  readonly notes: Row[];
+  readonly marginalia: boolean;
+  readonly blocks: BodyBlock[];
+}
+
+function contentLayout(ctx: SlideViewContext, grid: Grid, slide: Slide): ContentLayout {
   const bctx = blockContext(ctx, grid);
+  const marginalia = slide.footnotes.length > 0 && usesMarginalia(grid);
+  const notes = footnoteRows(slide.footnotes, bctx, marginalia ? Math.min(48, grid.x + grid.sats - (grid.x + grid.maal + 6)) + 2 : grid.maal);
+  const bottom = notes.length > 0 && !marginalia ? grid.bottom - notes.length - 1 : grid.bottom;
+  return { bctx, top: bodyTop(grid, slide.heading), bottom, notes, marginalia, blocks: bodyBlocks(slide, bctx) };
+}
+
+/** Hvor mange linjer den rullende blokken på lysbildet kan rulles (0 = ingen rulling). */
+export function scrollMax(ctx: SlideViewContext, index: number, cols: number, rows: number): number {
+  const slide = ctx.deck.slides[index];
+  if (!slide || slide.kind !== 'content') return 0;
+  const grid = gridFor(cols, rows);
+  const layout = contentLayout(ctx, grid, slide);
+  let y = layout.top;
+  for (const b of layout.blocks) {
+    if (b.gapBefore) y += 1;
+    const room = layout.bottom - y + 1;
+    if (b.scroll || b.rows.length > room) {
+      const window = room - b.sticky - 1;
+      return Math.max(0, b.rows.length - b.sticky - Math.max(1, window));
+    }
+    y += b.rows.length;
+  }
+  return 0;
+}
+
+/** En for stor blokk: faste hoderader, et vindu med linjer, hintlinje og rullefelt (designsystem-terminal §4.5). */
+function paintScrolling(canvas: Canvas, grid: Grid, block: BodyBlock, y: number, height: number, offset: number): void {
+  const lines = block.rows.slice(block.sticky);
+  const windowRows = Math.max(1, height - block.sticky - 1);
+  const max = Math.max(0, lines.length - windowRows);
+  const start = Math.max(0, Math.min(offset, max));
+  if (lines.length <= windowRows) {
+    paintRows(canvas, block.rows, grid.x, y, height);
+    return;
+  }
+  const fill = block.rows[0]?.fill;
+  paintRows(canvas, block.rows.slice(0, block.sticky), grid.x, y);
+  paintRows(canvas, lines.slice(start, start + windowRows), grid.x, y + block.sticky);
+  const hintY = y + block.sticky + windowRows;
+  const bg = fill ? { bg: fill.bg } : {};
+  if (fill) canvas.fill(grid.x + fill.x, hintY, fill.width, 1, fill.bg);
+  const left = lines.length - start - windowRows;
+  const hint = left > 0 ? `↓ ${left} linjer til` : `Slutt · ${lines.length} linjer`;
+  const x = canvas.put(grid.x + 2, hintY, hint, { fg: 'tekst', bold: true, ...bg });
+  canvas.put(x, hintY, ' · ↑ ↓ ruller', { fg: 'dempet', ...bg });
+  const pos = `${start + 1}–${start + windowRows} av ${lines.length}`;
+  const right = grid.x + (fill ? fill.x + fill.width : grid.sats);
+  canvas.put(right - 2 - textWidth(pos), hintY, pos, { fg: 'dempet', ...bg });
+  // Rullefelt i høyre kant: spor `│` i dekor, tommel `┃` dempet.
+  const thumb = Math.max(1, Math.round((windowRows * windowRows) / lines.length));
+  const thumbTop = Math.round((windowRows * start) / lines.length);
+  for (let k = 0; k < windowRows; k++) {
+    const on = k >= thumbTop && k < thumbTop + thumb;
+    canvas.put(right - 1, y + block.sticky + k, on ? '┃' : '│', { fg: on ? 'dempet' : 'dekor', ...bg });
+  }
+}
+
+function paintContent(canvas: Canvas, grid: Grid, ctx: SlideViewContext, slide: Slide, scroll: number): void {
   if (slide.agendaIndex !== null && ctx.deck.agenda.length > 0) paintAgendaLine(canvas, grid, ctx.deck, slide);
   let y = grid.top;
   if (slide.agendaIndex !== null) canvas.put(grid.x, y, `${String(slide.agendaIndex + 1).padStart(2, '0')} /`, { fg: 'aksent', bold: true });
@@ -278,23 +388,27 @@ function paintContent(canvas: Canvas, grid: Grid, ctx: SlideViewContext, slide: 
     });
     y += 1;
   }
-  const notes = footnoteRows(slide, bctx, grid.maal);
-  const marginX = grid.x + grid.maal + 6;
-  const marginalia = notes.length > 0 && grid.x + grid.sats - marginX >= 34;
-  let bottom = grid.bottom;
-  if (marginalia) {
-    const width = Math.min(48, grid.x + grid.sats - marginX);
-    const side = footnoteRows(slide, bctx, width + 2);
-    side.forEach((_, i) => canvas.put(marginX - 3, y + i, '│', { fg: 'dekor' }));
-    paintRows(canvas, side, marginX - 2, y, grid.bottom - y + 1, grid.x + grid.sats);
-  } else if (notes.length > 0) {
-    bottom = grid.bottom - notes.length - 1;
-    canvas.put(grid.x, bottom + 1, '────────', { fg: 'dekor' });
-    paintRows(canvas, notes, grid.x, bottom + 2, notes.length);
+  const layout = contentLayout(ctx, grid, slide);
+  y = layout.top;
+  if (layout.marginalia) {
+    const marginX = grid.x + grid.maal + 6;
+    layout.notes.forEach((_, i) => canvas.put(marginX - 3, y + i, '│', { fg: 'dekor' }));
+    paintRows(canvas, layout.notes, marginX - 2, y, grid.bottom - y + 1, grid.x + grid.sats);
+  } else if (layout.notes.length > 0) {
+    canvas.put(grid.x, layout.bottom + 1, '────────', { fg: 'dekor' });
+    paintRows(canvas, layout.notes, grid.x, layout.bottom + 2, layout.notes.length);
   }
-  const body = bodyRows(slide.units, bctx);
-  // Slice 3-c gir tilpasning («(forts.)») og intern rulling; her klippes det som ikke får plass.
-  paintRows(canvas, body, grid.x, y, Math.max(0, bottom - y + 1));
+  for (const block of layout.blocks) {
+    if (block.gapBefore) y += 1;
+    const room = layout.bottom - y + 1;
+    if (room <= 0) break;
+    if (block.scroll || block.rows.length > room) {
+      paintScrolling(canvas, grid, block, y, room, block.scroll ? scroll : 0);
+      y += room;
+      continue;
+    }
+    y = paintRows(canvas, block.rows, grid.x, y);
+  }
 }
 
 // ------------------------------------------------------------------------------------- inngangen
@@ -311,7 +425,7 @@ export function slideView(ctx: SlideViewContext, index: number, cols: number, ro
   if (!slide) return frame;
   if (slide.kind === 'title') paintTitle(canvas, grid, ctx, slide);
   else if (slide.kind === 'agenda' || slide.kind === 'transition') paintAgenda(canvas, grid, ctx.deck, slide);
-  else paintContent(canvas, grid, ctx, slide);
+  else paintContent(canvas, grid, ctx, slide, options.scroll ?? 0);
   paintStatusLine(canvas, grid, ctx.deck, index);
   return frame;
 }

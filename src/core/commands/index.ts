@@ -40,6 +40,7 @@ export {
   type ShortcutGroup,
   type ShortcutRow,
 } from './shortcut-docs';
+export { invalidArgumentError, levelsSentence, presentLevelError, unknownCommandError } from './command-errors';
 export { fuzzyMatch, normalizeForSearch, prepareSearchTarget, type FuzzyMatch, type SearchTarget } from './fuzzy';
 export { commandPaletteOptions, paletteArgumentError, paletteArgumentHeading, shortcutChords } from './palette-options';
 export {

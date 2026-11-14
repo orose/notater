@@ -18,7 +18,7 @@ export interface PresentArgs {
   readonly level: LevelArg | null;
   /** `--palett <navn>`; valideres mot UX' fargefil når temaet lastes (slice 3-b). */
   readonly palette: string | null;
-  /** `--farger terminal` = terminalens 16 farger (T4); standard `palett` (truecolor). */
+  /** `--farger terminal` = terminalens egne farger (standard, PO-132); `palett` = vaultleserens palett. `null` = ikke oppgitt. */
   readonly colors: ColorsArg | null;
   /** `--uten-agenda` = `:agenda av` fra start. */
   readonly transitions: boolean;
@@ -37,8 +37,8 @@ export const PRESENT_USAGE = [
   '  --config <fil>       Konfigurasjonsfil (som web-leseren).',
   '  --vault-id <id>      Vault fra konfigurasjonen (som web-leseren).',
   '  --niva h<n>|auto     Lysbildenivå (som :presenter h<n>).',
-  '  --palett <navn>      Fargepalett (papir, cyanotypi, fosfor, signal).',
-  '  --farger terminal    Bruk terminalens egne 16 farger.',
+  '  --palett <navn>      Vaultleserens palett (papir, cyanotypi, fosfor, signal) i stedet for terminalens farger.',
+  '  --farger terminal    Terminalens egne farger (standard); «palett» gir vaultleserens palett.',
   '  --uten-agenda        Uten overgangslysbilder (som :agenda av).',
   '  -h, --hjelp          Vis denne hjelpen.',
 ].join('\n');

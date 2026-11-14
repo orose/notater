@@ -8,7 +8,6 @@
 
 
 
-
         ~/ presentasjon
 
         ▄▄▄ ▄   ▄ ▄   ▄ ▄   ▄  ▄▄▄  ▄     ▄▄▄▄      ▄▄▄▄▄  ▄▄▄  ▄▄▄▄       ▄▄▄   ▄▄▄  ▄▄▄▄▄ ▄   ▄ ▄▄▄▄   ▄▄▄
@@ -18,9 +17,10 @@
 
         Ingress fra frontmatter.
 
+        Et kort avsnitt før første agendaoverskrift. Det får plass på
+        tittellysbildet. Markør FØR-KORT.
+
         Endret 8. nov. 2026, 21.34
-
-
 
 
 
@@ -40,43 +40,6 @@
 
 
 
-        Et kort avsnitt før første agendaoverskrift. Det får plass på
-        tittellysbildet. Markør FØR-KORT.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        Innhold før agenda                   j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━─ ── ──  2/7
-── 3 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-
-
-
         Innhold før agenda · 2 punkter
 
          ▄▄▄   ▄▄▄  ▄▄▄▄▄ ▄   ▄ ▄▄▄▄   ▄▄▄
@@ -87,11 +50,9 @@
 
                                                                                 lysbilde
 
-        01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  4
+        01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
 
-        02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  6
-
-
+        02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  5
 
 
 
@@ -108,8 +69,10 @@
 
 
 
-        Innhold før agenda                   j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━━ ── ──  3/7
-── 4 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        Innhold før agenda                    j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ── ──  2/6
+── 3 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 
@@ -124,10 +87,10 @@
 
                                                                                 lysbilde
 
-        01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  4
+        01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
             └── Lysbilde én
 
-        02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  6
+        02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  5
 
 
 
@@ -145,8 +108,8 @@
 
 
 
-        Innhold før agenda                   j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━━ ━─ ──  4/7
-── 5 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        Innhold før agenda                    j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ━─ ──  3/6
+── 4 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         1 Første punkt 1/1 │ 2 Andre punkt
 
 
@@ -182,8 +145,8 @@
 
 
 
-        Innhold før agenda                   j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━━ ━━ ──  5/7
-── 6 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        Innhold før agenda                    j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ━━ ──  4/6
+── 5 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 
@@ -198,9 +161,9 @@
 
                                                                                 lysbilde
 
-        01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  4
+        01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  3
 
-        02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  6
+        02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·  5
             └── Lysbilde to
 
 
@@ -219,8 +182,8 @@
 
 
 
-        Innhold før agenda                   j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━━ ━━ ━─  6/7
-── 7 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        Innhold før agenda                    j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ━━ ━─  5/6
+── 6 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         1 Første punkt │ 2 Andre punkt 1/1
 
 
@@ -256,4 +219,4 @@
 
 
 
-        Innhold før agenda                   j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━━ ━━ ━━  7/7
+        Innhold før agenda                    j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ━━ ━━  6/6

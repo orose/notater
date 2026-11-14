@@ -1,8 +1,10 @@
 // AK-3-07 For mye innhold deles i «(forts.)»; for stor blokk ruller internt; intet innhold kuttes usynlig; endret
 // terminalstørrelse tegnes riktig på nytt. Testplan: TC-3-07-*. Fasit: v2-fasit.json › mye, stor; v3-fasit.json › storrelser.
 import {
+  antallLysbilder,
   expect,
   fasitNotat,
+  geometri,
   gåTilLysbilde,
   lysbildenummer,
   presenterNotat,
@@ -21,7 +23,7 @@ const status = fasitNotat('statusmote');
 test.describe('AK-3-07 tilpasning', () => {
   test.fixme('TC-3-07-01 listepunkter deles aldri mellom to deler (80×24)', async ({ present }) => {
     const t = await presenterNotat(present, mye.sti, { størrelse: { cols: 80, rows: 24 } });
-    const { av } = lysbildenummer(t.skjerm())!;
+    const av = await antallLysbilder(t);
     const sett = new Map<string, number>();
     for (let n = 1; n <= av; n++) {
       const tekst = skjøtt(await gåTilLysbilde(t, n));
@@ -44,16 +46,16 @@ test.describe('AK-3-07 tilpasning', () => {
     await ventPåLysbilde(t, 5);
   });
 
-  test.fixme('TC-3-07-03 intet innhold kuttes usynlig: ingen rad er bredere enn terminalen, og innholdet slutter over statuslinjen', async ({ present }) => {
+  test('TC-3-07-03 intet innhold kuttes usynlig: ingen rad er bredere enn terminalen, og innholdet slutter over statuslinjen', async ({ present }) => {
     for (const nøkkel of ['statusmote', 'rapport', 'kanter']) {
       const notat = fasitNotat(nøkkel);
       const t = await presenterNotat(present, notat.sti, { størrelse: { cols: 80, rows: 24 } });
-      const { av } = lysbildenummer(t.skjerm())!;
+      const av = await antallLysbilder(t);
       for (let n = 1; n <= av; n++) {
         const rader = await gåTilLysbilde(t, n);
         for (const r of rader) expect(visningsbredde(r)).toBeLessThanOrEqual(80);
         expect(statuslinje(rader), `${nøkkel} ${n}: statuslinjen er nederst`).toBe(rader.filter((r) => r.trim()).at(-1));
-        expect(lysbildenummer(rader)).toEqual({ n, av });
+        expect(lysbildenummer(rader)).toEqual({ n, av: n === 1 ? null : av });
       }
     }
   });
@@ -70,10 +72,11 @@ test.describe('AK-3-07 tilpasning', () => {
       await t.ventPåTekst('Oppgaver');
       await expect.poll(() => t.skjerm().length).toBe(s.rows);
       const rader = t.skjerm();
-      expect(lysbildenummer(rader)?.n, 'samme lysbilde').toBe(7);
+      // Samme lysbilde (id): nummeret kan endre seg når «(forts.)»-delene før det endres med størrelsen.
+      expect(skjøtt(rader), 'samme lysbilde').toContain('Kanban: Kanban – vises i web-leseren');
       expect(statuslinje(rader)).toBe(rader.filter((r) => r.trim()).at(-1));
-      // Tegnet for den nye bredden: statuslinjens nummer står helt til høyre.
-      expect(statuslinje(rader).trimEnd().length).toBeGreaterThan(s.cols - 4);
+      // Tegnet for den nye bredden: folioen står høyrejustert mot satsen (design §1.1/§2.7, maks 160, PO-126).
+      expect(statuslinje(rader).trimEnd().length).toBe(geometri(s.cols).høyre);
     }
   });
 

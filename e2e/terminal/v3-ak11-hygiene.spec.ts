@@ -56,7 +56,7 @@ test.describe('AK-3-11 terminalhygiene ved avslutning', () => {
     await forventGjenopprettet(t, [0, 130]);
   });
 
-  test.fixme('TC-3-11-05 ukjent feil (testkroken i ADR-011 §8): gjenopprett, deretter stakk på hovedskjermen, exit 1', async ({ present }) => {
+  test('TC-3-11-05 ukjent feil (testkroken i ADR-011 §8): gjenopprett, deretter stakk på hovedskjermen, exit 1', async ({ present }) => {
     const t = await present({ args: [NOTAT], miljø: { VAULT_READER_TEST_CRASH: 'etter-første-ramme' } });
     await forventGjenopprettet(t, [1]);
     // Feilen skal stå på hovedskjermen etter at alternativ skjerm er forlatt (ikke forsvinne med den).

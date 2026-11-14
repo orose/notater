@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { cellAt, frameToLines, type Frame } from '../cells';
-import { renderDeck, testVault } from '../../test-support/render-note';
+import { readFileSync } from 'node:fs';
+import { TEST_VAULT, renderDeck, testVault } from '../../test-support/render-note';
 
 const SIZES = [
   [80, 24],
@@ -37,6 +38,25 @@ describe('lysbildene i terminalen (designsystem-terminal §2–§4, AR-3-29)', (
       }, 30_000);
     }
   }
+
+  it('A2 i rader (AK-3-07): alle markører i «Mye innhold» nøyaktig én gang, i rekkefølge, ved alle størrelser; «(forts.)» der det deles', async () => {
+    const source = readFileSync(`${TEST_VAULT}/presentasjon/Mye innhold.md`, 'utf8');
+    const expected = [...source.matchAll(/MYE-[A-Za-z0-9]+/g)].map((m) => m[0]);
+    expect(expected.length).toBeGreaterThan(30);
+    for (const [cols, rows] of SIZES) {
+      const { frames } = await renderDeck('presentasjon/Mye innhold', { cols, rows });
+      const all = frames.map(text).join('\n');
+      expect([...all.matchAll(/MYE-[A-Za-z0-9]+/g)].map((m) => m[0]), `${cols}×${rows}`).toEqual(expected);
+      expect(all).toContain('(forts.)');
+    }
+  }, 60_000);
+
+  it('for stor kodeblokk ruller internt med hint og rullefelt; ingenting kuttes usynlig', async () => {
+    const { frames } = await renderDeck('presentasjon/Stor kodeblokk', { cols: 120, rows: 36 });
+    const code = frames.map(text).find((t) => t.includes('linjer til'));
+    expect(code).toMatch(/↓ \d+ linjer til · ↑ ↓ ruller/);
+    expect(code).toMatch(/1–\d+ av \d+/);
+  }, 30_000);
 
   it('figlet bare på tittel, agenda og overgang; agendalinjen bare på innhold med agendapunkt (AK-3-03/04)', async () => {
     const { frames } = await renderDeck('presentasjon/Statusmøte uke 45', { cols: 120, rows: 36 });

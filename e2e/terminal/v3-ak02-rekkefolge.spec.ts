@@ -6,12 +6,12 @@
 // «(forts.)»-deler (terminalen er mindre enn lerretet); de hoppes over i sammenligningen (Q-3-01).
 import {
   agendalinje,
+  erTittelside,
   expect,
   fasit3,
   fasitNotat,
   innholdsflate,
   lesAlleSkjermer,
-  lysbildenummer,
   presenterNotat,
   skjøtt,
   test,
@@ -36,7 +36,10 @@ interface LestSkjerm {
 }
 
 async function lesNotat(t: Terminal): Promise<LestSkjerm[]> {
-  return (await lesAlleSkjermer(t)).map((rader) => ({ rader, tekst: skjøtt(rader), ...lysbildenummer(rader)! }));
+  const skjermer = await lesAlleSkjermer(t);
+  // PO-124: tittelsiden har ingen folio; totalen er lik på alle de andre.
+  const av = skjermer.length;
+  return skjermer.map((rader, i) => ({ rader, tekst: skjøtt(rader), n: i + 1, av }));
 }
 
 /** Grov gjenkjenning: er skjermen fasitlysbildet `l`? Brukes bare for å hoppe over ekstra «(forts.)» (Q-3-01). */
@@ -55,7 +58,8 @@ function forventSomFasit(s: LestSkjerm, l: V3Lysbilde, notat: V3Notat, hvor: str
   const linje = agendalinje(s.rader, agenda);
   switch (l.type) {
     case 'tittel':
-      expect(s.tekst, `${hvor}: tittel`).toContain(l.overskrift!);
+      // PO-124: tittelen står som figlet (eller fet fallback), uten folio – gjenkjennes på statuslinjen.
+      expect(erTittelside(s.rader), `${hvor}: tittelsiden`).toBe(true);
       expect(linje, `${hvor}: ingen agendalinje på tittellysbildet`).toBeNull();
       break;
     case 'agenda':
@@ -95,12 +99,12 @@ const NOTATER = [...r.rekkefolge.v2Notater.filter((n) => n !== 'mye'), 'kanter']
 test.describe('AK-3-02 lysbilderekkefølgen er identisk med v2', () => {
   for (const nøkkel of NOTATER) {
     const notat = fasitNotat(nøkkel);
-    test.fixme(`TC-3-02-01 ${notat.sti} ved 200×50 er eksakt lik fasiten`, async ({ present }) => {
+    test(`TC-3-02-01 ${notat.sti} ved 200×50 er eksakt lik fasiten`, async ({ present }) => {
       const t = await presenterNotat(present, notat.sti, { størrelse: r.rekkefolge.eksaktVed });
       sammenlign(await lesNotat(t), notat, true, nøkkel);
     });
     for (const s of r.rekkefolge.moduloFortsVed) {
-      test.fixme(`TC-3-02-02 ${notat.sti} ved ${s.cols}×${s.rows} er lik fasiten når ekstra «(forts.)» hoppes over`, async ({ present }) => {
+      test(`TC-3-02-02 ${notat.sti} ved ${s.cols}×${s.rows} er lik fasiten når ekstra «(forts.)» hoppes over`, async ({ present }) => {
         const t = await presenterNotat(present, notat.sti, { størrelse: s });
         sammenlign(await lesNotat(t), notat, false, nøkkel);
       });
@@ -111,14 +115,14 @@ test.describe('AK-3-02 lysbilderekkefølgen er identisk med v2', () => {
     ['h4', 'h4'],
     ['h2', 'h2'],
   ] as const) {
-    test.fixme(`TC-3-02-03 --niva ${flagg} gir v2-rekkefølgen for Lysbildenivå (${nivå})`, async ({ present }) => {
+    test(`TC-3-02-03 --niva ${flagg} gir v2-rekkefølgen for Lysbildenivå (${nivå})`, async ({ present }) => {
       const niva = fasitNotat('niva') as unknown as Record<string, V3Notat> & { sti: string };
       const t = await presenterNotat(present, niva.sti, { størrelse: r.rekkefolge.eksaktVed, args: ['--niva', flagg] });
       sammenlign(await lesNotat(t), { ...niva[nivå]!, sti: niva.sti }, true, `niva ${flagg}`);
     });
   }
 
-  test.fixme('TC-3-02-04 «Mye innhold»: alle markører nøyaktig én gang, i rekkefølge, ved 80×24 og 200×50', async ({ present }) => {
+  test('TC-3-02-04 «Mye innhold»: alle markører nøyaktig én gang, i rekkefølge, ved 80×24 og 200×50', async ({ present }) => {
     const mye = fasitNotat('mye') as unknown as { sti: string; markorer: string[]; minstDeler: number; overskrift: string };
     for (const s of r.forts.storrelser) {
       const t = await presenterNotat(present, mye.sti, { størrelse: s });
@@ -131,13 +135,13 @@ test.describe('AK-3-02 lysbilderekkefølgen er identisk med v2', () => {
     }
   });
 
-  test.fixme('TC-3-02-05 --uten-agenda: overgangene er borte, resten i samme rekkefølge (QA-V2-23)', async ({ present }) => {
+  test('TC-3-02-05 --uten-agenda: overgangene er borte, resten i samme rekkefølge (QA-V2-23)', async ({ present }) => {
     const notat = fasitNotat('statusmote');
     const t = await presenterNotat(present, notat.sti, { størrelse: r.rekkefolge.eksaktVed, args: ['--uten-agenda'] });
     sammenlign(await lesNotat(t), { ...notat, lysbilder: notat.lysbilder.filter((l) => l.type !== 'overgang') }, true, 'uten agenda');
   });
 
-  test.fixme('TC-3-02-06 «Månedsrapport oktober»: seksjonen «Utenfor rapporten» vises aldri', async ({ present }) => {
+  test('TC-3-02-06 «Månedsrapport oktober»: seksjonen «Utenfor rapporten» vises aldri', async ({ present }) => {
     const rapport = fasitNotat('rapport') as V3Notat & { aldriSynlig: string[] };
     const t = await presenterNotat(present, rapport.sti, { størrelse: { cols: 80, rows: 24 } });
     const tekst = (await lesNotat(t)).map((x) => x.tekst).join(' ');

@@ -127,10 +127,11 @@ describe('flater: web og terminal (ADR-011 §6, K6)', () => {
       .filter((b) => b.commandId === id && b.mode === mode)
       .map((b) => b.keys);
 
-  it('bare web: present.start, present.fullscreen, theme.setType og appearance.open; bare terminal: terminal.colors', () => {
+  it('bare web: present.fullscreen, theme.setType og appearance.open; bare terminal: terminal.colors; :presenter på begge', () => {
     const web = surfaceCommandIds('web');
     const terminal = surfaceCommandIds('terminal');
-    for (const id of ['present.start', 'present.fullscreen', 'theme.setType', 'appearance.open'] as const) {
+    expect(terminal).toContain('present.start');
+    for (const id of ['present.fullscreen', 'theme.setType', 'appearance.open'] as const) {
       expect(web).toContain(id);
       expect(terminal).not.toContain(id);
     }
@@ -178,8 +179,8 @@ describe('flater: web og terminal (ADR-011 §6, K6)', () => {
     const terminal = noopHandlers(surfaceCommandIds('terminal')) as unknown as CommandHandlers<'terminal'>;
     const web = noopHandlers(surfaceCommandIds('web')) as unknown as CommandHandlers<'web'>;
     expect(terminal['terminal.colors']).toBeDefined();
-    // @ts-expect-error present.start finnes ikke i terminalen
-    expect(terminal['present.start']).toBeUndefined();
+    // @ts-expect-error present.fullscreen finnes ikke i terminalen
+    expect(terminal['present.fullscreen']).toBeUndefined();
     // @ts-expect-error terminal.colors finnes ikke i web
     expect(web['terminal.colors']).toBeUndefined();
   });
@@ -193,6 +194,6 @@ describe('flater: web og terminal (ADR-011 §6, K6)', () => {
     expect(ids).not.toContain('present.fullscreen');
     expect(terminal.find((g) => g.group === 'visning')?.commandOnly).toContain('farger');
     expect(shortcutGroups('other', 'present', 'web').find((g) => g.group === 'visning')?.commandOnly ?? []).not.toContain('farger');
-    expect(terminal.find((g) => g.group === 'presentasjon')?.commandOnly).toEqual(['agenda']);
+    expect(terminal.find((g) => g.group === 'presentasjon')?.commandOnly).toEqual(['presenter', 'agenda']);
   });
 });

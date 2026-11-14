@@ -6,7 +6,7 @@ import type { NoteDocument } from '../../shared/api-types';
 import { createInlineMetaExtractor } from '../../server/features/vault-index';
 import type { ColorDepth, Frame } from '../features/cells';
 import { buildDeck } from '../features/session';
-import { slideView } from '../features/slides';
+import { createTerminalFitter, slideView } from '../features/slides';
 import { createTheme, type PaletteName, type ThemeMode } from '../features/theme';
 import { openTerminalVault, type TerminalVault } from '../features/vault';
 
@@ -35,7 +35,7 @@ export interface RenderOptions {
 
 export async function renderDeck(docPath: string, options: RenderOptions): Promise<{ doc: NoteDocument; frames: Frame[] }> {
   const doc = await loadNote(docPath);
-  const deck = buildDeck(doc, { level: null, transitions: true });
+  const deck = buildDeck(doc, { level: null, transitions: true }, createTerminalFitter(options.cols, options.rows));
   const theme = createTheme(options.palette ?? 'fosfor', options.mode ?? 'dark', options.depth ?? 'truecolor');
   const frames = deck.slides.map((_, i) => slideView({ deck, doc, theme, obsidianVault: 'test-vault' }, i, options.cols, options.rows));
   return { doc, frames };

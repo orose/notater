@@ -118,32 +118,32 @@
 
           ●                                                                                                 ts
          ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-            1  export const linje001 = 'STOR-KODE 001 i en kodeblokk som er altfor lang for ett lysbilde';
-            2  export const linje002 = 'STOR-KODE 002 i en kodeblokk som er altfor lang for ett lysbilde';
-            3  export const linje003 = 'STOR-KODE 003 i en kodeblokk som er altfor lang for ett lysbilde';
-            4  export const linje004 = 'STOR-KODE 004 i en kodeblokk som er altfor lang for ett lysbilde';
-            5  export const linje005 = 'STOR-KODE 005 i en kodeblokk som er altfor lang for ett lysbilde';
-            6  export const linje006 = 'STOR-KODE 006 i en kodeblokk som er altfor lang for ett lysbilde';
-            7  export const linje007 = 'STOR-KODE 007 i en kodeblokk som er altfor lang for ett lysbilde';
-            8  export const linje008 = 'STOR-KODE 008 i en kodeblokk som er altfor lang for ett lysbilde';
-            9  export const linje009 = 'STOR-KODE 009 i en kodeblokk som er altfor lang for ett lysbilde';
-           10  export const linje010 = 'STOR-KODE 010 i en kodeblokk som er altfor lang for ett lysbilde';
-           11  export const linje011 = 'STOR-KODE 011 i en kodeblokk som er altfor lang for ett lysbilde';
-           12  export const linje012 = 'STOR-KODE 012 i en kodeblokk som er altfor lang for ett lysbilde';
-           13  export const linje013 = 'STOR-KODE 013 i en kodeblokk som er altfor lang for ett lysbilde';
-           14  export const linje014 = 'STOR-KODE 014 i en kodeblokk som er altfor lang for ett lysbilde';
-           15  export const linje015 = 'STOR-KODE 015 i en kodeblokk som er altfor lang for ett lysbilde';
-           16  export const linje016 = 'STOR-KODE 016 i en kodeblokk som er altfor lang for ett lysbilde';
-           17  export const linje017 = 'STOR-KODE 017 i en kodeblokk som er altfor lang for ett lysbilde';
-           18  export const linje018 = 'STOR-KODE 018 i en kodeblokk som er altfor lang for ett lysbilde';
-           19  export const linje019 = 'STOR-KODE 019 i en kodeblokk som er altfor lang for ett lysbilde';
-           20  export const linje020 = 'STOR-KODE 020 i en kodeblokk som er altfor lang for ett lysbilde';
-           21  export const linje021 = 'STOR-KODE 021 i en kodeblokk som er altfor lang for ett lysbilde';
-           22  export const linje022 = 'STOR-KODE 022 i en kodeblokk som er altfor lang for ett lysbilde';
-           23  export const linje023 = 'STOR-KODE 023 i en kodeblokk som er altfor lang for ett lysbilde';
-           24  export const linje024 = 'STOR-KODE 024 i en kodeblokk som er altfor lang for ett lysbilde';
-           25  export const linje025 = 'STOR-KODE 025 i en kodeblokk som er altfor lang for ett lysbilde';
-           26  export const linje026 = 'STOR-KODE 026 i en kodeblokk som er altfor lang for ett lysbilde';
+            1  export const linje001 = 'STOR-KODE 001 i en kodeblokk som er altfor lang for ett lysbilde';     ┃
+            2  export const linje002 = 'STOR-KODE 002 i en kodeblokk som er altfor lang for ett lysbilde';     ┃
+            3  export const linje003 = 'STOR-KODE 003 i en kodeblokk som er altfor lang for ett lysbilde';     ┃
+            4  export const linje004 = 'STOR-KODE 004 i en kodeblokk som er altfor lang for ett lysbilde';     ┃
+            5  export const linje005 = 'STOR-KODE 005 i en kodeblokk som er altfor lang for ett lysbilde';     ┃
+            6  export const linje006 = 'STOR-KODE 006 i en kodeblokk som er altfor lang for ett lysbilde';     │
+            7  export const linje007 = 'STOR-KODE 007 i en kodeblokk som er altfor lang for ett lysbilde';     │
+            8  export const linje008 = 'STOR-KODE 008 i en kodeblokk som er altfor lang for ett lysbilde';     │
+            9  export const linje009 = 'STOR-KODE 009 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           10  export const linje010 = 'STOR-KODE 010 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           11  export const linje011 = 'STOR-KODE 011 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           12  export const linje012 = 'STOR-KODE 012 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           13  export const linje013 = 'STOR-KODE 013 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           14  export const linje014 = 'STOR-KODE 014 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           15  export const linje015 = 'STOR-KODE 015 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           16  export const linje016 = 'STOR-KODE 016 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           17  export const linje017 = 'STOR-KODE 017 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           18  export const linje018 = 'STOR-KODE 018 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           19  export const linje019 = 'STOR-KODE 019 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           20  export const linje020 = 'STOR-KODE 020 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           21  export const linje021 = 'STOR-KODE 021 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           22  export const linje022 = 'STOR-KODE 022 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           23  export const linje023 = 'STOR-KODE 023 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           24  export const linje024 = 'STOR-KODE 024 i en kodeblokk som er altfor lang for ett lysbilde';     │
+           25  export const linje025 = 'STOR-KODE 025 i en kodeblokk som er altfor lang for ett lysbilde';     │
+          ↓ 96 linjer til · ↑ ↓ ruller                                                             1–25 av 121
 
         Stor kodeblokk                         j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ━━──  4/6
 ── 5 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -190,33 +190,33 @@
         01 /
         Bred tabell  ───────────────────────────────────────────────────────────────────────────────────────────
 
-        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        Kolonne│Kolonne│Kolonne│Kolonne│Kolonne│Kolonne│Kolonne│Kolonne│Kolonne│Kolonne │Kolonne │Kolonne
-        1      │2      │3      │4      │5      │6      │7      │8      │9      │10      │11      │12
-        ──────────────────────────────────────────────────────────────────────────────────────────────────
-        R01K01 │R01K02 │R01K03 │R01K04 │R01K05 │R01K06 │R01K07 │R01K08 │R01K09 │R01K10  │R01K11  │R01K12
-        R02K01 │R02K02 │R02K03 │R02K04 │R02K05 │R02K06 │R02K07 │R02K08 │R02K09 │R02K10  │R02K11  │R02K12
-        R03K01 │R03K02 │R03K03 │R03K04 │R03K05 │R03K06 │R03K07 │R03K08 │R03K09 │R03K10  │R03K11  │R03K12
-        R04K01 │R04K02 │R04K03 │R04K04 │R04K05 │R04K06 │R04K07 │R04K08 │R04K09 │R04K10  │R04K11  │R04K12
-        R05K01 │R05K02 │R05K03 │R05K04 │R05K05 │R05K06 │R05K07 │R05K08 │R05K09 │R05K10  │R05K11  │R05K12
-        R06K01 │R06K02 │R06K03 │R06K04 │R06K05 │R06K06 │R06K07 │R06K08 │R06K09 │R06K10  │R06K11  │R06K12
-        R07K01 │R07K02 │R07K03 │R07K04 │R07K05 │R07K06 │R07K07 │R07K08 │R07K09 │R07K10  │R07K11  │R07K12
-        R08K01 │R08K02 │R08K03 │R08K04 │R08K05 │R08K06 │R08K07 │R08K08 │R08K09 │R08K10  │R08K11  │R08K12
-        R09K01 │R09K02 │R09K03 │R09K04 │R09K05 │R09K06 │R09K07 │R09K08 │R09K09 │R09K10  │R09K11  │R09K12
-        R10K01 │R10K02 │R10K03 │R10K04 │R10K05 │R10K06 │R10K07 │R10K08 │R10K09 │R10K10  │R10K11  │R10K12
-        R11K01 │R11K02 │R11K03 │R11K04 │R11K05 │R11K06 │R11K07 │R11K08 │R11K09 │R11K10  │R11K11  │R11K12
-        R12K01 │R12K02 │R12K03 │R12K04 │R12K05 │R12K06 │R12K07 │R12K08 │R12K09 │R12K10  │R12K11  │R12K12
-        R13K01 │R13K02 │R13K03 │R13K04 │R13K05 │R13K06 │R13K07 │R13K08 │R13K09 │R13K10  │R13K11  │R13K12
-        R14K01 │R14K02 │R14K03 │R14K04 │R14K05 │R14K06 │R14K07 │R14K08 │R14K09 │R14K10  │R14K11  │R14K12
-        R15K01 │R15K02 │R15K03 │R15K04 │R15K05 │R15K06 │R15K07 │R15K08 │R15K09 │R15K10  │R15K11  │R15K12
-        R16K01 │R16K02 │R16K03 │R16K04 │R16K05 │R16K06 │R16K07 │R16K08 │R16K09 │R16K10  │R16K11  │R16K12
-        R17K01 │R17K02 │R17K03 │R17K04 │R17K05 │R17K06 │R17K07 │R17K08 │R17K09 │R17K10  │R17K11  │R17K12
-        R18K01 │R18K02 │R18K03 │R18K04 │R18K05 │R18K06 │R18K07 │R18K08 │R18K09 │R18K10  │R18K11  │R18K12
-        R19K01 │R19K02 │R19K03 │R19K04 │R19K05 │R19K06 │R19K07 │R19K08 │R19K09 │R19K10  │R19K11  │R19K12
-        R20K01 │R20K02 │R20K03 │R20K04 │R20K05 │R20K06 │R20K07 │R20K08 │R20K09 │R20K10  │R20K11  │R20K12
-        R21K01 │R21K02 │R21K03 │R21K04 │R21K05 │R21K06 │R21K07 │R21K08 │R21K09 │R21K10  │R21K11  │R21K12
-        R22K01 │R22K02 │R22K03 │R22K04 │R22K05 │R22K06 │R22K07 │R22K08 │R22K09 │R22K10  │R22K11  │R22K12
-        R23K01 │R23K02 │R23K03 │R23K04 │R23K05 │R23K06 │R23K07 │R23K08 │R23K09 │R23K10  │R23K11  │R23K12
-        R24K01 │R24K02 │R24K03 │R24K04 │R24K05 │R24K06 │R24K07 │R24K08 │R24K09 │R24K10  │R24K11  │R24K12
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━     ┃
+        Kolonne│Kolonne│Kolonne│Kolonne│Kolonne│Kolonne│Kolonne│Kolonne│Kolonne│Kolonne │Kolonne │Kolonne      ┃
+        1      │2      │3      │4      │5      │6      │7      │8      │9      │10      │11      │12           ┃
+        ──────────────────────────────────────────────────────────────────────────────────────────────────     ┃
+        R01K01 │R01K02 │R01K03 │R01K04 │R01K05 │R01K06 │R01K07 │R01K08 │R01K09 │R01K10  │R01K11  │R01K12       ┃
+        R02K01 │R02K02 │R02K03 │R02K04 │R02K05 │R02K06 │R02K07 │R02K08 │R02K09 │R02K10  │R02K11  │R02K12       ┃
+        R03K01 │R03K02 │R03K03 │R03K04 │R03K05 │R03K06 │R03K07 │R03K08 │R03K09 │R03K10  │R03K11  │R03K12       ┃
+        R04K01 │R04K02 │R04K03 │R04K04 │R04K05 │R04K06 │R04K07 │R04K08 │R04K09 │R04K10  │R04K11  │R04K12       ┃
+        R05K01 │R05K02 │R05K03 │R05K04 │R05K05 │R05K06 │R05K07 │R05K08 │R05K09 │R05K10  │R05K11  │R05K12       ┃
+        R06K01 │R06K02 │R06K03 │R06K04 │R06K05 │R06K06 │R06K07 │R06K08 │R06K09 │R06K10  │R06K11  │R06K12       ┃
+        R07K01 │R07K02 │R07K03 │R07K04 │R07K05 │R07K06 │R07K07 │R07K08 │R07K09 │R07K10  │R07K11  │R07K12       ┃
+        R08K01 │R08K02 │R08K03 │R08K04 │R08K05 │R08K06 │R08K07 │R08K08 │R08K09 │R08K10  │R08K11  │R08K12       ┃
+        R09K01 │R09K02 │R09K03 │R09K04 │R09K05 │R09K06 │R09K07 │R09K08 │R09K09 │R09K10  │R09K11  │R09K12       ┃
+        R10K01 │R10K02 │R10K03 │R10K04 │R10K05 │R10K06 │R10K07 │R10K08 │R10K09 │R10K10  │R10K11  │R10K12       ┃
+        R11K01 │R11K02 │R11K03 │R11K04 │R11K05 │R11K06 │R11K07 │R11K08 │R11K09 │R11K10  │R11K11  │R11K12       ┃
+        R12K01 │R12K02 │R12K03 │R12K04 │R12K05 │R12K06 │R12K07 │R12K08 │R12K09 │R12K10  │R12K11  │R12K12       ┃
+        R13K01 │R13K02 │R13K03 │R13K04 │R13K05 │R13K06 │R13K07 │R13K08 │R13K09 │R13K10  │R13K11  │R13K12       │
+        R14K01 │R14K02 │R14K03 │R14K04 │R14K05 │R14K06 │R14K07 │R14K08 │R14K09 │R14K10  │R14K11  │R14K12       │
+        R15K01 │R15K02 │R15K03 │R15K04 │R15K05 │R15K06 │R15K07 │R15K08 │R15K09 │R15K10  │R15K11  │R15K12       │
+        R16K01 │R16K02 │R16K03 │R16K04 │R16K05 │R16K06 │R16K07 │R16K08 │R16K09 │R16K10  │R16K11  │R16K12       │
+        R17K01 │R17K02 │R17K03 │R17K04 │R17K05 │R17K06 │R17K07 │R17K08 │R17K09 │R17K10  │R17K11  │R17K12       │
+        R18K01 │R18K02 │R18K03 │R18K04 │R18K05 │R18K06 │R18K07 │R18K08 │R18K09 │R18K10  │R18K11  │R18K12       │
+        R19K01 │R19K02 │R19K03 │R19K04 │R19K05 │R19K06 │R19K07 │R19K08 │R19K09 │R19K10  │R19K11  │R19K12       │
+        R20K01 │R20K02 │R20K03 │R20K04 │R20K05 │R20K06 │R20K07 │R20K08 │R20K09 │R20K10  │R20K11  │R20K12       │
+        R21K01 │R21K02 │R21K03 │R21K04 │R21K05 │R21K06 │R21K07 │R21K08 │R21K09 │R21K10  │R21K11  │R21K12       │
+        R22K01 │R22K02 │R22K03 │R22K04 │R22K05 │R22K06 │R22K07 │R22K08 │R22K09 │R22K10  │R22K11  │R22K12       │
+        R23K01 │R23K02 │R23K03 │R23K04 │R23K05 │R23K06 │R23K07 │R23K08 │R23K09 │R23K10  │R23K11  │R23K12       │
+          ↓ 18 linjer til · ↑ ↓ ruller                                                              1–27 av 45
 
         Stor kodeblokk                         j k blar  ·  o oversikt  ·  : kommando  ·  ? hjelp   ━━ ━━━━  6/6

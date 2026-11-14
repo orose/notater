@@ -10,6 +10,7 @@ import {
   fasit3,
   fasitNotat,
   finnFiglet,
+  gåTilFasit,
   gåTilLysbilde,
   lesAlleSkjermer,
   lysbildenummer,
@@ -27,7 +28,7 @@ const f = fasit3 as unknown as {
   figlet: {
     lysbilder: Record<string, number[]>;
     hoyde: Record<'blokk' | 'smal', number>;
-    hoder: ({ notat: string; lysbilde: number; type: string; tekst: string } & Record<string, FigletValg | 'avhengerAvMarg'>)[];
+    hoder: ({ notat: string; lysbilde: number; type: string; tekst: string } & Record<string, FigletValg>)[];
   };
   agendalinje: { ellipse: string; vedBredde: Record<string, Record<string, Record<string, AgendaForventning>>> };
   nummerering: { lysbilder: Record<string, Record<string, string | null>> };
@@ -50,27 +51,26 @@ test.describe('AK-3-03 figlet-hode', () => {
   for (const h of f.figlet.hoder) {
     for (const s of STANDARDSTØRRELSER) {
       const forventet = h[`${s.cols}x${s.rows}`]!;
-      const navn = typeof forventet === 'string' ? 'figlet eller fallback' : forventet.font === 'fallback' ? 'fallback' : `${forventet.font} × ${forventet.linjer}`;
-      test.fixme(`TC-3-03-01 ${h.notat} ${h.lysbilde} «${h.tekst.slice(0, 24)}» ved ${s.cols}×${s.rows}: ${navn}`, async ({ present }) => {
+      const navn = forventet.font === 'fallback' ? 'fallback' : `${forventet.font} × ${forventet.linjer}`;
+      test(`TC-3-03-01 ${h.notat} ${h.lysbilde} «${h.tekst.slice(0, 24)}» ved ${s.cols}×${s.rows}: ${navn}`, async ({ present }) => {
         const t = await presenterNotat(present, fasitNotat(h.notat).sti, { størrelse: s, args: ['--palett', PALETT] });
-        await gåTilLysbilde(t, h.lysbilde);
+        await gåTilFasit(t, h.notat, h.lysbilde);
         const celler = t.celler();
         const blokker = finnFiglet(celler);
         const rader = blokker.reduce((sum, b) => sum + b.til - b.fra + 1, 0);
-        if (typeof forventet !== 'string' && forventet.font === 'fallback') {
+        if (forventet.font === 'fallback') {
           expect(blokker, 'ingen figlet-blokk').toEqual([]);
           const tekst = cellerFor(celler, h.tekst.slice(0, 12)) ?? [];
           expect(tekst.length, 'teksten står som vanlig tekst').toBeGreaterThan(0);
           expect(tekst.every((c) => c.fet), 'fallback er fet (ADR-011 §5)').toBe(true);
           // Ingenting kuttes: hele teksten finnes når radene skjøtes (også et 80 tegn langt ord ved 80 kolonner).
           expect(t.skjerm().map((r) => r.trim()).join('').replace(/\s/g, '')).toContain(h.tekst.replace(/\s/g, ''));
-        } else if (typeof forventet !== 'string') {
+        } else {
+          // PO-125: høyden måles uten tomradene mellom figlet-linjene (finnFiglet gir én blokk per linje).
           const høyde = f.figlet.hoyde[forventet.font as 'blokk' | 'smal'];
           expect(rader, `${forventet.linjer} linje(r) i ${forventet.font}`).toBe(forventet.linjer * høyde);
           const lov = hodeFarger(PALETT);
           for (const b of blokker) for (const farge of b.farger) expect(lov, `figlet-farge ${farge} er rollen hode/hode_skygge`).toContain(farge);
-        } else {
-          expect(rader % f.figlet.hoyde.blokk === 0 || rader % f.figlet.hoyde.smal === 0 || (cellerFor(celler, h.tekst.slice(0, 12)) ?? []).every((c) => c.fet)).toBe(true);
         }
         // Høyde ≤ ⅓ av radene.
         expect(rader).toBeLessThanOrEqual(s.rows / 3);
@@ -80,7 +80,7 @@ test.describe('AK-3-03 figlet-hode', () => {
 
   for (const nøkkel of ['statusmote', 'kanter', 'mange']) {
     for (const s of [STØRRELSE['80'], STØRRELSE['200']]) {
-      test.fixme(`TC-3-03-02 ${nøkkel} ved ${s.cols}×${s.rows}: figlet på nøyaktig T/A/O, aldri på innhold`, async ({ present }) => {
+      test(`TC-3-03-02 ${nøkkel} ved ${s.cols}×${s.rows}: figlet på nøyaktig T/A/O, aldri på innhold`, async ({ present }) => {
         const t = await presenterNotat(present, fasitNotat(nøkkel).sti, { størrelse: s });
         const skjermer = await lesAlleSkjermer(t);
         const forventet = new Set(f.figlet.lysbilder[nøkkel]);
@@ -99,9 +99,9 @@ test.describe('AK-3-03 figlet-hode', () => {
     }
   }
 
-  test.fixme('TC-3-03-03 resize fra 200×50 til 80×24 på overgangen «Kundetilbakemeldinger og support»: blokk → fet fallback, samme lysbilde', async ({ present }) => {
+  test('TC-3-03-03 resize fra 200×50 til 80×24 på overgangen «Kundetilbakemeldinger og support»: blokk → fet fallback, samme lysbilde', async ({ present }) => {
     const t = await presenterNotat(present, fasitNotat('mange').sti, { størrelse: STØRRELSE['200'] });
-    await gåTilLysbilde(t, 13);
+    await gåTilFasit(t, 'mange', 13);
     expect(finnFiglet(t.celler()).map((b) => b.til - b.fra + 1)).toEqual([f.figlet.hoyde.blokk]);
     await t.endreStørrelse(STØRRELSE['80']);
     await expect.poll(() => finnFiglet(t.celler())).toEqual([]);
@@ -114,7 +114,7 @@ test.describe('AK-3-04 agendalinjen', () => {
     const s = STØRRELSE[bredde as '80' | '200'];
     for (const [nøkkel, forventninger] of Object.entries(notater)) {
       if (nøkkel === 'mange' && bredde === '200') continue; // dekkes av TC-3-04-03
-      test.fixme(`TC-3-04-01 ${nøkkel} ved ${bredde} kolonner: synlige punkter, utheving, progresjon, avkorting`, async ({ present }) => {
+      test(`TC-3-04-01 ${nøkkel} ved ${bredde} kolonner: synlige punkter, utheving, progresjon, avkorting`, async ({ present }) => {
         const notat = fasitNotat(nøkkel);
         const agenda = notat.agenda ?? [];
         const t = await presenterNotat(present, notat.sti, { størrelse: s });
@@ -143,11 +143,11 @@ test.describe('AK-3-04 agendalinjen', () => {
     }
   }
 
-  test.fixme('TC-3-04-02 gjeldende punkt er uthevet (andre attributter enn naboene) i statusmøtet', async ({ present }) => {
+  test('TC-3-04-02 gjeldende punkt er uthevet (andre attributter enn naboene) i statusmøtet', async ({ present }) => {
     const notat = fasitNotat('statusmote');
     const t = await presenterNotat(present, notat.sti, { størrelse: STØRRELSE['80'] });
     for (const n of [4, 7, 10]) {
-      await gåTilLysbilde(t, n);
+      await gåTilFasit(t, 'statusmote', n);
       const gjeldende = notat.lysbilder[n - 1]!.agendapunkt!;
       const andre = notat.agenda!.filter((p) => p !== gjeldende);
       const stil = (tekst: string) => {
@@ -158,7 +158,7 @@ test.describe('AK-3-04 agendalinjen', () => {
     }
   });
 
-  test.fixme('TC-3-04-03 «Mange agendapunkter» ved 200 kolonner: forrige · nåværende · neste som i v2 (QA-V2-22)', async ({ present }) => {
+  test('TC-3-04-03 «Mange agendapunkter» ved 200 kolonner: forrige · nåværende · neste som i v2 (QA-V2-22)', async ({ present }) => {
     const mange = fasitNotat('mange') as unknown as { sti: string; agenda: string[]; avkortet: Record<string, { synlige: string[]; før: boolean; etter: boolean }> };
     const t = await presenterNotat(present, mange.sti, { størrelse: STØRRELSE['200'] });
     const skjermer = await lesAlleSkjermer(t);
@@ -170,7 +170,7 @@ test.describe('AK-3-04 agendalinjen', () => {
     }
   });
 
-  test.fixme('TC-3-04-05 ingen agendalinje på overgangene (200×50, eksakt nummerering)', async ({ present }) => {
+  test('TC-3-04-05 ingen agendalinje på overgangene (200×50, eksakt nummerering)', async ({ present }) => {
     for (const nøkkel of ['statusmote', 'kanter', 'mange']) {
       const notat = fasitNotat(nøkkel);
       const t = await presenterNotat(present, notat.sti, { størrelse: STØRRELSE['200'] });
@@ -181,11 +181,11 @@ test.describe('AK-3-04 agendalinjen', () => {
     }
   });
 
-  test.fixme('TC-3-04-04 innholdsoverskriften har agendanummeret «0n /»', async ({ present }) => {
+  test('TC-3-04-04 innholdsoverskriften har agendanummeret «0n /»', async ({ present }) => {
     for (const nøkkel of ['statusmote', 'kanter']) {
       const t = await presenterNotat(present, fasitNotat(nøkkel).sti, { størrelse: STØRRELSE['80'] });
       for (const [n, nr] of Object.entries(f.nummerering.lysbilder[nøkkel]!)) {
-        const rader = await gåTilLysbilde(t, Number(n));
+        const rader = await gåTilFasit(t, nøkkel, Number(n));
         const overskrift = fasitNotat(nøkkel).lysbilder[Number(n) - 1]!.overskrift!;
         const rad = rader.find((r) => r.includes(overskrift.slice(0, 12))) ?? '';
         if (nr) expect(skjøtt(rader), `${nøkkel} ${n}`).toContain(nr);

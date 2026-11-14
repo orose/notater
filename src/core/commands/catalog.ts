@@ -241,7 +241,6 @@ export const COMMAND_CATALOG = {
     name: 'Presenter',
     aliases: ['presenter'],
     group: 'presentasjon',
-    surfaces: ['web'],
     description: 'Viser notatet som lysbilder fra seksjonen ved leseposisjonen. Valgfritt lysbildenivå (h2–h6, auto) huskes for notatet.',
     short: 'fra leseposisjonen',
     args: [{ name: 'nivå', label: 'Lysbildenivå', optional: true, match: 'prefix' }],

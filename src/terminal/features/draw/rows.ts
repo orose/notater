@@ -60,7 +60,7 @@ export interface Canvas {
   runs(x: number, y: number, runs: readonly Run[], maxX?: number): number;
 }
 
-export function createCanvas(frame: Frame, theme: TerminalTheme, bg: RoleName = 'bg'): Canvas {
+export function createCanvas(frame: Frame, theme: TerminalTheme, bg: RoleName = 'bg', paintBackground = true): Canvas {
   const bgRoles: RoleName[] = new Array<RoleName>(frame.cols * frame.rows).fill(bg);
   const canvas: Canvas = {
     frame,
@@ -86,7 +86,7 @@ export function createCanvas(frame: Frame, theme: TerminalTheme, bg: RoleName = 
     },
   };
   // Hele terminalen males (designsystem-terminal §10): ingen celle står med terminalens standardbakgrunn.
-  canvas.fill(0, 0, frame.cols, frame.rows, bg);
+  if (paintBackground) canvas.fill(0, 0, frame.cols, frame.rows, bg);
   return canvas;
 }
 

@@ -101,7 +101,6 @@ test.describe('TC-3-02-00 v3-fasiten', () => {
     rekkefolge: { v2Notater: string[] };
     figlet: {
       typer: string[];
-      margMellom: number[];
       lysbilder: Record<string, number[]>;
       hoder: ({ notat: string; lysbilde: number; type: string; tekst: string } & Record<string, unknown>)[];
     };
@@ -133,9 +132,7 @@ test.describe('TC-3-02-00 v3-fasiten', () => {
       expect(l.type === 'agenda' ? 'Agenda' : l.type === 'tittel' ? l.overskrift : l.agendapunkt).toBe(h.tekst);
       for (const s of STANDARDSTØRRELSER) {
         const nøkkel = `${s.cols}x${s.rows}`;
-        const [lav, høy] = f.figlet.margMellom.map((m) => figletKjede(h.tekst, s, h.type === 'tittel', m));
-        const forventet = JSON.stringify(lav) === JSON.stringify(høy) ? lav : 'avhengerAvMarg';
-        expect(h[nøkkel], `${h.tekst} ved ${nøkkel}`).toEqual(forventet);
+        expect(h[nøkkel], `${h.tekst} ved ${nøkkel}`).toEqual(figletKjede(h.tekst, s, h.type === 'tittel'));
       }
     }
     // Kanttilfellene som fasiten skal dekke: én linje, to linjer, smal font, fallback (bredde) og fallback (emoji).

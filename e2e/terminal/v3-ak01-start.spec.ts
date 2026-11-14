@@ -6,7 +6,7 @@
 import { spawnSync } from 'node:child_process';
 import { REPO } from '../support/real-server';
 import { sjekksum } from '../support/v2';
-import { expect, fasit3, fasitNotat, forventGjenopprettet, lysbildenummer, presenterNotat, test, ventPåLysbilde } from '../support/terminal';
+import { antallLysbilder, erTittelside, expect, fasit3, forventNotat, fasitNotat, forventGjenopprettet, lysbildenummer, presenterNotat, test, ventPåLysbilde } from '../support/terminal';
 
 const valg = fasit3 as unknown as {
   notatvalg: {
@@ -22,10 +22,11 @@ const tittel = (nøkkel: string) => fasitNotat(nøkkel).lysbilder[0]!.overskrift
 const antall = (nøkkel: string) => fasitNotat(nøkkel).lysbilder.length;
 
 test.describe('AK-3-01 start og notatvalg', () => {
-  test.fixme('TC-3-01-01 starter på tittellysbildet, frittstående: ingen TCP-tilkoblinger, heller ikke til web-serveren', async ({ present }) => {
-    const t = await presenterNotat(present, 'Statusmøte uke 45');
-    expect(lysbildenummer(t.skjerm())).toEqual({ n: 1, av: antall('statusmote') });
-    await t.ventPåTekst(tittel('statusmote'));
+  test('TC-3-01-01 starter på tittellysbildet, frittstående: ingen TCP-tilkoblinger, heller ikke til web-serveren', async ({ present }) => {
+    const t = await presenterNotat(present, 'Statusmøte uke 45', { størrelse: { cols: 200, rows: 50 } });
+    expect(erTittelside(t.skjerm()), 'tittelsiden (PO-124: uten folio)').toBe(true);
+    expect(await antallLysbilder(t)).toBe(antall('statusmote'));
+    await forventNotat(t, tittel('statusmote'));
     await t.trykk('j', 'j', 'j', 'G');
     await ventPåLysbilde(t, antall('statusmote'));
     await t.trykk('q');
@@ -34,26 +35,27 @@ test.describe('AK-3-01 start og notatvalg', () => {
   });
 
   for (const { arg, notat } of valg.notatvalg.eksakt) {
-    test.fixme(`TC-3-01-02 eksakt treff: «${arg}»`, async ({ present }) => {
-      const t = await presenterNotat(present, arg);
-      expect(lysbildenummer(t.skjerm())).toEqual({ n: 1, av: antall(notat) });
+    test(`TC-3-01-02 eksakt treff: «${arg}»`, async ({ present }) => {
+      const t = await presenterNotat(present, arg, { størrelse: { cols: 200, rows: 50 } });
+      expect(erTittelside(t.skjerm())).toBe(true);
+      expect(await antallLysbilder(t)).toBe(antall(notat));
     });
   }
 
-  test.fixme('TC-3-01-03 navn uten anførselstegn (flere posisjonsargumenter) settes sammen', async ({ present }) => {
+  test('TC-3-01-03 navn uten anførselstegn (flere posisjonsargumenter) settes sammen', async ({ present }) => {
     const t = await present({ args: ['Statusmøte', 'uke', '45'] });
     await ventPåLysbilde(t, 1, 20_000);
-    await t.ventPåTekst(tittel('statusmote'));
+    await forventNotat(t, tittel('statusmote'));
   });
 
   for (const { arg, notat } of valg.notatvalg.fuzzyEttTreff) {
-    test.fixme(`TC-3-01-04 fuzzy med ett treff starter direkte: «${arg}»`, async ({ present }) => {
+    test(`TC-3-01-04 fuzzy med ett treff starter direkte: «${arg}»`, async ({ present }) => {
       const t = await presenterNotat(present, arg);
-      await t.ventPåTekst(tittel(notat));
+      await forventNotat(t, tittel(notat));
     });
   }
 
-  test.fixme('TC-3-01-05 flere treff ved fuzzy: søkbar liste forhåndsfylt, ingen presentasjon før valg (Q-3-09)', async ({ present }) => {
+  test('TC-3-01-05 flere treff ved fuzzy: søkbar liste forhåndsfylt, ingen presentasjon før valg (Q-3-09)', async ({ present }) => {
     const { arg, treff } = valg.notatvalg.flereTreff;
     const t = await present({ args: [arg] });
     for (const navn of treff) await t.ventPåTekst(navn, 20_000);
@@ -64,10 +66,12 @@ test.describe('AK-3-01 start og notatvalg', () => {
     await expect.poll(() => t.skjerm().join('\n').includes('Kvartalsrapport')).toBe(false);
     await t.trykk('Enter');
     await ventPåLysbilde(t, 1);
-    expect(lysbildenummer(t.skjerm())).toEqual({ n: 1, av: antall('rapport') });
+    expect(erTittelside(t.skjerm())).toBe(true);
+    // Riktig notat: totalen er minst fasitens (flere «(forts.)» er lov under 200×50, Q-3-01).
+    expect(await antallLysbilder(t)).toBeGreaterThanOrEqual(antall('rapport'));
   });
 
-  test.fixme('TC-3-01-06 ukjent notat: melding med argumentet, exit-kode ≠ 0, terminalen urørt (Q-3-09)', async ({ present }) => {
+  test('TC-3-01-06 ukjent notat: melding med argumentet, exit-kode ≠ 0, terminalen urørt (Q-3-09)', async ({ present }) => {
     const t = await present({ args: [valg.notatvalg.ukjent.arg] });
     const kode = await t.ventPåExit(20_000);
     expect(kode).not.toBe(0);
@@ -92,24 +96,24 @@ test.describe('AK-3-01 start og notatvalg', () => {
     await t.ventPåTekst(treffEtterFilter);
     await t.trykk('Enter');
     await ventPåLysbilde(t, 1, 20_000);
-    await t.ventPåTekst(tittel('kanter'));
+    await forventNotat(t, tittel('kanter'));
     const t2 = await present();
     await t2.ventPåTekst('Notater', 20_000);
     await t2.trykk('Escape');
     await forventGjenopprettet(t2);
   });
 
-  test.fixme('TC-3-01-08 NFC-argument treffer NFD-filnavnet (QA-IDX-09)', async ({ present }) => {
+  test('TC-3-01-08 NFC-argument treffer NFD-filnavnet (QA-IDX-09)', async ({ present }) => {
     const t = await presenterNotat(present, valg.notatvalg.nfd.arg.normalize('NFC'));
-    await t.ventPåTekst('Årsrapport');
+    await forventNotat(t, 'Årsrapport');
   });
 
-  test.fixme('TC-3-01-09 --vault <mappe> i stedet for --config', async ({ present, vault }) => {
+  test('TC-3-01-09 --vault <mappe> i stedet for --config', async ({ present, vault }) => {
     const t = await present({ konfig: null, args: ['--vault', vault.dir, 'Statusmøte uke 45'] });
     await ventPåLysbilde(t, 1, 20_000);
   });
 
-  test.fixme('TC-3-01-10 read-only: ingenting i vaultet endres av en hel presentasjon (sjekksum)', async ({ present, vault }) => {
+  test('TC-3-01-10 read-only: ingenting i vaultet endres av en hel presentasjon (sjekksum)', async ({ present, vault }) => {
     const før = sjekksum(vault.dir, '.');
     const t = await presenterNotat(present, 'Statusmøte uke 45');
     await t.trykk('G', ':');

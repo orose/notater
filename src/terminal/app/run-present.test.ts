@@ -93,4 +93,23 @@ describe('runPresent', () => {
     t.input.emit('data', 'q');
     expect(await done).toBe(0);
   }, 30_000);
+
+  it('PO-132: terminalens farger er standard (ingen 24-bits farger, bakgrunnen males ikke); --palett gir truecolor', async () => {
+    const plain = environment(['Statusmøte uke 45', '--vault', VAULT], true);
+    const done = runPresent(plain.env);
+    await plain.waitFor(/Presentasjon/);
+    plain.input.emit('data', 'q');
+    expect(await done).toBe(0);
+    const raw = plain.out.join('');
+    expect(raw).not.toMatch(/\u001b\[[0-9;]*;(38|48);2;/);
+    expect(raw).not.toMatch(/;4[0-7]m|;10[0-7]m/);
+
+    const fosfor = environment(['Statusmøte uke 45', '--vault', VAULT, '--palett', 'fosfor'], true);
+    const done2 = runPresent(fosfor.env);
+    await fosfor.waitFor(/Presentasjon/);
+    fosfor.input.emit('data', 'q');
+    expect(await done2).toBe(0);
+    expect(fosfor.out.join('')).toMatch(/48;2;11;13;10/);
+  }, 30_000);
 });
+

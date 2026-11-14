@@ -6,12 +6,12 @@
 
 import {
   ENABLED,
-  type ArgumentError,
   type ArgumentValue,
   type Availability,
   type CommandContext,
   type CommandHandler,
   type CommandHandlers,
+  presentLevelError,
 } from '../../../core/commands';
 
 /** Visningsfunksjoner fra senere slices. Fjern fra settet når funksjonen er levert. */
@@ -27,34 +27,7 @@ export const NO_HEADINGS = 'Notatet har ingen overskrifter';
 const onOff = (on: boolean) => (on ? 'på' : 'av');
 
 /** «h2, h3 og h4». */
-function listLevels(levels: readonly number[]): string {
-  const names = levels.map((l) => `h${l}`);
-  return names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} og ${names[names.length - 1]}`;
-}
-
-function levelsSentence(levels: readonly number[]): string {
-  return levels.length === 0 ? 'Notatet har ingen overskrifter.' : `Notatet har overskrifter på nivå ${listLevels(levels)}.`;
-}
-
-/** S4 / PO-101: E475 = ugyldig argument, E486 = nivået finnes ikke i notatet. Ren funksjon (testes direkte). */
-export function presentLevelError(input: string, validLevels: readonly number[]): ArgumentError | null {
-  const value = input.trim().toLowerCase();
-  if (value === '' || value === 'auto') return null;
-  const m = /^h([1-6])$/.exec(value);
-  if (!m) {
-    return {
-      code: 'E475',
-      title: `Ugyldig nivå «${input.trim()}».`,
-      detail: `Skriv auto eller h1–h6, f.eks. :presenter h3. ${levelsSentence(validLevels)}`,
-    };
-  }
-  if (validLevels.includes(Number(m[1]))) return null;
-  return {
-    code: 'E486',
-    title: `Ingen overskrifter på nivå ${value} i notatet.`,
-    detail: `Lysbildene blir ikke delt annerledes. ${validLevels.length > 0 ? `Gyldige nivåer: ${listLevels(validLevels)}.` : levelsSentence(validLevels)} Valget er ikke lagret.`,
-  };
-}
+export { presentLevelError };
 
 function levelValues(ctx: CommandContext): ArgumentValue[] {
   const p = ctx.ports.presentation;

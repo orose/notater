@@ -81,21 +81,21 @@
 
        ●                                                               ts
       ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-         1  export const linje001 = 'STOR-KODE 001 i en kodeblokk som er
-         ↪  altfor lang for ett lysbilde';
-         2  export const linje002 = 'STOR-KODE 002 i en kodeblokk som er
-         ↪  altfor lang for ett lysbilde';
-         3  export const linje003 = 'STOR-KODE 003 i en kodeblokk som er
-         ↪  altfor lang for ett lysbilde';
-         4  export const linje004 = 'STOR-KODE 004 i en kodeblokk som er
-         ↪  altfor lang for ett lysbilde';
-         5  export const linje005 = 'STOR-KODE 005 i en kodeblokk som er
-         ↪  altfor lang for ett lysbilde';
-         6  export const linje006 = 'STOR-KODE 006 i en kodeblokk som er
-         ↪  altfor lang for ett lysbilde';
-         7  export const linje007 = 'STOR-KODE 007 i en kodeblokk som er
-         ↪  altfor lang for ett lysbilde';
-         8  export const linje008 = 'STOR-KODE 008 i en kodeblokk som er
+         1  export const linje001 = 'STOR-KODE 001 i en kodeblokk som er  ┃
+         ↪  altfor lang for ett lysbilde';                                │
+         2  export const linje002 = 'STOR-KODE 002 i en kodeblokk som er  │
+         ↪  altfor lang for ett lysbilde';                                │
+         3  export const linje003 = 'STOR-KODE 003 i en kodeblokk som er  │
+         ↪  altfor lang for ett lysbilde';                                │
+         4  export const linje004 = 'STOR-KODE 004 i en kodeblokk som er  │
+         ↪  altfor lang for ett lysbilde';                                │
+         5  export const linje005 = 'STOR-KODE 005 i en kodeblokk som er  │
+         ↪  altfor lang for ett lysbilde';                                │
+         6  export const linje006 = 'STOR-KODE 006 i en kodeblokk som er  │
+         ↪  altfor lang for ett lysbilde';                                │
+         7  export const linje007 = 'STOR-KODE 007 i en kodeblokk som er  │
+         ↪  altfor lang for ett lysbilde';                                │
+       ↓ 227 linjer til · ↑ ↓ ruller                          1–14 av 241
 
      Stor kodeblokk                                  ? hjelp   ━━ ━━──  4/6
 ── 5 ──────────────────────────────────────────────────────────────────────────
@@ -129,22 +129,22 @@
      01 /
      Bred tabell  ─────────────────────────────────────────────────────────
 
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     Kolonne 1   R01K01
-     Kolonne 2   R01K02
-     Kolonne 3   R01K03
-     Kolonne 4   R01K04
-     Kolonne 5   R01K05
-     Kolonne 6   R01K06
-     Kolonne 7   R01K07
-     Kolonne 8   R01K08
-     Kolonne 9   R01K09
-     Kolonne 10  R01K10
-     Kolonne 11  R01K11
-     Kolonne 12  R01K12
-     ──────────────────────────────────
-     Kolonne 1   R02K01
-     Kolonne 2   R02K02
-     Kolonne 3   R02K03
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                   ┃
+     Kolonne 1   R01K01                                                   │
+     Kolonne 2   R01K02                                                   │
+     Kolonne 3   R01K03                                                   │
+     Kolonne 4   R01K04                                                   │
+     Kolonne 5   R01K05                                                   │
+     Kolonne 6   R01K06                                                   │
+     Kolonne 7   R01K07                                                   │
+     Kolonne 8   R01K08                                                   │
+     Kolonne 9   R01K09                                                   │
+     Kolonne 10  R01K10                                                   │
+     Kolonne 11  R01K11                                                   │
+     Kolonne 12  R01K12                                                   │
+     ──────────────────────────────────                                   │
+     Kolonne 1   R02K01                                                   │
+     Kolonne 2   R02K02                                                   │
+       ↓ 505 linjer til · ↑ ↓ ruller                          1–16 av 521
 
      Stor kodeblokk                                  ? hjelp   ━━ ━━━━  6/6

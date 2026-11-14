@@ -47,7 +47,7 @@
 
 
 
-     Mye innhold                                      ? hjelp   ━━ ───  2/5
+     Mye innhold                          ? hjelp   ━━ ──────────────  2/16
 ── 3 ──────────────────────────────────────────────────────────────────────────
 
 
@@ -72,9 +72,9 @@
 
 
 
-     Mye innhold                                      ? hjelp   ━━ ━──  3/5
+     Mye innhold                          ? hjelp   ━━ ━─────────────  3/16
 ── 4 ──────────────────────────────────────────────────────────────────────────
-     1 Bakgrunn 1/2
+     1 Bakgrunn 1/13
 
      01 /
      Lang gjennomgang  ────────────────────────────────────────────────────
@@ -93,13 +93,288 @@
      og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
      i.
 
+
+
+
+
+     Mye innhold                          ? hjelp   ━━ ━━────────────  4/16
+── 5 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 2/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
      Markør MYE-03. Presentasjonen skal aldri kutte innhold usynlig, og
      teksten her er lang nok til at lysbildet må krympe skriften og
      deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
 
-     Mye innhold                                      ? hjelp   ━━ ━━─  4/5
-── 5 ──────────────────────────────────────────────────────────────────────────
-     1 Bakgrunn 2/2
+     Markør MYE-04. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+
+
+
+
+     Mye innhold                          ? hjelp   ━━ ━━━───────────  5/16
+── 6 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 3/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
+     Markør MYE-05. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+     Markør MYE-06. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+
+
+
+
+     Mye innhold                          ? hjelp   ━━ ━━━━──────────  6/16
+── 7 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 4/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
+     Markør MYE-07. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+     Markør MYE-08. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+
+
+
+
+     Mye innhold                          ? hjelp   ━━ ━━━━━─────────  7/16
+── 8 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 5/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
+     Markør MYE-09. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+     Markør MYE-10. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+
+
+
+
+     Mye innhold                          ? hjelp   ━━ ━━━━━━────────  8/16
+── 9 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 6/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
+     Markør MYE-11. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+     Markør MYE-12. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+
+
+
+
+     Mye innhold                          ? hjelp   ━━ ━━━━━━━───────  9/16
+── 10 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 7/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
+     Markør MYE-13. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+     Markør MYE-14. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+
+
+
+
+     Mye innhold                         ? hjelp   ━━ ━━━━━━━━──────  10/16
+── 11 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 8/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
+     Markør MYE-15. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+     Markør MYE-16. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+
+
+
+
+     Mye innhold                         ? hjelp   ━━ ━━━━━━━━━─────  11/16
+── 12 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 9/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
+     Markør MYE-17. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+     Markør MYE-18. Presentasjonen skal aldri kutte innhold usynlig, og
+     teksten her er lang nok til at lysbildet må krympe skriften og
+     deretter fortsette på et nytt lysbilde merket forts. Hvert avsnitt har
+     en unik markør slik at testen kan sjekke at alt vises nøyaktig én gang
+     og i riktig rekkefølge, uansett hvor mange deler lysbildet blir delt
+     i.
+
+     Listen under kan deles mellom punkter, men aldri inne i et punkt:
+
+
+
+     Mye innhold                         ? hjelp   ━━ ━━━━━━━━━━────  12/16
+── 13 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 10/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
+   – Punkt MYE-L01: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L02: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L03: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L04: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L05: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L06: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L07: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L08: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+
+
+     Mye innhold                         ? hjelp   ━━ ━━━━━━━━━━━───  13/16
+── 14 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 11/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
+   – Punkt MYE-L09: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L10: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L11: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L12: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L13: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L14: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L15: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L16: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+
+
+     Mye innhold                         ? hjelp   ━━ ━━━━━━━━━━━━──  14/16
+── 15 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 12/13
+
+     01 /
+     Lang gjennomgang (forts.)  ───────────────────────────────────────────
+
+   – Punkt MYE-L17: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L18: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L19: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+   – Punkt MYE-L20: et listepunkt med litt tekst som tar plass på
+     lysbildet.
+
+     Markør MYE-SLUTT.
+
+
+
+
+
+
+
+
+     Mye innhold                         ? hjelp   ━━ ━━━━━━━━━━━━━─  15/16
+── 16 ──────────────────────────────────────────────────────────────────────────
+     1 Bakgrunn 13/13
 
      01 /
      Kort oppsummering  ───────────────────────────────────────────────────
@@ -122,4 +397,4 @@
 
 
 
-     Mye innhold                                      ? hjelp   ━━ ━━━  5/5
+     Mye innhold                         ? hjelp   ━━ ━━━━━━━━━━━━━━  16/16

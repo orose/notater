@@ -42,13 +42,38 @@
      sammen med tittel, ingress og egenskaper, og skal derfor bli et eget
      lysbilde før agendaen.
 
+
+
+
+
+
+     Langt innhold før agenda                     ? hjelp   ━━── ── ──  2/8
+── 3 ──────────────────────────────────────────────────────────────────────────
+
+
+
      Markør LANGFØR-4. Dette er et langt innledende avsnitt før første
      agendaoverskrift. Det er for langt til å få plass på tittellysbildet
      sammen med tittel, ingress og egenskaper, og skal derfor bli et eget
      lysbilde før agendaen.
 
-     Langt innhold før agenda                      ? hjelp   ━━─ ── ──  2/7
-── 3 ──────────────────────────────────────────────────────────────────────────
+     Markør LANGFØR-5. Dette er et langt innledende avsnitt før første
+     agendaoverskrift. Det er for langt til å få plass på tittellysbildet
+     sammen med tittel, ingress og egenskaper, og skal derfor bli et eget
+     lysbilde før agendaen.
+
+
+
+
+
+
+
+
+
+
+
+     Langt innhold før agenda                     ? hjelp   ━━━─ ── ──  3/8
+── 4 ──────────────────────────────────────────────────────────────────────────
 
 
      Langt innhold før agenda · 2 punkter
@@ -59,11 +84,9 @@
      █   █ ▀▄▄▄█ █▄▄▄▄ █   █ █▄▄▄▀ █   █
 
                                                                    lysbilde
-     01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · ·  4
+     01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · ·  5
 
-     02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · ·  6
-
-
+     02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · ·  7
 
 
 
@@ -72,8 +95,10 @@
 
 
 
-     Langt innhold før agenda                      ? hjelp   ━━━ ── ──  3/7
-── 4 ──────────────────────────────────────────────────────────────────────────
+
+
+     Langt innhold før agenda                     ? hjelp   ━━━━ ── ──  4/8
+── 5 ──────────────────────────────────────────────────────────────────────────
 
 
      01 / 02  du er her
@@ -84,9 +109,9 @@
      █     ▀▄▄▄▀ █  ▀▄ ▄▄▄▄▀   █   █▄▄▄▄     █     ▀▄▄▄▀ █   █ █  ▀▄   █
 
                                                                    lysbilde
-     01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · ·  4
+     01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · ·  5
          └── Lysbilde én
-     02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · ·  6
+     02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · ·  7
 
 
 
@@ -97,8 +122,8 @@
 
 
 
-     Langt innhold før agenda                      ? hjelp   ━━━ ━─ ──  4/7
-── 5 ──────────────────────────────────────────────────────────────────────────
+     Langt innhold før agenda                     ? hjelp   ━━━━ ━─ ──  5/8
+── 6 ──────────────────────────────────────────────────────────────────────────
      1 Første punkt 1/1 │ 2 Andre punkt
 
      01 /
@@ -122,8 +147,8 @@
 
 
 
-     Langt innhold før agenda                      ? hjelp   ━━━ ━━ ──  5/7
-── 6 ──────────────────────────────────────────────────────────────────────────
+     Langt innhold før agenda                     ? hjelp   ━━━━ ━━ ──  6/8
+── 7 ──────────────────────────────────────────────────────────────────────────
 
 
      02 / 02  du er her
@@ -134,8 +159,8 @@
      █   █ █   █ █▄▄▄▀ █  ▀▄ █▄▄▄▄     █     ▀▄▄▄▀ █   █ █  ▀▄   █
 
                                                                    lysbilde
-     01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · ·  4
-     02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · ·  6
+     01  Første punkt  · · · · · · · · · · · · · · · · · · · · · · · · ·  5
+     02  Andre punkt   · · · · · · · · · · · · · · · · · · · · · · · · ·  7
          └── Andre punkt
 
 
@@ -147,8 +172,8 @@
 
 
 
-     Langt innhold før agenda                      ? hjelp   ━━━ ━━ ━─  6/7
-── 7 ──────────────────────────────────────────────────────────────────────────
+     Langt innhold før agenda                     ? hjelp   ━━━━ ━━ ━─  7/8
+── 8 ──────────────────────────────────────────────────────────────────────────
      1 Første punkt │ 2 Andre punkt 1/1
 
      02 /
@@ -172,4 +197,4 @@
 
 
 
-     Langt innhold før agenda                      ? hjelp   ━━━ ━━ ━━  7/7
+     Langt innhold før agenda                     ? hjelp   ━━━━ ━━ ━━  8/8

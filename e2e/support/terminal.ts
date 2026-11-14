@@ -139,9 +139,10 @@ function figletLinjer(tekst: string, font: FlfFont, rom: number): number | null 
 
 export type FigletValg = { readonly font: 'blokk' | 'smal' | 'fallback'; readonly linjer: number };
 
-/** Fallback-kjeden i ADR-011 §5 som ren funksjon (QAs egen implementasjon, brukes til å kontrollere fasiten). */
-export function figletKjede(tekst: string, s: Størrelse, tittel: boolean, marg: number): FigletValg {
-  const rom = s.cols - 2 * marg;
+/** Fallback-kjeden i ADR-011 §5 / design §3.2 som ren funksjon (QAs egen implementasjon, brukes til å kontrollere fasiten). */
+export function figletKjede(tekst: string, s: Størrelse, tittel: boolean): FigletValg {
+  // Bredde = satsen (design §1.1/§3.2, PO-126); høyden måles uten tomradene mellom linjene (PO-125).
+  const rom = geometri(s.cols).sats;
   const maksHøyde = s.rows / 3;
   const b = figletLinjer(tekst, FIGLET.blokk, rom);
   if (b === 1 && FIGLET.blokk.hoyde <= maksHøyde) return { font: 'blokk', linjer: 1 };
@@ -490,9 +491,46 @@ export function statuslinje(rader: readonly string[]): string {
 }
 
 /** «7/10» sist på statuslinjen. */
-export function lysbildenummer(rader: readonly string[]): { n: number; av: number } | null {
+export function lysbildenummer(rader: readonly string[]): { n: number; av: number | null } | null {
   const m = /(\d+)\s*\/\s*(\d+)\s*$/.exec(statuslinje(rader));
-  return m ? { n: Number(m[1]), av: Number(m[2]) } : null;
+  if (m) return { n: Number(m[1]), av: Number(m[2]) };
+  // PO-124 (PO-95): tittelsiden har ingen folio. Totalen leses fra lysbilde 2 (`antallLysbilder`).
+  return erTittelside(rader) ? { n: 1, av: null } : null;
+}
+
+/**
+ * Tittelsiden (design §2.1): ingen agendalinje og ingen folio; statuslinjen er starthintet «Presentasjon … → neste …».
+ */
+export function erTittelside(rader: readonly string[]): boolean {
+  const linje = statuslinje(rader);
+  return /^\s*Presentasjon\b/.test(linje) && /→ neste/.test(linje) && !/\d+\s*\/\s*\d+\s*$/.test(linje);
+}
+
+/** Antall lysbilder: fra folioen, eller (på tittelsiden) fra lysbilde 2 – deretter tilbake (PO-124). */
+export async function antallLysbilder(t: Terminal): Promise<number> {
+  const nå = lysbildenummer(t.skjerm());
+  if (nå?.av) return nå.av;
+  await t.trykk('j');
+  const av = lysbildenummer(await ventPåLysbilde(t, 2))!.av!;
+  await t.trykk('k');
+  await ventPåLysbilde(t, 1);
+  return av;
+}
+
+/** Riktig notat er åpnet: tittelen står i statuslinjen fra lysbilde 2 (tittelsiden har den bare som figlet, PO-124). */
+export async function forventNotat(t: Terminal, tittel: string): Promise<void> {
+  await t.trykk('j');
+  await ventPåLysbilde(t, 2);
+  expect(statuslinje(t.skjerm()), 'notattittelen i statuslinjen').toContain(tittel);
+  await t.trykk('k');
+  await ventPåLysbilde(t, 1);
+}
+
+/** Satsgeometrien i design §1.1 (PO-126): marg = max(4, round(kol × 0,067)), sats = min(kol − 2·marg, 160), mål = min(sats, 72). */
+export function geometri(cols: number): { marg: number; sats: number; mål: number; venstre: number; høyre: number } {
+  const marg = Math.max(4, Math.round(cols * 0.067));
+  const sats = Math.min(cols - 2 * marg, 160);
+  return { marg, sats, mål: Math.min(sats, 72), venstre: marg, høyre: marg + sats };
 }
 
 /**
@@ -601,7 +639,15 @@ const OSC8 = new RegExp(`${ESC}\\]8;[^;]*;([^${ESC}\\u0007]*)(?:${ESC}\\\\|\\u00
 
 /** Alle OSC 8-mål i råstrømmen (tomme mål = slutt på lenken er filtrert bort). */
 export function osc8Mål(rå: string): string[] {
-  return [...rå.matchAll(OSC8)].map((m) => m[1]!).filter(Boolean);
+  // PO-129: URL-ene er prosentkodet; de dekodes før sammenligning.
+  const dekod = (u: string) => {
+    try {
+      return decodeURI(u);
+    } catch {
+      return u;
+    }
+  };
+  return [...rå.matchAll(OSC8)].map((m) => dekod(m[1]!)).filter(Boolean);
 }
 
 /** Fargekoder i en SGR-parameterliste (30–49, 90–107; 38/48 med undertype). */
@@ -636,11 +682,48 @@ export async function gåTilLysbilde(t: Terminal, n: number): Promise<string[]> 
   return t.skjerm();
 }
 
+/**
+ * Går til fasitlysbildet `nr` (1-basert, v2-nummereringen) i notatet `nøkkel` ved å lete framover fra start. Ved
+ * 80×24/120×36 kan ekstra «(forts.)» forskyve nummeret (Q-3-01), så lysbildet gjenkjennes på innholdet:
+ * tittel = lysbilde 1, agenda = overlinjen «… · N punkter», overgang = «0k / 0N  du er her», innhold = overskriften
+ * (eller første markør når lysbildet ikke har overskrift).
+ */
+export async function gåTilFasit(t: Terminal, nøkkel: string, nr: number): Promise<string[]> {
+  const notat = fasitNotat(nøkkel);
+  const l = notat.lysbilder[nr - 1];
+  if (!l) throw new Error(`${nøkkel} har ikke lysbilde ${nr} i fasiten`);
+  const agenda = notat.agenda ?? [];
+  const første = (r: readonly string[]) => r.find((x) => x.trim()) ?? '';
+  const passer = (r: readonly string[]): boolean => {
+    if (l.type === 'agenda') return /\d+ punkt/.test(første(r)) && !/du er her/.test(første(r));
+    if (l.type === 'overgang') {
+      const m = /(\d+)\s*\/\s*\d+\s+du er her/.exec(første(r));
+      return m !== null && Number(m[1]) === agenda.indexOf(l.agendapunkt ?? '') + 1;
+    }
+    // Innhold: ikke tittel-, agenda- eller overgangssiden (overgangen viser seksjonens lysbildetitler som tre).
+    if (erTittelside(r) || /\d+ punkt|du er her/.test(første(r))) return false;
+    const flate = skjøtt(innholdsflate(r, agenda));
+    if (l.overskrift) return flate.includes(l.overskrift) && !flate.includes(`${l.overskrift} (forts.)`);
+    const markør = (l.inneholder ?? []).find((x) => /^[A-ZÆØÅ]+-[A-ZÆØÅ0-9-]+$/.test(x));
+    return markør !== undefined && flate.includes(markør);
+  };
+  await t.trykk('g g');
+  let rader = await ventPåLysbilde(t, 1);
+  if (l.type === 'tittel') return rader;
+  const av = await antallLysbilder(t);
+  for (let n = 2; n <= av; n++) {
+    await t.trykk('j');
+    rader = await ventPåLysbilde(t, n);
+    if (passer(rader)) return rader;
+  }
+  throw new Error(`fant ikke ${nøkkel} lysbilde ${nr} (${l.type} «${l.overskrift ?? l.agendapunkt ?? ''}») blant ${av} lysbilder`);
+}
+
 /** Leser alle lysbildene fra første til siste (`gg`, så `j`). */
 export async function lesAlleSkjermer(t: Terminal): Promise<string[][]> {
   await t.trykk('g g');
   const første = await ventPåLysbilde(t, 1);
-  const av = lysbildenummer(første)!.av;
+  const av = await antallLysbilder(t);
   const ut = [første];
   for (let i = 2; i <= av; i++) {
     await t.trykk('j');

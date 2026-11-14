@@ -1,6 +1,6 @@
 // AK-3-08 Alle taster i tabellen virker; `?` viser dem; `:`-kommandoene virker med vim-feilkoder (E475/E486) ved feil.
 // Testplan: TC-3-08-*. Fasit: v3-fasit.json › taster.
-import { expect, fargekoder, fasit3, fasitNotat, forventGjenopprettet, gåTilLysbilde, lysbildenummer, presenterNotat, sgrIRåstrøm, skjøtt, test, ventPåLysbilde } from '../support/terminal';
+import { expect, fargekoder, fasit3, fasitNotat, forventGjenopprettet, gåTilFasit, gåTilLysbilde, lysbildenummer, presenterNotat, sgrIRåstrøm, skjøtt, test, ventPåLysbilde } from '../support/terminal';
 
 const k = fasit3 as unknown as {
   taster: Record<'neste' | 'forrige' | 'forste' | 'siste' | 'oversikt' | 'svart' | 'hjelp' | 'avslutt', string[]> & {
@@ -12,7 +12,7 @@ const N = status.lysbilder.length;
 
 test.describe('AK-3-08 taster', () => {
   for (const tast of k.taster.neste) {
-    test.fixme(`TC-3-08-01 neste: «${tast}», og ingenting etter siste`, async ({ present }) => {
+    test(`TC-3-08-01 neste: «${tast}», og ingenting etter siste`, async ({ present }) => {
       const t = await presenterNotat(present, status.sti);
       await t.trykk(tast);
       await ventPåLysbilde(t, 2);
@@ -26,7 +26,7 @@ test.describe('AK-3-08 taster', () => {
   }
 
   for (const tast of k.taster.forrige) {
-    test.fixme(`TC-3-08-02 forrige: «${tast}», og ingenting før første`, async ({ present }) => {
+    test(`TC-3-08-02 forrige: «${tast}», og ingenting før første`, async ({ present }) => {
       const t = await presenterNotat(present, status.sti);
       await t.trykk(tast);
       await new Promise((r) => setTimeout(r, 150));
@@ -36,7 +36,7 @@ test.describe('AK-3-08 taster', () => {
     });
   }
 
-  test.fixme('TC-3-08-03 gg og G; «g» etterfulgt av en annen tast gjør ingenting', async ({ present }) => {
+  test('TC-3-08-03 gg og G; «g» etterfulgt av en annen tast gjør ingenting', async ({ present }) => {
     const t = await presenterNotat(present, status.sti);
     await t.trykk('G');
     await ventPåLysbilde(t, N);
@@ -63,7 +63,7 @@ test.describe('AK-3-08 taster', () => {
   for (const tast of k.taster.svart) {
     test.fixme(`TC-3-08-05 svart skjerm med «${tast}»; neste/forrige gir bildet tilbake uten å bla`, async ({ present }) => {
       const t = await presenterNotat(present, status.sti);
-      await gåTilLysbilde(t, 4);
+      await gåTilFasit(t, 'statusmote', 4);
       await t.trykk(tast);
       await expect.poll(() => t.skjerm().every((r) => !r.trim()), { message: 'helt tom skjerm' }).toBe(true);
       const celler = t.celler().flat();
@@ -97,7 +97,7 @@ test.describe('AK-3-08 taster', () => {
 
   test.fixme('TC-3-08-08 «:palett signal» og «:farger terminal» bytter farger uten å bytte lysbilde', async ({ present }) => {
     const t = await presenterNotat(present, status.sti);
-    await gåTilLysbilde(t, 5);
+    await gåTilFasit(t, 'statusmote', 5);
     const før = t.råstrøm().length;
     await t.kommando('palett signal');
     await t.kommando('farger terminal');
@@ -131,9 +131,9 @@ test.describe('AK-3-08 taster', () => {
     await forventGjenopprettet(t);
   });
 
-  test.fixme('TC-3-08-11 statuslinjen viser notattittel, tastehint og «n/N»', async ({ present }) => {
+  test('TC-3-08-11 statuslinjen viser notattittel, tastehint og «n/N»', async ({ present }) => {
     const t = await presenterNotat(present, status.sti);
-    const rader = await gåTilLysbilde(t, 7);
+    const rader = await gåTilFasit(t, 'statusmote', 7);
     const linje = rader.filter((r) => r.trim()).at(-1)!;
     expect(linje).toContain(status.tittel!);
     expect(linje).toContain('?');
