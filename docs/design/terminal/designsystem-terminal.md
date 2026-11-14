@@ -450,7 +450,7 @@ Alle celler `#000000` i truecolor. I ansi16: SGR 40 (indeks 0). Markøren er skj
 - **Feil** (E475/E486/E492), vim-stil på to rader nederst. Over dem ligger en lett strek `─` i `dekor` over hele
   bredden. Raden ovenfor viser **`E475:`** fet i `feil` og kortmeldingen i tekstfarge. Nederste rad viser
   forklaringen dempet, med kommandoer som inline-kode, og «trykk en tast» dempet til høyre. Neste tast fjerner
-  meldingen, og tasten brukes ikke til noe annet. Tekstene er de samme som i web (AR-3-24):
+  meldingen og utføres også, som i vim med korte meldinger (PO-135). Tekstene er de samme som i web (AR-3-24):
   - «**E475:** Ugyldig argument: «h9»» / «Skriv `:presenter h2` til `:presenter h6`. Notatet har overskrifter på nivå h2 og h3.»
   - «**E486:** Ingen overskrifter på nivå h5 i notatet» / «Lysbildene deles ikke annerledes. Notatet har overskrifter på nivå h2 og h3. Valget er ikke lagret.»
 - Gyldig kommando: kort bekreftelse i kommandolinjen, dempet i 2 s («Lysbildenivå h3 · ikke lagret», PO-107).

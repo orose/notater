@@ -390,15 +390,17 @@ function createApp({ env, args, vaultConfig, capabilities, palette: initialPalet
 
   const onOverlayKey = (key: DecodedKey): boolean => {
     if (!overlay || screen.kind !== 'present') return false;
+    if (overlay.kind === 'error') {
+      // PO-135: neste tast fjerner meldingen og utføres også (som vim med korte meldinger).
+      overlay = null;
+      redraw();
+      return false;
+    }
     if (key.ctrlKey && key.key === 'c' && overlay.kind !== 'command') {
       quit();
       return true;
     }
     switch (overlay.kind) {
-      case 'error':
-        // Neste tast fjerner meldingen og brukes ikke til noe annet (§5.3).
-        overlay = null;
-        break;
       case 'help':
         if (key.key === '?' || key.key === 'Escape' || key.key === 'q') overlay = null;
         break;
